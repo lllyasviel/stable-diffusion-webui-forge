@@ -784,6 +784,10 @@ def reload_model_weights(sd_model=None, info=None, forced_reload=False):
     return sd_model
 
 
+def unload_model_weights(sd_model=None, info=None):
+    return sd_model
+
+
 def apply_token_merging(sd_model, token_merging_ratio):
     """
     Applies speed and memory optimizations from tomesd.

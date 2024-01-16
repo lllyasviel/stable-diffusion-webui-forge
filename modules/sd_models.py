@@ -554,6 +554,34 @@ def get_empty_cond(sd_model):
         return sd_model.cond_stage_model([""])
 
 
+def send_model_to_cpu(m):
+    if m.lowvram:
+        lowvram.send_everything_to_cpu()
+    else:
+        m.to(devices.cpu)
+
+    devices.torch_gc()
+
+
+def model_target_device(m):
+    if lowvram.is_needed(m):
+        return devices.cpu
+    else:
+        return devices.device
+
+
+def send_model_to_device(m):
+    lowvram.apply(m)
+
+    if not m.lowvram:
+        m.to(shared.device)
+
+
+def send_model_to_trash(m):
+    m.to(device="meta")
+    devices.torch_gc()
+
+
 def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     from modules import sd_hijack
     checkpoint_info = checkpoint_info or select_checkpoint()

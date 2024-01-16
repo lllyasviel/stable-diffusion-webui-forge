@@ -3,6 +3,7 @@ from collections import namedtuple
 
 import torch
 
+import ldm_patched.modules.model_management as model_management
 from modules import prompt_parser, devices, sd_hijack
 from modules.shared import opts
 
@@ -209,6 +210,9 @@ class FrozenCLIPEmbedderWithCustomWordsBase(torch.nn.Module):
         Webui usually sends just one text at a time through this function - the only time when texts is an array with more than one elemenet
         is when you do prompt editing: "a picture of a [cat:dog:0.4] eating ice cream"
         """
+
+        if hasattr(self.wrapped, 'patcher'):
+            model_management.load_model_gpu(self.wrapped.patcher)
 
         if opts.use_old_emphasis_implementation:
             import modules.sd_hijack_clip_old

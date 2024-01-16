@@ -8,8 +8,12 @@ import sgm.modules.diffusionmodules.discretizer
 from modules import devices, shared, prompt_parser
 from modules import torch_utils
 
+import ldm_patched.modules.model_management as model_management
+
 
 def get_learned_conditioning(self: sgm.models.diffusion.DiffusionEngine, batch: prompt_parser.SdConditioning | list[str]):
+    model_management.load_model_gpu(self.clip_patcher)
+
     for embedder in self.conditioner.embedders:
         embedder.ucg_rate = 0.0
 
@@ -18,7 +22,7 @@ def get_learned_conditioning(self: sgm.models.diffusion.DiffusionEngine, batch: 
     is_negative_prompt = getattr(batch, 'is_negative_prompt', False)
     aesthetic_score = shared.opts.sdxl_refiner_low_aesthetic_score if is_negative_prompt else shared.opts.sdxl_refiner_high_aesthetic_score
 
-    devices_args = dict(device=devices.device, dtype=devices.dtype)
+    devices_args = dict(device=self.clip_patcher.current_device, dtype=model_management.text_encoder_dtype())
 
     sdxl_conds = {
         "txt": batch,
@@ -35,11 +39,8 @@ def get_learned_conditioning(self: sgm.models.diffusion.DiffusionEngine, batch: 
 
 
 def apply_model(self: sgm.models.diffusion.DiffusionEngine, x, t, cond):
-    sd = self.model.state_dict()
-    diffusion_model_input = sd.get('diffusion_model.input_blocks.0.0.weight', None)
-    if diffusion_model_input is not None:
-        if diffusion_model_input.shape[1] == 9:
-            x = torch.cat([x] + cond['c_concat'], dim=1)
+    if self.model.diffusion_model.in_channels == 9:
+        x = torch.cat([x] + cond['c_concat'], dim=1)
 
     return self.model(x, t, cond)
 

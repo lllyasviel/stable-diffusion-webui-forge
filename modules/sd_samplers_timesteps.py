@@ -7,6 +7,8 @@ from modules.script_callbacks import ExtraNoiseParams, extra_noise_callback
 
 from modules.shared import opts
 import modules.shared as shared
+import ldm_patched.modules.model_management
+
 
 samplers_timesteps = [
     ('DDIM', sd_samplers_timesteps_impl.ddim, ['ddim'], {}),
@@ -95,6 +97,12 @@ class CompVisSampler(sd_samplers_common.Sampler):
         return timesteps
 
     def sample_img2img(self, p, x, noise, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
+        inference_memory = 0
+        unet_patcher = self.model_wrap.inner_model.unet_patcher
+        ldm_patched.modules.model_management.load_models_gpu(
+            [unet_patcher],
+            unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)
+
         steps, t_enc = sd_samplers_common.setup_img2img_steps(p, steps)
 
         timesteps = self.get_timesteps(p, steps)
@@ -139,6 +147,12 @@ class CompVisSampler(sd_samplers_common.Sampler):
         return samples
 
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
+        inference_memory = 0
+        unet_patcher = self.model_wrap.inner_model.unet_patcher
+        ldm_patched.modules.model_management.load_models_gpu(
+            [unet_patcher],
+            unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)
+
         steps = steps or p.steps
         timesteps = self.get_timesteps(p, steps)
 

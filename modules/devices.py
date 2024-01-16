@@ -179,26 +179,11 @@ def manual_cast(target_dtype):
 
 
 def autocast(disable=False):
-    if disable:
-        return contextlib.nullcontext()
-
-    if fp8 and device==cpu:
-        return torch.autocast("cpu", dtype=torch.bfloat16, enabled=True)
-
-    if fp8 and dtype_inference == torch.float32:
-        return manual_cast(dtype)
-
-    if dtype == torch.float32 or dtype_inference == torch.float32:
-        return contextlib.nullcontext()
-
-    if has_xpu() or has_mps() or cuda_no_autocast():
-        return manual_cast(dtype)
-
-    return torch.autocast("cuda")
+    return contextlib.nullcontext()
 
 
 def without_autocast(disable=False):
-    return torch.autocast("cuda", enabled=False) if torch.is_autocast_enabled() and not disable else contextlib.nullcontext()
+    return contextlib.nullcontext()
 
 
 class NansException(Exception):

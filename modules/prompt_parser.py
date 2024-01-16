@@ -276,6 +276,12 @@ class DictWithShape(dict):
     def shape(self):
         return self["crossattn"].shape
 
+    def to(self, *args, **kwargs):
+        for k in self.keys():
+            if isinstance(self[k], torch.Tensor):
+                self[k] = self[k].to(*args, **kwargs)
+        return self
+
 
 def reconstruct_cond_batch(c: list[list[ScheduledPromptConditioning]], current_step):
     param = c[0][0].cond

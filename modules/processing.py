@@ -16,7 +16,7 @@ from skimage import exposure
 from typing import Any
 
 import modules.sd_hijack
-from modules import devices, prompt_parser, masking, sd_samplers, lowvram, infotext_utils, extra_networks, sd_vae_approx, scripts, sd_samplers_common, sd_unet, errors, rng
+from modules import devices, prompt_parser, masking, sd_samplers, infotext_utils, extra_networks, sd_vae_approx, scripts, sd_samplers_common, sd_unet, errors, rng
 from modules.rng import slerp # noqa: F401
 from modules.sd_hijack import model_hijack
 from modules.sd_samplers_common import images_tensor_to_samples, decode_first_stage, approximation_indexes
@@ -627,44 +627,7 @@ def decode_latent_batch(model, batch, target_device=None, check_for_nans=False):
 
     for i in range(batch.shape[0]):
         sample = decode_first_stage(model, batch[i:i + 1])[0]
-
-        if check_for_nans:
-
-            try:
-                devices.test_for_nans(sample, "vae")
-            except devices.NansException as e:
-                if shared.opts.auto_vae_precision_bfloat16:
-                    autofix_dtype = torch.bfloat16
-                    autofix_dtype_text = "bfloat16"
-                    autofix_dtype_setting = "Automatically convert VAE to bfloat16"
-                    autofix_dtype_comment = ""
-                elif shared.opts.auto_vae_precision:
-                    autofix_dtype = torch.float32
-                    autofix_dtype_text = "32-bit float"
-                    autofix_dtype_setting = "Automatically revert VAE to 32-bit floats"
-                    autofix_dtype_comment = "\nTo always start with 32-bit VAE, use --no-half-vae commandline flag."
-                else:
-                    raise e
-
-                if devices.dtype_vae == autofix_dtype:
-                    raise e
-
-                errors.print_error_explanation(
-                    "A tensor with all NaNs was produced in VAE.\n"
-                    f"Web UI will now convert VAE into {autofix_dtype_text} and retry.\n"
-                    f"To disable this behavior, disable the '{autofix_dtype_setting}' setting.{autofix_dtype_comment}"
-                )
-
-                devices.dtype_vae = autofix_dtype
-                model.first_stage_model.to(devices.dtype_vae)
-                batch = batch.to(devices.dtype_vae)
-
-                sample = decode_first_stage(model, batch[i:i + 1])[0]
-
-        if target_device is not None:
-            sample = sample.to(target_device)
-
-        samples.append(sample)
+        samples.append(sample.to(target_device))
 
     return samples
 
@@ -940,8 +903,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     p.extra_generation_params['Noise Schedule'] = opts.sd_noise_schedule
                     p.sd_model.alphas_cumprod = rescale_zero_terminal_snr_abar(p.sd_model.alphas_cumprod).to(shared.device)
 
-            with devices.without_autocast() if devices.unet_needs_upcast else devices.autocast():
-                samples_ddim = p.sample(conditioning=p.c, unconditional_conditioning=p.uc, seeds=p.seeds, subseeds=p.subseeds, subseed_strength=p.subseed_strength, prompts=p.prompts)
+            samples_ddim = p.sample(conditioning=p.c, unconditional_conditioning=p.uc, seeds=p.seeds, subseeds=p.subseeds, subseed_strength=p.subseed_strength, prompts=p.prompts)
 
             if p.scripts is not None:
                 ps = scripts.PostSampleArgs(samples_ddim)
@@ -959,9 +921,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
 
             del samples_ddim
-
-            if lowvram.is_enabled(shared.sd_model):
-                lowvram.send_everything_to_cpu()
 
             devices.torch_gc()
 
@@ -1255,7 +1214,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                 image = np.array(self.firstpass_image).astype(np.float32) / 255.0
                 image = np.moveaxis(image, 2, 0)
                 image = torch.from_numpy(np.expand_dims(image, axis=0))
-                image = image.to(shared.device, dtype=devices.dtype_vae)
+                image = image.to(shared.device, dtype=torch.float32)
 
                 if opts.sd_vae_encode_method != 'Full':
                     self.extra_generation_params['VAE Encoder'] = opts.sd_vae_encode_method
@@ -1339,7 +1298,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                 batch_images.append(image)
 
             decoded_samples = torch.from_numpy(np.array(batch_images))
-            decoded_samples = decoded_samples.to(shared.device, dtype=devices.dtype_vae)
+            decoded_samples = decoded_samples.to(shared.device, dtype=torch.float32)
 
             if opts.sd_vae_encode_method != 'Full':
                 self.extra_generation_params['VAE Encoder'] = opts.sd_vae_encode_method
@@ -1444,7 +1403,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
             if shared.opts.hires_fix_use_firstpass_conds:
                 self.calculate_hr_conds()
 
-            elif lowvram.is_enabled(shared.sd_model) and shared.sd_model.sd_checkpoint_info == sd_models.select_checkpoint():  # if in lowvram mode, we need to calculate conds right away, before the cond NN is unloaded
+            elif shared.sd_model.sd_checkpoint_info == sd_models.select_checkpoint():  # if in lowvram mode, we need to calculate conds right away, before the cond NN is unloaded
                 with devices.autocast():
                     extra_networks.activate(self, self.hr_extra_network_data)
 
@@ -1631,7 +1590,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             raise RuntimeError(f"bad number of images passed: {len(imgs)}; expecting {self.batch_size} or less")
 
         image = torch.from_numpy(batch_images)
-        image = image.to(shared.device, dtype=devices.dtype_vae)
+        image = image.to(shared.device, dtype=torch.float32)
 
         if opts.sd_vae_encode_method != 'Full':
             self.extra_generation_params['VAE Encoder'] = opts.sd_vae_encode_method

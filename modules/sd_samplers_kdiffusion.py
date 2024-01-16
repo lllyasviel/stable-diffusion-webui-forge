@@ -7,6 +7,8 @@ from modules.script_callbacks import ExtraNoiseParams, extra_noise_callback
 
 from modules.shared import opts
 import modules.shared as shared
+import ldm_patched.modules.model_management
+
 
 samplers_k_diffusion = [
     ('DPM++ 2M Karras', 'sample_dpmpp_2m', ['k_dpmpp_2m_ka'], {'scheduler': 'karras'}),
@@ -139,6 +141,12 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         return sigmas
 
     def sample_img2img(self, p, x, noise, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
+        inference_memory = 0
+        unet_patcher = self.model_wrap.inner_model.unet_patcher
+        ldm_patched.modules.model_management.load_models_gpu(
+            [unet_patcher],
+            unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)
+
         steps, t_enc = sd_samplers_common.setup_img2img_steps(p, steps)
 
         sigmas = self.get_sigmas(p, steps)
@@ -193,6 +201,12 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         return samples
 
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
+        inference_memory = 0
+        unet_patcher = self.model_wrap.inner_model.unet_patcher
+        ldm_patched.modules.model_management.load_models_gpu(
+            [unet_patcher],
+            unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)
+
         steps = steps or p.steps
 
         sigmas = self.get_sigmas(p, steps)

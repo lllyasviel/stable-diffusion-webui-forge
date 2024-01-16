@@ -2,7 +2,7 @@ import os
 import collections
 from dataclasses import dataclass
 
-from modules import paths, shared, devices, script_callbacks, sd_models, extra_networks, lowvram, sd_hijack, hashes
+from modules import paths, shared, devices, script_callbacks, sd_models, extra_networks, sd_hijack, hashes
 
 import glob
 from copy import deepcopy
@@ -237,7 +237,6 @@ def load_vae(model, vae_file=None, vae_source="from unknown source"):
 # don't call this from outside
 def _load_vae_dict(model, vae_dict_1):
     model.first_stage_model.load_state_dict(vae_dict_1)
-    model.first_stage_model.to(devices.dtype_vae)
 
 
 def clear_loaded_vae():
@@ -263,19 +262,11 @@ def reload_vae_weights(sd_model=None, vae_file=unspecified):
     if loaded_vae_file == vae_file:
         return
 
-    if sd_model.lowvram:
-        lowvram.send_everything_to_cpu()
-    else:
-        sd_model.to(devices.cpu)
-
     sd_hijack.model_hijack.undo_hijack(sd_model)
 
     load_vae(sd_model, vae_file, vae_source)
 
     sd_hijack.model_hijack.hijack(sd_model)
-
-    if not sd_model.lowvram:
-        sd_model.to(devices.device)
 
     script_callbacks.model_loaded_callback(sd_model)
 

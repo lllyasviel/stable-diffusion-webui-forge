@@ -173,6 +173,15 @@ class CFGDenoiser(torch.nn.Module):
                 uncond = pad_cond(uncond, num_repeats, empty)
                 self.padded_cond_uncond = True
 
+        unet_dtype = self.inner_model.inner_model.unet_patcher.model.model_config.unet_config['dtype']
+        x_input_dtype = x_in.dtype
+
+        x_in = x_in.to(unet_dtype)
+        sigma_in = sigma_in.to(unet_dtype)
+        image_cond_in = image_cond_in.to(unet_dtype)
+        tensor = tensor.to(unet_dtype)
+        uncond = uncond.to(unet_dtype)
+
         if tensor.shape[1] == uncond.shape[1] or skip_uncond:
             if is_edit_model:
                 cond_in = catenate_conds([tensor, uncond, uncond])
@@ -210,6 +219,8 @@ class CFGDenoiser(torch.nn.Module):
         if skip_uncond:
             fake_uncond = torch.cat([x_out[i:i+1] for i in denoised_image_indexes])
             x_out = torch.cat([x_out, fake_uncond])  # we skipped uncond denoising, so we put cond-denoised image to where the uncond-denoised image should be
+
+        x_out = x_out.to(x_input_dtype)
 
         denoised_params = CFGDenoisedParams(x_out, state.sampling_step, state.sampling_steps, self.inner_model)
         cfg_denoised_callback(denoised_params)

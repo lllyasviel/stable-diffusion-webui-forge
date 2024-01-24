@@ -964,7 +964,13 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     image = pp.image
 
                 mask_for_overlay = getattr(p, "mask_for_overlay", None)
-                overlay_image = p.overlay_images[i] if getattr(p, "overlay_images", None) is not None and i < len(p.overlay_images) else None
+
+                if not shared.opts.overlay_inpaint:
+                    overlay_image = None
+                elif getattr(p, "overlay_images", None) is not None and i < len(p.overlay_images):
+                    overlay_image = p.overlay_images[i]
+                else:
+                    overlay_image = None
 
                 if p.scripts is not None:
                     ppmo = scripts.PostProcessMaskOverlayArgs(i, mask_for_overlay, overlay_image)
@@ -987,6 +993,11 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     original_denoised_image = uncrop(original_denoised_image, (overlay_image.width, overlay_image.height), p.paste_to)
 
                 image = apply_overlay(image, p.paste_to, overlay_image)
+
+                if p.scripts is not None:
+                    pp = scripts.PostprocessImageArgs(image)
+                    p.scripts.postprocess_image_after_composite(p, pp)
+                    image = pp.image
 
                 if save_samples:
                     images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], opts.samples_format, info=infotext(i), p=p)
@@ -1186,8 +1197,11 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
             if not state.processing_has_refined_job_count:
                 if state.job_count == -1:
                     state.job_count = self.n_iter
-
-                shared.total_tqdm.updateTotal((self.steps + (self.hr_second_pass_steps or self.steps)) * state.job_count)
+                if getattr(self, 'txt2img_upscale', False):
+                    total_steps = (self.hr_second_pass_steps or self.steps) * state.job_count
+                else:
+                    total_steps = (self.steps + (self.hr_second_pass_steps or self.steps)) * state.job_count
+                shared.total_tqdm.updateTotal(total_steps)
                 state.job_count = state.job_count * 2
                 state.processing_has_refined_job_count = True
 
@@ -1513,7 +1527,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             if self.inpaint_full_res:
                 self.mask_for_overlay = image_mask
                 mask = image_mask.convert('L')
-                crop_region = masking.get_crop_region(np.array(mask), self.inpaint_full_res_padding)
+                crop_region = masking.get_crop_region(mask, self.inpaint_full_res_padding)
                 crop_region = masking.expand_crop_region(crop_region, self.width, self.height, mask.width, mask.height)
                 x1, y1, x2, y2 = crop_region
 

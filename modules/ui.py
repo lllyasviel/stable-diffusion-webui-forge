@@ -266,7 +266,7 @@ def create_ui():
 
         dummy_component = gr.Label(visible=False)
 
-        extra_tabs = gr.Tabs(elem_id="txt2img_extra_tabs")
+        extra_tabs = gr.Tabs(elem_id="txt2img_extra_tabs", elem_classes=["extra-networks"])
         extra_tabs.__enter__()
 
         with gr.Tab("Generation", id="txt2img_generation") as txt2img_generation_tab, ResizeHandleRow(equal_height=False):
@@ -499,7 +499,7 @@ def create_ui():
     with gr.Blocks(analytics_enabled=False) as img2img_interface:
         toprow = ui_toprow.Toprow(is_img2img=True, is_compact=shared.opts.compact_prompt_box)
 
-        extra_tabs = gr.Tabs(elem_id="img2img_extra_tabs")
+        extra_tabs = gr.Tabs(elem_id="img2img_extra_tabs", elem_classes=["extra-networks"])
         extra_tabs.__enter__()
 
         with gr.Tab("Generation", id="img2img_generation") as img2img_generation_tab, ResizeHandleRow(equal_height=False):
@@ -532,7 +532,7 @@ def create_ui():
 
                     if category == "image":
                         with gr.Tabs(elem_id="mode_img2img"):
-                            img2img_selected_tab = gr.State(0)
+                            img2img_selected_tab = gr.Number(value=0, visible=False)
 
                             with gr.TabItem('img2img', id='img2img', elem_id="img2img_img2img_tab") as tab_img2img:
                                 init_img = gr.Image(label="Image for img2img", elem_id="img2img_image", show_label=False, source="upload", interactive=True, type="pil", tool="editor", image_mode="RGBA", height=opts.img2img_editor_height)
@@ -613,7 +613,7 @@ def create_ui():
                     elif category == "dimensions":
                         with FormRow():
                             with gr.Column(elem_id="img2img_column_size", scale=4):
-                                selected_scale_tab = gr.State(value=0)
+                                selected_scale_tab = gr.Number(value=0, visible=False)
 
                                 with gr.Tabs():
                                     with gr.Tab(label="Resize to", elem_id="img2img_tab_resize_to") as tab_scale_to:

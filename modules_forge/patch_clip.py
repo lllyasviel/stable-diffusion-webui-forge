@@ -22,46 +22,6 @@ from modules_forge.ops import use_patched_ops
 from transformers import CLIPTextModel, CLIPTextConfig, modeling_utils, CLIPVisionConfig, CLIPVisionModelWithProjection
 
 
-def patched_encode_token_weights(self, token_weight_pairs):
-    to_encode = list()
-    max_token_len = 0
-    has_weights = False
-    for x in token_weight_pairs:
-        tokens = list(map(lambda a: a[0], x))
-        max_token_len = max(len(tokens), max_token_len)
-        has_weights = has_weights or not all(map(lambda a: a[1] == 1.0, x))
-        to_encode.append(tokens)
-
-    sections = len(to_encode)
-    if has_weights or sections == 0:
-        to_encode.append(ldm_patched.modules.sd1_clip.gen_empty_tokens(self.special_tokens, max_token_len))
-
-    out, pooled = self.encode(to_encode)
-    if pooled is not None:
-        first_pooled = pooled[0:1].to(ldm_patched.modules.model_management.intermediate_device())
-    else:
-        first_pooled = pooled
-
-    output = []
-    for k in range(0, sections):
-        z = out[k:k + 1]
-        if has_weights:
-            original_mean = z.mean()
-            z_empty = out[-1]
-            for i in range(len(z)):
-                for j in range(len(z[i])):
-                    weight = token_weight_pairs[k][j][1]
-                    if weight != 1.0:
-                        z[i][j] = (z[i][j] - z_empty[j]) * weight + z_empty[j]
-            new_mean = z.mean()
-            z = z * (original_mean / new_mean)
-        output.append(z)
-
-    if len(output) == 0:
-        return out[-1:].to(ldm_patched.modules.model_management.intermediate_device()), first_pooled
-    return torch.cat(output, dim=-2).to(ldm_patched.modules.model_management.intermediate_device()), first_pooled
-
-
 def patched_SDClipModel__init__(self, max_length=77, freeze=True, layer="last", layer_idx=None,
                                 textmodel_json_config=None, dtype=None, special_tokens=None,
                                 layer_norm_hidden_state=True, **kwargs):
@@ -187,7 +147,6 @@ def patched_ClipVisionModel_encode_image(self, image):
 
 
 def patch_all_clip():
-    ldm_patched.modules.sd1_clip.ClipTokenWeightEncoder.encode_token_weights = patched_encode_token_weights
     ldm_patched.modules.sd1_clip.SDClipModel.__init__ = patched_SDClipModel__init__
     ldm_patched.modules.sd1_clip.SDClipModel.forward = patched_SDClipModel_forward
     ldm_patched.modules.clip_vision.ClipVisionModel.__init__ = patched_ClipVisionModel__init__

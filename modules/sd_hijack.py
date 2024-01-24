@@ -61,7 +61,7 @@ def apply_optimizations(option=None):
 
 
 def undo_optimizations():
-    return 
+    return
 
 
 def fix_checkpoint():

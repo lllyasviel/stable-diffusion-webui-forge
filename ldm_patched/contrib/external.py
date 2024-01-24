@@ -1945,6 +1945,7 @@ def init_custom_nodes():
         "nodes_perpneg.py",
         "nodes_stable3d.py",
         "nodes_sdupscale.py",
+        "nodes_photomaker.py",
     ]
 
     for node_file in extras_files:

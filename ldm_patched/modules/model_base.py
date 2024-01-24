@@ -6,7 +6,6 @@ import ldm_patched.modules.model_management
 import ldm_patched.modules.conds
 import ldm_patched.modules.ops
 from enum import Enum
-import contextlib
 from . import utils
 
 class ModelType(Enum):

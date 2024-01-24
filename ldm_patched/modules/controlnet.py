@@ -1,7 +1,6 @@
 import torch
 import math
 import os
-import contextlib
 import ldm_patched.modules.utils
 import ldm_patched.modules.model_management
 import ldm_patched.modules.model_detection

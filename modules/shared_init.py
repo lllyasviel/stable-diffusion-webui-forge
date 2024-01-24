@@ -23,17 +23,6 @@ def initialize():
     except FileNotFoundError:
         pass
 
-    from modules import devices
-    devices.device, devices.device_interrogate, devices.device_gfpgan, devices.device_esrgan, devices.device_codeformer = \
-        (devices.cpu if any(y in cmd_opts.use_cpu for y in [x, 'all']) else devices.get_optimal_device() for x in ['sd', 'interrogate', 'gfpgan', 'esrgan', 'codeformer'])
-
-    devices.dtype = torch.float32 if cmd_opts.no_half else torch.float16
-    devices.dtype_vae = torch.float32 if cmd_opts.no_half or cmd_opts.no_half_vae else torch.float16
-    devices.dtype_inference = torch.float32 if cmd_opts.precision == 'full' else devices.dtype
-
-    shared.device = devices.device
-    shared.weight_load_location = None if cmd_opts.lowram else "cpu"
-
     from modules import shared_state
     shared.state = shared_state.State()
 

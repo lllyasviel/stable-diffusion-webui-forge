@@ -23,6 +23,10 @@ def initialize():
     except FileNotFoundError:
         pass
 
+    from modules import devices
+    shared.device = devices.device
+    shared.weight_load_location = None if cmd_opts.lowram else "cpu"
+
     from modules import shared_state
     shared.state = shared_state.State()
 

@@ -63,4 +63,11 @@ def initialize_forge():
     device = model_management.get_torch_device()
     torch.zeros((1, 1)).to(device, torch.float32)
     model_management.soft_empty_cache()
+
+    import modules_forge.patch_clip
+    modules_forge.patch_clip.patch_all_clip()
+
+    import modules_forge.patch_precision
+    modules_forge.patch_precision.patch_all_precision()
+
     return

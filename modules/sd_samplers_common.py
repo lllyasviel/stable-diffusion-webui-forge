@@ -52,8 +52,7 @@ def samples_to_images_tensor(sample, approximation=None, model=None):
     else:
         if model is None:
             model = shared.sd_model
-        sample = model.unet_patcher.model.model_config.latent_format.process_out(sample)
-        x_sample = model.vae_patcher.decode(sample).movedim(-1, 1) * 2.0 - 1.0
+        x_sample = model.decode_first_stage(sample)
 
     return x_sample
 

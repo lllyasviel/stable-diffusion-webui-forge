@@ -653,6 +653,12 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     timer.record("create unet patcher")
     del state_dict_for_forge
 
+    def patched_decode_first_stage(sample):
+        sample = unet_patcher.model.model_config.latent_format.process_out(sample)
+        return vae_patcher.decode(sample).movedim(-1, 1) * 2.0 - 1.0
+
+    sd_model.decode_first_stage = patched_decode_first_stage
+
     load_model_weights(sd_model, checkpoint_info, state_dict_for_a1111, timer)
     del state_dict_for_a1111
     timer.record("load weights from state dict")

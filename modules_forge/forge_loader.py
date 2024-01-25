@@ -243,7 +243,4 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     sd_model.vae_patcher_original = forge_object.vae.patcher
     timer.record("get patcher")
 
-    # for token counter
-    sd_model.clip = sd_model.cond_stage_model
-
     return sd_model

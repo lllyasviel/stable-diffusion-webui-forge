@@ -16,7 +16,6 @@ from modules import sd_hijack
 from modules.sd_models_xl import extend_sdxl
 from ldm.util import instantiate_from_config
 from modules_forge import forge_clip
-from modules import sd_disable_initialization
 
 import open_clip
 from transformers import CLIPTextModel, CLIPTokenizer

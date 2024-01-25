@@ -206,6 +206,8 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     timer.record("forge finalize")
 
     sd_model.unet_patcher = forge_object.unet
+    sd_model.clip_patcher = forge_object.clip.patcher
+    sd_model.vae_patcher = forge_object.vae.patcher
 
     return sd_model
 

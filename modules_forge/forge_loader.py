@@ -16,6 +16,7 @@ from modules import sd_hijack
 from modules.sd_models_xl import extend_sdxl
 from ldm.util import instantiate_from_config
 from modules_forge import forge_clip
+from modules import sd_disable_initialization
 
 import open_clip
 from transformers import CLIPTextModel, CLIPTokenizer
@@ -135,8 +136,12 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     if hasattr(a1111_config.model.params, 'first_stage_config'):
         a1111_config.model.params.first_stage_config.target = 'modules_forge.forge_loader.FakeObject'
 
-    with no_clip():
-        sd_model = instantiate_from_config(a1111_config.model)
+    # with no_clip():
+    #     sd_model = instantiate_from_config(a1111_config.model)
+
+    with sd_disable_initialization.DisableInitialization(disable_clip=True):
+        with sd_disable_initialization.InitializeOnMeta():
+            sd_model = instantiate_from_config(a1111_config.model)
 
     timer.record("forge instantiate config")
 

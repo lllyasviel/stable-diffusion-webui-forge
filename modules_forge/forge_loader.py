@@ -123,8 +123,8 @@ def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_c
 
 
 def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
-    a1111_config = find_checkpoint_config(state_dict, checkpoint_info)
-    a1111_config = OmegaConf.load(a1111_config)
+    a1111_config_filename = find_checkpoint_config(state_dict, checkpoint_info)
+    a1111_config = OmegaConf.load(a1111_config_filename)
     timer.record("forge solving config")
 
     if hasattr(a1111_config.model.params, 'network_config'):
@@ -138,6 +138,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
 
     with no_clip():
         sd_model = instantiate_from_config(a1111_config.model)
+        sd_model.used_config = a1111_config_filename
 
     timer.record("forge instantiate config")
 

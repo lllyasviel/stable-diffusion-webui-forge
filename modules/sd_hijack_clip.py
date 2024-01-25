@@ -345,7 +345,7 @@ class FrozenCLIPEmbedderWithCustomWords(FrozenCLIPEmbedderWithCustomWordsBase):
         return embedded
 
 
-class FrozenCLIPEmbedderForSDXLWithCustomWords(FrozenCLIPEmbedderWithCustomWords):
+class CLIP_SD_XL_L(FrozenCLIPEmbedderWithCustomWords):
     def __init__(self, wrapped, hijack):
         super().__init__(wrapped, hijack)
 

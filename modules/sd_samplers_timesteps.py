@@ -104,6 +104,8 @@ class CompVisSampler(sd_samplers_common.Sampler):
             [unet_patcher],
             unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)
 
+        self.model_wrap.inner_model.alphas_cumprod = self.model_wrap.inner_model.alphas_cumprod.to(unet_patcher.current_device)
+
         steps, t_enc = sd_samplers_common.setup_img2img_steps(p, steps)
 
         timesteps = self.get_timesteps(p, steps)

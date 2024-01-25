@@ -147,6 +147,9 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
             [unet_patcher],
             unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)
 
+        self.model_wrap.log_sigmas = self.model_wrap.log_sigmas.to(unet_patcher.current_device)
+        self.model_wrap.sigmas = self.model_wrap.sigmas.to(unet_patcher.current_device)
+
         steps, t_enc = sd_samplers_common.setup_img2img_steps(p, steps)
 
         sigmas = self.get_sigmas(p, steps)

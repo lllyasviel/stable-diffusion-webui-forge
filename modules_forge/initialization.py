@@ -1,61 +1,13 @@
-import argparse
-
 
 def initialize_forge():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--no-vram", action="store_true")
-    parser.add_argument("--normal-vram", action="store_true")
-    parser.add_argument("--high-vram", action="store_true")
-    parser.add_argument("--always-vram", action="store_true")
-    vram_args = vars(parser.parse_known_args()[0])
+    import ldm_patched.modules.args_parser as args_parser
 
-    parser = argparse.ArgumentParser()
-    attn_group = parser.add_mutually_exclusive_group()
-    attn_group.add_argument("--attention-split", action="store_true")
-    attn_group.add_argument("--attention-quad", action="store_true")
-    attn_group.add_argument("--attention-pytorch", action="store_true")
-    parser.add_argument("--disable-xformers", action="store_true")
-    fpte_group = parser.add_mutually_exclusive_group()
-    fpte_group.add_argument("--clip-in-fp8-e4m3fn", action="store_true")
-    fpte_group.add_argument("--clip-in-fp8-e5m2", action="store_true")
-    fpte_group.add_argument("--clip-in-fp16", action="store_true")
-    fpte_group.add_argument("--clip-in-fp32", action="store_true")
-    fp_group = parser.add_mutually_exclusive_group()
-    fp_group.add_argument("--all-in-fp32", action="store_true")
-    fp_group.add_argument("--all-in-fp16", action="store_true")
-    fpunet_group = parser.add_mutually_exclusive_group()
-    fpunet_group.add_argument("--unet-in-bf16", action="store_true")
-    fpunet_group.add_argument("--unet-in-fp16", action="store_true")
-    fpunet_group.add_argument("--unet-in-fp8-e4m3fn", action="store_true")
-    fpunet_group.add_argument("--unet-in-fp8-e5m2", action="store_true")
-    fpvae_group = parser.add_mutually_exclusive_group()
-    fpvae_group.add_argument("--vae-in-fp16", action="store_true")
-    fpvae_group.add_argument("--vae-in-fp32", action="store_true")
-    fpvae_group.add_argument("--vae-in-bf16", action="store_true")
-    other_args = vars(parser.parse_known_args()[0])
+    args_parser.parser.add_argument("--disable-offload-from-vram", action="store_true",
+                                    help="Force loading models to vram when the unload can be avoided. "
+                                         "Use this when you ara on MAC or have more than 20GB VRAM like RTX4096.")
 
-    from ldm_patched.modules.args_parser import args
-
-    args.always_cpu = False
-    args.always_gpu = False
-    args.always_high_vram = False
-    args.always_low_vram = False
-    args.always_no_vram = False
-    args.always_offload_from_vram = True
-    args.async_cuda_allocation = False
-    args.disable_async_cuda_allocation = True
-
-    if vram_args['no_vram']:
-        args.always_cpu = True
-
-    if vram_args['always_vram']:
-        args.always_gpu = True
-
-    if vram_args['high_vram']:
-        args.always_offload_from_vram = False
-
-    for k, v in other_args.items():
-        setattr(args, k, v)
+    args_parser.args = args_parser.parser.parse_known_args()[0]
+    args_parser.args.always_offload_from_vram = not args_parser.args.disable_offload_from_vram
 
     import ldm_patched.modules.model_management as model_management
     import torch

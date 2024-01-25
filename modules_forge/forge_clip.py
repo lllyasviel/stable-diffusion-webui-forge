@@ -1,11 +1,20 @@
 from modules.sd_hijack_clip import FrozenCLIPEmbedderWithCustomWords
 from ldm_patched.modules import model_management
+from modules.shared import opts
 
 
 class CLIP_SD_15_L(FrozenCLIPEmbedderWithCustomWords):
     def encode_with_transformers(self, tokens):
         model_management.load_models_gpu([self.patcher.patcher])
-        return super().encode_with_transformers(tokens)
+        outputs = self.wrapped.transformer(input_ids=tokens, output_hidden_states=-opts.CLIP_stop_at_last_layers)
+
+        if opts.CLIP_stop_at_last_layers > 1:
+            z = outputs.hidden_states[-opts.CLIP_stop_at_last_layers]
+            z = self.wrapped.transformer.text_model.final_layer_norm(z)
+        else:
+            z = outputs.last_hidden_state
+
+        return z
 
 
 class CLIP_SD_21_H(FrozenCLIPEmbedderWithCustomWords):

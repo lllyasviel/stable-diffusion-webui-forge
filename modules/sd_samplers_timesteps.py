@@ -56,6 +56,7 @@ class CFGDenoiserTimesteps(CFGDenoiser):
 
     def get_pred_x0(self, x_in, x_out, sigma):
         ts = sigma.to(dtype=int)
+        self.alphas = self.alphas.to(ts.device)
 
         a_t = self.alphas[ts][:, None, None, None]
         sqrt_one_minus_at = (1 - a_t).sqrt()

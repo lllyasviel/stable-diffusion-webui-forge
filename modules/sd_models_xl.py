@@ -12,7 +12,7 @@ import ldm_patched.modules.model_management as model_management
 
 
 def get_learned_conditioning(self: sgm.models.diffusion.DiffusionEngine, batch: prompt_parser.SdConditioning | list[str]):
-    model_management.load_model_gpu(self.clip_patcher)
+    model_management.load_model_gpu(self.forge_objects.clip.patcher)
 
     for embedder in self.conditioner.embedders:
         embedder.ucg_rate = 0.0

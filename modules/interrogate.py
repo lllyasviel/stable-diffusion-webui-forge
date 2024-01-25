@@ -117,6 +117,9 @@ class InterrogateModels:
 
     def load_clip_model(self):
         import clip
+        import clip.model
+
+        clip.model.LayerNorm = torch.nn.LayerNorm
 
         model, preprocess = clip.load(clip_model_name, device="cpu", download_root=shared.cmd_opts.clip_models_path)
         model.eval()

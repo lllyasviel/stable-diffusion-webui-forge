@@ -1,5 +1,3 @@
-import gradio as gr
-import logging
 import os
 import re
 
@@ -9,10 +7,8 @@ import network
 import torch
 from typing import Union
 
-from modules import shared, devices, sd_models, errors, scripts, sd_hijack
-import modules.textual_inversion.textual_inversion as textual_inversion
+from modules import shared, sd_models, errors, scripts
 
-from lora_logger import logger
 
 module_types = []
 
@@ -132,6 +128,9 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
         return
 
     current_sd.current_lora_hash = compiled_lora_targets_hash
+
+
+
     return
 
 

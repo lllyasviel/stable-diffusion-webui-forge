@@ -138,7 +138,6 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
 
     with no_clip():
         sd_model = instantiate_from_config(a1111_config.model)
-        sd_model.used_config = a1111_config_filename
 
     timer.record("forge instantiate config")
 

@@ -46,10 +46,10 @@ def enable_tf32():
 cpu: torch.device = torch.device("cpu")
 fp8: bool = False
 device: torch.device = model_management.get_torch_device()
-device_interrogate: torch.device = model_management.text_encoder_device()
-device_gfpgan: torch.device = model_management.get_torch_device()
-device_esrgan: torch.device = model_management.get_torch_device()
-device_codeformer: torch.device = model_management.get_torch_device()
+device_interrogate: torch.device = cpu  # not used
+device_gfpgan: torch.device = cpu
+device_esrgan: torch.device = cpu  # not used
+device_codeformer: torch.device = cpu
 dtype: torch.dtype = model_management.unet_dtype()
 dtype_vae: torch.dtype = model_management.vae_dtype()
 dtype_unet: torch.dtype = model_management.unet_dtype()

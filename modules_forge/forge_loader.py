@@ -24,6 +24,9 @@ class FakeObject:
         self.visual = None
         return
 
+    def eval(self, *args, **kwargs):
+        return self
+
 
 class ForgeSD:
     def __init__(self, unet, clip, vae, clipvision):

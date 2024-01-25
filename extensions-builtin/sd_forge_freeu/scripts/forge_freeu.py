@@ -6,7 +6,10 @@ class FreeUForForge(scripts.Script):
     def title(self):
         return "FreeU Integrated"
 
-    def ui(self, is_img2img):
+    def show(self, is_img2img):
+        return scripts.AlwaysVisible
+
+    def ui(self, *args, **kwargs):
         with gr.Accordion(open=False, label=self.title()):
             freeu_enabled = gr.Checkbox(label='Enabled', value=False)
             freeu_b1 = gr.Slider(label='B1', minimum=0, maximum=2, step=0.01, value=1.01)

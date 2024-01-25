@@ -294,7 +294,6 @@ class UiSettings:
 
         for _i, k, _item in self.quicksettings_list:
             component = self.component_dict[k]
-            info = opts.data_labels[k]
 
             if isinstance(component, gr.Textbox):
                 methods = [component.submit, component.blur]
@@ -308,7 +307,7 @@ class UiSettings:
                     fn=lambda value, k=k: self.run_settings_single(value, key=k),
                     inputs=[component],
                     outputs=[component, self.text_settings],
-                    show_progress=info.refresh is not None,
+                    show_progress=False,
                 )
 
         button_set_checkpoint = gr.Button('Change checkpoint', elem_id='change_checkpoint', visible=False)

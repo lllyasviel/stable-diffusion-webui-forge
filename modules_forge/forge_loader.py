@@ -131,7 +131,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
 
     timer.record("forge instantiate config")
 
-    forge_objects = load_checkpoint_guess_config(
+    forge_object = load_checkpoint_guess_config(
         state_dict,
         output_vae=True,
         output_clip=True,
@@ -139,19 +139,13 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         embedding_directory=cmd_opts.embeddings_dir,
         output_model=True
     )
-
-    sd_model.forge_objects = forge_objects
-
-    sd_model.first_stage_model = vae_patcher.first_stage_model
-    sd_model.model.diffusion_model = unet_patcher.model.diffusion_model
-    sd_model.unet_patcher = unet_patcher
-    sd_model.model.diffusion_model.patcher = unet_patcher
-    sd_model.vae_patcher = vae_patcher
-    sd_model.first_stage_model.patcher = vae_patcher
-
+    sd_model.forge_objects = forge_object
     timer.record("forge load real models")
 
+    sd_model.first_stage_model = forge_object.vae.first_stage_model
+    sd_model.model.diffusion_model = forge_object.unet.model.diffusion_model
 
+    timer.record("forge set components")
 
     return
 

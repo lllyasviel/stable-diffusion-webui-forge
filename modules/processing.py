@@ -834,6 +834,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
             sd_models.reload_model_weights()  # model can be changed for example by refiner
 
+            p.sd_model.forge_objects = p.sd_model.forge_objects_original.shallow_copy()
             p.prompts = p.all_prompts[n * p.batch_size:(n + 1) * p.batch_size]
             p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n + 1) * p.batch_size]
             p.seeds = p.all_seeds[n * p.batch_size:(n + 1) * p.batch_size]
@@ -851,6 +852,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
             if not p.disable_extra_networks:
                 extra_networks.activate(p, p.extra_network_data)
+
+            p.sd_model.forge_objects = p.sd_model.forge_objects_after_applying_lora.shallow_copy()
 
             if p.scripts is not None:
                 p.scripts.process_batch(p, batch_number=n, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds)

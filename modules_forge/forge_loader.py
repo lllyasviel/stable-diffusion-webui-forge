@@ -175,10 +175,12 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         else:
             sd_model.cond_stage_model = conditioner
     elif type(sd_model.cond_stage_model).__name__ == 'FrozenCLIPEmbedder':
-        a = 0
+        sd_model.cond_stage_model.tokenizer = forge_object.clip.tokenizer.clip_l.tokenizer
+        sd_model.cond_stage_model.transformer = forge_object.clip.cond_stage_model.clip_l.transformer
         pass
     elif type(sd_model.cond_stage_model).__name__ == 'FrozenOpenCLIPEmbedder':
-        a = 0
+        sd_model.cond_stage_model.tokenizer = forge_object.clip.tokenizer.clip_g.tokenizer
+        sd_model.cond_stage_model.transformer = forge_object.clip.cond_stage_model.clip_g.transformer
         pass
 
     timer.record("forge set components")

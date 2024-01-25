@@ -3,7 +3,6 @@ import re
 import gradio as gr
 from fastapi import FastAPI
 
-import network
 import networks
 import lora  # noqa:F401
 import lora_patches

@@ -162,7 +162,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
             typename = type(embedder).__name__
             if typename == 'FrozenOpenCLIPEmbedder':
                 embedder.tokenizer = forge_object.clip.tokenizer.clip_g.tokenizer
-                embedder.transformer = forge_object.clip.cond_stage_model.clip_g.transformer
+                embedder.model = forge_object.clip.cond_stage_model.clip_g.transformer
                 text_cond_models.append(embedder)
             elif typename == 'FrozenCLIPEmbedder':
                 embedder.tokenizer = forge_object.clip.tokenizer.clip_l.tokenizer
@@ -170,7 +170,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
                 text_cond_models.append(embedder)
             elif typename == 'FrozenOpenCLIPEmbedder2':
                 embedder.tokenizer = forge_object.clip.tokenizer.clip_g.tokenizer
-                embedder.transformer = forge_object.clip.cond_stage_model.clip_g.transformer
+                embedder.model = forge_object.clip.cond_stage_model.clip_g.transformer
                 text_cond_models.append(embedder)
 
         if len(text_cond_models) == 1:
@@ -182,7 +182,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         sd_model.cond_stage_model.transformer = forge_object.clip.cond_stage_model.clip_l.transformer
     elif type(sd_model.cond_stage_model).__name__ == 'FrozenOpenCLIPEmbedder':
         sd_model.cond_stage_model.tokenizer = forge_object.clip.tokenizer.clip_g.tokenizer
-        sd_model.cond_stage_model.transformer = forge_object.clip.cond_stage_model.clip_g.transformer
+        sd_model.cond_stage_model.model = forge_object.clip.cond_stage_model.clip_g.transformer
     else:
         raise NotImplementedError('Bad Clip Class Name:' + type(sd_model.cond_stage_model).__name__)
 

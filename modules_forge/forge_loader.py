@@ -40,6 +40,10 @@ class ForgeSD:
         self.clip = clip
         self.vae = vae
         self.clipvision = clipvision
+        self.unet_original = unet
+        self.clip_original = clip
+        self.vae_original = vae
+        self.clipvision_original = clipvision
 
 
 @contextlib.contextmanager
@@ -235,10 +239,6 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     sd_model.decode_first_stage = patched_decode_first_stage
     sd_model.encode_first_stage = patched_encode_first_stage
 
-    sd_model.forge_objects.unet_original = forge_objects.unet
-    sd_model.forge_objects.clip_original = forge_objects.clip
-    sd_model.forge_objects.vae_original = forge_objects.vae
-    sd_model.forge_objects.clipvision_original = forge_objects.clipvision
     sd_model.clip = sd_model.cond_stage_model
     timer.record("forge finalize")
 

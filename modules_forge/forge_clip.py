@@ -6,7 +6,12 @@ class CLIP_SD_15_L(FrozenCLIPEmbedderWithCustomWords):
 
 
 class CLIP_SD_21_G(FrozenCLIPEmbedderWithCustomWords):
-    pass
+    def __init__(self, wrapped, hijack):
+        super().__init__(wrapped, hijack)
+
+        if self.wrapped.layer == "penultimate":
+            self.wrapped.layer = "hidden"
+            self.wrapped.layer_idx = -2
 
 
 class CLIP_SD_XL_L(FrozenCLIPEmbedderWithCustomWords):

@@ -159,7 +159,8 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
             embedder = conditioner.embedders[i]
             typename = type(embedder).__name__
             if typename == 'FrozenOpenCLIPEmbedder':
-                pass
+                embedder.tokenizer = forge_object.clip.tokenizer.clip_g.tokenizer
+                embedder.transformer = forge_object.clip.cond_stage_model.clip_g.transformer
                 text_cond_models.append(embedder)
             if typename == 'FrozenCLIPEmbedder':
                 embedder.tokenizer = forge_object.clip.tokenizer.clip_l.tokenizer

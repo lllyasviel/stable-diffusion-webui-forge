@@ -61,9 +61,6 @@ class InterrogateModels:
         self.offload_device = model_management.text_encoder_offload_device()
         self.dtype = torch.float32
 
-        if model_management.should_use_fp16(device=self.load_device):
-            self.dtype = torch.float16
-
         self.blip_patcher = None
         self.clip_patcher = None
 

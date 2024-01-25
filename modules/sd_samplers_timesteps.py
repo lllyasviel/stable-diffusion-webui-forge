@@ -115,7 +115,7 @@ class CompVisSampler(sd_samplers_common.Sampler):
         sqrt_alpha_cumprod = torch.sqrt(alphas_cumprod[timesteps[t_enc]])
         sqrt_one_minus_alpha_cumprod = torch.sqrt(1 - alphas_cumprod[timesteps[t_enc]])
 
-        xi = x * sqrt_alpha_cumprod + noise * sqrt_one_minus_alpha_cumprod
+        xi = x.to(noise) * sqrt_alpha_cumprod + noise * sqrt_one_minus_alpha_cumprod
 
         if opts.img2img_extra_noise > 0:
             p.extra_generation_params["Extra noise"] = opts.img2img_extra_noise

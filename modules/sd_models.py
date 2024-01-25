@@ -10,6 +10,7 @@ from omegaconf import OmegaConf, ListConfig
 from os import mkdir
 from urllib import request
 import ldm.modules.midas as midas
+import gc
 
 from ldm.util import instantiate_from_config
 
@@ -581,6 +582,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
         model_data.sd_model = None
         model_management.unload_all_models()
         model_management.soft_empty_cache()
+        gc.collect()
 
     timer.record("unload existing model")
 

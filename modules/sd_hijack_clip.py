@@ -3,7 +3,6 @@ from collections import namedtuple
 
 import torch
 
-import ldm_patched.modules.model_management as model_management
 from modules import prompt_parser, devices, sd_hijack
 from modules.shared import opts
 
@@ -211,9 +210,6 @@ class FrozenCLIPEmbedderWithCustomWordsBase(torch.nn.Module):
         is when you do prompt editing: "a picture of a [cat:dog:0.4] eating ice cream"
         """
 
-        if hasattr(self.wrapped, 'patcher'):
-            model_management.load_model_gpu(self.wrapped.patcher)
-
         if opts.use_old_emphasis_implementation:
             import modules.sd_hijack_clip_old
             return modules.sd_hijack_clip_old.forward_old(self, texts)
@@ -345,30 +341,7 @@ class FrozenCLIPEmbedderWithCustomWords(FrozenCLIPEmbedderWithCustomWordsBase):
         return embedded
 
 
-class CLIP_SD_15_L(FrozenCLIPEmbedderWithCustomWords):
-    pass
-
-
-class CLIP_SD_21_G(FrozenCLIPEmbedderWithCustomWords):
-    pass
-
-
-class CLIP_SD_XL_L(FrozenCLIPEmbedderWithCustomWords):
-    def __init__(self, wrapped, hijack):
-        super().__init__(wrapped, hijack)
-
-    def encode_with_transformers(self, tokens):
-        outputs = self.wrapped.transformer(input_ids=tokens, output_hidden_states=self.wrapped.layer == "hidden")
-
-        if self.wrapped.layer == "last":
-            z = outputs.last_hidden_state
-        else:
-            z = outputs.hidden_states[self.wrapped.layer_idx]
-
-        return z
-
-
-class CLIP_SD_XL_G(FrozenCLIPEmbedderWithCustomWords):
+class FrozenCLIPEmbedderForSDXLWithCustomWords(FrozenCLIPEmbedderWithCustomWords):
     def __init__(self, wrapped, hijack):
         super().__init__(wrapped, hijack)
 

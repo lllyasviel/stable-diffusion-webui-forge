@@ -1,5 +1,3 @@
-import torch
-
 from modules.sd_hijack_clip import FrozenCLIPEmbedderWithCustomWords
 from ldm_patched.modules import model_management
 
@@ -45,6 +43,10 @@ class CLIP_SD_XL_G(FrozenCLIPEmbedderWithCustomWords):
         if self.wrapped.layer == "penultimate":
             self.wrapped.layer = "hidden"
             self.wrapped.layer_idx = -2
+
+        self.id_start = 49406
+        self.id_end = 49407
+        self.id_pad = 0
 
     def encode_with_transformers(self, tokens):
         outputs = self.wrapped.transformer(tokens, output_hidden_states=self.wrapped.layer == "hidden")

@@ -225,15 +225,15 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     sd_model.sd_model_checkpoint = checkpoint_info.filename
     sd_model.sd_checkpoint_info = checkpoint_info
 
-    def patched_decode_first_stage(sample):
-        sample = forge_objects.unet.model.model_config.latent_format.process_out(sample)
+    def patched_decode_first_stage(x):
+        sample = forge_objects.unet.model.model_config.latent_format.process_out(x)
         sample = forge_objects.vae.decode(sample).movedim(-1, 1) * 2.0 - 1.0
-        return sample
+        return sample.to(x)
 
-    def patched_encode_first_stage(sample):
-        sample = forge_objects.vae.encode(sample.movedim(1, -1) * 0.5 + 0.5)
+    def patched_encode_first_stage(x):
+        sample = forge_objects.vae.encode(x.movedim(1, -1) * 0.5 + 0.5)
         sample = forge_objects.unet.model.model_config.latent_format.process_in(sample)
-        return sample
+        return sample.to(x)
 
     sd_model.encode_first_stage = lambda x: x
     sd_model.decode_first_stage = patched_decode_first_stage

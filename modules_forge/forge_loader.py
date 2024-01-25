@@ -136,12 +136,8 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     if hasattr(a1111_config.model.params, 'first_stage_config'):
         a1111_config.model.params.first_stage_config.target = 'modules_forge.forge_loader.FakeObject'
 
-    # with no_clip():
-    #     sd_model = instantiate_from_config(a1111_config.model)
-
-    with sd_disable_initialization.DisableInitialization(disable_clip=True):
+    with no_clip():
         sd_model = instantiate_from_config(a1111_config.model)
-    _ = sd_model.load_state_dict(state_dict, strict=False)
 
     timer.record("forge instantiate config")
 

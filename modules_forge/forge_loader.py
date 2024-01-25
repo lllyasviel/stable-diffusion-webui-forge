@@ -13,7 +13,6 @@ from omegaconf import OmegaConf
 from modules.sd_models_config import find_checkpoint_config
 from modules.shared import cmd_opts
 from modules import sd_hijack
-from modules import sd_hijack_clip, sd_hijack_open_clip
 from modules.sd_models_xl import extend_sdxl
 from ldm.util import instantiate_from_config
 from modules_forge import forge_clip

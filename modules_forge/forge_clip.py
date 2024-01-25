@@ -26,7 +26,8 @@ class CLIP_SD_XL_L(FrozenCLIPEmbedderWithCustomWords):
         super().__init__(wrapped, hijack)
 
     def encode_with_transformers(self, tokens):
-        outputs = self.wrapped.transformer(input_ids=tokens, output_hidden_states=self.wrapped.layer == "hidden")
+        outputs = self.wrapped.transformer(input_ids=tokens, attention_mask=None,
+                                           output_hidden_states=self.wrapped.layer == "hidden")
 
         if self.wrapped.layer == "last":
             z = outputs.last_hidden_state
@@ -45,7 +46,8 @@ class CLIP_SD_XL_G(FrozenCLIPEmbedderWithCustomWords):
             self.wrapped.layer_idx = -2
 
     def encode_with_transformers(self, tokens):
-        outputs = self.wrapped.transformer(input_ids=tokens, output_hidden_states=self.wrapped.layer == "hidden")
+        outputs = self.wrapped.transformer(input_ids=tokens, attention_mask=None,
+                                           output_hidden_states=self.wrapped.layer == "hidden")
 
         if self.wrapped.layer == "last":
             z = outputs.last_hidden_state

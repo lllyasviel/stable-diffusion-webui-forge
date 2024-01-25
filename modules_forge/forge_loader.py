@@ -169,7 +169,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
                 model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
                     model_embeddings.token_embedding, sd_hijack.model_hijack)
                 embedder = forge_clip.CLIP_SD_XL_L(embedder, sd_hijack.model_hijack)
-
+                embedder.patcher = forge_object.clip
                 conditioner.embedders[i] = embedder
                 text_cond_models.append(embedder)
             elif typename == 'FrozenOpenCLIPEmbedder2':  # SDXL Clip G
@@ -179,7 +179,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
                 model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
                     model_embeddings.token_embedding, sd_hijack.model_hijack, textual_inversion_key='clip_g')
                 embedder = forge_clip.CLIP_SD_XL_G(embedder, sd_hijack.model_hijack)
-
+                embedder.patcher = forge_object.clip
                 conditioner.embedders[i] = embedder
                 text_cond_models.append(embedder)
 
@@ -194,6 +194,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
             model_embeddings.token_embedding, sd_hijack.model_hijack)
         sd_model.cond_stage_model = forge_clip.CLIP_SD_15_L(sd_model.cond_stage_model, sd_hijack.model_hijack)
+        sd_model.cond_stage_model.patcher = forge_object.clip
     elif type(sd_model.cond_stage_model).__name__ == 'FrozenOpenCLIPEmbedder':  # SD21 Clip
         sd_model.cond_stage_model.tokenizer = forge_object.clip.tokenizer.clip_g.tokenizer
         sd_model.cond_stage_model.transformer = forge_object.clip.cond_stage_model.clip_g.transformer
@@ -201,6 +202,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
             model_embeddings.token_embedding, sd_hijack.model_hijack)
         sd_model.cond_stage_model = forge_clip.CLIP_SD_21_G(sd_model.cond_stage_model, sd_hijack.model_hijack)
+        sd_model.cond_stage_model.patcher = forge_object.clip
     else:
         raise NotImplementedError('Bad Clip Class Name:' + type(sd_model.cond_stage_model).__name__)
 

@@ -1,4 +1,5 @@
 from modules.sd_hijack_clip import FrozenCLIPEmbedderWithCustomWords
+from ldm_patched.modules import model_management
 
 
 class CLIP_SD_15_L(FrozenCLIPEmbedderWithCustomWords):

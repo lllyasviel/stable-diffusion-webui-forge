@@ -2,7 +2,8 @@ from modules.sd_hijack_clip import FrozenCLIPEmbedderWithCustomWords
 
 
 class CLIP_SD_15_L(FrozenCLIPEmbedderWithCustomWords):
-    pass
+    def encode_with_transformers(self, tokens):
+        return super().encode_with_transformers(tokens)
 
 
 class CLIP_SD_21_G(FrozenCLIPEmbedderWithCustomWords):
@@ -12,6 +13,9 @@ class CLIP_SD_21_G(FrozenCLIPEmbedderWithCustomWords):
         if self.wrapped.layer == "penultimate":
             self.wrapped.layer = "hidden"
             self.wrapped.layer_idx = -2
+
+    def encode_with_transformers(self, tokens):
+        return super().encode_with_transformers(tokens)
 
 
 class CLIP_SD_XL_L(FrozenCLIPEmbedderWithCustomWords):

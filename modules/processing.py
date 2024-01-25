@@ -850,8 +850,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             p.parse_extra_network_prompts()
 
             if not p.disable_extra_networks:
-                with devices.autocast():
-                    extra_networks.activate(p, p.extra_network_data)
+                extra_networks.activate(p, p.extra_network_data)
 
             if p.scripts is not None:
                 p.scripts.process_batch(p, batch_number=n, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds)

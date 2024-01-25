@@ -142,57 +142,7 @@ class StableDiffusionModelHijack:
         pass
 
     def hijack(self, m):
-        conditioner = getattr(m, 'conditioner', None)
-        if conditioner:
-            text_cond_models = []
-
-            for i in range(len(conditioner.embedders)):
-                embedder = conditioner.embedders[i]
-                typename = type(embedder).__name__
-                if typename == 'FrozenOpenCLIPEmbedder':
-                    model_embeddings = embedder.transformer.text_model.embeddings
-                    model_embeddings.token_embedding = EmbeddingsWithFixes(model_embeddings.token_embedding, self)
-                    conditioner.embedders[i] = sd_hijack_clip.FrozenCLIPEmbedderForSDXLWithCustomWords(embedder, self)
-                    text_cond_models.append(conditioner.embedders[i])
-                if typename == 'FrozenCLIPEmbedder':
-                    model_embeddings = embedder.transformer.text_model.embeddings
-                    model_embeddings.token_embedding = EmbeddingsWithFixes(model_embeddings.token_embedding, self)
-                    conditioner.embedders[i] = sd_hijack_clip.FrozenCLIPEmbedderForSDXLWithCustomWords(embedder, self)
-                    text_cond_models.append(conditioner.embedders[i])
-                if typename == 'FrozenOpenCLIPEmbedder2':
-                    model_embeddings = embedder.transformer.text_model.embeddings
-                    model_embeddings.token_embedding = EmbeddingsWithFixes(model_embeddings.token_embedding, self, textual_inversion_key='clip_g')
-                    conditioner.embedders[i] = sd_hijack_clip.FrozenCLIPEmbedderForSDXLWithCustomWords(embedder, self)
-                    text_cond_models.append(conditioner.embedders[i])
-
-            if len(text_cond_models) == 1:
-                m.cond_stage_model = text_cond_models[0]
-            else:
-                m.cond_stage_model = conditioner
-
-        elif type(m.cond_stage_model) == ldm.modules.encoders.modules.FrozenCLIPEmbedder:
-            model_embeddings = m.cond_stage_model.transformer.text_model.embeddings
-            model_embeddings.token_embedding = EmbeddingsWithFixes(model_embeddings.token_embedding, self)
-            m.cond_stage_model = sd_hijack_clip.FrozenCLIPEmbedderWithCustomWords(m.cond_stage_model, self)
-
-        elif type(m.cond_stage_model) == ldm.modules.encoders.modules.FrozenOpenCLIPEmbedder:
-            model_embeddings = m.cond_stage_model.transformer.text_model.embeddings
-            model_embeddings.token_embedding = EmbeddingsWithFixes(model_embeddings.token_embedding, self)
-            m.cond_stage_model = sd_hijack_clip.FrozenCLIPEmbedderWithCustomWords(m.cond_stage_model, self)
-
-        self.clip = m.cond_stage_model
-
-        apply_weighted_forward(m)
-
-        def flatten(el):
-            flattened = [flatten(children) for children in el.children()]
-            res = [el]
-            for c in flattened:
-                res += c
-            return res
-
-        self.layers = flatten(m)
-        sd_unet.original_forward = None
+        pass
 
     def undo_hijack(self, m):
         pass

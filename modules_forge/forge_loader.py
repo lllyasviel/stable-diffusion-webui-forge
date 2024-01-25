@@ -234,7 +234,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         sample = forge_objects.vae.encode(x.movedim(1, -1) * 0.5 + 0.5)
         sample = forge_objects.unet.model.model_config.latent_format.process_in(sample)
         return sample.to(x)
-    
+
     sd_model.get_first_stage_encoding = lambda x: x
     sd_model.decode_first_stage = patched_decode_first_stage
     sd_model.encode_first_stage = patched_encode_first_stage

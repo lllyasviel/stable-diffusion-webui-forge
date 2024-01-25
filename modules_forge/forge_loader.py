@@ -196,12 +196,12 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         sd_model.cond_stage_model = forge_clip.CLIP_SD_15_L(sd_model.cond_stage_model, sd_hijack.model_hijack)
         sd_model.cond_stage_model.patcher = forge_object.clip
     elif type(sd_model.cond_stage_model).__name__ == 'FrozenOpenCLIPEmbedder':  # SD21 Clip
-        sd_model.cond_stage_model.tokenizer = forge_object.clip.tokenizer.clip_g.tokenizer
-        sd_model.cond_stage_model.transformer = forge_object.clip.cond_stage_model.clip_g.transformer
+        sd_model.cond_stage_model.tokenizer = forge_object.clip.tokenizer.clip_h.tokenizer
+        sd_model.cond_stage_model.transformer = forge_object.clip.cond_stage_model.clip_h.transformer
         model_embeddings = sd_model.cond_stage_model.transformer.text_model.embeddings
         model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
             model_embeddings.token_embedding, sd_hijack.model_hijack)
-        sd_model.cond_stage_model = forge_clip.CLIP_SD_21_G(sd_model.cond_stage_model, sd_hijack.model_hijack)
+        sd_model.cond_stage_model = forge_clip.CLIP_SD_21_H(sd_model.cond_stage_model, sd_hijack.model_hijack)
         sd_model.cond_stage_model.patcher = forge_object.clip
     else:
         raise NotImplementedError('Bad Clip Class Name:' + type(sd_model.cond_stage_model).__name__)

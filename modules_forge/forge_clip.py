@@ -8,7 +8,7 @@ class CLIP_SD_15_L(FrozenCLIPEmbedderWithCustomWords):
         return super().encode_with_transformers(tokens)
 
 
-class CLIP_SD_21_G(FrozenCLIPEmbedderWithCustomWords):
+class CLIP_SD_21_H(FrozenCLIPEmbedderWithCustomWords):
     def __init__(self, wrapped, hijack):
         super().__init__(wrapped, hijack)
 

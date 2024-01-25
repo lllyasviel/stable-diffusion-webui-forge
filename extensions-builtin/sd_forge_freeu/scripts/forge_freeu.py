@@ -19,5 +19,6 @@ class FreeUForForge(scripts.Script):
 
         return freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2
 
-    def process_batch(self, p, *args, **kwargs):
+    def process_batch(self, p, *script_args, **kwargs):
+        freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2 = script_args
         return

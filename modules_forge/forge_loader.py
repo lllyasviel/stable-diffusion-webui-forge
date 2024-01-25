@@ -226,7 +226,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         return forge_object.vae.decode(sample).movedim(-1, 1) * 2.0 - 1.0
 
     def patched_encode_first_stage(sample):
-        sample = forge_object.vae.encode(sample)
+        sample = forge_object.vae.encode(sample.movedim(1, -1) * 0.5 + 0.5)
         sample = forge_object.unet.model.model_config.latent_format.process_in(sample)
         return sample
 

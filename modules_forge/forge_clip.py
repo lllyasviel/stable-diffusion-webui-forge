@@ -45,4 +45,6 @@ class CLIP_SD_XL_G(FrozenCLIPEmbedderWithCustomWords):
         else:
             z = outputs.hidden_states[self.wrapped.layer_idx]
 
+        z.pooled = outputs.pooler_output
+
         return z

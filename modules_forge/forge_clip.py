@@ -4,6 +4,7 @@ from ldm_patched.modules import model_management
 
 class CLIP_SD_15_L(FrozenCLIPEmbedderWithCustomWords):
     def encode_with_transformers(self, tokens):
+        model_management.load_models_gpu([self.patcher.patcher])
         return super().encode_with_transformers(tokens)
 
 
@@ -16,6 +17,7 @@ class CLIP_SD_21_G(FrozenCLIPEmbedderWithCustomWords):
             self.wrapped.layer_idx = -2
 
     def encode_with_transformers(self, tokens):
+        model_management.load_models_gpu([self.patcher.patcher])
         return super().encode_with_transformers(tokens)
 
 

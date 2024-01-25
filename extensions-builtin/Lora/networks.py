@@ -56,14 +56,15 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
         return
 
     current_sd.current_lora_hash = compiled_lora_targets_hash
-    current_sd.forge_objects.unet = current_sd.forge_objects.unet_original
-    current_sd.forge_objects.clip = current_sd.forge_objects.clip_original
+    current_sd.forge_objects.unet = current_sd.forge_objects_original.unet
+    current_sd.forge_objects.clip = current_sd.forge_objects_original.clip
 
     for filename, strength_model, strength_clip in compiled_lora_targets:
         lora_sd = load_lora_state_dict(filename)
         current_sd.forge_objects.unet, current_sd.forge_objects.clip = load_lora_for_models(
             current_sd.forge_objects.unet, current_sd.forge_objects.clip, lora_sd, strength_model, strength_clip)
 
+    current_sd.forge_objects_after_applying_lora = current_sd.forge_objects.shallow_copy()
     return
 
 

@@ -1,3 +1,5 @@
+import torch
+
 from modules.sd_hijack_clip import FrozenCLIPEmbedderWithCustomWords
 from ldm_patched.modules import model_management
 
@@ -52,6 +54,8 @@ class CLIP_SD_XL_G(FrozenCLIPEmbedderWithCustomWords):
         else:
             z = outputs.hidden_states[self.wrapped.layer_idx]
 
-        z.pooled = outputs.pooler_output
-
+        pooled_output = outputs.pooler_output
+        text_projection = self.wrapped.text_projection
+        pooled_output = pooled_output.float().to(text_projection.device) @ text_projection.float()
+        z.pooled = pooled_output
         return z

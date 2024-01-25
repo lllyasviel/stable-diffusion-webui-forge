@@ -174,6 +174,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
             elif typename == 'FrozenOpenCLIPEmbedder2':  # SDXL Clip G
                 embedder.tokenizer = forge_object.clip.tokenizer.clip_g.tokenizer
                 embedder.transformer = forge_object.clip.cond_stage_model.clip_g.transformer
+                embedder.text_projection = forge_object.clip.cond_stage_model.clip_g.text_projection
                 model_embeddings = embedder.transformer.text_model.embeddings
                 model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
                     model_embeddings.token_embedding, sd_hijack.model_hijack, textual_inversion_key='clip_g')

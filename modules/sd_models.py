@@ -587,8 +587,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
 
         model_data.sd_model = None
         model_management.unload_all_models()
-
-        devices.torch_gc()
+        model_management.soft_empty_cache()
 
     timer.record("unload existing model")
 

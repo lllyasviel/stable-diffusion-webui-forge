@@ -15,6 +15,7 @@ from modules import cmd_args, errors
 from modules.paths_internal import script_path, extensions_dir
 from modules.timer import startup_timer
 from modules import logging_config
+from modules_forge import forge_version
 
 args, _ = cmd_args.parser.parse_known_args()
 logging_config.setup_logging(args.loglevel)
@@ -70,7 +71,7 @@ def commit_hash():
 
 
 @lru_cache()
-def git_tag():
+def git_tag_a1111():
     try:
         return subprocess.check_output([git, "-C", script_path, "describe", "--tags"], shell=False, encoding='utf8').strip()
     except Exception:
@@ -83,6 +84,10 @@ def git_tag():
                 return line
         except Exception:
             return "<none>"
+
+
+def git_tag():
+    return 'f' + forge_version.version + '-' + git_tag_a1111()
 
 
 def run(command, desc=None, errdesc=None, custom_env=None, live: bool = default_command_live) -> str:

@@ -245,4 +245,5 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     sd_model.clip = sd_model.cond_stage_model
     timer.record("get patcher")
 
+    sd_model.current_lora_hash = ''
     return sd_model

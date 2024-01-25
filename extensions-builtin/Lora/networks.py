@@ -135,6 +135,8 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
         return
 
     current_sd.current_lora_hash = compiled_lora_targets_hash
+    current_sd.unet_patcher, current_sd.clip_patcher = \
+        current_sd.unet_patcher_original, current_sd.clip_patcher_original
 
     for filename, strength_model, strength_clip in compiled_lora_targets:
         if filename in lora_state_dict_cache:
@@ -142,11 +144,12 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
         else:
             if len(lora_state_dict_cache) > lora_state_dict_cache_max_length:
                 lora_state_dict_cache = {}
-            
+
             lora_sd = load_torch_file(filename, safe_load=True)
             lora_state_dict_cache[filename] = lora_sd
 
-        a = 0
+        current_sd.unet_patcher, current_sd.clip_patcher = load_lora_for_models(
+            current_sd.unet_patcher, current_sd.clip_patcher, lora_sd, strength_model, strength_clip)
 
     return
 

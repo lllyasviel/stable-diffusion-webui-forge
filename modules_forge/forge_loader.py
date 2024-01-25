@@ -40,10 +40,9 @@ class ForgeSD:
         self.clip = clip
         self.vae = vae
         self.clipvision = clipvision
-        self.unet_original = unet
-        self.clip_original = clip
-        self.vae_original = vae
-        self.clipvision_original = clipvision
+
+    def shallow_copy(self):
+        return ForgeSD(self.unet, self.clip, self.vae, self.clipvision)
 
 
 @contextlib.contextmanager
@@ -153,6 +152,8 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         output_model=True
     )
     sd_model.forge_objects = forge_objects
+    sd_model.forge_objects_original = forge_objects.shallow_copy()
+    sd_model.forge_objects_after_applying_lora = forge_objects.shallow_copy()
     timer.record("forge load real models")
 
     sd_model.first_stage_model = forge_objects.vae.first_stage_model

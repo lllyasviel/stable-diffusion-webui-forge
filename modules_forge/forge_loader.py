@@ -205,7 +205,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     sd_model.sd_checkpoint_info = checkpoint_info
     timer.record("forge finalize")
 
-    return
+    return sd_model
 
 
 def load_unet_and_vae(sd):

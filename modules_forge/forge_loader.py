@@ -205,6 +205,8 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     sd_model.sd_checkpoint_info = checkpoint_info
     timer.record("forge finalize")
 
+    sd_model.unet_patcher = forge_object.unet
+
     return sd_model
 
 

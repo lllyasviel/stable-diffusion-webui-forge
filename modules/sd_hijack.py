@@ -192,17 +192,7 @@ class StableDiffusionModelHijack:
             return res
 
         self.layers = flatten(m)
-
-        import modules.models.diffusion.ddpm_edit
-
-        if isinstance(m, ldm.models.diffusion.ddpm.LatentDiffusion):
-            sd_unet.original_forward = ldm_original_forward
-        elif isinstance(m, modules.models.diffusion.ddpm_edit.LatentDiffusion):
-            sd_unet.original_forward = ldm_original_forward
-        elif isinstance(m, sgm.models.diffusion.DiffusionEngine):
-            sd_unet.original_forward = sgm_original_forward
-        else:
-            sd_unet.original_forward = None
+        sd_unet.original_forward = None
 
     def undo_hijack(self, m):
         pass

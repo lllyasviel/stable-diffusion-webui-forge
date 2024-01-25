@@ -523,7 +523,6 @@ class SdModelData:
             sd_vae.base_vae = getattr(v, "base_vae", None)
             sd_vae.loaded_vae_file = getattr(v, "loaded_vae_file", None)
             sd_vae.checkpoint_info = v.sd_checkpoint_info
-        self.loaded_sd_models = [self.sd_model]
 
 
 model_data = SdModelData()

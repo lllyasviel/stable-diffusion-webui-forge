@@ -165,7 +165,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
                 embedder.tokenizer = forge_object.clip.tokenizer.clip_g.tokenizer
                 embedder.transformer = forge_object.clip.cond_stage_model.clip_g.transformer
                 model_embeddings = embedder.transformer.text_model.embeddings
-                model_embeddings.token_embedding = sd_hijack.model_hijack.EmbeddingsWithFixes(
+                model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
                     model_embeddings.token_embedding, sd_hijack.model_hijack)
                 embedder = sd_hijack_open_clip.FrozenOpenCLIPEmbedderWithCustomWords(embedder, sd_hijack.model_hijack)
 
@@ -175,7 +175,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
                 embedder.tokenizer = forge_object.clip.tokenizer.clip_l.tokenizer
                 embedder.transformer = forge_object.clip.cond_stage_model.clip_l.transformer
                 model_embeddings = embedder.transformer.text_model.embeddings
-                model_embeddings.token_embedding = sd_hijack.model_hijack.EmbeddingsWithFixes(
+                model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
                     model_embeddings.token_embedding, sd_hijack.model_hijack)
                 embedder = sd_hijack_clip.FrozenCLIPEmbedderForSDXLWithCustomWords(embedder, sd_hijack.model_hijack)
 
@@ -185,7 +185,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
                 embedder.tokenizer = forge_object.clip.tokenizer.clip_g.tokenizer
                 embedder.transformer = forge_object.clip.cond_stage_model.clip_g.transformer
                 model_embeddings = embedder.transformer.text_model.embeddings
-                model_embeddings.token_embedding = sd_hijack.model_hijack.EmbeddingsWithFixes(
+                model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
                     model_embeddings.token_embedding, sd_hijack.model_hijack, textual_inversion_key='clip_g')
                 embedder = sd_hijack_open_clip.FrozenOpenCLIPEmbedder2WithCustomWords(embedder, sd_hijack.model_hijack)
 
@@ -200,7 +200,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         sd_model.cond_stage_model.tokenizer = forge_object.clip.tokenizer.clip_l.tokenizer
         sd_model.cond_stage_model.transformer = forge_object.clip.cond_stage_model.clip_l.transformer
         model_embeddings = sd_model.cond_stage_model.transformer.text_model.embeddings
-        model_embeddings.token_embedding = sd_hijack.model_hijack.EmbeddingsWithFixes(
+        model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
             model_embeddings.token_embedding, sd_hijack.model_hijack)
         sd_model.cond_stage_model = sd_hijack_clip.FrozenCLIPEmbedderWithCustomWords(sd_model.cond_stage_model,
                                                                                      sd_hijack.model_hijack)
@@ -208,7 +208,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         sd_model.cond_stage_model.tokenizer = forge_object.clip.tokenizer.clip_g.tokenizer
         sd_model.cond_stage_model.transformer = forge_object.clip.cond_stage_model.clip_g.transformer
         model_embeddings = sd_model.cond_stage_model.transformer.text_model.embeddings
-        model_embeddings.token_embedding = sd_hijack.model_hijack.EmbeddingsWithFixes(
+        model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
             model_embeddings.token_embedding, sd_hijack.model_hijack)
         sd_model.cond_stage_model = sd_hijack_open_clip.FrozenOpenCLIPEmbedderWithCustomWords(sd_model.cond_stage_model,
                                                                                               sd_hijack.model_hijack)

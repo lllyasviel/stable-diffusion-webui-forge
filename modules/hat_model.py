@@ -3,7 +3,7 @@ import sys
 
 from modules import modelloader, devices
 from modules.shared import opts
-from modules.upscaler import Upscaler, UpscalerData
+from modules.upscaler import Upscaler, UpscalerData, prepare_free_memory
 from modules.upscaler_utils import upscale_with_model
 
 
@@ -20,6 +20,7 @@ class UpscalerHAT(Upscaler):
             self.scalers.append(scaler_data)
 
     def do_upscale(self, img, selected_model):
+        prepare_free_memory()
         try:
             model = self.load_model(selected_model)
         except Exception as e:

@@ -582,6 +582,9 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     timer = Timer()
 
     if model_data.sd_model:
+        if model_data.sd_model.filename == checkpoint_info.filename:
+            return model_data.sd_model
+
         model_data.sd_model = None
         devices.torch_gc()
 
@@ -597,6 +600,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
         checkpoints_loaded[checkpoint_info] = state_dict.copy()
 
     sd_model = forge_loader.load_model_for_a1111(timer=timer, checkpoint_info=checkpoint_info, state_dict=state_dict)
+    sd_model.filename = checkpoint_info.filename
 
     del state_dict
 

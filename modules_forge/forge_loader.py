@@ -170,8 +170,6 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
                 embedder.tokenizer = forge_object.clip.tokenizer.clip_g.tokenizer
                 embedder.transformer = forge_object.clip.cond_stage_model.clip_g.transformer
                 text_cond_models.append(embedder)
-            else:
-                raise NotImplementedError('Bad Class Name:' + typename)
 
         if len(text_cond_models) == 1:
             sd_model.cond_stage_model = text_cond_models[0]

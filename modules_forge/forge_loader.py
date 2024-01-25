@@ -140,8 +140,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     #     sd_model = instantiate_from_config(a1111_config.model)
 
     with sd_disable_initialization.DisableInitialization(disable_clip=True):
-        with sd_disable_initialization.InitializeOnMeta():
-            sd_model = instantiate_from_config(a1111_config.model)
+        sd_model = instantiate_from_config(a1111_config.model)
 
     timer.record("forge instantiate config")
 

@@ -22,4 +22,8 @@ def initialize_forge():
     import modules_forge.patch_precision
     modules_forge.patch_precision.patch_all_precision()
 
+    if model_management.directml_enabled:
+        model_management.lowvram_available = True
+        model_management.OOM_EXCEPTION = Exception
+
     return

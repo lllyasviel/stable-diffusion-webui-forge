@@ -28,6 +28,10 @@ class CLIP_SD_XL_G(FrozenCLIPEmbedderWithCustomWords):
     def __init__(self, wrapped, hijack):
         super().__init__(wrapped, hijack)
 
+        if self.wrapped.layer == "penultimate":
+            self.wrapped.layer = "hidden"
+            self.wrapped.layer_idx = -2
+
     def encode_with_transformers(self, tokens):
         outputs = self.wrapped.transformer(input_ids=tokens, output_hidden_states=self.wrapped.layer == "hidden")
 

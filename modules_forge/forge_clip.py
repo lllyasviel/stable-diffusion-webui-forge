@@ -22,7 +22,15 @@ class CLIP_SD_21_H(FrozenCLIPEmbedderWithCustomWords):
 
     def encode_with_transformers(self, tokens):
         model_management.load_models_gpu([self.patcher.patcher])
-        return super().encode_with_transformers(tokens)
+        outputs = self.wrapped.transformer(tokens, output_hidden_states=self.wrapped.layer == "hidden")
+
+        if self.wrapped.layer == "last":
+            z = outputs.last_hidden_state
+        else:
+            z = outputs.hidden_states[self.wrapped.layer_idx]
+            z = self.wrapped.transformer.text_model.final_layer_norm(z)
+
+        return z
 
 
 class CLIP_SD_XL_L(FrozenCLIPEmbedderWithCustomWords):

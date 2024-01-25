@@ -580,6 +580,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
             return model_data.sd_model
 
         model_data.sd_model = None
+        model_data.loaded_sd_models = []
         model_management.unload_all_models()
         model_management.soft_empty_cache()
         gc.collect()

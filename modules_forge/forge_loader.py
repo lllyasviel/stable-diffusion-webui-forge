@@ -241,6 +241,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     sd_model.unet_patcher_original = forge_object.unet
     sd_model.clip_patcher_original = forge_object.clip.patcher
     sd_model.vae_patcher_original = forge_object.vae.patcher
+    sd_model.clip = sd_model.cond_stage_model
     timer.record("get patcher")
 
     return sd_model

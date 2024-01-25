@@ -16,6 +16,10 @@ class CLIP_SD_21_H(FrozenCLIPEmbedderWithCustomWords):
             self.wrapped.layer = "hidden"
             self.wrapped.layer_idx = -2
 
+        self.id_start = 49406
+        self.id_end = 49407
+        self.id_pad = 0
+
     def encode_with_transformers(self, tokens):
         model_management.load_models_gpu([self.patcher.patcher])
         return super().encode_with_transformers(tokens)

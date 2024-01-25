@@ -173,7 +173,7 @@ class CFGDenoiser(torch.nn.Module):
                 uncond = pad_cond(uncond, num_repeats, empty)
                 self.padded_cond_uncond = True
 
-        unet_dtype = self.inner_model.inner_model.unet_patcher.model.model_config.unet_config['dtype']
+        unet_dtype = self.inner_model.inner_model.forge_objects.unet.model.model_config.unet_config['dtype']
         x_input_dtype = x_in.dtype
 
         x_in = x_in.to(unet_dtype)

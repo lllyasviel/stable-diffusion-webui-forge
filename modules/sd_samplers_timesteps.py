@@ -99,7 +99,7 @@ class CompVisSampler(sd_samplers_common.Sampler):
 
     def sample_img2img(self, p, x, noise, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
         inference_memory = 0
-        unet_patcher = self.model_wrap.inner_model.unet_patcher
+        unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         ldm_patched.modules.model_management.load_models_gpu(
             [unet_patcher],
             unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)
@@ -151,7 +151,7 @@ class CompVisSampler(sd_samplers_common.Sampler):
 
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
         inference_memory = 0
-        unet_patcher = self.model_wrap.inner_model.unet_patcher
+        unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         ldm_patched.modules.model_management.load_models_gpu(
             [unet_patcher],
             unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)

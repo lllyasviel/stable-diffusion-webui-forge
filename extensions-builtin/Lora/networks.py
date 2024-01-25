@@ -3,6 +3,7 @@ import re
 
 import lora_patches
 import functools
+import network
 
 import torch
 from typing import Union

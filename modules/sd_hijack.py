@@ -180,11 +180,9 @@ class StableDiffusionModelHijack:
             model_embeddings.token_embedding = EmbeddingsWithFixes(model_embeddings.token_embedding, self)
             m.cond_stage_model = sd_hijack_open_clip.FrozenOpenCLIPEmbedderWithCustomWords(m.cond_stage_model, self)
 
-        apply_weighted_forward(m)
-        if m.cond_stage_key == "edit":
-            sd_hijack_unet.hijack_ddpm_edit()
-
         self.clip = m.cond_stage_model
+
+        apply_weighted_forward(m)
 
         def flatten(el):
             flattened = [flatten(children) for children in el.children()]

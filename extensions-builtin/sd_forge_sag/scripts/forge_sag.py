@@ -34,8 +34,6 @@ class SAGForForge(scripts.Script):
 
         p.sd_model.forge_objects.unet = unet
 
-        # Below codes will add some logs to the texts below the image outputs on UI.
-        # The extra_generation_params does not influence results.
         p.extra_generation_params.update(dict(
             sag_enabled=enabled,
             sag_scale=scale,

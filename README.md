@@ -340,4 +340,5 @@ Note that this management is fully automatic. This makes writing extensions supe
 
 Similarly, Zero123:
 
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/d1a4a17d-f382-442d-91f2-fc5b6c10737f)
 

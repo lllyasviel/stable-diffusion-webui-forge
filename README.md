@@ -19,4 +19,12 @@ Forge will give you:
 
 # Improved Optimization
 
-First of all, Forge does not change WebUI results
+First of all, Forge does not change WebUI results. Installing Forge is not a seed breaking change.
+
+This is WebUI:
+
+
+
+This is WebUI Forge:
+
+

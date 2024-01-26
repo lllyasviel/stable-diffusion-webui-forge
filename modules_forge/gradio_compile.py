@@ -19,6 +19,6 @@ def gradio_compile(items, prefix):
             step = float(d.get('step', 0.001))
             print(f'{name} = gr.Slider(label=\'{title}\', minimum={min}, maximum={max}, step={step}, value={default})')
         else:
-            print('error ' + t)
+            print('error ' + str(t))
 
     return

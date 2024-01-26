@@ -1,5 +1,6 @@
 import gradio as gr
 import os
+import pathlib
 
 from modules import scripts, script_callbacks
 from modules.paths import models_path
@@ -13,7 +14,7 @@ svd_filenames = []
 
 def update_svd_filenames():
     global svd_filenames
-    svd_filenames = list(shared.walk_files(svd_root, allowed_extensions=[".pt", ".ckpt", ".safetensors"]))
+    svd_filenames = [pathlib.Path(x).name for x in shared.walk_files(svd_root, allowed_extensions=[".pt", ".ckpt", ".safetensors"])]
     return svd_filenames
 
 

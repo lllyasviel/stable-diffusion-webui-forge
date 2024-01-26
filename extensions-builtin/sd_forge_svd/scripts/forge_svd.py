@@ -1,6 +1,12 @@
 import gradio as gr
+import os
 
 from modules import scripts, script_callbacks
+from modules.paths import models_path
+
+
+svd_root = os.path.join(models_path, 'svd')
+os.makedirs(svd_root, exist_ok=True)
 
 
 class ForgeSVD(scripts.Script):

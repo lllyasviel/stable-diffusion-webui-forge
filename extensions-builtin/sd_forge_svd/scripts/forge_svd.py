@@ -6,6 +6,12 @@ from modules import scripts, script_callbacks
 from modules.paths import models_path
 from modules.ui_common import ToolButton, refresh_symbol
 from modules import shared
+from modules_forge.gradio_compile import gradio_compile
+
+from ldm_patched.contrib.external import KSampler
+
+
+gradio_compile(KSampler.INPUT_TYPES(), prefix='sample')
 
 
 svd_root = os.path.join(models_path, 'svd')

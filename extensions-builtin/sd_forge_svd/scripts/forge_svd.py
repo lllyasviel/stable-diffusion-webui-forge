@@ -46,7 +46,7 @@ def predict(filename, width, height, video_frames, motion_bucket_id, fps, augmen
 
 
 def on_ui_tabs():
-    with gr.Blocks(analytics_enabled=False) as svd_block:
+    with gr.Blocks() as svd_block:
         with gr.Row():
             with gr.Column():
                 input_image = gr.Image(label='Input Image', source='upload', type='numpy', height=400)

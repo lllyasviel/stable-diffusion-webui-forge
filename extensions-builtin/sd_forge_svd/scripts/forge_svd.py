@@ -84,14 +84,14 @@ def on_ui_tabs():
                 sampling_seed = gr.Number(label='Sampling Seed', value=12345)
                 sampling_steps = gr.Slider(label='Sampling Steps', minimum=1, maximum=200, step=1, value=20)
                 sampling_cfg = gr.Slider(label='Sampling Cfg', minimum=0.0, maximum=50.0, step=0.1, value=2.5)
-                sampling_sampler_name = gr.Radio(label='Sampling Sampler Name',
+                sampling_sampler_name = gr.Radio(label='Sampler Name',
                                                  choices=['euler', 'euler_ancestral', 'heun', 'heunpp2', 'dpm_2',
                                                           'dpm_2_ancestral', 'lms', 'dpm_fast', 'dpm_adaptive',
                                                           'dpmpp_2s_ancestral', 'dpmpp_sde', 'dpmpp_sde_gpu',
                                                           'dpmpp_2m', 'dpmpp_2m_sde', 'dpmpp_2m_sde_gpu',
                                                           'dpmpp_3m_sde', 'dpmpp_3m_sde_gpu', 'ddpm', 'lcm', 'ddim',
                                                           'uni_pc', 'uni_pc_bh2'], value='euler')
-                sampling_scheduler = gr.Radio(label='Sampling Scheduler',
+                sampling_scheduler = gr.Radio(label='Scheduler',
                                               choices=['normal', 'karras', 'exponential', 'sgm_uniform', 'simple',
                                                        'ddim_uniform'], value='karras')
                 sampling_denoise = gr.Slider(label='Sampling Denoise', minimum=0.0, maximum=1.0, step=0.01, value=1.0)

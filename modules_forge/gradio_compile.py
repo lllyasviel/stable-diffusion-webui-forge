@@ -3,7 +3,9 @@ def gradio_compile(items, prefix):
     for k, v in items["required"].items():
         t = v[0]
         d = v[1] if len(v) > 1 else None
-        name = (prefix + '_' + k).replace(' ', '_').lower()
+        if prefix != '':
+            prefix = prefix + '_'
+        name = (prefix + k).replace(' ', '_').lower()
         title = name.replace('_', ' ').title()
 
         if t == 'INT':

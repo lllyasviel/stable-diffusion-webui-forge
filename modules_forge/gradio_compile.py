@@ -44,3 +44,11 @@ def gradio_compile(items, prefix):
             print('error ' + str(t))
 
     return names
+
+
+# from modules_forge.gradio_compile import gradio_compile
+# ps = []
+# ps += gradio_compile(SVD_img2vid_Conditioning.INPUT_TYPES(), prefix='')
+# ps += gradio_compile(KSampler.INPUT_TYPES(), prefix='sampling')
+# ps += gradio_compile(VideoLinearCFGGuidance.INPUT_TYPES(), prefix='guidance')
+# print(', '.join(ps))

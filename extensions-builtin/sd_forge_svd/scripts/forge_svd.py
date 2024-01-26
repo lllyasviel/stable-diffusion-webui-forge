@@ -12,15 +12,6 @@ from modules_forge.forge_util import numpy_to_pytorch, pytorch_to_numpy
 from ldm_patched.modules.sd import load_checkpoint_guess_config
 from ldm_patched.contrib.external_video_model import VideoLinearCFGGuidance, SVD_img2vid_Conditioning
 from ldm_patched.contrib.external import KSampler, VAEDecode
-from ldm_patched.modules import model_management
-
-
-# from modules_forge.gradio_compile import gradio_compile
-# ps = []
-# ps += gradio_compile(SVD_img2vid_Conditioning.INPUT_TYPES(), prefix='')
-# ps += gradio_compile(KSampler.INPUT_TYPES(), prefix='sampling')
-# ps += gradio_compile(VideoLinearCFGGuidance.INPUT_TYPES(), prefix='guidance')
-# print(', '.join(ps))
 
 
 opVideoLinearCFGGuidance = VideoLinearCFGGuidance()

@@ -26,7 +26,10 @@ svd_filenames = []
 
 def update_svd_filenames():
     global svd_filenames
-    svd_filenames = [pathlib.Path(x).name for x in shared.walk_files(svd_root, allowed_extensions=[".pt", ".ckpt", ".safetensors"])]
+    svd_filenames = [
+        pathlib.Path(x).name for x in
+        shared.walk_files(svd_root, allowed_extensions=[".pt", ".ckpt", ".safetensors"])
+    ]
     return svd_filenames
 
 
@@ -36,11 +39,15 @@ def predict(filename, width, height, video_frames, motion_bucket_id, fps, augmen
             sampling_seed, sampling_steps, sampling_cfg, sampling_sampler_name, sampling_scheduler,
             sampling_denoise, guidance_min_cfg, input_image):
     filename = os.path.join(svd_root, filename)
-    model_raw, _, vae, clip_vision = load_checkpoint_guess_config(filename, output_vae=True, output_clip=False, output_clipvision=True)
+    model_raw, _, vae, clip_vision = \
+        load_checkpoint_guess_config(filename, output_vae=True, output_clip=False, output_clipvision=True)
     model = opVideoLinearCFGGuidance.patch(model_raw, guidance_min_cfg)[0]
     init_image = numpy_to_pytorch(input_image)
-    positive, negative, latent_image = opSVD_img2vid_Conditioning.encode(clip_vision, init_image, vae, width, height, video_frames, motion_bucket_id, fps, augmentation_level)
-    output_latent = opKSampler.sample(model, sampling_seed, sampling_steps, sampling_cfg, sampling_sampler_name, sampling_scheduler, positive, negative, latent_image, sampling_denoise)[0]
+    positive, negative, latent_image = opSVD_img2vid_Conditioning.encode(
+        clip_vision, init_image, vae, width, height, video_frames, motion_bucket_id, fps, augmentation_level)
+    output_latent = opKSampler.sample(model, sampling_seed, sampling_steps, sampling_cfg,
+                                      sampling_sampler_name, sampling_scheduler, positive,
+                                      negative, latent_image, sampling_denoise)[0]
     output_pixels = opVAEDecode.decode(vae, output_latent)[0]
     outputs = pytorch_to_numpy(output_pixels)
     return outputs

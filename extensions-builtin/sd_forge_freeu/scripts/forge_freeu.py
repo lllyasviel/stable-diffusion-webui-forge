@@ -16,7 +16,7 @@ def Fourier_filter(x, threshold, scale):
     return x_filtered.to(x.dtype)
 
 
-def freeu_v2(model, b1, b2, s1, s2):
+def set_freeu_v2_patch(model, b1, b2, s1, s2):
     model_channels = model.model.model_config.unet_config["model_channels"]
     scale_dict = {model_channels * 4: (b1, s1), model_channels * 2: (b2, s2)}
 
@@ -64,7 +64,7 @@ class FreeUForForge(scripts.Script):
 
         unet = p.sd_model.forge_objects.unet
 
-        unet = freeu_v2(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)
+        unet = set_freeu_v2_patch(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)
 
         p.sd_model.forge_objects.unet = unet
 

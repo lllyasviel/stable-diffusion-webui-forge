@@ -18,6 +18,14 @@ def gradio_compile(items, prefix):
             max = float(d['max'])
             step = float(d.get('step', 0.001))
             print(f'{name} = gr.Slider(label=\'{title}\', minimum={min}, maximum={max}, step={step}, value={default})')
+        elif isinstance(t, list):
+            print(f'{name} = gr.Radio(label=\'{title}\', choices={str(t)}, value=\'{t[0]})\'')
+        elif t == 'MODEL':
+            pass
+        elif t == 'CONDITIONING':
+            pass
+        elif t == 'LATENT':
+            pass
         else:
             print('error ' + str(t))
 

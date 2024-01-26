@@ -345,7 +345,7 @@ Similarly, Zero123:
 
 # About Extensions
 
-All UI related extensions should work without prompts, like:
+All UI related extensions should work without problems, like:
 
     canvas-zoom
     different translations

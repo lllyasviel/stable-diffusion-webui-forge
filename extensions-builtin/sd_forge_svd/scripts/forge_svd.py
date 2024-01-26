@@ -4,6 +4,7 @@ import pathlib
 
 from modules import scripts, script_callbacks
 from modules.paths import models_path
+from modules.ui_common import ToolButton, refresh_symbol
 from modules import shared
 
 
@@ -36,8 +37,14 @@ def on_ui_tabs():
     with gr.Blocks(analytics_enabled=False) as svd_block:
         with gr.Row():
             with gr.Column():
-                width = gr.Slider(label="width", minimum=64, maximum=2048, value=512, step=64, interactive=True)
-                height = gr.Slider(label="height", minimum=64, maximum=2048, value=512, step=64, interactive=True)
+                with gr.Row():
+                    width = gr.Slider(label="width", minimum=64, maximum=2048, value=512, step=64, interactive=True)
+                    refresh_button = ToolButton(value=refresh_symbol, tooltip="Refresh")
+                # refresh_button.click(
+                #     fn=refresh,
+                #     inputs=[],
+                #     outputs=refresh_components
+                # )
 
             with gr.Column():
                 png_output = gr.Button(value="Save PNG")

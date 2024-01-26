@@ -243,8 +243,8 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
 
     original_forward = sd_model.model.diffusion_model.forward
 
-    def forge_unet_forward(self, *args, **kwargs):
-        return original_forward(self, *args, **kwargs)
+    def forge_unet_forward(*args, **kwargs):
+        return original_forward(*args, **kwargs)
 
     sd_model.model.diffusion_model.forward = forge_unet_forward
 

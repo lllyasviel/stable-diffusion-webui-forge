@@ -12,11 +12,11 @@ from ldm_patched.contrib.external_video_model import ImageOnlyCheckpointLoader, 
 from ldm_patched.contrib.external import KSampler, VAEDecode
 
 
-ps = []
-ps += gradio_compile(SVD_img2vid_Conditioning.INPUT_TYPES(), prefix='')
-ps += gradio_compile(KSampler.INPUT_TYPES(), prefix='sampling')
-ps += gradio_compile(VideoLinearCFGGuidance.INPUT_TYPES(), prefix='guidance')
-print(', '.join(ps))
+# ps = []
+# ps += gradio_compile(SVD_img2vid_Conditioning.INPUT_TYPES(), prefix='')
+# ps += gradio_compile(KSampler.INPUT_TYPES(), prefix='sampling')
+# ps += gradio_compile(VideoLinearCFGGuidance.INPUT_TYPES(), prefix='guidance')
+# print(', '.join(ps))
 
 svd_root = os.path.join(models_path, 'svd')
 os.makedirs(svd_root, exist_ok=True)
@@ -56,7 +56,6 @@ def on_ui_tabs():
                         fn=lambda: gr.update(choices=update_svd_filenames),
                         inputs=[], outputs=filename)
 
-                a = 0
                 width = gr.Slider(label='Width', minimum=16, maximum=8192, step=8, value=1024)
                 height = gr.Slider(label='Height', minimum=16, maximum=8192, step=8, value=576)
                 video_frames = gr.Slider(label='Video Frames', minimum=1, maximum=4096, step=1, value=14)
@@ -80,8 +79,11 @@ def on_ui_tabs():
                                                        'ddim_uniform'], value='normal')
                 sampling_denoise = gr.Slider(label='Sampling Denoise', minimum=0.0, maximum=1.0, step=0.01, value=1.0)
                 guidance_min_cfg = gr.Slider(label='Guidance Min Cfg', minimum=0.0, maximum=100.0, step=0.5, value=1.0)
-                clip_vision, init_image, vae, width, height, video_frames, motion_bucket_id, fps, augmentation_level, sampling_model, sampling_seed, sampling_steps, sampling_cfg, sampling_sampler_name, sampling_scheduler, sampling_positive, sampling_negative, sampling_latent_image, sampling_denoise, guidance_model, guidance_min_cfg
                 generate_button = gr.Button(value="Generate")
+
+                ctrls = [filename, width, height, video_frames, motion_bucket_id, fps, augmentation_level,
+                         sampling_seed, sampling_steps, sampling_cfg, sampling_sampler_name, sampling_scheduler,
+                         sampling_denoise, guidance_min_cfg, generate_button]
 
             with gr.Column():
                 output_gallery = gr.Gallery(label='Gallery', show_label=False, object_fit='contain',

@@ -218,6 +218,8 @@ class CFGDenoiser(torch.nn.Module):
         tensor = tensor.to(unet_dtype)
         uncond = uncond.to(unet_dtype)
 
+        self.inner_model.inner_model.current_sigmas = sigma_in
+
         if tensor.shape[1] == uncond.shape[1] or skip_uncond:
             if is_edit_model:
                 cond_in = catenate_conds([tensor, uncond, uncond])

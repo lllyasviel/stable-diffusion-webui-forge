@@ -252,7 +252,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
 
     def forge_unet_forward(*args, **kwargs):
         current_transformer_options = kwargs.get('transformer_options', {})
-        current_transformer_options.update(dict(cond_or_uncond=sd_model.cond_or_uncond))
+        current_transformer_options.update(dict(cond_or_uncond=sd_model.cond_or_uncond, sigmas=sd_model.current_sigmas))
         current_transformer_options.update(sd_model.forge_objects.unet.model_options.get('transformer_options', {}))
 
         kwargs.update(dict(

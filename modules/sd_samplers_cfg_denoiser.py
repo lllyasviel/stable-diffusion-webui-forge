@@ -77,10 +77,13 @@ class CFGDenoiser(torch.nn.Module):
 
         if "sampler_cfg_function" in model_options or "sampler_post_cfg_function" in model_options:
             cond_scale = float(cond_scale)
-            model = self.inner_model.inner_model.forge_objects.unet
+            model = self.inner_model.inner_model.forge_objects.unet.model
             x = x_in[-uncond.shape[0]:]
             uncond_pred = denoised_uncond
             cond_pred = ((denoised - uncond_pred) / cond_scale) + uncond_pred
+            timestep = timestep[-uncond.shape[0]:]
+
+            from modules_forge.forge_util import cond_from_a1111_to_patched_ldm
 
             if "sampler_cfg_function" in model_options:
                 args = {"cond": x - cond_pred, "uncond": x - uncond_pred, "cond_scale": cond_scale,
@@ -93,10 +96,15 @@ class CFGDenoiser(torch.nn.Module):
                 # sanity_check = torch.allclose(cfg_result, denoised)
 
             for fn in model_options.get("sampler_post_cfg_function", []):
-                args = {"denoised": cfg_result, "cond": cond,
-                        "uncond": uncond, "model": model,
-                        "uncond_denoised": uncond_pred, "cond_denoised": cond_pred,
-                        "sigma": timestep, "model_options": model_options, "input": x}
+                args = {"denoised": cfg_result,
+                        "cond": cond_from_a1111_to_patched_ldm(cond),
+                        "uncond": cond_from_a1111_to_patched_ldm(uncond),
+                        "model": model,
+                        "uncond_denoised": uncond_pred,
+                        "cond_denoised": cond_pred,
+                        "sigma": timestep,
+                        "model_options": model_options,
+                        "input": x}
                 cfg_result = fn(args)
         else:
             cfg_result = denoised

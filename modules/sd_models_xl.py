@@ -38,11 +38,11 @@ def get_learned_conditioning(self: sgm.models.diffusion.DiffusionEngine, batch: 
     return c
 
 
-def apply_model(self: sgm.models.diffusion.DiffusionEngine, x, t, cond):
+def apply_model(self: sgm.models.diffusion.DiffusionEngine, x, t, cond, *args, **kwargs):
     if self.model.diffusion_model.in_channels == 9:
         x = torch.cat([x] + cond['c_concat'], dim=1)
 
-    return self.model(x, t, cond)
+    return self.model(x, t, cond, *args, **kwargs)
 
 
 def get_first_stage_encoding(self, x):  # SDXL's encode_first_stage does everything so get_first_stage_encoding is just there for compatibility

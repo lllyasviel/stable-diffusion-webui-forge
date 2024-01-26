@@ -204,4 +204,8 @@ It looks like this:
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/a7798cf2-057c-43e0-883a-5f8643af8529)
 
+Similar components like HyperTile, KohyaHighResFix, SAG, can all be implemented with within 100 lines of codes (and we will add soon).
 
+ControlNets can finally be called by different extensions.
+
+Implementing Stable Video Diffusion and Zero123 are also super simple now (and we will add soon). 

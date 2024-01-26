@@ -206,6 +206,8 @@ It looks like this:
 
 Similar components like HyperTile, KohyaHighResFix, SAG, can all be implemented within 100 lines of codes (see also the codes).
 
-ControlNets can finally be called by different extensions. (80% codes of ControlNet can be removed now.)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/e2fc1b73-e6ee-405e-864c-c67afd92a1db)
 
-Implementing Stable Video Diffusion and Zero123 are also super simple now (and we will add soon). 
+ControlNets can finally be called by different extensions. (80% codes of ControlNet can be removed now, will start soon)
+
+Implementing Stable Video Diffusion and Zero123 are also super simple now (see also the codes). 

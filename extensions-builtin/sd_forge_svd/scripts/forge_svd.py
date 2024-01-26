@@ -8,11 +8,14 @@ from modules.ui_common import ToolButton, refresh_symbol
 from modules import shared
 from modules_forge.gradio_compile import gradio_compile
 
-from ldm_patched.contrib.external import KSampler
+from ldm_patched.contrib.external_video_model import ImageOnlyCheckpointLoader, VideoLinearCFGGuidance, SVD_img2vid_Conditioning
+from ldm_patched.contrib.external import KSampler, VAEDecode
 
 
+gradio_compile(SVD_img2vid_Conditioning.INPUT_TYPES(), prefix='condition')
 gradio_compile(KSampler.INPUT_TYPES(), prefix='sample')
-
+gradio_compile(VideoLinearCFGGuidance.INPUT_TYPES(), prefix='guidance')
+a = 0
 
 svd_root = os.path.join(models_path, 'svd')
 os.makedirs(svd_root, exist_ok=True)

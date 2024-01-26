@@ -9,8 +9,6 @@ def gradio_compile(items, prefix):
         else:
             name = k.replace(' ', '_').lower()
 
-        names.append(name)
-
         title = name.replace('_', ' ').title()
 
         if t == 'INT':
@@ -19,14 +17,17 @@ def gradio_compile(items, prefix):
             max = int(d['max'])
             step = int(d.get('step', 1))
             print(f'{name} = gr.Slider(label=\'{title}\', minimum={min}, maximum={max}, step={step}, value={default})')
+            names.append(name)
         elif t == 'FLOAT':
             default = float(d['default'])
             min = float(d['min'])
             max = float(d['max'])
             step = float(d.get('step', 0.001))
             print(f'{name} = gr.Slider(label=\'{title}\', minimum={min}, maximum={max}, step={step}, value={default})')
+            names.append(name)
         elif isinstance(t, list):
             print(f'{name} = gr.Radio(label=\'{title}\', choices={str(t)}, value=\'{t[0]}\')')
+            names.append(name)
         elif t == 'MODEL':
             pass
         elif t == 'CONDITIONING':

@@ -355,16 +355,17 @@ Below extensions are tested and worked well:
 
     Dynamic Prompts
     Adetailer
+    Ultimate SD Upscale
 
 Below extensions will be tested soon:
 
     Reactor
-    Ultimate SD Upscale
 
 Below extensions will be given up but they may still work
 
     MultiDiffusion / Tiled Diffusison
     Deform
+    Roop
 
 (Tiled diffusion is integrated now and no need to install extra extensions. Also the current smart unet offload is much better than multi-diffusion and people can directly generate 4k images without using multi-diffusion, by automatically offload unet to RAM. If bigger than 4k, use Ultimate SD Upscale.)
 

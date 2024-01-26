@@ -202,4 +202,6 @@ class FreeUForForge(scripts.Script):
 
 It looks like this:
 
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/a7798cf2-057c-43e0-883a-5f8643af8529)
+
 

@@ -51,7 +51,8 @@ def predict(filename, width, height, video_frames, motion_bucket_id, fps, augmen
     positive, negative, latent_image = opSVD_img2vid_Conditioning.encode(clip_vision, init_image, vae, width, height, video_frames, motion_bucket_id, fps, augmentation_level)
     output_latent = opKSampler.sample(model, sampling_seed, sampling_steps, sampling_cfg, sampling_sampler_name, sampling_scheduler, positive, negative, latent_image, sampling_denoise)[0]
     output_pixels = opVAEDecode.decode(vae, output_latent)[0]
-    return
+    outputs = pytorch_to_numpy(output_pixels)
+    return outputs
 
 
 def on_ui_tabs():

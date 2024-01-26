@@ -3,10 +3,18 @@ import os
 
 from modules import scripts, script_callbacks
 from modules.paths import models_path
+from modules import shared
 
 
 svd_root = os.path.join(models_path, 'svd')
 os.makedirs(svd_root, exist_ok=True)
+svd_filenames = []
+
+
+def update_svd_filenames():
+    global svd_filenames
+    svd_filenames = list(shared.walk_files(svd_root, allowed_extensions=[".pt", ".ckpt", ".safetensors"]))
+    return svd_filenames
 
 
 class ForgeSVD(scripts.Script):

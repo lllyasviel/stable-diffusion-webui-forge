@@ -1,14 +1,24 @@
 
 def gradio_compile(items, prefix):
     for k, v in items["required"].items():
-        if len(v) == 2:
-            t, d = v
-            if t == 'INT':
-                name = (prefix + '_' + k).replace(' ', '_').lower()
-                title = name.replace('_', ' ').capitalize()
-                default = int(d['default'])
-                min = int(d['min'])
-                max = int(d['max'])
-                step = int(d.get('step', 1))
-                print(f'{name} = gr.Slider(label=\'{title}\', minimum={min}, maximum={max}, step={step}, value={default})')
+        t = v[0]
+        d = v[1] if len(v) > 1 else None
+        name = (prefix + '_' + k).replace(' ', '_').lower()
+        title = name.replace('_', ' ').capitalize()
+
+        if t == 'INT':
+            default = int(d['default'])
+            min = int(d['min'])
+            max = int(d['max'])
+            step = int(d.get('step', 1))
+            print(f'{name} = gr.Slider(label=\'{title}\', minimum={min}, maximum={max}, step={step}, value={default})')
+        elif t == 'FLOAT':
+            default = float(d['default'])
+            min = float(d['min'])
+            max = float(d['max'])
+            step = float(d.get('step', 0.001))
+            print(f'{name} = gr.Slider(label=\'{title}\', minimum={min}, maximum={max}, step={step}, value={default})')
+        else:
+            print('error ' + t)
+
     return

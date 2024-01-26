@@ -21,7 +21,7 @@ Forge will give you:
 
 I tested with several devices, and this is a typical result from 8GB VRAM (3070ti laptop).
 
-This is WebUI:
+**This is WebUI:**
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/c32baedd-500b-408f-8cfb-ed4570c883bd)
 
@@ -33,7 +33,7 @@ This is WebUI:
 
 (average about 7.4GB/8GB, peak at about 7.9GB/8GB)
 
-This is WebUI Forge:
+**This is WebUI Forge:**
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/0c45cd98-0b14-42c3-9556-28e48d4d5fa0)
 

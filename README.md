@@ -8,3 +8,4 @@ If you see this, please join our private Discord server for discussion: https://
 
 # Stable Diffusion Web UI Forge
 
+Stable Diffusion Web UI Forge is a platform on top of Stable Diffusion WebUI to make development easier, and optimize the speed and resource consumption.

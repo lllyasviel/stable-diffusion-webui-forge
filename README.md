@@ -360,7 +360,7 @@ Below extensions are tested and worked well:
 
 Below extensions will be tested soon:
 
-    Regional Prompter
+    Regional Prompter (I have not figure out how to use that UI yet.. will test later)
 
 Below extensions will be given up but they may still work
 

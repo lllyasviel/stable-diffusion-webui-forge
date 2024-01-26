@@ -366,7 +366,7 @@ Below extensions will be given up but they may still work
     MultiDiffusion / Tiled Diffusison
     Deform
 
-(tiled diffusion is intergrated now and no need to install extra extensions. Also the current smart unet offload is much better than multi-diffusion and people can directly generate 4k images without using multi-diffusion, by automatically offload unet to RAM. If bigger than 4k, use Ultimate SD Upscale.)
+(Tiled diffusion is integrated now and no need to install extra extensions. Also the current smart unet offload is much better than multi-diffusion and people can directly generate 4k images without using multi-diffusion, by automatically offload unet to RAM. If bigger than 4k, use Ultimate SD Upscale.)
 
 Below extensions will be reworked soon
 

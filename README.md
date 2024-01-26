@@ -31,3 +31,4 @@ You can see that:
 
 (1) Forge does not change WebUI results. Installing Forge is not a seed breaking change. Also, we do not change any UI.
 
+(2) The speed is 

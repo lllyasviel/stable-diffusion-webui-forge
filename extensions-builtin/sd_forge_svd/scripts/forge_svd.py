@@ -12,10 +12,11 @@ from ldm_patched.contrib.external_video_model import ImageOnlyCheckpointLoader, 
 from ldm_patched.contrib.external import KSampler, VAEDecode
 
 
-gradio_compile(SVD_img2vid_Conditioning.INPUT_TYPES(), prefix='')
-gradio_compile(KSampler.INPUT_TYPES(), prefix='sampling')
-gradio_compile(VideoLinearCFGGuidance.INPUT_TYPES(), prefix='guidance')
-a = 0
+ps = []
+ps += gradio_compile(SVD_img2vid_Conditioning.INPUT_TYPES(), prefix='')
+ps += gradio_compile(KSampler.INPUT_TYPES(), prefix='sampling')
+ps += gradio_compile(VideoLinearCFGGuidance.INPUT_TYPES(), prefix='guidance')
+print(', '.join(ps))
 
 svd_root = os.path.join(models_path, 'svd')
 os.makedirs(svd_root, exist_ok=True)

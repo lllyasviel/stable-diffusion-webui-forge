@@ -1,13 +1,9 @@
 from ldm_patched.k_diffusion import sampling as k_diffusion_sampling
 from ldm_patched.unipc import uni_pc
 import torch
-import enum
 import collections
 from ldm_patched.modules import model_management
 import math
-from ldm_patched.modules import model_base
-import ldm_patched.modules.utils
-import ldm_patched.modules.conds
 
 def get_area_and_mult(conds, x_in, timestep_in):
     area = (x_in.shape[2], x_in.shape[3], 0, 0)

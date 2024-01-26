@@ -342,3 +342,34 @@ Similarly, Zero123:
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/d1a4a17d-f382-442d-91f2-fc5b6c10737f)
 
+
+# About Extensions
+
+All UI related extensions should work without prompts, like:
+
+    canvas-zoom
+    different translations
+    etc
+
+Below extensions are tested and worked well:
+
+    Dynamic Prompts
+
+Below extensions will be tested soon:
+
+    Adetailer
+    Reactor
+    Ultimate SD Upscale
+
+Below extensions will be given up but they may still work
+
+    MultiDiffusion / Tiled Diffusison
+    Deform
+
+(tiled diffusion is intergrated now and no need to install extra extensions. Also the current smart unet offload is much better than multi-diffusion and people can directly generate 4k images without using multi-diffusion, by automatically offload unet to RAM. If bigger than 4k, use Ultimate SD Upscale.)
+
+Below extensions will be reworked soon
+
+    sd-webui-controlnet
+
+controlnet will not be replaced by another extension. We will have 10+ extensions for different preprocessors, and 10+ extensions for different control. Each extension will have less than 100 lines of codes. Everyone will be able to add preprocessor/control model by adding new extensions. And adding those extensions will be super easy. Those extensions will share a UI managed by Forge.

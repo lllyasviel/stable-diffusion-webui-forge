@@ -81,7 +81,7 @@ def on_ui_tabs():
                 sampling_scheduler = gr.Radio(label='Scheduler',
                                               choices=['normal', 'karras', 'exponential', 'sgm_uniform', 'simple',
                                                        'ddim_uniform'], value='karras')
-                sampling_seed = gr.Number(label='Seed', value=12345)
+                sampling_seed = gr.Number(label='Seed', value=12345, precision=0)
 
                 generate_button = gr.Button(value="Generate")
 

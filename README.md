@@ -110,7 +110,7 @@ Again, Forge do not recommend users to use any cmd flags unless you are very sur
 
 # Patchable UNet
 
-Now develop an extension is super simple. We finally have patchable UNet.
+Now developing an extension is super simple. We finally have patchable UNet.
 
 Below is using one single file with 80 lines of codes to support FreeU:
 

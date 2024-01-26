@@ -5,7 +5,7 @@ def gradio_compile(items, prefix):
         t = v[0]
         d = v[1] if len(v) > 1 else None
         if prefix != '':
-            name = (prefix + k).replace(' ', '_').lower()
+            name = (prefix + '_' + k).replace(' ', '_').lower()
         else:
             name = k.replace(' ', '_').lower()
 

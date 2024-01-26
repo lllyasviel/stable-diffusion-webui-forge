@@ -5,7 +5,7 @@ import torch
 import ldm_patched.modules.utils
 import ldm_patched.modules.sd
 import ldm_patched.utils.path_utils
-import ldm_patched.contrib.nodes_model_merging
+import ldm_patched.contrib.external_model_merging
 
 
 class ImageOnlyCheckpointLoader:
@@ -81,7 +81,7 @@ class VideoLinearCFGGuidance:
         m.set_model_sampler_cfg_function(linear_cfg)
         return (m, )
 
-class ImageOnlyCheckpointSave(ldm_patched.contrib.nodes_model_merging.CheckpointSave):
+class ImageOnlyCheckpointSave(ldm_patched.contrib.external_model_merging.CheckpointSave):
     CATEGORY = "_for_testing"
 
     @classmethod
@@ -93,7 +93,7 @@ class ImageOnlyCheckpointSave(ldm_patched.contrib.nodes_model_merging.Checkpoint
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},}
 
     def save(self, model, clip_vision, vae, filename_prefix, prompt=None, extra_pnginfo=None):
-        ldm_patched.contrib.nodes_model_merging.save_checkpoint(model, clip_vision=clip_vision, vae=vae, filename_prefix=filename_prefix, output_dir=self.output_dir, prompt=prompt, extra_pnginfo=extra_pnginfo)
+        ldm_patched.contrib.external_model_merging.save_checkpoint(model, clip_vision=clip_vision, vae=vae, filename_prefix=filename_prefix, output_dir=self.output_dir, prompt=prompt, extra_pnginfo=extra_pnginfo)
         return {}
 
 NODE_CLASS_MAPPINGS = {

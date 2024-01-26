@@ -45,20 +45,6 @@ def predict(filename, width, height, video_frames, motion_bucket_id, fps, augmen
     return
 
 
-class ForgeSVD(scripts.Script):
-    def __init__(self) -> None:
-        super().__init__()
-
-    def title(self):
-        return "SVD"
-
-    def show(self, is_img2img):
-        return scripts.AlwaysVisible
-
-    def ui(self, is_img2img):
-        return ()
-
-
 def on_ui_tabs():
     with gr.Blocks(analytics_enabled=False) as svd_block:
         with gr.Row():

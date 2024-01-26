@@ -66,6 +66,10 @@ class CFGDenoiser(torch.nn.Module):
         raise NotImplementedError()
 
     def combine_denoised(self, x_out, conds_list, uncond, cond_scale):
+        if len(conds_list) == 1:
+            model_options = self.inner_model.inner_model.forge_objects.unet.model_options
+            a = 0
+
         denoised_uncond = x_out[-uncond.shape[0]:]
         denoised = torch.clone(denoised_uncond)
 

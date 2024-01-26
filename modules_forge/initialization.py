@@ -7,7 +7,7 @@ def initialize_forge():
                                          "Use this when you ara on MAC or have more than 20GB VRAM like RTX4096.")
 
     args_parser.args = args_parser.parser.parse_known_args()[0]
-    args_parser.args.always_offload_from_vram = not args_parser.args.disable_offload_from_vram
+    args_parser.args.always_offload_from_vram = False  # not args_parser.args.disable_offload_from_vram
 
     import ldm_patched.modules.model_management as model_management
     import torch

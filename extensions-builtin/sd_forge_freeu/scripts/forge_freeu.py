@@ -20,7 +20,7 @@ def set_freeu_v2_patch(model, b1, b2, s1, s2):
     model_channels = model.model.model_config.unet_config["model_channels"]
     scale_dict = {model_channels * 4: (b1, s1), model_channels * 2: (b2, s2)}
 
-    def output_block_patch(h, hsp, transformer_options):
+    def output_block_patch(h, hsp, *args, **kwargs):
         scale = scale_dict.get(h.shape[1], None)
         if scale is not None:
             hidden_mean = h.mean(1).unsqueeze(1)

@@ -63,9 +63,9 @@ Currently, the behaviors is:
 
 "When loading a model to GPU, Forge will decide whether to load the entire model, or to load separated parts of the model. Then, when loading another model, Forge will try best to unload the previous model."
 
-**The only one flag that you may need** is `--disable-offload-from-vram`, to change the above behavior to
+**The only one flag that you may still need** is `--disable-offload-from-vram`, to change the above behavior to
 
-"When loading a model to GPU, Forge will decide whether to load the entire model, or to load separated parts of the model. Then, when loading another model, Forge will try best to keep the previous model in GPU without unload it."
+"When loading a model to GPU, Forge will decide whether to load the entire model, or to load separated parts of the model. Then, when loading another model, Forge will try best to keep the previous model in GPU without unloading it."
 
 You should `--disable-offload-from-vram` when and only when you have more than 20GB GPU memory, or when you are on MAC MPS.
 

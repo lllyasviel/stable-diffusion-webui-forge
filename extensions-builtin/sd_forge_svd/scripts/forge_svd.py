@@ -38,13 +38,11 @@ def on_ui_tabs():
         with gr.Row():
             with gr.Column():
                 with gr.Row():
-                    width = gr.Slider(label="width", minimum=64, maximum=2048, value=512, step=64, interactive=True)
+                    filename = gr.Dropdown(label="SVD Checkpoint Filename", choices=svd_filenames, value=svd_filenames[0] if len(svd_filenames) > 0 else None)
                     refresh_button = ToolButton(value=refresh_symbol, tooltip="Refresh")
-                # refresh_button.click(
-                #     fn=refresh,
-                #     inputs=[],
-                #     outputs=refresh_components
-                # )
+                    refresh_button.click(
+                        fn=lambda: gr.update(choices=update_svd_filenames),
+                        inputs=[], outputs=filename)
 
             with gr.Column():
                 png_output = gr.Button(value="Save PNG")

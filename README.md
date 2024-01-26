@@ -206,6 +206,6 @@ It looks like this:
 
 Similar components like HyperTile, KohyaHighResFix, SAG, can all be implemented with within 100 lines of codes (and we will add soon).
 
-ControlNets can finally be called by different extensions.
+ControlNets can finally be called by different extensions. (80% codes of ControlNet can be removed now.)
 
 Implementing Stable Video Diffusion and Zero123 are also super simple now (and we will add soon). 

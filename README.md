@@ -55,7 +55,7 @@ We do not change any UI. But you will see the version of Forge here
 
 ### Changes
 
-I removed all WebUI's codes related to speed and memory optimization and reworked everything. 
+Forge removes all WebUI's codes related to speed and memory optimization and reworked everything. 
 
 All previous cmd flags like medvram, lowvram, medvram-sdxl, precision full, no half, no half vae, attention_xxx, upcast unet, ... are all REMOVED. Adding these flags will not cause error but they will not do anything now. **We highly encourage Forge users to remove all cmd flags and let Forge to decide how to load models.**
 

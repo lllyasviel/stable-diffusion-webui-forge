@@ -241,17 +241,18 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     sd_model.decode_first_stage = patched_decode_first_stage
     sd_model.encode_first_stage = patched_encode_first_stage
 
-    sd_model.current_control_signals = {
+    sd_model.current_controlnet_signals = {
         'input': [],
         'middle': [],
         'output': []
     }
+    sd_model.current_controlnet_required_memory = 0
 
     original_forward = sd_model.model.diffusion_model.forward
 
     def forge_unet_forward(*args, **kwargs):
         kwargs.update(dict(
-            control=sd_model.current_control_signals,
+            control=sd_model.current_controlnet_signals,
             transformer_options=sd_model.forge_objects.unet.model_options.get('transformer_options', {})
         ))
         return original_forward(*args, **kwargs)

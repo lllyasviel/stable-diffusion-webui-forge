@@ -8,7 +8,7 @@ from modules.paths import models_path
 from modules.ui_common import ToolButton, refresh_symbol
 from modules import shared
 
-from modules_forge.forge_util import numpy_to_pytorch, pytorch_to_numpy
+from modules_forge.forge_util import numpy_to_pytorch, pytorch_to_numpy, write_images_to_mp4
 from ldm_patched.modules.sd import load_checkpoint_guess_config
 from ldm_patched.contrib.external_video_model import VideoLinearCFGGuidance, SVD_img2vid_Conditioning
 from ldm_patched.contrib.external import KSampler, VAEDecode
@@ -50,7 +50,10 @@ def predict(filename, width, height, video_frames, motion_bucket_id, fps, augmen
                                       negative, latent_image, sampling_denoise)[0]
     output_pixels = opVAEDecode.decode(vae, output_latent)[0]
     outputs = pytorch_to_numpy(output_pixels)
-    return outputs
+
+    video_filename = write_images_to_mp4(outputs, fps=fps)
+
+    return outputs, video_filename
 
 
 def on_ui_tabs():
@@ -98,10 +101,11 @@ def on_ui_tabs():
                          sampling_denoise, guidance_min_cfg, input_image]
 
             with gr.Column():
+                output_video = gr.Video(autoplay=True)
                 output_gallery = gr.Gallery(label='Gallery', show_label=False, object_fit='contain',
                                             visible=True, height=1024, columns=4)
 
-        generate_button.click(predict, inputs=ctrls, outputs=[output_gallery])
+        generate_button.click(predict, inputs=ctrls, outputs=[output_gallery, output_video])
     return [(svd_block, "SVD", "svd")]
 
 

@@ -45,9 +45,11 @@ def on_ui_tabs():
                     refresh_button.click(
                         fn=lambda: gr.update(choices=update_svd_filenames),
                         inputs=[], outputs=filename)
+                    generate_button = gr.Button(value="Generate")
 
             with gr.Column():
-                png_output = gr.Button(value="Save PNG")
+                output_gallery = gr.Gallery(label='Gallery', show_label=False, object_fit='contain',
+                                            visible=True, height=1024, columns=4)
 
     return [(svd_block, "SVD", "svd")]
 

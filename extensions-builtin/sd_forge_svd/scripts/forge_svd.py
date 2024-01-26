@@ -38,7 +38,9 @@ def on_ui_tabs():
         with gr.Row():
             with gr.Column():
                 with gr.Row():
-                    filename = gr.Dropdown(label="SVD Checkpoint Filename", choices=svd_filenames, value=svd_filenames[0] if len(svd_filenames) > 0 else None)
+                    filename = gr.Dropdown(label="SVD Checkpoint Filename",
+                                           choices=svd_filenames,
+                                           value=svd_filenames[0] if len(svd_filenames) > 0 else None)
                     refresh_button = ToolButton(value=refresh_symbol, tooltip="Refresh")
                     refresh_button.click(
                         fn=lambda: gr.update(choices=update_svd_filenames),

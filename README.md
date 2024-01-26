@@ -23,8 +23,11 @@ First of all, Forge does not change WebUI results. Installing Forge is not a see
 
 This is WebUI:
 
-
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/c32baedd-500b-408f-8cfb-ed4570c883bd)
 
 This is WebUI Forge:
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/0c45cd98-0b14-42c3-9556-28e48d4d5fa0)
+
 
 

@@ -93,7 +93,7 @@ def on_ui_tabs():
                 output_gallery = gr.Gallery(label='Gallery', show_label=False, object_fit='contain',
                                             visible=True, height=1024, columns=4)
 
-            generate_button.click(predict, inputs=ctrls, outputs=[output_gallery])
+        generate_button.click(predict, inputs=ctrls, outputs=[output_gallery])
     return [(svd_block, "SVD", "svd")]
 
 

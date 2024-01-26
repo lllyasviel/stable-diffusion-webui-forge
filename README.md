@@ -360,6 +360,7 @@ Below extensions are tested and worked well:
 Below extensions will be tested soon:
 
     Reactor
+    Regional Prompter
 
 Below extensions will be given up but they may still work
 

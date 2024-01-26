@@ -141,7 +141,7 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         return sigmas
 
     def sample_img2img(self, p, x, noise, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
-        inference_memory = 0
+        inference_memory = self.model_wrap.inner_model.current_controlnet_required_memory
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         ldm_patched.modules.model_management.load_models_gpu(
             [unet_patcher],
@@ -205,7 +205,7 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         return samples
 
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
-        inference_memory = 0
+        inference_memory = self.model_wrap.inner_model.current_controlnet_required_memory
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         ldm_patched.modules.model_management.load_models_gpu(
             [unet_patcher],

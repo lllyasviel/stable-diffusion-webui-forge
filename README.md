@@ -211,3 +211,11 @@ Similar components like HyperTile, KohyaHighResFix, SAG, can all be implemented 
 ControlNets can finally be called by different extensions. (80% codes of ControlNet can be removed now, will start soon)
 
 Implementing Stable Video Diffusion and Zero123 are also super simple now (see also the codes). 
+
+*Stable Video Diffusion:*
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/ac7ed152-cd33-4645-94af-4c43bb8c3d88)
+
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/cdcb23ad-02dc-4e39-be74-98e927550ef6)
+

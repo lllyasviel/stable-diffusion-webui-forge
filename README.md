@@ -337,3 +337,7 @@ Note that this management is fully automatic. This makes writing extensions supe
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/cdcb23ad-02dc-4e39-be74-98e927550ef6)
 
+
+Similarly, Zero123:
+
+

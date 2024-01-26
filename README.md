@@ -19,7 +19,7 @@ Forge will give you:
 
 # Improved Optimization
 
-I tested with several devices, and this is a typical result from 8GB VRAM (3070ti laptop).
+I tested with several devices, and this is a typical result from 8GB VRAM (3070ti laptop) with SDXL.
 
 **This is WebUI:**
 
@@ -53,5 +53,57 @@ We do not change any UI. But you will see the version of Forge here
 
 "f0.0.1v1.7.0" means WebUI 1.7.0 with Forge 0.0.1
 
+# Changes
 
+I removed all WebUI's codes related to optimization and reworked everything. 
 
+All previous cmd flags like medvram, lowvram, medvram-sdxl, precision full, no half, no half vae, attention_xxx, upcast unet, ... are all REMOVED. Adding these flags will not cause error but they will not do anything now. **We highly encourage Forge users to remove all cmd flags and let Forge to decide how to load models.**
+
+Currently, the behaviors is:
+
+"When loading a model to GPU, Forge will decide whether to load the entire model, or to load separated parts of the model. Then, when loading another model, Forge will try best to unload the previous model."
+
+**The only one flag that you may need** is `--disable-offload-from-vram`, to change the above behavior to
+
+"When loading a model to GPU, Forge will decide whether to load the entire model, or to load separated parts of the model. Then, when loading another model, Forge will try best to keep the previous model in GPU without unload it."
+
+You should `--disable-offload-from-vram` when and only when you have more than 20GB GPU memory, or when you are on MAC MPS.
+
+If you really want to play with cmd flags, you can additionally control the GPU with:
+
+(extreme VRAM cases)
+
+    --always-gpu
+    --always-cpu
+
+(rare attention cases)
+
+    --attention-split
+    --attention-quad
+    --attention-pytorch
+    --disable-xformers
+    --disable-attention-upcast
+
+(float point type)
+
+    --all-in-fp32
+    --all-in-fp16
+    --unet-in-bf16
+    --unet-in-fp16
+    --unet-in-fp8-e4m3fn
+    --unet-in-fp8-e5m2
+    --vae-in-fp16
+    --vae-in-fp32
+    --vae-in-bf16
+    --clip-in-fp8-e4m3fn
+    --clip-in-fp8-e5m2
+    --clip-in-fp16
+    --clip-in-fp32
+
+(rare platforms)
+
+    --directml
+    --disable-ipex-hijack
+    --pytorch-deterministic
+
+Again, Forge do not recommend users to use any cmd flags unless you are very sure that you really need these.

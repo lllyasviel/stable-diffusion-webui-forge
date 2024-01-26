@@ -4,7 +4,7 @@ def gradio_compile(items, prefix):
         if len(v) == 2:
             t, d = v
             if t == 'INT':
-                name = prefix + '_' + k
+                name = (prefix + '_' + k).replace(' ', '_').lower()
                 default = int(d['default'])
                 min = int(d['min'])
                 max = int(d['max'])

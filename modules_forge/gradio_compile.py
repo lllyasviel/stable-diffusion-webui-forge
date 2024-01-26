@@ -26,6 +26,12 @@ def gradio_compile(items, prefix):
             pass
         elif t == 'LATENT':
             pass
+        elif t == 'CLIP_VISION':
+            pass
+        elif t == 'IMAGE':
+            pass
+        elif t == 'VAE':
+            pass
         else:
             print('error ' + str(t))
 

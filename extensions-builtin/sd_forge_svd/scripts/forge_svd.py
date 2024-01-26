@@ -13,7 +13,7 @@ from ldm_patched.contrib.external import KSampler, VAEDecode
 
 
 gradio_compile(SVD_img2vid_Conditioning.INPUT_TYPES(), prefix='condition')
-gradio_compile(KSampler.INPUT_TYPES(), prefix='sample')
+gradio_compile(KSampler.INPUT_TYPES(), prefix='sampling')
 gradio_compile(VideoLinearCFGGuidance.INPUT_TYPES(), prefix='guidance')
 a = 0
 

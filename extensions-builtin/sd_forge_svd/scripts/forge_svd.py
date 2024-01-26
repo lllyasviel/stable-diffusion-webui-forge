@@ -70,6 +70,8 @@ def on_ui_tabs():
                 sampling_seed = gr.Number(label='Sampling Seed', value=12345)
                 sampling_steps = gr.Slider(label='Sampling Steps', minimum=1, maximum=200, step=1, value=20)
                 sampling_cfg = gr.Slider(label='Sampling Cfg', minimum=0.0, maximum=50.0, step=0.1, value=2.5)
+                sampling_denoise = gr.Slider(label='Sampling Denoise', minimum=0.0, maximum=1.0, step=0.01, value=1.0)
+                guidance_min_cfg = gr.Slider(label='Guidance Min Cfg', minimum=0.0, maximum=100.0, step=0.5, value=1.0)
                 sampling_sampler_name = gr.Radio(label='Sampler Name',
                                                  choices=['euler', 'euler_ancestral', 'heun', 'heunpp2', 'dpm_2',
                                                           'dpm_2_ancestral', 'lms', 'dpm_fast', 'dpm_adaptive',
@@ -80,8 +82,6 @@ def on_ui_tabs():
                 sampling_scheduler = gr.Radio(label='Scheduler',
                                               choices=['normal', 'karras', 'exponential', 'sgm_uniform', 'simple',
                                                        'ddim_uniform'], value='karras')
-                sampling_denoise = gr.Slider(label='Sampling Denoise', minimum=0.0, maximum=1.0, step=0.01, value=1.0)
-                guidance_min_cfg = gr.Slider(label='Guidance Min Cfg', minimum=0.0, maximum=100.0, step=0.5, value=1.0)
 
                 generate_button = gr.Button(value="Generate")
 

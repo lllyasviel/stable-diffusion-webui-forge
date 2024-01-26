@@ -214,7 +214,7 @@ Implementing Stable Video Diffusion and Zero123 are also super simple now (see a
 
 *Stable Video Diffusion:*
 
-`extensions-builtin/sd_forge_freeu/scripts/forge_svd.py`
+`extensions-builtin/sd_forge_svd/scripts/forge_svd.py`
 
 ```python
 import torch

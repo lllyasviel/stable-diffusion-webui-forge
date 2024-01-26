@@ -354,10 +354,10 @@ All UI related extensions should work without problems, like:
 Below extensions are tested and worked well:
 
     Dynamic Prompts
+    Adetailer
 
 Below extensions will be tested soon:
 
-    Adetailer
     Reactor
     Ultimate SD Upscale
 

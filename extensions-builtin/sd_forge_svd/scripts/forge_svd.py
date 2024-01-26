@@ -44,4 +44,5 @@ def on_ui_tabs():
     return [(svd_block, "SVD", "svd")]
 
 
+update_svd_filenames()
 script_callbacks.on_ui_tabs(on_ui_tabs)

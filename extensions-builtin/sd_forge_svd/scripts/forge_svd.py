@@ -29,6 +29,12 @@ def update_svd_filenames():
     return svd_filenames
 
 
+def predict(filename, width, height, video_frames, motion_bucket_id, fps, augmentation_level,
+            sampling_seed, sampling_steps, sampling_cfg, sampling_sampler_name, sampling_scheduler,
+            sampling_denoise, guidance_min_cfg):
+    return
+
+
 class ForgeSVD(scripts.Script):
     def __init__(self) -> None:
         super().__init__()
@@ -79,16 +85,18 @@ def on_ui_tabs():
                                                        'ddim_uniform'], value='normal')
                 sampling_denoise = gr.Slider(label='Sampling Denoise', minimum=0.0, maximum=1.0, step=0.01, value=1.0)
                 guidance_min_cfg = gr.Slider(label='Guidance Min Cfg', minimum=0.0, maximum=100.0, step=0.5, value=1.0)
+
                 generate_button = gr.Button(value="Generate")
 
                 ctrls = [filename, width, height, video_frames, motion_bucket_id, fps, augmentation_level,
                          sampling_seed, sampling_steps, sampling_cfg, sampling_sampler_name, sampling_scheduler,
-                         sampling_denoise, guidance_min_cfg, generate_button]
+                         sampling_denoise, guidance_min_cfg]
 
             with gr.Column():
                 output_gallery = gr.Gallery(label='Gallery', show_label=False, object_fit='contain',
                                             visible=True, height=1024, columns=4)
 
+            generate_button.click(predict, inputs=ctrls, outputs=[output_gallery])
     return [(svd_block, "SVD", "svd")]
 
 

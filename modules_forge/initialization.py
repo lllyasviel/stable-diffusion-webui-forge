@@ -1,6 +1,6 @@
 
 def initialize_forge():
-    import ldm_patched.modules.args_parser as args_parser
+    from ldm_patched.modules import args_parser
 
     args_parser.args, _ = args_parser.parser.parse_known_args()
 

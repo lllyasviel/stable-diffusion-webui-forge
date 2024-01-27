@@ -2,7 +2,7 @@ import os
 
 from modules import modelloader, errors
 from modules.shared import cmd_opts, opts
-from modules.upscaler import Upscaler, UpscalerData
+from modules.upscaler import Upscaler, UpscalerData, prepare_free_memory
 from modules.upscaler_utils import upscale_with_model
 
 
@@ -27,6 +27,8 @@ class UpscalerRealESRGAN(Upscaler):
                 self.scalers.append(scaler)
 
     def do_upscale(self, img, path):
+        prepare_free_memory()
+
         if not self.enable:
             return img
 

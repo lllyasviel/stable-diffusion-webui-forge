@@ -7,6 +7,8 @@ from modules.script_callbacks import ExtraNoiseParams, extra_noise_callback
 
 from modules.shared import opts
 import modules.shared as shared
+import ldm_patched.modules.model_management
+
 
 samplers_timesteps = [
     ('DDIM', sd_samplers_timesteps_impl.ddim, ['ddim'], {}),
@@ -54,6 +56,7 @@ class CFGDenoiserTimesteps(CFGDenoiser):
 
     def get_pred_x0(self, x_in, x_out, sigma):
         ts = sigma.to(dtype=int)
+        self.alphas = self.alphas.to(ts.device)
 
         a_t = self.alphas[ts][:, None, None, None]
         sqrt_one_minus_at = (1 - a_t).sqrt()
@@ -95,6 +98,14 @@ class CompVisSampler(sd_samplers_common.Sampler):
         return timesteps
 
     def sample_img2img(self, p, x, noise, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
+        inference_memory = self.model_wrap.inner_model.current_controlnet_required_memory
+        unet_patcher = self.model_wrap.inner_model.forge_objects.unet
+        ldm_patched.modules.model_management.load_models_gpu(
+            [unet_patcher],
+            unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)
+
+        self.model_wrap.inner_model.alphas_cumprod = self.model_wrap.inner_model.alphas_cumprod.to(unet_patcher.current_device)
+
         steps, t_enc = sd_samplers_common.setup_img2img_steps(p, steps)
 
         timesteps = self.get_timesteps(p, steps)
@@ -104,7 +115,7 @@ class CompVisSampler(sd_samplers_common.Sampler):
         sqrt_alpha_cumprod = torch.sqrt(alphas_cumprod[timesteps[t_enc]])
         sqrt_one_minus_alpha_cumprod = torch.sqrt(1 - alphas_cumprod[timesteps[t_enc]])
 
-        xi = x * sqrt_alpha_cumprod + noise * sqrt_one_minus_alpha_cumprod
+        xi = x.to(noise) * sqrt_alpha_cumprod + noise * sqrt_one_minus_alpha_cumprod
 
         if opts.img2img_extra_noise > 0:
             p.extra_generation_params["Extra noise"] = opts.img2img_extra_noise
@@ -138,6 +149,14 @@ class CompVisSampler(sd_samplers_common.Sampler):
         return samples
 
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
+        inference_memory = self.model_wrap.inner_model.current_controlnet_required_memory
+        unet_patcher = self.model_wrap.inner_model.forge_objects.unet
+        ldm_patched.modules.model_management.load_models_gpu(
+            [unet_patcher],
+            unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)
+
+        self.model_wrap.inner_model.alphas_cumprod = self.model_wrap.inner_model.alphas_cumprod.to(unet_patcher.current_device)
+
         steps = steps or p.steps
         timesteps = self.get_timesteps(p, steps)
 

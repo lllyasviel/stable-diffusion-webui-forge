@@ -7,6 +7,8 @@ from modules.script_callbacks import ExtraNoiseParams, extra_noise_callback
 
 from modules.shared import opts
 import modules.shared as shared
+import ldm_patched.modules.model_management
+
 
 samplers_k_diffusion = [
     ('DPM++ 2M Karras', 'sample_dpmpp_2m', ['k_dpmpp_2m_ka'], {'scheduler': 'karras'}),
@@ -139,11 +141,21 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         return sigmas
 
     def sample_img2img(self, p, x, noise, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
+        inference_memory = self.model_wrap.inner_model.current_controlnet_required_memory
+        unet_patcher = self.model_wrap.inner_model.forge_objects.unet
+        ldm_patched.modules.model_management.load_models_gpu(
+            [unet_patcher],
+            unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)
+
+        self.model_wrap.log_sigmas = self.model_wrap.log_sigmas.to(unet_patcher.current_device)
+        self.model_wrap.sigmas = self.model_wrap.sigmas.to(unet_patcher.current_device)
+
         steps, t_enc = sd_samplers_common.setup_img2img_steps(p, steps)
 
         sigmas = self.get_sigmas(p, steps)
         sigma_sched = sigmas[steps - t_enc - 1:]
 
+        x = x.to(noise)
         xi = x + noise * sigma_sched[0]
 
         if opts.img2img_extra_noise > 0:
@@ -192,6 +204,15 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         return samples
 
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
+        inference_memory = self.model_wrap.inner_model.current_controlnet_required_memory
+        unet_patcher = self.model_wrap.inner_model.forge_objects.unet
+        ldm_patched.modules.model_management.load_models_gpu(
+            [unet_patcher],
+            unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)
+
+        self.model_wrap.log_sigmas = self.model_wrap.log_sigmas.to(unet_patcher.current_device)
+        self.model_wrap.sigmas = self.model_wrap.sigmas.to(unet_patcher.current_device)
+
         steps = steps or p.steps
 
         sigmas = self.get_sigmas(p, steps)

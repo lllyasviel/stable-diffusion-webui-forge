@@ -1,182 +1,370 @@
-# Stable Diffusion web UI
-A web interface for Stable Diffusion, implemented using Gradio library.
+# This is a Private Project
 
-![](screenshot.png)
+Currently, we are only sending invitations to people who may be interested in development of this project.
 
-## Features
-[Detailed feature showcase with images](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Features):
-- Original txt2img and img2img modes
-- One click install and run script (but you still must install python and git)
-- Outpainting
-- Inpainting
-- Color Sketch
-- Prompt Matrix
-- Stable Diffusion Upscale
-- Attention, specify parts of text that the model should pay more attention to
-    - a man in a `((tuxedo))` - will pay more attention to tuxedo
-    - a man in a `(tuxedo:1.21)` - alternative syntax
-    - select text and press `Ctrl+Up` or `Ctrl+Down` (or `Command+Up` or `Command+Down` if you're on a MacOS) to automatically adjust attention to selected text (code contributed by anonymous user)
-- Loopback, run img2img processing multiple times
-- X/Y/Z plot, a way to draw a 3 dimensional plot of images with different parameters
-- Textual Inversion
-    - have as many embeddings as you want and use any names you like for them
-    - use multiple embeddings with different numbers of vectors per token
-    - works with half precision floating point numbers
-    - train embeddings on 8GB (also reports of 6GB working)
-- Extras tab with:
-    - GFPGAN, neural network that fixes faces
-    - CodeFormer, face restoration tool as an alternative to GFPGAN
-    - RealESRGAN, neural network upscaler
-    - ESRGAN, neural network upscaler with a lot of third party models
-    - SwinIR and Swin2SR ([see here](https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/2092)), neural network upscalers
-    - LDSR, Latent diffusion super resolution upscaling
-- Resizing aspect ratio options
-- Sampling method selection
-    - Adjust sampler eta values (noise multiplier)
-    - More advanced noise setting options
-- Interrupt processing at any time
-- 4GB video card support (also reports of 2GB working)
-- Correct seeds for batches
-- Live prompt token length validation
-- Generation parameters
-     - parameters you used to generate images are saved with that image
-     - in PNG chunks for PNG, in EXIF for JPEG
-     - can drag the image to PNG info tab to restore generation parameters and automatically copy them into UI
-     - can be disabled in settings
-     - drag and drop an image/text-parameters to promptbox
-- Read Generation Parameters Button, loads parameters in promptbox to UI
-- Settings page
-- Running arbitrary python code from UI (must run with `--allow-code` to enable)
-- Mouseover hints for most UI elements
-- Possible to change defaults/mix/max/step values for UI elements via text config
-- Tiling support, a checkbox to create images that can be tiled like textures
-- Progress bar and live image generation preview
-    - Can use a separate neural network to produce previews with almost none VRAM or compute requirement
-- Negative prompt, an extra text field that allows you to list what you don't want to see in generated image
-- Styles, a way to save part of prompt and easily apply them via dropdown later
-- Variations, a way to generate same image but with tiny differences
-- Seed resizing, a way to generate same image but at slightly different resolution
-- CLIP interrogator, a button that tries to guess prompt from an image
-- Prompt Editing, a way to change prompt mid-generation, say to start making a watermelon and switch to anime girl midway
-- Batch Processing, process a group of files using img2img
-- Img2img Alternative, reverse Euler method of cross attention control
-- Highres Fix, a convenience option to produce high resolution pictures in one click without usual distortions
-- Reloading checkpoints on the fly
-- Checkpoint Merger, a tab that allows you to merge up to 3 checkpoints into one
-- [Custom scripts](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Custom-Scripts) with many extensions from community
-- [Composable-Diffusion](https://energy-based-model.github.io/Compositional-Visual-Generation-with-Composable-Diffusion-Models/), a way to use multiple prompts at once
-     - separate prompts using uppercase `AND`
-     - also supports weights for prompts: `a cat :1.2 AND a dog AND a penguin :2.2`
-- No token limit for prompts (original stable diffusion lets you use up to 75 tokens)
-- DeepDanbooru integration, creates danbooru style tags for anime prompts
-- [xformers](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Xformers), major speed increase for select cards: (add `--xformers` to commandline args)
-- via extension: [History tab](https://github.com/yfszzx/stable-diffusion-webui-images-browser): view, direct and delete images conveniently within the UI
-- Generate forever option
-- Training tab
-     - hypernetworks and embeddings options
-     - Preprocessing images: cropping, mirroring, autotagging using BLIP or deepdanbooru (for anime)
-- Clip skip
-- Hypernetworks
-- Loras (same as Hypernetworks but more pretty)
-- A separate UI where you can choose, with preview, which embeddings, hypernetworks or Loras to add to your prompt 
-- Can select to load a different VAE from settings screen
-- Estimated completion time in progress bar
-- API
-- Support for dedicated [inpainting model](https://github.com/runwayml/stable-diffusion#inpainting-with-stable-diffusion) by RunwayML
-- via extension: [Aesthetic Gradients](https://github.com/AUTOMATIC1111/stable-diffusion-webui-aesthetic-gradients), a way to generate images with a specific aesthetic by using clip images embeds (implementation of [https://github.com/vicgalle/stable-diffusion-aesthetic-gradients](https://github.com/vicgalle/stable-diffusion-aesthetic-gradients))
-- [Stable Diffusion 2.0](https://github.com/Stability-AI/stablediffusion) support - see [wiki](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Features#stable-diffusion-20) for instructions
-- [Alt-Diffusion](https://arxiv.org/abs/2211.06679) support - see [wiki](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Features#alt-diffusion) for instructions
-- Now without any bad letters!
-- Load checkpoints in safetensors format
-- Eased resolution restriction: generated image's dimensions must be a multiple of 8 rather than 64
-- Now with a license!
-- Reorder elements in the UI from settings screen
-- [Segmind Stable Diffusion](https://huggingface.co/segmind/SSD-1B) support
+Please do not share codes or info from this project to public.
 
-## Installation and Running
-Make sure the required [dependencies](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Dependencies) are met and follow the instructions available for:
-- [NVidia](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Install-and-Run-on-NVidia-GPUs) (recommended)
-- [AMD](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Install-and-Run-on-AMD-GPUs) GPUs.
-- [Intel CPUs, Intel GPUs (both integrated and discrete)](https://github.com/openvinotoolkit/stable-diffusion-webui/wiki/Installation-on-Intel-Silicon) (external wiki page)
+If you see this, please join our private Discord server for discussion: https://discord.gg/2uvDhfAZ
 
-Alternatively, use online services (like Google Colab):
+# Stable Diffusion Web UI Forge
 
-- [List of Online Services](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Online-Services)
+Stable Diffusion Web UI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) to make development easier, and optimize the speed and resource consumption.
 
-### Installation on Windows 10/11 with NVidia-GPUs using release package
-1. Download `sd.webui.zip` from [v1.0.0-pre](https://github.com/AUTOMATIC1111/stable-diffusion-webui/releases/tag/v1.0.0-pre) and extract its contents.
-2. Run `update.bat`.
-3. Run `run.bat`.
-> For more details see [Install-and-Run-on-NVidia-GPUs](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Install-and-Run-on-NVidia-GPUs)
+The name "Forge" is inspired from "Minecraft Forge". This project will become SD WebUI's Forge.
 
-### Automatic Installation on Windows
-1. Install [Python 3.10.6](https://www.python.org/downloads/release/python-3106/) (Newer version of Python does not support torch), checking "Add Python to PATH".
-2. Install [git](https://git-scm.com/download/win).
-3. Download the stable-diffusion-webui repository, for example by running `git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git`.
-4. Run `webui-user.bat` from Windows Explorer as normal, non-administrator, user.
+Forge will give you:
 
-### Automatic Installation on Linux
-1. Install the dependencies:
-```bash
-# Debian-based:
-sudo apt install wget git python3 python3-venv libgl1 libglib2.0-0
-# Red Hat-based:
-sudo dnf install wget git python3 gperftools-libs libglvnd-glx 
-# openSUSE-based:
-sudo zypper install wget git python3 libtcmalloc4 libglvnd
-# Arch-based:
-sudo pacman -S wget git python3
+1. Improved optimization. (Fastest speed and minimal memory use among all alternative software.)
+2. Patchable UNet and CLIP objects. (Developer-friendly platform.)
+
+# Improved Optimization
+
+I tested with several devices, and this is a typical result from 8GB VRAM (3070ti laptop) with SDXL.
+
+**This is WebUI:**
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/c32baedd-500b-408f-8cfb-ed4570c883bd)
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/cb6098de-f2d4-4b25-9566-df4302dda396)
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/5447e8b7-f3ca-4003-9961-02027c8181e8)
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/f3cb57d9-ac7a-4667-8b3f-303139e38afa)
+
+(average about 7.4GB/8GB, peak at about 7.9GB/8GB)
+
+**This is WebUI Forge:**
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/0c45cd98-0b14-42c3-9556-28e48d4d5fa0)
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/3a71f5d4-39e5-4ab1-81cf-8eaa790a2dc8)
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/65fbb4a5-ee73-4bb9-9c5f-8a958cd9674d)
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/76f181a1-c5fb-4323-a6cc-b6308a45587e)
+
+(average and peak are all 6.3GB/8GB)
+
+Also, you can see that Forge does not change WebUI results. Installing Forge is not a seed breaking change. 
+
+We do not change any UI. But you will see the version of Forge here
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/93fdbccf-2f9b-4d45-ad81-c7c4106a357b)
+
+"f0.0.1v1.7.0" means WebUI 1.7.0 with Forge 0.0.1
+
+### Changes
+
+Forge removes all WebUI's codes related to speed and memory optimization and reworked everything. All previous cmd flags like medvram, lowvram, medvram-sdxl, precision full, no half, no half vae, attention_xxx, upcast unet, ... are all REMOVED. Adding these flags will not cause error but they will not do anything now. **We highly encourage Forge users to remove all cmd flags and let Forge to decide how to load models.**
+
+Without any cmd flag, Forge can run SDXL with 4GB vram and SD1.5 with 2GB vram.
+
+**The only one flag that you may still need** is `--always-offload-from-vram` (This flag will make things **slower**). This option will let Forge always unload models from VRAM. This can be useful is you use multiple software together and want Forge to use less VRAM and give some vram to other software, or when you are using some old extensions that will compete vram with main UI, or (very rarely) when you get OOM.
+
+If you really want to play with cmd flags, you can additionally control the GPU with:
+
+(extreme VRAM cases)
+
+    --always-gpu
+    --always-cpu
+
+(rare attention cases)
+
+    --attention-split
+    --attention-quad
+    --attention-pytorch
+    --disable-xformers
+    --disable-attention-upcast
+
+(float point type)
+
+    --all-in-fp32
+    --all-in-fp16
+    --unet-in-bf16
+    --unet-in-fp16
+    --unet-in-fp8-e4m3fn
+    --unet-in-fp8-e5m2
+    --vae-in-fp16
+    --vae-in-fp32
+    --vae-in-bf16
+    --clip-in-fp8-e4m3fn
+    --clip-in-fp8-e5m2
+    --clip-in-fp16
+    --clip-in-fp32
+
+(rare platforms)
+
+    --directml
+    --disable-ipex-hijack
+    --pytorch-deterministic
+
+Again, Forge do not recommend users to use any cmd flags unless you are very sure that you really need these.
+
+# Patchable UNet
+
+Now developing an extension is super simple. We finally have patchable UNet.
+
+Below is using one single file with 80 lines of codes to support FreeU:
+
+`extensions-builtin/sd_forge_freeu/scripts/forge_freeu.py`
+
+```python
+import torch
+import gradio as gr
+from modules import scripts
+
+
+def Fourier_filter(x, threshold, scale):
+    x_freq = torch.fft.fftn(x.float(), dim=(-2, -1))
+    x_freq = torch.fft.fftshift(x_freq, dim=(-2, -1))
+    B, C, H, W = x_freq.shape
+    mask = torch.ones((B, C, H, W), device=x.device)
+    crow, ccol = H // 2, W //2
+    mask[..., crow - threshold:crow + threshold, ccol - threshold:ccol + threshold] = scale
+    x_freq = x_freq * mask
+    x_freq = torch.fft.ifftshift(x_freq, dim=(-2, -1))
+    x_filtered = torch.fft.ifftn(x_freq, dim=(-2, -1)).real
+    return x_filtered.to(x.dtype)
+
+
+def set_freeu_v2_patch(model, b1, b2, s1, s2):
+    model_channels = model.model.model_config.unet_config["model_channels"]
+    scale_dict = {model_channels * 4: (b1, s1), model_channels * 2: (b2, s2)}
+
+    def output_block_patch(h, hsp, *args, **kwargs):
+        scale = scale_dict.get(h.shape[1], None)
+        if scale is not None:
+            hidden_mean = h.mean(1).unsqueeze(1)
+            B = hidden_mean.shape[0]
+            hidden_max, _ = torch.max(hidden_mean.view(B, -1), dim=-1, keepdim=True)
+            hidden_min, _ = torch.min(hidden_mean.view(B, -1), dim=-1, keepdim=True)
+            hidden_mean = (hidden_mean - hidden_min.unsqueeze(2).unsqueeze(3)) / \
+                          (hidden_max - hidden_min).unsqueeze(2).unsqueeze(3)
+            h[:, :h.shape[1] // 2] = h[:, :h.shape[1] // 2] * ((scale[0] - 1) * hidden_mean + 1)
+            hsp = Fourier_filter(hsp, threshold=1, scale=scale[1])
+        return h, hsp
+
+    m = model.clone()
+    m.set_model_output_block_patch(output_block_patch)
+    return m
+
+
+class FreeUForForge(scripts.Script):
+    def title(self):
+        return "FreeU Integrated"
+
+    def show(self, is_img2img):
+        # make this extension visible in both txt2img and img2img tab.
+        return scripts.AlwaysVisible
+
+    def ui(self, *args, **kwargs):
+        with gr.Accordion(open=False, label=self.title()):
+            freeu_enabled = gr.Checkbox(label='Enabled', value=False)
+            freeu_b1 = gr.Slider(label='B1', minimum=0, maximum=2, step=0.01, value=1.01)
+            freeu_b2 = gr.Slider(label='B2', minimum=0, maximum=2, step=0.01, value=1.02)
+            freeu_s1 = gr.Slider(label='S1', minimum=0, maximum=4, step=0.01, value=0.99)
+            freeu_s2 = gr.Slider(label='S2', minimum=0, maximum=4, step=0.01, value=0.95)
+
+        return freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2
+
+    def process_batch(self, p, *script_args, **kwargs):
+        freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2 = script_args
+
+        if not freeu_enabled:
+            return
+
+        unet = p.sd_model.forge_objects.unet
+
+        unet = set_freeu_v2_patch(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)
+
+        p.sd_model.forge_objects.unet = unet
+
+        # Below codes will add some logs to the texts below the image outputs on UI.
+        # The extra_generation_params does not influence results.
+        p.extra_generation_params.update(dict(
+            freeu_enabled=freeu_enabled,
+            freeu_b1=freeu_b1,
+            freeu_b2=freeu_b2,
+            freeu_s1=freeu_s1,
+            freeu_s2=freeu_s2,
+        ))
+
+        return
 ```
-2. Navigate to the directory you would like the webui to be installed and execute the following command:
-```bash
-wget -q https://raw.githubusercontent.com/AUTOMATIC1111/stable-diffusion-webui/master/webui.sh
+
+It looks like this:
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/a7798cf2-057c-43e0-883a-5f8643af8529)
+
+Similar components like HyperTile, KohyaHighResFix, SAG, can all be implemented within 100 lines of codes (see also the codes).
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/e2fc1b73-e6ee-405e-864c-c67afd92a1db)
+
+ControlNets can finally be called by different extensions. (80% codes of ControlNet can be removed now, will start soon)
+
+Implementing Stable Video Diffusion and Zero123 are also super simple now (see also the codes). 
+
+*Stable Video Diffusion:*
+
+`extensions-builtin/sd_forge_svd/scripts/forge_svd.py`
+
+```python
+import torch
+import gradio as gr
+import os
+import pathlib
+
+from modules import script_callbacks
+from modules.paths import models_path
+from modules.ui_common import ToolButton, refresh_symbol
+from modules import shared
+
+from modules_forge.forge_util import numpy_to_pytorch, pytorch_to_numpy
+from ldm_patched.modules.sd import load_checkpoint_guess_config
+from ldm_patched.contrib.external_video_model import VideoLinearCFGGuidance, SVD_img2vid_Conditioning
+from ldm_patched.contrib.external import KSampler, VAEDecode
+
+
+opVideoLinearCFGGuidance = VideoLinearCFGGuidance()
+opSVD_img2vid_Conditioning = SVD_img2vid_Conditioning()
+opKSampler = KSampler()
+opVAEDecode = VAEDecode()
+
+svd_root = os.path.join(models_path, 'svd')
+os.makedirs(svd_root, exist_ok=True)
+svd_filenames = []
+
+
+def update_svd_filenames():
+    global svd_filenames
+    svd_filenames = [
+        pathlib.Path(x).name for x in
+        shared.walk_files(svd_root, allowed_extensions=[".pt", ".ckpt", ".safetensors"])
+    ]
+    return svd_filenames
+
+
+@torch.inference_mode()
+@torch.no_grad()
+def predict(filename, width, height, video_frames, motion_bucket_id, fps, augmentation_level,
+            sampling_seed, sampling_steps, sampling_cfg, sampling_sampler_name, sampling_scheduler,
+            sampling_denoise, guidance_min_cfg, input_image):
+    filename = os.path.join(svd_root, filename)
+    model_raw, _, vae, clip_vision = \
+        load_checkpoint_guess_config(filename, output_vae=True, output_clip=False, output_clipvision=True)
+    model = opVideoLinearCFGGuidance.patch(model_raw, guidance_min_cfg)[0]
+    init_image = numpy_to_pytorch(input_image)
+    positive, negative, latent_image = opSVD_img2vid_Conditioning.encode(
+        clip_vision, init_image, vae, width, height, video_frames, motion_bucket_id, fps, augmentation_level)
+    output_latent = opKSampler.sample(model, sampling_seed, sampling_steps, sampling_cfg,
+                                      sampling_sampler_name, sampling_scheduler, positive,
+                                      negative, latent_image, sampling_denoise)[0]
+    output_pixels = opVAEDecode.decode(vae, output_latent)[0]
+    outputs = pytorch_to_numpy(output_pixels)
+    return outputs
+
+
+def on_ui_tabs():
+    with gr.Blocks() as svd_block:
+        with gr.Row():
+            with gr.Column():
+                input_image = gr.Image(label='Input Image', source='upload', type='numpy', height=400)
+
+                with gr.Row():
+                    filename = gr.Dropdown(label="SVD Checkpoint Filename",
+                                           choices=svd_filenames,
+                                           value=svd_filenames[0] if len(svd_filenames) > 0 else None)
+                    refresh_button = ToolButton(value=refresh_symbol, tooltip="Refresh")
+                    refresh_button.click(
+                        fn=lambda: gr.update(choices=update_svd_filenames),
+                        inputs=[], outputs=filename)
+
+                width = gr.Slider(label='Width', minimum=16, maximum=8192, step=8, value=1024)
+                height = gr.Slider(label='Height', minimum=16, maximum=8192, step=8, value=576)
+                video_frames = gr.Slider(label='Video Frames', minimum=1, maximum=4096, step=1, value=14)
+                motion_bucket_id = gr.Slider(label='Motion Bucket Id', minimum=1, maximum=1023, step=1, value=127)
+                fps = gr.Slider(label='Fps', minimum=1, maximum=1024, step=1, value=6)
+                augmentation_level = gr.Slider(label='Augmentation Level', minimum=0.0, maximum=10.0, step=0.01,
+                                               value=0.0)
+                sampling_steps = gr.Slider(label='Sampling Steps', minimum=1, maximum=200, step=1, value=20)
+                sampling_cfg = gr.Slider(label='CFG Scale', minimum=0.0, maximum=50.0, step=0.1, value=2.5)
+                sampling_denoise = gr.Slider(label='Sampling Denoise', minimum=0.0, maximum=1.0, step=0.01, value=1.0)
+                guidance_min_cfg = gr.Slider(label='Guidance Min Cfg', minimum=0.0, maximum=100.0, step=0.5, value=1.0)
+                sampling_sampler_name = gr.Radio(label='Sampler Name',
+                                                 choices=['euler', 'euler_ancestral', 'heun', 'heunpp2', 'dpm_2',
+                                                          'dpm_2_ancestral', 'lms', 'dpm_fast', 'dpm_adaptive',
+                                                          'dpmpp_2s_ancestral', 'dpmpp_sde', 'dpmpp_sde_gpu',
+                                                          'dpmpp_2m', 'dpmpp_2m_sde', 'dpmpp_2m_sde_gpu',
+                                                          'dpmpp_3m_sde', 'dpmpp_3m_sde_gpu', 'ddpm', 'lcm', 'ddim',
+                                                          'uni_pc', 'uni_pc_bh2'], value='euler')
+                sampling_scheduler = gr.Radio(label='Scheduler',
+                                              choices=['normal', 'karras', 'exponential', 'sgm_uniform', 'simple',
+                                                       'ddim_uniform'], value='karras')
+                sampling_seed = gr.Number(label='Seed', value=12345, precision=0)
+
+                generate_button = gr.Button(value="Generate")
+
+                ctrls = [filename, width, height, video_frames, motion_bucket_id, fps, augmentation_level,
+                         sampling_seed, sampling_steps, sampling_cfg, sampling_sampler_name, sampling_scheduler,
+                         sampling_denoise, guidance_min_cfg, input_image]
+
+            with gr.Column():
+                output_gallery = gr.Gallery(label='Gallery', show_label=False, object_fit='contain',
+                                            visible=True, height=1024, columns=4)
+
+        generate_button.click(predict, inputs=ctrls, outputs=[output_gallery])
+    return [(svd_block, "SVD", "svd")]
+
+
+update_svd_filenames()
+script_callbacks.on_ui_tabs(on_ui_tabs)
 ```
-3. Run `webui.sh`.
-4. Check `webui-user.sh` for options.
-### Installation on Apple Silicon
 
-Find the instructions [here](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Installation-on-Apple-Silicon).
+Note that although the above codes look like independent codes, they actually will automatically offload/unload any other models. For example, below is me opening webui, load SDXL, generated an image, then go to SVD, then generated image frames. You can see that the GPU memory is perfectly managed and the SDXL is moved to RAM then SVD is moved to GPU. 
 
-## Contributing
-Here's how to add code to this repo: [Contributing](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Contributing)
+Note that this management is fully automatic. This makes writing extensions super simple.
 
-## Documentation
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/ac7ed152-cd33-4645-94af-4c43bb8c3d88)
 
-The documentation was moved from this README over to the project's [wiki](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki).
 
-For the purposes of getting Google and other search engines to crawl the wiki, here's a link to the (not for humans) [crawlable wiki](https://github-wiki-see.page/m/AUTOMATIC1111/stable-diffusion-webui/wiki).
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/cdcb23ad-02dc-4e39-be74-98e927550ef6)
 
-## Credits
-Licenses for borrowed code can be found in `Settings -> Licenses` screen, and also in `html/licenses.html` file.
 
-- Stable Diffusion - https://github.com/Stability-AI/stablediffusion, https://github.com/CompVis/taming-transformers
-- k-diffusion - https://github.com/crowsonkb/k-diffusion.git
-- Spandrel - https://github.com/chaiNNer-org/spandrel implementing
-  - GFPGAN - https://github.com/TencentARC/GFPGAN.git
-  - CodeFormer - https://github.com/sczhou/CodeFormer
-  - ESRGAN - https://github.com/xinntao/ESRGAN
-  - SwinIR - https://github.com/JingyunLiang/SwinIR
-  - Swin2SR - https://github.com/mv-lab/swin2sr
-- LDSR - https://github.com/Hafiidz/latent-diffusion
-- MiDaS - https://github.com/isl-org/MiDaS
-- Ideas for optimizations - https://github.com/basujindal/stable-diffusion
-- Cross Attention layer optimization - Doggettx - https://github.com/Doggettx/stable-diffusion, original idea for prompt editing.
-- Cross Attention layer optimization - InvokeAI, lstein - https://github.com/invoke-ai/InvokeAI (originally http://github.com/lstein/stable-diffusion)
-- Sub-quadratic Cross Attention layer optimization - Alex Birch (https://github.com/Birch-san/diffusers/pull/1), Amin Rezaei (https://github.com/AminRezaei0x443/memory-efficient-attention)
-- Textual Inversion - Rinon Gal - https://github.com/rinongal/textual_inversion (we're not using his code, but we are using his ideas).
-- Idea for SD upscale - https://github.com/jquesnelle/txt2imghd
-- Noise generation for outpainting mk2 - https://github.com/parlance-zz/g-diffuser-bot
-- CLIP interrogator idea and borrowing some code - https://github.com/pharmapsychotic/clip-interrogator
-- Idea for Composable Diffusion - https://github.com/energy-based-model/Compositional-Visual-Generation-with-Composable-Diffusion-Models-PyTorch
-- xformers - https://github.com/facebookresearch/xformers
-- DeepDanbooru - interrogator for anime diffusers https://github.com/KichangKim/DeepDanbooru
-- Sampling in float32 precision from a float16 UNet - marunine for the idea, Birch-san for the example Diffusers implementation (https://github.com/Birch-san/diffusers-play/tree/92feee6)
-- Instruct pix2pix - Tim Brooks (star), Aleksander Holynski (star), Alexei A. Efros (no star) - https://github.com/timothybrooks/instruct-pix2pix
-- Security advice - RyotaK
-- UniPC sampler - Wenliang Zhao - https://github.com/wl-zhao/UniPC
-- TAESD - Ollin Boer Bohan - https://github.com/madebyollin/taesd
-- LyCORIS - KohakuBlueleaf
-- Restart sampling - lambertae - https://github.com/Newbeeer/diffusion_restart_sampling
-- Hypertile - tfernd - https://github.com/tfernd/HyperTile
-- Initial Gradio script - posted on 4chan by an Anonymous user. Thank you Anonymous user.
-- (You)
+Similarly, Zero123:
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/d1a4a17d-f382-442d-91f2-fc5b6c10737f)
+
+
+# About Extensions
+
+All UI related extensions should work without problems, like:
+
+    canvas-zoom
+    different translations
+    etc
+
+Below extensions are tested and worked well:
+
+    Dynamic Prompts
+    Adetailer
+    Ultimate SD Upscale
+    Reactor
+
+Below extensions will be tested soon:
+
+    Regional Prompter (I have not figure out how to use that UI yet.. will test later)
+
+Below extensions will be given up but they may still work
+
+    MultiDiffusion / Tiled Diffusison
+    Deform
+    Roop
+
+(Tiled diffusion is integrated now and no need to install extra extensions. Also the current smart unet offload is much better than multi-diffusion and people can directly generate 4k images without using multi-diffusion, by automatically offload unet to RAM. If bigger than 4k, use Ultimate SD Upscale.)
+(But if you want to use some special features in MultiDiffusion like inversion or region prompt, probably you can still use it, but it can be very rare.)
+
+Below extensions will be reworked soon
+
+    sd-webui-controlnet
+
+controlnet will not be replaced by another extension. We will have 10+ extensions for different preprocessors, and 10+ extensions for different control. Each extension will have less than 100 lines of codes. Everyone will be able to add preprocessor/control model by adding new extensions. And adding those extensions will be super easy. Those extensions will share a UI managed by Forge.

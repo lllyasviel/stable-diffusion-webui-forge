@@ -34,7 +34,7 @@ class LCMCompVisDenoiser(DiscreteEpsDDPMDenoiser):
 
     def sigma_to_t(self, sigma, quantize=None):
         log_sigma = sigma.log()
-        dists = log_sigma - self.log_sigmas[:, None]
+        dists = log_sigma - self.log_sigmas.to(sigma)[:, None]
         return dists.abs().argmin(dim=0).view(sigma.shape) * self.skip_steps + (self.skip_steps - 1)
 
 

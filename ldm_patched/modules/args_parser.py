@@ -33,8 +33,8 @@ class EnumAction(argparse.Action):
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--listen", type=str, default="127.0.0.1", metavar="IP", nargs="?", const="0.0.0.0")
-parser.add_argument("--port", type=int, default=8188)
+#parser.add_argument("--listen", type=str, default="127.0.0.1", metavar="IP", nargs="?", const="0.0.0.0")
+#parser.add_argument("--port", type=int, default=8188)
 parser.add_argument("--disable-header-check", type=str, default=None, metavar="ORIGIN", nargs="?", const="*")
 parser.add_argument("--web-upload-size", type=float, default=100)
 

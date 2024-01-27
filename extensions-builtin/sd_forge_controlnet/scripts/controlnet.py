@@ -12,7 +12,7 @@ import gradio as gr
 import time
 
 from einops import rearrange
-from scripts import global_state, hook, external_code, batch_hijack, controlnet_version, utils
+from scripts import global_state, hook, external_code, batch_hijack, utils
 from scripts.controlnet_lora import bind_control_lora, unbind_control_lora
 from scripts.processor import *
 from scripts.controlnet_lllite import clear_all_lllite
@@ -295,7 +295,7 @@ class Script(scripts.Script, metaclass=(
         max_models = shared.opts.data.get("control_net_unit_count", 3)
         elem_id_tabname = ("img2img" if is_img2img else "txt2img") + "_controlnet"
         with gr.Group(elem_id=elem_id_tabname):
-            with gr.Accordion(f"ControlNet {controlnet_version.version_flag}", open = False, elem_id="controlnet"):
+            with gr.Accordion(f"ControlNet Integrated", open = False, elem_id="controlnet"):
                 photopea = Photopea() if not shared.opts.data.get("controlnet_disable_photopea_edit", False) else None
                 if max_models > 1:
                     with gr.Tabs(elem_id=f"{elem_id_tabname}_tabs"):

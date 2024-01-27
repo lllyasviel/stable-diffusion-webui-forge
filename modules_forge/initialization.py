@@ -2,28 +2,9 @@
 def initialize_forge():
     import ldm_patched.modules.args_parser as args_parser
 
-    args_parser.parser.add_argument("--disable-offload-from-vram", action="store_true",
-                                    help="Force loading models to vram when the unload can be avoided. "
-                                         "Use this when you ara on MAC or have more than 20GB VRAM like RTX4096.")
-
-    args_parser.args = args_parser.parser.parse_known_args()[0]
+    args_parser.args, _ = args_parser.parser.parse_known_args()
 
     import ldm_patched.modules.model_management as model_management
-
-    if args_parser.args.disable_offload_from_vram:
-        print('User disabled VRAM offload.')
-        model_management.ALWAYS_VRAM_OFFLOAD = False
-    elif model_management.total_vram > 20 * 1024:
-        if args_parser.args.always_offload_from_vram:
-            print('User has more than 20GB VRAM, but forced offloading models from VRAM.')
-            model_management.ALWAYS_VRAM_OFFLOAD = True
-        else:
-            print('Automatically disable VRAM offload since user has more than 20GB VRAM.')
-            model_management.ALWAYS_VRAM_OFFLOAD = False
-    else:
-        print('Always offload models from VRAM.')
-        model_management.ALWAYS_VRAM_OFFLOAD = True
-
     import torch
 
     device = model_management.get_torch_device()

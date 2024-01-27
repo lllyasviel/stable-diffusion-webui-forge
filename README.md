@@ -55,19 +55,11 @@ We do not change any UI. But you will see the version of Forge here
 
 ### Changes
 
-Forge removes all WebUI's codes related to speed and memory optimization and reworked everything. 
+Forge removes all WebUI's codes related to speed and memory optimization and reworked everything. All previous cmd flags like medvram, lowvram, medvram-sdxl, precision full, no half, no half vae, attention_xxx, upcast unet, ... are all REMOVED. Adding these flags will not cause error but they will not do anything now. **We highly encourage Forge users to remove all cmd flags and let Forge to decide how to load models.**
 
-All previous cmd flags like medvram, lowvram, medvram-sdxl, precision full, no half, no half vae, attention_xxx, upcast unet, ... are all REMOVED. Adding these flags will not cause error but they will not do anything now. **We highly encourage Forge users to remove all cmd flags and let Forge to decide how to load models.**
+Without any cmd flag, Forge can run SDXL with 4GB vram and SD1.5 with 2GB vram.
 
-Currently, the behaviors is:
-
-"When loading a model to GPU, Forge will decide whether to load the entire model, or to load separated parts of the model. Then, when loading another model, Forge will try best to unload the previous model."
-
-**The only one flag that you may still need** is `--disable-offload-from-vram`, to change the above behavior to
-
-"When loading a model to GPU, Forge will decide whether to load the entire model, or to load separated parts of the model. Then, when loading another model, Forge will try best to keep the previous model in GPU without unloading it."
-
-You should `--disable-offload-from-vram` when and only when you have more than 20GB GPU memory, or when you are on MAC MPS.
+**The only one flag that you may still need** is `--always-offload-from-vram` (This flag will make things **slower**). This option will let Forge always unload models from VRAM. This can be useful is you use multiple software together and want Forge to use less VRAM and give some vram to other software, or when you are using some old extensions that will compete vram with main UI, or (very rarely) when you get OOM.
 
 If you really want to play with cmd flags, you can additionally control the GPU with:
 

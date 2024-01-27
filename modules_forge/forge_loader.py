@@ -240,30 +240,8 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     sd_model.get_first_stage_encoding = lambda x: x
     sd_model.decode_first_stage = patched_decode_first_stage
     sd_model.encode_first_stage = patched_encode_first_stage
-
-    sd_model.current_controlnet_signals = {
-        'input': [],
-        'middle': [],
-        'output': []
-    }
-    sd_model.current_controlnet_required_memory = 0
-
-    original_forward = sd_model.model.diffusion_model.forward
-
-    def forge_unet_forward(*args, **kwargs):
-        current_transformer_options = kwargs.get('transformer_options', {})
-        current_transformer_options.update(dict(cond_or_uncond=sd_model.cond_or_uncond, sigmas=sd_model.current_sigmas))
-        current_transformer_options.update(sd_model.forge_objects.unet.model_options.get('transformer_options', {}))
-
-        kwargs.update(dict(
-            control=sd_model.current_controlnet_signals,
-            transformer_options=current_transformer_options
-        ))
-        return original_forward(*args, **kwargs)
-
-    sd_model.model.diffusion_model.forward = forge_unet_forward
-
     sd_model.clip = sd_model.cond_stage_model
+    sd_model.current_controlnet_required_memory = 0
     timer.record("forge finalize")
 
     sd_model.current_lora_hash = str([])

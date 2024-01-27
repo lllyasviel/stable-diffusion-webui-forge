@@ -5,39 +5,12 @@ import time
 import random
 import string
 
-from ldm_patched.modules.conds import CONDRegular, CONDCrossAttn
-
 
 def generate_random_filename(extension=".txt"):
     timestamp = time.strftime("%Y%m%d-%H%M%S")
     random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=5))
     filename = f"{timestamp}-{random_string}{extension}"
     return filename
-
-
-def cond_from_a1111_to_patched_ldm(cond):
-    if isinstance(cond, torch.Tensor):
-        result = dict(
-            cross_attn=cond,
-            model_conds=dict(
-                c_crossattn=CONDCrossAttn(cond),
-            )
-        )
-        return [result, ]
-
-    cross_attn = cond['crossattn']
-    pooled_output = cond['vector']
-
-    result = dict(
-        cross_attn=cross_attn,
-        pooled_output=pooled_output,
-        model_conds=dict(
-            c_crossattn=CONDCrossAttn(cross_attn),
-            y=CONDRegular(pooled_output)
-        )
-    )
-
-    return [result, ]
 
 
 @torch.no_grad()

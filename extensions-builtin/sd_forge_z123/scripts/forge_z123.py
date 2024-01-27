@@ -73,7 +73,7 @@ def on_ui_tabs():
                 sampling_denoise = gr.Slider(label='Sampling Denoise', minimum=0.0, maximum=1.0, step=0.01, value=1.0)
                 sampling_steps = gr.Slider(label='Sampling Steps', minimum=1, maximum=10000, step=1, value=20)
                 sampling_cfg = gr.Slider(label='CFG Scale', minimum=0.0, maximum=100.0, step=0.1, value=5.0)
-                sampling_sampler_name = gr.Radio(label='Sampling Sampler Name',
+                sampling_sampler_name = gr.Radio(label='Sampler Name',
                                                  choices=['euler', 'euler_ancestral', 'heun', 'heunpp2', 'dpm_2',
                                                           'dpm_2_ancestral', 'lms', 'dpm_fast', 'dpm_adaptive',
                                                           'dpmpp_2s_ancestral', 'dpmpp_sde', 'dpmpp_sde_gpu',

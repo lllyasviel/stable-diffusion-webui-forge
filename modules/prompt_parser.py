@@ -338,7 +338,7 @@ def stack_conds_alter(tensors, weights):
         full_weights = full_weights + float(w)
     result = result / full_weights
 
-    return result[None]
+    return result[None].contiguous().clone()
 
 
 def reconstruct_multicond_batch(c: MulticondLearnedConditioning, current_step):

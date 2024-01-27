@@ -100,14 +100,8 @@ class CFGDenoiser(torch.nn.Module):
             cond = self.sampler.sampler_extra_args['cond']
             uncond = self.sampler.sampler_extra_args['uncond']
 
-        # at self.image_cfg_scale == 1.0 produced results for edit model are the same as with normal sampling,
-        # so is_edit_model is set to False to support AND composition.
-        is_edit_model = shared.sd_model.cond_stage_key == "edit" and self.image_cfg_scale is not None and self.image_cfg_scale != 1.0
-
-        conds_list, tensor = prompt_parser.reconstruct_multicond_batch(cond, self.step)
+        cond = prompt_parser.reconstruct_multicond_batch(cond, self.step)
         uncond = prompt_parser.reconstruct_cond_batch(uncond, self.step)
-
-        assert not is_edit_model or all(len(conds) == 1 for conds in conds_list), "AND is not supported for InstructPix2Pix checkpoint (unless using Image CFG scale = 1.0)"
 
         # If we use masks, blending between the denoised and original latent images occurs here.
         def apply_blend(current_latent):
@@ -125,7 +119,7 @@ class CFGDenoiser(torch.nn.Module):
         if self.mask_before_denoising and self.mask is not None:
             x = apply_blend(x)
 
-        denoiser_params = CFGDenoiserParams(x, image_cond, sigma, state.sampling_step, state.sampling_steps, tensor, uncond, self)
+        denoiser_params = CFGDenoiserParams(x, image_cond, sigma, state.sampling_step, state.sampling_steps, cond, uncond, self)
         cfg_denoiser_callback(denoiser_params)
 
         denoised = forge_sampler.forge_sample(self, denoiser_params=denoiser_params, cond_scale=cond_scale)

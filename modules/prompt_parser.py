@@ -323,16 +323,31 @@ def stack_conds(tensors):
     return torch.stack(tensors)
 
 
+def stack_conds_alter(tensors, weights):
+    token_count = max([x.shape[0] for x in tensors])
+    for i in range(len(tensors)):
+        if tensors[i].shape[0] != token_count:
+            last_vector = tensors[i][-1:]
+            last_vector_repeated = last_vector.repeat([token_count - tensors[i].shape[0], 1])
+            tensors[i] = torch.vstack([tensors[i], last_vector_repeated])
+
+    result = 0
+    full_weights = 0
+    for x, w in zip(tensors, weights):
+        result = result + x * float(w)
+        full_weights = full_weights + float(w)
+    result = result / full_weights
+
+    return result
+
 
 def reconstruct_multicond_batch(c: MulticondLearnedConditioning, current_step):
     param = c.batch[0][0].schedules[0].cond
 
     tensors = []
-    conds_list = []
+    weights = []
 
     for composable_prompts in c.batch:
-        conds_for_batch = []
-
         for composable_prompt in composable_prompts:
             target_index = 0
             for current, entry in enumerate(composable_prompt.schedules):
@@ -340,19 +355,17 @@ def reconstruct_multicond_batch(c: MulticondLearnedConditioning, current_step):
                     target_index = current
                     break
 
-            conds_for_batch.append((len(tensors), composable_prompt.weight))
+            weights.append(composable_prompt.weight)
             tensors.append(composable_prompt.schedules[target_index].cond)
-
-        conds_list.append(conds_for_batch)
 
     if isinstance(tensors[0], dict):
         keys = list(tensors[0].keys())
-        stacked = {k: stack_conds([x[k] for x in tensors]) for k in keys}
-        stacked = DictWithShape(stacked, stacked['crossattn'].shape)
+        weighted = {k: stack_conds_alter([x[k] for x in tensors], weights) for k in keys}
+        weighted = DictWithShape(weighted, weighted['crossattn'].shape)
     else:
-        stacked = stack_conds(tensors).to(device=param.device, dtype=param.dtype)
+        weighted = stack_conds_alter(tensors, weights).to(device=param.device, dtype=param.dtype)
 
-    return conds_list, stacked
+    return weighted
 
 
 re_attention = re.compile(r"""

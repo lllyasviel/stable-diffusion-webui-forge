@@ -14,8 +14,12 @@ def initialize_forge():
         print('User disabled VRAM offload.')
         model_management.ALWAYS_VRAM_OFFLOAD = False
     elif model_management.total_vram > 20 * 1024:
-        print('Automatically disable VRAM offload since user have more than 20GB VRAM.')
-        model_management.ALWAYS_VRAM_OFFLOAD = False
+        if args_parser.args.always_offload_from_vram:
+            print('User has more than 20GB VRAM, but forced offloading models from VRAM.')
+            model_management.ALWAYS_VRAM_OFFLOAD = True
+        else:
+            print('Automatically disable VRAM offload since user has more than 20GB VRAM.')
+            model_management.ALWAYS_VRAM_OFFLOAD = False
     else:
         print('Always offload models from VRAM.')
         model_management.ALWAYS_VRAM_OFFLOAD = True

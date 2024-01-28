@@ -13,6 +13,13 @@ os.makedirs(preprocessor_dir, exist_ok=True)
 shared_preprocessors = {}
 
 
+def add_preprocessor(preprocessor):
+    global shared_preprocessors
+    p = preprocessor()
+    shared_preprocessors[p.name] = p
+    return
+
+
 class PreprocessorParameter:
     def __init__(self, minimum=0.0, maximum=1.0, step=0.01, label='Parameter 1', value=0.5, visible=False):
         self.gradio_update_kwargs = dict(
@@ -40,9 +47,6 @@ class PreprocessorNone(PreprocessorBase):
         return input_image
 
 
-shared_preprocessors['none'] = PreprocessorNone()
-
-
 class PreprocessorCanny(PreprocessorBase):
     def __init__(self):
         super().__init__()
@@ -55,4 +59,5 @@ class PreprocessorCanny(PreprocessorBase):
         return canny_image
 
 
-shared_preprocessors['canny'] = PreprocessorCanny()
+add_preprocessor(PreprocessorNone)
+add_preprocessor(PreprocessorCanny)

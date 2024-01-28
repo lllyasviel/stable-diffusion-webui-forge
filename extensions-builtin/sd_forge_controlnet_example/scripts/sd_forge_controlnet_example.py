@@ -31,7 +31,7 @@ class ControlNetExampleForge(scripts.Script):
             return
 
         print('Input image is read')
-        
+
         return
 
 

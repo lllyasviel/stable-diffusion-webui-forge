@@ -9,6 +9,8 @@ from modules import devices
 from annotator.annotator_path import models_path
 import torchvision.transforms as transforms
 
+a = 0
+
 
 # load model
 def load_checkpoint(fpath, model):

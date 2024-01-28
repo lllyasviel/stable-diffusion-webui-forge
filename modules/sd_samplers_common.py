@@ -190,7 +190,7 @@ def apply_refiner(cfg_denoiser, x):
     unet_patcher = refiner.forge_objects.unet
     model_management.load_models_gpu(
         [unet_patcher],
-        unet_patcher.memory_required([x.shape[0]] + list(x.shape[1:])) + inference_memory)
+        unet_patcher.memory_required([x.shape[0]] * 2 + list(x.shape[1:])) + inference_memory)
     return True
 
 

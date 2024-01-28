@@ -70,3 +70,6 @@ def forge_sample(self, denoiser_params, cond_scale, cond_composition):
 
     denoised = sampling_function(model, x, timestep, uncond, cond, cond_scale, model_options, seed)
     return denoised
+
+
+# def prepare_sampling(unet, )

@@ -56,10 +56,11 @@ class Preprocessor:
 
         self.model_patcher = ModelPatcher(model=model, load_device=load_device, offload_device=offload_device, **kwargs)
         self.model_patcher.dtype = dtype
-        return
+        return self.model_patcher
 
-    def load_models_gpu(self):
+    def move_all_model_patchers_to_gpu(self):
         model_management.load_models_gpu([self.model_patcher])
+        return
 
     def send_tensor_to_model_device(self, x):
         return x.to(device=self.model_patcher.current_device, dtype=self.model_patcher.dtype)

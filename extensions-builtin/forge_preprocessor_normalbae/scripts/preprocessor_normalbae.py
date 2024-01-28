@@ -3,11 +3,11 @@ from modules_forge.shared import Preprocessor, preprocessor_dir, load_file_from_
 import types
 import torch
 import numpy as np
-import torchvision.transforms as transforms
 
 from einops import rearrange
 from annotator.normalbae.models.NNET import NNET
 from annotator.normalbae import load_checkpoint
+from torchvision import transforms
 
 
 class PreprocessorNormalBae(Preprocessor):
@@ -35,11 +35,12 @@ class PreprocessorNormalBae(Preprocessor):
         model = NNET(args)
         model = load_checkpoint(model_path, model)
 
-        self.setup_model_patcher(model)
+        self.model_patcher = self.setup_model_patcher(model)
 
     def __call__(self, input_image, *args, **kwargs):
         self.load_model()
-        self.load_models_gpu()
+
+        self.move_all_model_patchers_to_gpu()
 
         assert input_image.ndim == 3
         image_normal = input_image

@@ -4,25 +4,11 @@ import os
 import types
 import torch
 import numpy as np
+import torchvision.transforms as transforms
 
 from einops import rearrange
 from annotator.normalbae.models.NNET import NNET
-import torchvision.transforms as transforms
-
-
-def load_checkpoint(fpath, model):
-    ckpt = torch.load(fpath, map_location='cpu')['model']
-
-    load_dict = {}
-    for k, v in ckpt.items():
-        if k.startswith('module.'):
-            k_ = k.replace('module.', '')
-            load_dict[k_] = v
-        else:
-            load_dict[k] = v
-
-    model.load_state_dict(load_dict)
-    return model
+from annotator.normalbae import load_checkpoint
 
 
 class PreprocessorNormalBae(Preprocessor):

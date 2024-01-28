@@ -7,4 +7,8 @@ def apply_controlnet_advanced(
         end_percent,
         positive_advanced_weighting=None,
         negative_advanced_weighting=None):
-    return unet
+    m = unet.clone()
+
+    
+
+    return m

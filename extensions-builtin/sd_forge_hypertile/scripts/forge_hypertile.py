@@ -24,7 +24,7 @@ class HyperTileForForge(scripts.Script):
 
         return enabled, tile_size, swap_size, max_depth, scale_depth
 
-    def process_batch(self, p, *script_args, **kwargs):
+    def process_before_every_sampling(self, p, *script_args, **kwargs):
         enabled, tile_size, swap_size, max_depth, scale_depth = script_args
         tile_size, swap_size, max_depth = int(tile_size), int(swap_size), int(max_depth)
 

@@ -28,7 +28,7 @@ class KohyaHRFixForForge(scripts.Script):
 
         return enabled, block_number, downscale_factor, start_percent, end_percent, downscale_after_skip, downscale_method, upscale_method
 
-    def process_batch(self, p, *script_args, **kwargs):
+    def process_before_every_sampling(self, p, *script_args, **kwargs):
         enabled, block_number, downscale_factor, start_percent, end_percent, downscale_after_skip, downscale_method, upscale_method = script_args
         block_number = int(block_number)
 

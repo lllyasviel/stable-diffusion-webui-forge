@@ -167,7 +167,10 @@ class FreeUForForge(scripts.Script):
 
         return freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2
 
-    def process_batch(self, p, *script_args, **kwargs):
+    def process_before_every_sampling(self, p, *script_args, **kwargs):
+        # This will be called before every sampling.
+        # If you use highres fix, this will be called twice.
+        
         freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2 = script_args
 
         if not freeu_enabled:

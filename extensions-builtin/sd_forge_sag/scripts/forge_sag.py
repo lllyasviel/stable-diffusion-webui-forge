@@ -22,7 +22,7 @@ class SAGForForge(scripts.Script):
 
         return enabled, scale, blur_sigma
 
-    def process_batch(self, p, *script_args, **kwargs):
+    def process_before_every_sampling(self, p, *script_args, **kwargs):
         enabled, scale, blur_sigma = script_args
 
         if not enabled:

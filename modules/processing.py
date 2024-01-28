@@ -1248,6 +1248,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
 
             x = self.rng.next()
 
+            self.sd_model.forge_objects = self.sd_model.forge_objects_after_applying_lora.shallow_copy()
             if self.scripts is not None:
                 self.scripts.process_before_every_sampling(self,
                                                            x=x,
@@ -1356,6 +1357,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
         if self.scripts is not None:
             self.scripts.before_hr(self)
 
+        self.sd_model.forge_objects = self.sd_model.forge_objects_after_applying_lora.shallow_copy()
         if self.scripts is not None:
             self.scripts.process_before_every_sampling(self,
                                                        x=samples,
@@ -1666,6 +1668,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             self.extra_generation_params["Noise multiplier"] = self.initial_noise_multiplier
             x *= self.initial_noise_multiplier
 
+        self.sd_model.forge_objects = self.sd_model.forge_objects_after_applying_lora.shallow_copy()
         if self.scripts is not None:
             self.scripts.process_before_every_sampling(self,
                                                        x=self.init_latent,

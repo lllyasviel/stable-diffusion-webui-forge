@@ -148,13 +148,7 @@ class StableDiffusionModelHijack:
         pass
 
     def apply_circular(self, enable):
-        if self.circular_enabled == enable:
-            return
-
-        self.circular_enabled = enable
-
-        for layer in [layer for layer in self.layers if type(layer) == torch.nn.Conv2d]:
-            layer.padding_mode = 'circular' if enable else 'zeros'
+        pass
 
     def clear_comments(self):
         self.comments = []

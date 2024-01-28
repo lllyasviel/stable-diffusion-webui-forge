@@ -28,12 +28,30 @@ def cond_from_a1111_to_patched_ldm(cond):
     return [result, ]
 
 
-def forge_sample(self, denoiser_params, cond_scale):
+def cond_from_a1111_to_patched_ldm_weighted(cond, weights):
+    transposed = list(map(list, zip(*weights)))
+    results = []
+
+    for cond_pre in transposed:
+        current_indices = []
+        current_weight = 0
+        for i, w in cond_pre:
+            current_indices.append(i)
+            current_weight = w
+        feed = cond[current_indices]
+        h = cond_from_a1111_to_patched_ldm(feed)
+        h[0]['strength'] = current_weight
+        results += h
+
+    return results
+
+
+def forge_sample(self, denoiser_params, cond_scale, cond_composition):
     model = self.inner_model.inner_model.forge_objects.unet.model
     x = denoiser_params.x
     timestep = denoiser_params.sigma
     uncond = cond_from_a1111_to_patched_ldm(denoiser_params.text_uncond)
-    cond = cond_from_a1111_to_patched_ldm(denoiser_params.text_cond)
+    cond = cond_from_a1111_to_patched_ldm_weighted(denoiser_params.text_cond, cond_composition)
     model_options = self.inner_model.inner_model.forge_objects.unet.model_options
     seed = self.p.seeds[0]
 

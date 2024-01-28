@@ -157,7 +157,7 @@ class CFGDenoiser(torch.nn.Module):
             cond = self.sampler.sampler_extra_args['cond']
             uncond = self.sampler.sampler_extra_args['uncond']
 
-        cond = prompt_parser.reconstruct_multicond_batch(cond, self.step)
+        cond_composition, cond = prompt_parser.reconstruct_multicond_batch(cond, self.step)
         uncond = prompt_parser.reconstruct_cond_batch(uncond, self.step)
 
         # If we use masks, blending between the denoised and original latent images occurs here.
@@ -179,7 +179,8 @@ class CFGDenoiser(torch.nn.Module):
         denoiser_params = CFGDenoiserParams(x, image_cond, sigma, state.sampling_step, state.sampling_steps, cond, uncond, self)
         cfg_denoiser_callback(denoiser_params)
 
-        denoised = forge_sampler.forge_sample(self, denoiser_params=denoiser_params, cond_scale=cond_scale)
+        denoised = forge_sampler.forge_sample(self, denoiser_params=denoiser_params,
+                                              cond_scale=cond_scale, cond_composition=cond_composition)
 
         preview = self.sampler.last_latent = denoised
         sd_samplers_common.store_latent(preview)

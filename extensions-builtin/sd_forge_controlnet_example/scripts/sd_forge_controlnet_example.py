@@ -11,7 +11,8 @@ from modules.paths import models_path
 from modules.modelloader import load_file_from_url
 from ldm_patched.modules.controlnet import load_controlnet
 from modules_forge.controlnet import apply_controlnet_advanced
-from modules_forge.forge_util import pytorch_to_numpy, numpy_to_pytorch
+from modules_forge.forge_util import numpy_to_pytorch
+from modules_forge.shared import controlnet_dir
 
 
 class ControlNetExampleForge(scripts.Script):
@@ -43,8 +44,6 @@ class ControlNetExampleForge(scripts.Script):
         if input_image is None:
             return
 
-        model_dir = os.path.join(models_path, 'ControlNet')
-        os.makedirs(model_dir, exist_ok=True)
         # controlnet_canny_path = load_file_from_url(
         #     url='https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/sai_xl_canny_256lora.safetensors',
         #     model_dir=model_dir,
@@ -52,7 +51,7 @@ class ControlNetExampleForge(scripts.Script):
         # )
         controlnet_canny_path = load_file_from_url(
             url='https://huggingface.co/lllyasviel/fav_models/resolve/main/fav/control_v11p_sd15_canny_fp16.safetensors',
-            model_dir=model_dir,
+            model_dir=controlnet_dir,
             file_name='control_v11p_sd15_canny_fp16.safetensors'
         )
         print('The model [control_v11p_sd15_canny_fp16.safetensors] download finished.')

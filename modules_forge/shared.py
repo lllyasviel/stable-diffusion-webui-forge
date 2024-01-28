@@ -1,4 +1,14 @@
 import cv2
+import os
+
+from modules.paths import models_path
+
+
+controlnet_dir = os.path.join(models_path, 'ControlNet')
+os.makedirs(controlnet_dir, exist_ok=True)
+
+preprocessor_dir = os.path.join(models_path, 'ControlNetPreprocessor')
+os.makedirs(preprocessor_dir, exist_ok=True)
 
 shared_preprocessors = {}
 

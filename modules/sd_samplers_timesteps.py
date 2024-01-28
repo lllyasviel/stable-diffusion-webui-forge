@@ -7,7 +7,7 @@ from modules.script_callbacks import ExtraNoiseParams, extra_noise_callback
 
 from modules.shared import opts
 import modules.shared as shared
-import ldm_patched.modules.model_management
+from modules_forge.forge_sampler import sampling_prepare, sampling_cleanup
 
 
 samplers_timesteps = [
@@ -98,11 +98,8 @@ class CompVisSampler(sd_samplers_common.Sampler):
         return timesteps
 
     def sample_img2img(self, p, x, noise, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
-        inference_memory = self.model_wrap.inner_model.current_controlnet_required_memory
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
-        ldm_patched.modules.model_management.load_models_gpu(
-            [unet_patcher],
-            unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)
+        sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 
         self.model_wrap.inner_model.alphas_cumprod = self.model_wrap.inner_model.alphas_cumprod.to(unet_patcher.current_device)
 
@@ -146,14 +143,13 @@ class CompVisSampler(sd_samplers_common.Sampler):
 
         self.add_infotext(p)
 
+        sampling_cleanup(unet_patcher)
+
         return samples
 
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
-        inference_memory = self.model_wrap.inner_model.current_controlnet_required_memory
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
-        ldm_patched.modules.model_management.load_models_gpu(
-            [unet_patcher],
-            unet_patcher.memory_required([x.shape[0] * 2] + list(x.shape[1:])) + inference_memory)
+        sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 
         self.model_wrap.inner_model.alphas_cumprod = self.model_wrap.inner_model.alphas_cumprod.to(unet_patcher.current_device)
 
@@ -177,6 +173,8 @@ class CompVisSampler(sd_samplers_common.Sampler):
         samples = self.launch_sampling(steps, lambda: self.func(self.model_wrap_cfg, x, extra_args=self.sampler_extra_args, disable=False, callback=self.callback_state, **extra_params_kwargs))
 
         self.add_infotext(p)
+
+        sampling_cleanup(unet_patcher)
 
         return samples
 

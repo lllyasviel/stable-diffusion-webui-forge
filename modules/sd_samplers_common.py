@@ -5,7 +5,7 @@ import torch
 from PIL import Image
 from modules import devices, images, sd_vae_approx, sd_samplers, sd_vae_taesd, shared, sd_models
 from modules.shared import opts, state
-from ldm_patched.modules import model_management
+from modules_forge.forge_sampler import sampling_prepare, sampling_cleanup
 import k_diffusion.sampling
 
 
@@ -177,20 +177,16 @@ def apply_refiner(cfg_denoiser, x):
     cfg_denoiser.p.extra_generation_params['Refiner'] = refiner_checkpoint_info.short_title
     cfg_denoiser.p.extra_generation_params['Refiner switch at'] = refiner_switch_at
 
+    sampling_cleanup(sd_models.model_data.get_sd_model().forge_objects.unet)
+
     with sd_models.SkipWritingToConfig():
         sd_models.reload_model_weights(info=refiner_checkpoint_info)
-
-    refiner = sd_models.model_data.get_sd_model()
 
     devices.torch_gc()
     cfg_denoiser.p.setup_conds()
     cfg_denoiser.update_inner_model()
 
-    inference_memory = refiner.current_controlnet_required_memory
-    unet_patcher = refiner.forge_objects.unet
-    model_management.load_models_gpu(
-        [unet_patcher],
-        unet_patcher.memory_required([x.shape[0]] * 2 + list(x.shape[1:])) + inference_memory)
+    sampling_prepare(sd_models.model_data.get_sd_model().forge_objects.unet, x=x)
     return True
 
 

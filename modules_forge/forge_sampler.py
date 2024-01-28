@@ -1,6 +1,7 @@
 import torch
 from ldm_patched.modules.conds import CONDRegular, CONDCrossAttn
 from ldm_patched.modules.samplers import sampling_function
+from ldm_patched.modules import model_management
 
 
 def cond_from_a1111_to_patched_ldm(cond):
@@ -72,4 +73,21 @@ def forge_sample(self, denoiser_params, cond_scale, cond_composition):
     return denoised
 
 
-# def prepare_sampling(unet, )
+def sampling_prepare(unet, x):
+    B, C, H, W = x.shape
+
+    unet_inference_memory = unet.memory_required([B * 2, C, H, W])
+    additional_inference_memory = unet.controlnet_linked_list.inference_memory_requirements(unet.model_dtype())
+    additional_model_patchers = unet.get_models()
+
+    model_management.load_models_gpu(
+        models=[unet] + additional_model_patchers,
+        memory_required=unet_inference_memory + additional_inference_memory)
+
+    return
+
+
+def sampling_cleanup(unet):
+    for cnet in unet.list_controlnets():
+        cnet.cleanup()
+    return

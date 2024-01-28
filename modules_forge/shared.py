@@ -83,7 +83,7 @@ class PreprocessorNone(Preprocessor):
         super().__init__()
         self.name = 'None'
 
-    def __call__(self, input_image, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
         return input_image
 
 
@@ -95,7 +95,7 @@ class PreprocessorCanny(Preprocessor):
         self.slider_1 = PreprocessorParameter(minimum=0, maximum=256, step=1, value=100, label='Low Threshold', visible=True)
         self.slider_2 = PreprocessorParameter(minimum=0, maximum=256, step=1, value=200, label='High Threshold', visible=True)
 
-    def __call__(self, input_image, slider_1=100, slider_2=200, slider_3=None, **kwargs):
+    def __call__(self, input_image, resolution, slider_1=100, slider_2=200, slider_3=None, **kwargs):
         canny_image = cv2.cvtColor(cv2.Canny(input_image, int(slider_1), int(slider_2)), cv2.COLOR_GRAY2RGB)
         return canny_image
 

@@ -1,4 +1,5 @@
 from modules_forge.shared import Preprocessor, preprocessor_dir, load_file_from_url, add_preprocessor
+from modules_forge.forge_util import resize_image_with_pad
 
 import types
 import torch
@@ -37,7 +38,9 @@ class PreprocessorNormalBae(Preprocessor):
 
         self.model_patcher = self.setup_model_patcher(model)
 
-    def __call__(self, input_image, *args, **kwargs):
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+        input_image, remove_pad = resize_image_with_pad(input_image, resolution)
+
         self.load_model()
 
         self.move_all_model_patchers_to_gpu()
@@ -58,7 +61,7 @@ class PreprocessorNormalBae(Preprocessor):
             normal = rearrange(normal[0], 'c h w -> h w c').cpu().numpy()
             normal_image = (normal * 255.0).clip(0, 255).astype(np.uint8)
 
-        return normal_image
+        return remove_pad(normal_image)
 
 
 add_preprocessor(PreprocessorNormalBae)

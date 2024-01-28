@@ -38,7 +38,12 @@ def cond_from_a1111_to_patched_ldm_weighted(cond, weights):
         for i, w in cond_pre:
             current_indices.append(i)
             current_weight = w
-        feed = cond[current_indices]
+
+        if hasattr(cond, 'advanced_indexing'):
+            feed = cond.advanced_indexing(current_indices)
+        else:
+            feed = cond[current_indices]
+
         h = cond_from_a1111_to_patched_ldm(feed)
         h[0]['strength'] = current_weight
         results += h

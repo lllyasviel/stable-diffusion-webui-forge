@@ -132,7 +132,7 @@ def patched_calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_op
 
         free_memory = model_management.get_free_memory(x_in.device)
         for i in range(1, len(to_batch_temp) + 1):
-            batch_amount = to_batch_temp[:len(to_batch_temp) // i]
+            batch_amount = to_batch_temp[:len(to_batch_temp)//i]
             input_shape = [len(batch_amount) * first_shape[0]] + list(first_shape)[1:]
             if model.memory_required(input_shape) < free_memory:
                 to_batch = batch_amount
@@ -186,23 +186,18 @@ def patched_calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_op
         c['transformer_options'] = transformer_options
 
         if 'model_function_wrapper' in model_options:
-            output = model_options['model_function_wrapper'](model.apply_model,
-                                                             {"input": input_x, "timestep": timestep_, "c": c,
-                                                              "cond_or_uncond": cond_or_uncond}).chunk(batch_chunks)
+            output = model_options['model_function_wrapper'](model.apply_model, {"input": input_x, "timestep": timestep_, "c": c, "cond_or_uncond": cond_or_uncond}).chunk(batch_chunks)
         else:
             output = model.apply_model(input_x, timestep_, **c).chunk(batch_chunks)
         del input_x
 
         for o in range(batch_chunks):
             if cond_or_uncond[o] == COND:
-                out_cond[:, :, area[o][2]:area[o][0] + area[o][2], area[o][3]:area[o][1] + area[o][3]] += output[o] * \
-                                                                                                          mult[o]
-                out_count[:, :, area[o][2]:area[o][0] + area[o][2], area[o][3]:area[o][1] + area[o][3]] += mult[o]
+                out_cond[:,:,area[o][2]:area[o][0] + area[o][2],area[o][3]:area[o][1] + area[o][3]] += output[o] * mult[o]
+                out_count[:,:,area[o][2]:area[o][0] + area[o][2],area[o][3]:area[o][1] + area[o][3]] += mult[o]
             else:
-                out_uncond[:, :, area[o][2]:area[o][0] + area[o][2], area[o][3]:area[o][1] + area[o][3]] += output[o] * \
-                                                                                                            mult[o]
-                out_uncond_count[:, :, area[o][2]:area[o][0] + area[o][2], area[o][3]:area[o][1] + area[o][3]] += mult[
-                    o]
+                out_uncond[:,:,area[o][2]:area[o][0] + area[o][2],area[o][3]:area[o][1] + area[o][3]] += output[o] * mult[o]
+                out_uncond_count[:,:,area[o][2]:area[o][0] + area[o][2],area[o][3]:area[o][1] + area[o][3]] += mult[o]
         del mult
 
     out_cond /= out_count

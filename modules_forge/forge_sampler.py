@@ -88,6 +88,13 @@ def sampling_prepare(unet, x):
         models=[unet] + additional_model_patchers,
         memory_required=unet_inference_memory + additional_inference_memory)
 
+    real_model = unet.model
+
+    percent_to_timestep_function = lambda p: real_model.model_sampling.percent_to_sigma(p)
+
+    for cnet in unet.list_controlnets():
+        cnet.pre_run(real_model, percent_to_timestep_function)
+
     return
 
 

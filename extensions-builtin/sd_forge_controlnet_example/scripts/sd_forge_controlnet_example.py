@@ -105,9 +105,9 @@ class ControlNetExampleForge(scripts.Script):
             'output': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]
         }
         negative_advanced_weighting = {
-            'input': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2],
-            'middle': [1.0],
-            'output': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]
+            'input': [0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25],
+            'middle': [1.05],
+            'output': [0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15, 1.25]
         }
 
         # The advanced_frame_weighting is a weight applied to each image in a batch.
@@ -125,10 +125,10 @@ class ControlNetExampleForge(scripts.Script):
         advanced_sigma_weighting = lambda s: (s - sigma_min) / (sigma_max - sigma_min)
 
         # But in this simple example we do not use them
-        # positive_advanced_weighting = None
-        # negative_advanced_weighting = None
-        # advanced_frame_weighting = None
-        # advanced_sigma_weighting = None
+        positive_advanced_weighting = None
+        negative_advanced_weighting = None
+        advanced_frame_weighting = None
+        advanced_sigma_weighting = None
 
         unet = apply_controlnet_advanced(unet=unet, controlnet=self.model, image_bhwc=control_image,
                                          strength=0.6, start_percent=0.0, end_percent=0.8,

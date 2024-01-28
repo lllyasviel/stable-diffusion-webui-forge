@@ -1,3 +1,10 @@
+import torch
+
+
+def get_at(array, index, default=None):
+    return array[index] if 0 <= index < len(array) else default
+
+
 def apply_controlnet_advanced(
         unet,
         controlnet,
@@ -75,7 +82,36 @@ def compute_controlnet_weighting(
     sigmas = transformer_options['sigmas']
     cond_mark = transformer_options['cond_mark']
 
+    if advanced_frame_weighting is not None:
+        advanced_frame_weighting = torch.Tensor(advanced_frame_weighting * len(cond_or_uncond)).to(sigmas)
+        assert advanced_frame_weighting.shape[0] == cond_mark.shape[0], \
+            'Frame weighting list length is different from batch size!'
+
     if advanced_sigma_weighting is not None:
-        advanced_sigma_weighting = advanced_sigma_weighting(sigmas)
+        advanced_sigma_weighting = torch.cat([advanced_sigma_weighting(sigmas)] * len(cond_or_uncond))
+
+    for k, v in control.items():
+        for i in range(len(v)):
+            positive_weight = 1.0
+            negative_weight = 1.0
+            sigma_weight = 1.0
+            frame_weight = 1.0
+
+            if positive_advanced_weighting is not None:
+                positive_weight = get_at(positive_advanced_weighting.get(k, []), i, 1.0)
+
+            if negative_advanced_weighting is not None:
+                negative_weight = get_at(negative_advanced_weighting.get(k, []), i, 1.0)
+
+            if advanced_sigma_weighting is not None:
+                sigma_weight = advanced_sigma_weighting
+
+            if advanced_frame_weighting is not None:
+                frame_weight = advanced_frame_weighting
+
+            final_weight = positive_weight * (1.0 - cond_mark) + negative_weight * cond_mark
+            final_weight = final_weight * sigma_weight * frame_weight
+
+            control[k][i] = control[k][i] * final_weight[:, None, None, None]
 
     return control

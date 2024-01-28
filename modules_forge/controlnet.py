@@ -8,12 +8,10 @@ def apply_controlnet_advanced(
         positive_advanced_weighting=None,
         negative_advanced_weighting=None):
 
-    a = 0
-
-    unet.control_options = [1, 2, 3]
+    cnet = controlnet.copy().set_cond_hint(image, strength, (start_percent, end_percent))
+    cnet.positive_advanced_weighting = positive_advanced_weighting
+    cnet.negative_advanced_weighting = negative_advanced_weighting
 
     m = unet.clone()
-
-    m.control_options = [4, 5, 6]
-
+    m.add_patched_controlnet(cnet)
     return m

@@ -337,6 +337,10 @@ Similarly, Zero123:
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/d1a4a17d-f382-442d-91f2-fc5b6c10737f)
 
+### Write a simple ControlNet:
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/0a703d8b-27df-4608-8b12-aff750f20ffa)
+
 
 # About Extensions
 

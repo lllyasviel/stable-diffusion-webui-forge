@@ -69,6 +69,13 @@ def patched_control_merge(self, control_input, control_output, control_prev, out
                     x = x.to(output_dtype)
 
             out[key].append(x)
+
+    if self.positive_advanced_weighting is not None or self.negative_advanced_weighting:
+        # TODO: Implement here
+        cond_or_uncond = self.current_cond_or_uncond
+        a = 0
+        pass
+
     if control_prev is not None:
         for x in ['input', 'middle', 'output']:
             o = out[x]

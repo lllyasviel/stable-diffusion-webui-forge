@@ -8,6 +8,7 @@ def apply_controlnet_advanced(
         positive_advanced_weighting=None,
         negative_advanced_weighting=None,
         advanced_frame_weighting=None,
+        advanced_sigma_weighting=None
 ):
     """
 
@@ -35,12 +36,23 @@ def apply_controlnet_advanced(
     For example, if batch size is 5, you can use advanced_frame_weighting = [0, 0.25, 0.5, 0.75, 1.0]
     If you view the 5 images as 5 frames in a video, this will lead to progressively stronger control over time.
 
+    # advanced_sigma_weighting
+
+    The advanced_sigma_weighting allows you to dynamically compute control
+    weights given diffusion timestep (sigma).
+    For example below code can softly make beginning steps stronger than ending steps.
+
+    sigma_max = unet.model.model_sampling.percent_to_sigma(0.0)
+    sigma_min = unet.model.model_sampling.percent_to_sigma(1.0)
+    advanced_sigma_weighting = lambda s: (s - sigma_min) / (sigma_max - sigma_min)
+
     """
 
     cnet = controlnet.copy().set_cond_hint(image_bhwc.movedim(-1, 1), strength, (start_percent, end_percent))
     cnet.positive_advanced_weighting = positive_advanced_weighting
     cnet.negative_advanced_weighting = negative_advanced_weighting
     cnet.advanced_frame_weighting = advanced_frame_weighting
+    cnet.advanced_sigma_weighting = advanced_sigma_weighting
 
     m = unet.clone()
     m.add_patched_controlnet(cnet)

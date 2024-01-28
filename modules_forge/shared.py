@@ -65,6 +65,15 @@ class Preprocessor:
     def send_tensor_to_model_device(self, x):
         return x.to(device=self.model_patcher.current_device, dtype=self.model_patcher.dtype)
 
+    def lazy_memory_management(self, model):
+        # This is a lazy method to just free some memory
+        # so that we can still use old codes to manage memory in a bad way
+        # Ideally this should all be removed and all memory should be managed by model patcher.
+        # But the workload is too big, so we just use a quick method to manage in dirty way.
+        required_memory = model_management.module_size(model) + model_management.minimum_inference_memory()
+        model_management.free_memory(required_memory, device=model_management.get_torch_device())
+        return
+
     def process_before_every_sampling(self, process, cnet):
         return
 

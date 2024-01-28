@@ -12,6 +12,8 @@ from ldm_patched.modules.controlnet import load_controlnet
 
 
 class ControlNetExampleForge(scripts.Script):
+    model = None
+
     def title(self):
         return "ControlNet Example for Developers"
 
@@ -47,7 +49,7 @@ class ControlNetExampleForge(scripts.Script):
         )
         print('The model [control_v11p_sd15_canny_fp16.safetensors] download finished.')
 
-        controlnet = load_controlnet(controlnet_canny_path)
+        self.model = load_controlnet(controlnet_canny_path)
         print('Controlnet loaded.')
 
         return
@@ -58,7 +60,7 @@ class ControlNetExampleForge(scripts.Script):
 
         input_image, funny_slider = script_args
 
-        if input_image is None:
+        if input_image is None or self.model is None:
             return
 
         B, C, H, W = kwargs['noise'].shape  # latent_shape

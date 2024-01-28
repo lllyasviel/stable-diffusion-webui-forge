@@ -57,3 +57,14 @@ def apply_controlnet_advanced(
     m = unet.clone()
     m.add_patched_controlnet(cnet)
     return m
+
+
+def compute_controlnet_weighting(
+        control,
+        positive_advanced_weighting,
+        negative_advanced_weighting,
+        advanced_frame_weighting,
+        advanced_sigma_weighting,
+        transformer_options
+):
+    return control

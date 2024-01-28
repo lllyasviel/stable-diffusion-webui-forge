@@ -112,10 +112,10 @@ class ControlNetExampleForge(scripts.Script):
 
         # The advanced_frame_weighting is a weight applied to each image in a batch.
         # The length of this list must be same with batch size
-        # For example, if batch size is 5, the below list is [0, 0.25, 0.5, 0.75, 1.0]
+        # For example, if batch size is 5, the below list is [0.2, 0.4, 0.6, 0.8, 1.0]
         # If you view the 5 images as 5 frames in a video, this will lead to
         # progressively stronger control over time.
-        advanced_frame_weighting = [float(i) / float(batch_size - 1) for i in range(batch_size)]
+        advanced_frame_weighting = [float(i + 1) / float(batch_size) for i in range(batch_size)]
 
         # The advanced_sigma_weighting allows you to dynamically compute control
         # weights given diffusion timestep (sigma).
@@ -125,10 +125,10 @@ class ControlNetExampleForge(scripts.Script):
         advanced_sigma_weighting = lambda s: (s - sigma_min) / (sigma_max - sigma_min)
 
         # But in this simple example we do not use them
-        positive_advanced_weighting = None
-        negative_advanced_weighting = None
-        advanced_frame_weighting = None
-        advanced_sigma_weighting = None
+        # positive_advanced_weighting = None
+        # negative_advanced_weighting = None
+        # advanced_frame_weighting = None
+        # advanced_sigma_weighting = None
 
         unet = apply_controlnet_advanced(unet=unet, controlnet=self.model, image_bhwc=control_image,
                                          strength=0.6, start_percent=0.0, end_percent=0.8,

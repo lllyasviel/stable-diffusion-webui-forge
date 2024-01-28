@@ -1,3 +1,4 @@
+import diffusers
 import torch
 import ldm_patched.modules.ops as ops
 from ldm_patched.modules.model_patcher import ModelPatcher

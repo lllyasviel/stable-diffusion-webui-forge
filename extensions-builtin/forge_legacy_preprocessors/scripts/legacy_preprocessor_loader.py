@@ -28,7 +28,7 @@ for k in ui_preprocessor_keys:
         print(f'bad key {real_key}')
         continue
     p.legacy_call_function = cn_preprocessor_modules[real_key]
-    p.legacy_unload_function = cn_preprocessor_unloadable.get(real_key, None)
+    p.legacy_unload_function = cn_preprocessor_unloadable.get(real_key, lambda: None)
     legacy_preprocessors[k] = p
 
 

@@ -9,6 +9,7 @@ from modules.shared_cmd_options import cmd_opts
 from modules.paths import models_path
 from modules.modelloader import load_file_from_url
 from ldm_patched.modules.controlnet import load_controlnet
+from modules_forge.controlnet import apply_controlnet_advanced
 
 
 class ControlNetExampleForge(scripts.Script):
@@ -77,7 +78,9 @@ class ControlNetExampleForge(scripts.Script):
 
         unet = p.sd_model.forge_objects.unet
 
-        # unet = opFreeU_V2.patch(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)[0]
+        unet = apply_controlnet_advanced(unet=unet, controlnet=self.model, image=canny_image,
+                                         strength=1.0, start_percent=0.0, end_percent=1.0,
+                                         advanced_weighting=None)
 
         p.sd_model.forge_objects.unet = unet
 

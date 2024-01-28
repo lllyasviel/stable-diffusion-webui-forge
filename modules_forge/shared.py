@@ -24,15 +24,16 @@ def add_preprocessor(preprocessor):
 
 
 class PreprocessorParameter:
-    def __init__(self, minimum=0.0, maximum=1.0, step=0.01, label='Parameter 1', value=0.5, visible=False):
+    def __init__(self, minimum=0.0, maximum=1.0, step=0.01, label='Parameter 1', value=0.5, visible=False, **kwargs):
         self.gradio_update_kwargs = dict(
-            minimum=minimum, maximum=maximum, step=step, label=label, value=value, visible=visible
+            minimum=minimum, maximum=maximum, step=step, label=label, value=value, visible=visible, **kwargs
         )
 
 
 class PreprocessorBase:
     def __init__(self):
         self.name = 'PreprocessorBase'
+        self.tag = None
         self.slider_1 = PreprocessorParameter()
         self.slider_2 = PreprocessorParameter()
         self.slider_3 = PreprocessorParameter()
@@ -46,6 +47,9 @@ class PreprocessorBase:
             offload_device = torch.device('cpu')
 
         self.model_patcher = ModelPatcher(model=model, load_device=load_device, offload_device=offload_device, **kwargs)
+        return
+
+    def process_before_every_sampling(self, process, cnet):
         return
 
 
@@ -62,6 +66,7 @@ class PreprocessorCanny(PreprocessorBase):
     def __init__(self):
         super().__init__()
         self.name = 'canny'
+        self.tag = 'Canny'
         self.slider_1 = PreprocessorParameter(minimum=0, maximum=256, step=1, value=100, label='Low Threshold', visible=True)
         self.slider_2 = PreprocessorParameter(minimum=0, maximum=256, step=1, value=200, label='High Threshold', visible=True)
 

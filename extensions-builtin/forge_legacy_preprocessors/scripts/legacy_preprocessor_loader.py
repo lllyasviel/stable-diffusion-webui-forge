@@ -24,7 +24,9 @@ for k in ui_preprocessor_keys:
     p = LegacyPreprocessor()
     p.name = k
     real_key = reverse_preprocessor_aliases.get(k, k)
-    assert real_key in cn_preprocessor_modules
+    if real_key not in cn_preprocessor_modules:
+        print(f'bad key {real_key}')
+        continue
     p.legacy_call_function = cn_preprocessor_modules[real_key]
     p.legacy_unload_function = cn_preprocessor_unloadable.get(real_key, None)
     legacy_preprocessors[k] = p

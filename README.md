@@ -361,7 +361,8 @@ from modules.paths import models_path
 from modules.modelloader import load_file_from_url
 from ldm_patched.modules.controlnet import load_controlnet
 from modules_forge.controlnet import apply_controlnet_advanced
-from modules_forge.forge_util import pytorch_to_numpy, numpy_to_pytorch
+from modules_forge.forge_util import numpy_to_pytorch
+from modules_forge.shared import controlnet_dir
 
 
 class ControlNetExampleForge(scripts.Script):
@@ -393,8 +394,6 @@ class ControlNetExampleForge(scripts.Script):
         if input_image is None:
             return
 
-        model_dir = os.path.join(models_path, 'ControlNet')
-        os.makedirs(model_dir, exist_ok=True)
         # controlnet_canny_path = load_file_from_url(
         #     url='https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/sai_xl_canny_256lora.safetensors',
         #     model_dir=model_dir,
@@ -402,7 +401,7 @@ class ControlNetExampleForge(scripts.Script):
         # )
         controlnet_canny_path = load_file_from_url(
             url='https://huggingface.co/lllyasviel/fav_models/resolve/main/fav/control_v11p_sd15_canny_fp16.safetensors',
-            model_dir=model_dir,
+            model_dir=controlnet_dir,
             file_name='control_v11p_sd15_canny_fp16.safetensors'
         )
         print('The model [control_v11p_sd15_canny_fp16.safetensors] download finished.')
@@ -427,14 +426,7 @@ class ControlNetExampleForge(scripts.Script):
         batch_size = p.batch_size
 
         input_image = cv2.resize(input_image, (width, height))
-
-        # Below are two methods to preprocess images.
-        # Method 1: do it in your own way
         canny_image = cv2.cvtColor(cv2.Canny(input_image, 100, 200), cv2.COLOR_GRAY2RGB)
-
-        # Method 2: use built-in preprocessor
-        # from modules_forge.shared import shared_preprocessors
-        # canny_image = shared_preprocessors['canny'](input_image, 100, 200)
 
         # Output preprocessor result. Now called every sampling. Cache in your own way.
         p.extra_result_images.append(canny_image)
@@ -519,6 +511,7 @@ Below codes are in `extensions-builtin\forge_preprocessor_normalbae\scripts\prep
 
 ```python
 from modules_forge.shared import Preprocessor, preprocessor_dir, load_file_from_url, add_preprocessor
+from modules_forge.forge_util import resize_image_with_pad
 
 import types
 import torch
@@ -557,7 +550,11 @@ class PreprocessorNormalBae(Preprocessor):
 
         self.model_patcher = self.setup_model_patcher(model)
 
-    def __call__(self, input_image, *args, **kwargs):
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+        # A flexiable function to pad image to 64 divisions and then remove the pad
+        # So that preprocessors work with arbitary resolutions.
+        input_image, remove_pad = resize_image_with_pad(input_image, resolution)
+
         self.load_model()
 
         self.move_all_model_patchers_to_gpu()
@@ -578,7 +575,7 @@ class PreprocessorNormalBae(Preprocessor):
             normal = rearrange(normal[0], 'c h w -> h w c').cpu().numpy()
             normal_image = (normal * 255.0).clip(0, 255).astype(np.uint8)
 
-        return normal_image
+        return remove_pad(normal_image)
 
 
 add_preprocessor(PreprocessorNormalBae)

@@ -77,8 +77,12 @@ def sampling_prepare(unet, x):
     B, C, H, W = x.shape
 
     unet_inference_memory = unet.memory_required([B * 2, C, H, W])
-    additional_inference_memory = unet.controlnet_linked_list.inference_memory_requirements(unet.model_dtype())
-    additional_model_patchers = unet.get_models()
+    additional_inference_memory = 0
+    additional_model_patchers = []
+
+    if unet.controlnet_linked_list is not None:
+        additional_inference_memory += unet.controlnet_linked_list.inference_memory_requirements(unet.model_dtype())
+        additional_model_patchers += unet.controlnet_linked_list.get_models()
 
     model_management.load_models_gpu(
         models=[unet] + additional_model_patchers,

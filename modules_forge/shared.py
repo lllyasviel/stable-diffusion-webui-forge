@@ -38,21 +38,30 @@ class Preprocessor:
         self.slider_1 = PreprocessorParameter()
         self.slider_2 = PreprocessorParameter()
         self.slider_3 = PreprocessorParameter()
-        self.model_patcher = None
+        self.model_patcher: ModelPatcher = None
         self.show_control_mode = True
 
-    def setup_model_patcher(self, model, load_device=None, offload_device=None, **kwargs):
+    def setup_model_patcher(self, model, load_device=None, offload_device=None, dtype=torch.float32, **kwargs):
         if load_device is None:
             load_device = model_management.get_torch_device()
 
         if offload_device is None:
             offload_device = torch.device('cpu')
 
+        if not model_management.should_use_fp16(load_device):
+            dtype = torch.float32
+
+        model = model.to(device=offload_device, dtype=dtype)
+
         self.model_patcher = ModelPatcher(model=model, load_device=load_device, offload_device=offload_device, **kwargs)
+        self.model_patcher.dtype = dtype
         return
 
     def load_models_gpu(self):
         model_management.load_models_gpu([self.model_patcher])
+
+    def send_tensor_to_model_device(self, x):
+        return x.to(device=self.model_patcher.current_device, dtype=self.model_patcher.dtype)
 
     def process_before_every_sampling(self, process, cnet):
         return

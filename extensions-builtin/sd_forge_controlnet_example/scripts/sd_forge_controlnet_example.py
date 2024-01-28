@@ -53,7 +53,9 @@ class ControlNetExampleForge(scripts.Script):
 
         controlnet = load_controlnet(controlnet_canny_path)
         input_image = cv2.resize(input_image, (p.height, p.width))
+        canny_image = cv2.Canny(input_image, 100, 200)
 
+        # Display preprocessor result. Called every batch. Cache in your own way.
         p.extra_result_images.append(input_image)
 
         return

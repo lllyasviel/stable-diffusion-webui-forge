@@ -9,10 +9,7 @@ from einops import rearrange
 from annotator.normalbae.models.NNET import NNET
 import torchvision.transforms as transforms
 
-a = 0
 
-
-# load model
 def load_checkpoint(fpath, model):
     ckpt = torch.load(fpath, map_location='cpu')['model']
 
@@ -28,10 +25,10 @@ def load_checkpoint(fpath, model):
     return model
 
 
-class NormalBaeDetector:
-    model_dir = os.path.join(models_path, "normal_bae")
-
+class PreprocessorNormalBae:
     def __init__(self):
+        self.name = 'normalbae'
+        self.tag = 'NormalMap'
         self.model = None
         self.device = devices.get_device_for("controlnet")
 

@@ -11,7 +11,6 @@ from typing import Callable, Tuple, Union
 
 from modules.safe import Extra
 from modules import devices
-from scripts.logging import logger
 
 
 def torch_handler(module: str, name: str):
@@ -388,7 +387,7 @@ def clip(img, res=512, config='clip_vitl', low_vram=False, **kwargs):
     if clip_encoder[config] is None:
         from annotator.clipvision import ClipVisionDetector
         if low_vram:
-            logger.info("Loading CLIP model on CPU.")
+            print("Loading CLIP model on CPU.")
         clip_encoder[config] = ClipVisionDetector(config, low_vram)
     result = clip_encoder[config](img)
     return result, False
@@ -752,7 +751,7 @@ class InsightFaceModel:
         if not faces:
             raise Exception(f"Insightface: No face found in image {i}.")
         if len(faces) > 1:
-            logger.warn("Insightface: More than one face is detected in the image. "
+            print("Insightface: More than one face is detected in the image. "
                         f"Only the first one will be used {i}.")
         return torch.from_numpy(faces[0].normed_embedding).unsqueeze(0), False
 
@@ -805,8 +804,8 @@ class InsightFaceModel:
         if not face_info:
             raise Exception(f"Insightface: No face found in image.")
         if len(face_info) > 1:
-            logger.warn("Insightface: More than one face is detected in the image. "
-                        f"Only the biggest one will be used.")
+            print("Insightface: More than one face is detected in the image. "
+                  f"Only the biggest one will be used.")
         # only use the maximum face
         face_info = sorted(face_info, key=lambda x:(x['bbox'][2]-x['bbox'][0])*x['bbox'][3]-x['bbox'][1])[-1]
         if return_keypoints:

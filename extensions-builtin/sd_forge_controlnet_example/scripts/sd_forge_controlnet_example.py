@@ -82,8 +82,8 @@ class ControlNetExampleForge(scripts.Script):
         canny_image = cv2.cvtColor(cv2.Canny(input_image, 100, 200), cv2.COLOR_GRAY2RGB)
 
         # Method 2: use built-in preprocessor
-        # from modules_forge.shared import shared_preprocessors
-        # canny_image = shared_preprocessors['canny'](input_image, 100, 200)
+        from modules_forge.shared import shared_preprocessors
+        canny_image = shared_preprocessors['canny'](input_image, 100, 200)
 
         # Output preprocessor result. Now called every sampling. Cache in your own way.
         p.extra_result_images.append(canny_image)

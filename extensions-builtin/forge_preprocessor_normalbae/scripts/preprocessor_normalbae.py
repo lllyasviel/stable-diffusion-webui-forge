@@ -52,7 +52,7 @@ class PreprocessorNormalBae(Preprocessor):
         model.eval()
         self.setup_model_patcher(model)
 
-    def __call__(self, input_image):
+    def __call__(self, input_image, *args, **kwargs):
         self.load_model()
         self.load_models_gpu()
 

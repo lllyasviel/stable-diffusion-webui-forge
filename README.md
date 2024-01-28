@@ -399,6 +399,7 @@ class ControlNetExampleForge(scripts.Script):
         )
         print('The model [control_v11p_sd15_canny_fp16.safetensors] download finished.')
 
+        # Works for all controlnets, t2i adapters, control-loras, etc.
         self.model = load_controlnet(controlnet_canny_path)
         print('Controlnet loaded.')
 

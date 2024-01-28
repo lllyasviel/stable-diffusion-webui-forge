@@ -45,10 +45,15 @@ class ControlNetExampleForge(scripts.Script):
         model_dir = os.path.join(models_path, 'ControlNet')
         os.makedirs(model_dir, exist_ok=True)
         controlnet_canny_path = load_file_from_url(
-            url='https://huggingface.co/lllyasviel/fav_models/resolve/main/fav/control_v11p_sd15_canny_fp16.safetensors',
+            url='https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/sai_xl_canny_256lora.safetensors',
             model_dir=model_dir,
-            file_name='control_v11p_sd15_canny_fp16.safetensors'
+            file_name='sai_xl_canny_256lora.safetensors'
         )
+        # controlnet_canny_path = load_file_from_url(
+        #     url='https://huggingface.co/lllyasviel/fav_models/resolve/main/fav/control_v11p_sd15_canny_fp16.safetensors',
+        #     model_dir=model_dir,
+        #     file_name='control_v11p_sd15_canny_fp16.safetensors'
+        # )
         print('The model [control_v11p_sd15_canny_fp16.safetensors] download finished.')
 
         self.model = load_controlnet(controlnet_canny_path)

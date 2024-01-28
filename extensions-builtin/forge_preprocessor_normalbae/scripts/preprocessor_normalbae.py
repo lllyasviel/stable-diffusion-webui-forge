@@ -1,4 +1,4 @@
-from modules_forge.shared import PreprocessorBase
+from modules_forge.shared import Preprocessor, preprocessor_dir, load_file_from_url, add_preprocessor
 
 import os
 import types

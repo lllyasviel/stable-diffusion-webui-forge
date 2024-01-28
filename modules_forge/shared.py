@@ -5,6 +5,7 @@ import torch
 from modules.paths import models_path
 from ldm_patched.modules import model_management
 from ldm_patched.modules.model_patcher import ModelPatcher
+from modules.modelloader import load_file_from_url
 
 
 controlnet_dir = os.path.join(models_path, 'ControlNet')
@@ -30,7 +31,7 @@ class PreprocessorParameter:
         )
 
 
-class PreprocessorBase:
+class Preprocessor:
     def __init__(self):
         self.name = 'PreprocessorBase'
         self.tag = None
@@ -48,7 +49,7 @@ class PreprocessorBase:
 
         self.model_patcher = ModelPatcher(model=model, load_device=load_device, offload_device=offload_device, **kwargs)
         return
-    
+
     def load_models_gpu(self):
         model_management.load_models_gpu([self.model_patcher])
 
@@ -56,7 +57,7 @@ class PreprocessorBase:
         return
 
 
-class PreprocessorNone(PreprocessorBase):
+class PreprocessorNone(Preprocessor):
     def __init__(self):
         super().__init__()
         self.name = 'None'
@@ -65,7 +66,7 @@ class PreprocessorNone(PreprocessorBase):
         return input_image
 
 
-class PreprocessorCanny(PreprocessorBase):
+class PreprocessorCanny(Preprocessor):
     def __init__(self):
         super().__init__()
         self.name = 'canny'

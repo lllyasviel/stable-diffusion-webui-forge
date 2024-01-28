@@ -1,3 +1,6 @@
+# Use --show-controlnet-example to see this extension.
+
+
 import gradio as gr
 
 from modules import scripts

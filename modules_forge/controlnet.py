@@ -72,8 +72,8 @@ def compute_controlnet_weighting(
         return control
 
     cond_or_uncond = transformer_options['cond_or_uncond']
-    cond_or_uncond_size = transformer_options['cond_or_uncond_size']
     sigmas = transformer_options['sigmas']
+    cond_or_uncond_size = int(sigmas.shape[0])
 
     if advanced_sigma_weighting is not None:
         advanced_sigma_weighting = advanced_sigma_weighting(sigmas)

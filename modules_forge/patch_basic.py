@@ -129,7 +129,6 @@ def patched_calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_op
             patches = p.patches
 
         batch_chunks = len(cond_or_uncond)
-        cond_or_uncond_size = int(timestep.shape[0])
         input_x = torch.cat(input_x)
         c = cond_cat(c)
         timestep_ = torch.cat([timestep] * batch_chunks)
@@ -151,7 +150,6 @@ def patched_calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_op
 
         transformer_options["cond_or_uncond"] = cond_or_uncond[:]
         transformer_options["sigmas"] = timestep
-        transformer_options["cond_or_uncond_size"] = cond_or_uncond_size
 
         c['transformer_options'] = transformer_options
 

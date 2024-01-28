@@ -225,8 +225,6 @@ class StableDiffusionProcessing:
 
     is_api: bool = field(default=False, init=False)
 
-    extra_result_images = []
-
     def __post_init__(self):
         if self.sampler_index is not None:
             print("sampler_index argument for StableDiffusionProcessing does not do anything; use sampler_name", file=sys.stderr)
@@ -257,6 +255,8 @@ class StableDiffusionProcessing:
 
         self.cached_uc = StableDiffusionProcessing.cached_uc
         self.cached_c = StableDiffusionProcessing.cached_c
+
+        self.extra_result_images = []
 
     @property
     def sd_model(self):

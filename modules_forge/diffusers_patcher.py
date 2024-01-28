@@ -1,7 +1,6 @@
 import torch
 import ldm_patched.modules.ops as ops
 
-from diffusers.models.attention_processor import AttnProcessor2_0
 from ldm_patched.modules.model_patcher import ModelPatcher
 from ldm_patched.modules import model_management
 from modules_forge.ops import use_patched_ops
@@ -24,6 +23,7 @@ class DiffusersModelPatcher:
 
         if hasattr(self.pipeline, 'unet'):
             if hasattr(self.pipeline.unet, 'set_attn_processor'):
+                from diffusers.models.attention_processor import AttnProcessor2_0
                 self.pipeline.unet.set_attn_processor(AttnProcessor2_0())
                 print('Attention optimization applied to DiffusersModelPatcher')
 

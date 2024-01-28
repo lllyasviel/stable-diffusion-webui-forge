@@ -8,7 +8,7 @@ def get_at(array, index, default=None):
 def apply_controlnet_advanced(
         unet,
         controlnet,
-        image_bhwc,
+        image_bchw,
         strength,
         start_percent,
         end_percent,
@@ -55,7 +55,7 @@ def apply_controlnet_advanced(
 
     """
 
-    cnet = controlnet.copy().set_cond_hint(image_bhwc.movedim(-1, 1), strength, (start_percent, end_percent))
+    cnet = controlnet.copy().set_cond_hint(image_bchw, strength, (start_percent, end_percent))
     cnet.positive_advanced_weighting = positive_advanced_weighting
     cnet.negative_advanced_weighting = negative_advanced_weighting
     cnet.advanced_frame_weighting = advanced_frame_weighting

@@ -10,7 +10,7 @@ If you see this, please join our private Discord server for discussion: https://
 
 Stable Diffusion Web UI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) to make development easier, and optimize the speed and resource consumption.
 
-The name "Forge" is inspired from "Minecraft Forge". This project will become SD WebUI's Forge.
+The name "Forge" is inspired from "Minecraft Forge". This project will become SD WebUI's Forge..
 
 Forge will give you:
 

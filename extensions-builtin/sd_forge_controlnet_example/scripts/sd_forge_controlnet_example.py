@@ -29,9 +29,7 @@ class ControlNetExampleForge(scripts.Script):
 
         return input_image, funny_slider
 
-    def process_batch(self, p, *script_args, **kwargs):
-        # This function will be called every batch. Use your own way to cache.
-
+    def process(self, p, *script_args, **kwargs):
         input_image, funny_slider = script_args
 
         # This slider does nothing. It just shows you how to transfer parameters.
@@ -39,8 +37,6 @@ class ControlNetExampleForge(scripts.Script):
 
         if input_image is None:
             return
-
-        print('Input image is read.')
 
         model_dir = os.path.join(models_path, 'ControlNet')
         os.makedirs(model_dir, exist_ok=True)
@@ -54,10 +50,25 @@ class ControlNetExampleForge(scripts.Script):
         controlnet = load_controlnet(controlnet_canny_path)
         print('Controlnet loaded.')
 
-        input_image = cv2.resize(input_image, (p.height, p.width))
+        return
+
+    def process_before_every_sampling(self, p, *script_args, **kwargs):
+        # This will be called before every sampling.
+        # If you use highres fix, this will be called twice.
+
+        input_image, funny_slider = script_args
+
+        if input_image is None:
+            return
+
+        B, C, H, W = kwargs['noise'].shape  # latent_shape
+        height = H * 8
+        width = W * 8
+
+        input_image = cv2.resize(input_image, (height, width))
         canny_image = cv2.Canny(input_image, 100, 200)
 
-        # Display preprocessor result. Called every batch. Cache in your own way.
+        # Display preprocessor result. Called every sampling. Cache in your own way.
         p.extra_result_images.append(canny_image)
 
         print('Preprocessor Canny finished.')

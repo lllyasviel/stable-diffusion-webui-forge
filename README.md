@@ -392,6 +392,11 @@ class ControlNetExampleForge(scripts.Script):
 
         model_dir = os.path.join(models_path, 'ControlNet')
         os.makedirs(model_dir, exist_ok=True)
+        # controlnet_canny_path = load_file_from_url(
+        #     url='https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/sai_xl_canny_256lora.safetensors',
+        #     model_dir=model_dir,
+        #     file_name='sai_xl_canny_256lora.safetensors'
+        # )
         controlnet_canny_path = load_file_from_url(
             url='https://huggingface.co/lllyasviel/fav_models/resolve/main/fav/control_v11p_sd15_canny_fp16.safetensors',
             model_dir=model_dir,
@@ -399,7 +404,6 @@ class ControlNetExampleForge(scripts.Script):
         )
         print('The model [control_v11p_sd15_canny_fp16.safetensors] download finished.')
 
-        # Works for all controlnets, t2i adapters, control-loras, etc.
         self.model = load_controlnet(controlnet_canny_path)
         print('Controlnet loaded.')
 
@@ -432,7 +436,8 @@ class ControlNetExampleForge(scripts.Script):
 
         unet = apply_controlnet_advanced(unet=unet, controlnet=self.model, image_bhwc=control_image,
                                          strength=0.6, start_percent=0.0, end_percent=0.8,
-                                         positive_advanced_weighting=None, negative_advanced_weighting=None)
+                                         positive_advanced_weighting=None, negative_advanced_weighting=None,
+                                         frame_advanced_weighting=None)
 
         p.sd_model.forge_objects.unet = unet
 

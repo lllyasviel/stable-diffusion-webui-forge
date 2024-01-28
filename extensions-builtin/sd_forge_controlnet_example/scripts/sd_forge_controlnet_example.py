@@ -3,6 +3,7 @@
 import os
 import cv2
 import gradio as gr
+import numpy as np
 
 from modules import scripts
 from modules.shared_cmd_options import cmd_opts
@@ -75,7 +76,18 @@ class ControlNetExampleForge(scripts.Script):
         width = W * 8
 
         input_image = cv2.resize(input_image, (width, height))
-        canny_image = cv2.cvtColor(cv2.Canny(input_image, 100, 200), cv2.COLOR_GRAY2RGB)
+
+        # Below are two methods to preprocess images.
+        # Method 1: do it in your own way
+        canny_image_1 = cv2.cvtColor(cv2.Canny(input_image, 100, 200), cv2.COLOR_GRAY2RGB)
+
+        # Method 2: use built-in preprocessor
+        from modules_forge.shared import shared_preprocessors
+        canny_image_2 = shared_preprocessors['canny'](input_image, 100, 200)
+
+        # The two methods will give your same result
+        assert np.allclose(canny_image_1, canny_image_2)
+        canny_image = canny_image_1
 
         # Output preprocessor result. Now called every sampling. Cache in your own way.
         p.extra_result_images.append(canny_image)

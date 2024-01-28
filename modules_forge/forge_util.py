@@ -6,6 +6,17 @@ import random
 import string
 
 
+def compute_cond_mark(cond_or_uncond, sigmas):
+    cond_or_uncond_size = int(sigmas.shape[0])
+
+    cond_mark = []
+    for cx in cond_or_uncond:
+        cond_mark += [cx] * cond_or_uncond_size
+
+    cond_mark = torch.Tensor(cond_mark).to(sigmas)
+    return cond_mark
+
+
 def generate_random_filename(extension=".txt"):
     timestamp = time.strftime("%Y%m%d-%H%M%S")
     random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=5))

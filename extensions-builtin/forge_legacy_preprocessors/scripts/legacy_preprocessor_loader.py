@@ -7,23 +7,26 @@ from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocess
 # how to make better implementation of preprocessors.
 # No newer preprocessors should be written in this legacy way.
 
-from legacy_preprocessors.preprocessor_meta import cn_preprocessor_modules, cn_preprocessor_unloadable
+from legacy_preprocessors.preprocessor_meta import cn_preprocessor_modules, cn_preprocessor_unloadable, ui_preprocessor_keys, reverse_preprocessor_aliases
 
 
 class LegacyPreprocessor(Preprocessor):
     def __init__(self):
         super().__init__()
-        legacy_call_function = None
-        legacy_unload_function = None
+        self.legacy_call_function = None
+        self.legacy_unload_function = None
         return
 
 
 legacy_preprocessors = {}
 
-for k, v in cn_preprocessor_modules.items():
+for k in ui_preprocessor_keys:
     p = LegacyPreprocessor()
     p.name = k
-    p.legacy_call_function = v
+    real_key = reverse_preprocessor_aliases.get(k, k)
+    assert real_key in cn_preprocessor_modules
+    p.legacy_call_function = cn_preprocessor_modules[real_key]
+    p.legacy_unload_function = cn_preprocessor_unloadable.get(real_key, None)
     legacy_preprocessors[k] = p
 
 

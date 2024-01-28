@@ -68,7 +68,7 @@ class ControlNetExampleForge(scripts.Script):
         input_image = cv2.resize(input_image, (height, width))
         canny_image = cv2.Canny(input_image, 100, 200)
 
-        # Display preprocessor result. Called every sampling. Cache in your own way.
+        # Output preprocessor result. Now called every sampling. Cache in your own way.
         p.extra_result_images.append(canny_image)
 
         print('Preprocessor Canny finished.')

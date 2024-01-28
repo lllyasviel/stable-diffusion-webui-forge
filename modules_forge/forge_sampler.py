@@ -67,8 +67,10 @@ def forge_sample(self, denoiser_params, cond_scale, cond_composition):
         if image_cond_in.shape[0] == x.shape[0] \
                 and image_cond_in.shape[2] == x.shape[2] \
                 and image_cond_in.shape[3] == x.shape[3]:
-            uncond[0]['model_conds']['c_concat'] = CONDRegular(image_cond_in)
-            cond[0]['model_conds']['c_concat'] = CONDRegular(image_cond_in)
+            for i in range(len(uncond)):
+                uncond[i]['model_conds']['c_concat'] = CONDRegular(image_cond_in)
+            for i in range(len(cond)):
+                cond[i]['model_conds']['c_concat'] = CONDRegular(image_cond_in)
 
     if control is not None:
         for h in cond + uncond:

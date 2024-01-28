@@ -1,13 +1,14 @@
-import diffusers
 import torch
 import ldm_patched.modules.ops as ops
+
+from diffusers.models.attention_processor import AttnProcessor2_0
 from ldm_patched.modules.model_patcher import ModelPatcher
 from ldm_patched.modules import model_management
 from modules_forge.ops import use_patched_ops
 from transformers import modeling_utils
 
 
-class DiffusersPatcher:
+class DiffusersModelPatcher:
     def __init__(self, pipeline_class, dtype=torch.float16, *args, **kwargs):
         load_device = model_management.get_torch_device()
         offload_device = torch.device("cpu")
@@ -20,6 +21,10 @@ class DiffusersPatcher:
         with use_patched_ops(ops.manual_cast):
             with modeling_utils.no_init_weights():
                 self.pipeline = pipeline_class.from_pretrained(*args, **kwargs)
+
+        if hasattr(self.pipeline, 'unet'):
+            self.pipeline.unet.set_attn_processor(AttnProcessor2_0())
+            print('Attention optimization applied to DiffusersModelPatcher')
 
         self.pipeline = self.pipeline.to(device=offload_device, dtype=dtype)
         self.pipeline.eval()

@@ -22,6 +22,10 @@ class ControlNetExampleForge(scripts.Script):
         return input_image, funny_slider
 
     def process_batch(self, p, *script_args, **kwargs):
+        # This function will be called every batch.
+        # If you develop controlnet, you will need some caches.
+        # We do not implement any cache, so you just use your own way that makes you comfortable.
+
         input_image, funny_slider = script_args
 
         # This slider does nothing. It just shows you how to transfer parameters.
@@ -30,7 +34,7 @@ class ControlNetExampleForge(scripts.Script):
         if input_image is None:
             return
 
-        print('Input image is read')
+        print('Input image is read.')
 
         return
 

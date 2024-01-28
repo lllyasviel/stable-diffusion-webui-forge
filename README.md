@@ -345,6 +345,8 @@ Below is a simple extension to have a completely independent pass of ControlNet 
 
 Note that this extension is hidden because it is only for developers. To see it in UI, use `--show-controlnet-example`.
 
+The memory optimization in this example is fully automatic. You do not need to care about memory and inference speed, but you may want to cache objects if you wish.
+
 ```python
 # Use --show-controlnet-example to see this extension.
 

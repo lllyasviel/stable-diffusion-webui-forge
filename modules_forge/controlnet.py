@@ -42,8 +42,8 @@ def apply_controlnet_advanced(
     weights given diffusion timestep (sigma).
     For example below code can softly make beginning steps stronger than ending steps.
 
-        sigma_max = unet.model.model_sampling.percent_to_sigma(0.0)
-        sigma_min = unet.model.model_sampling.percent_to_sigma(1.0)
+        sigma_max = unet.model.model_sampling.sigma_max
+        sigma_min = unet.model.model_sampling.sigma_min
         advanced_sigma_weighting = lambda s: (s - sigma_min) / (sigma_max - sigma_min)
 
     """

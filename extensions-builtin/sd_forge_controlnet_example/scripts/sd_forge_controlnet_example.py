@@ -52,11 +52,15 @@ class ControlNetExampleForge(scripts.Script):
         print('The model [control_v11p_sd15_canny_fp16.safetensors] download finished.')
 
         controlnet = load_controlnet(controlnet_canny_path)
+        print('Controlnet loaded.')
+
         input_image = cv2.resize(input_image, (p.height, p.width))
         canny_image = cv2.Canny(input_image, 100, 200)
 
         # Display preprocessor result. Called every batch. Cache in your own way.
-        p.extra_result_images.append(input_image)
+        p.extra_result_images.append(canny_image)
+
+        print('Preprocessor Canny finished.')
 
         return
 

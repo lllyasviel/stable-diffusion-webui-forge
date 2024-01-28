@@ -70,7 +70,7 @@ class ControlNetExampleForge(scripts.Script):
         width = W * 8
 
         input_image = cv2.resize(input_image, (height, width))
-        canny_image = cv2.Canny(input_image, 100, 200)
+        canny_image = cv2.cvtColor(cv2.Canny(input_image, 100, 200), cv2.COLOR_GRAY2RGB)
 
         # Output preprocessor result. Now called every sampling. Cache in your own way.
         p.extra_result_images.append(canny_image)

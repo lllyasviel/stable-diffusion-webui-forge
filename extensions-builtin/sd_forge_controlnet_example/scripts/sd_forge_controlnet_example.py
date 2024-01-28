@@ -10,6 +10,7 @@ from modules.paths import models_path
 from modules.modelloader import load_file_from_url
 from ldm_patched.modules.controlnet import load_controlnet
 from modules_forge.controlnet import apply_controlnet_advanced
+from modules_forge.forge_util import pytorch_to_numpy, numpy_to_pytorch
 
 
 class ControlNetExampleForge(scripts.Script):
@@ -76,9 +77,11 @@ class ControlNetExampleForge(scripts.Script):
 
         print('Preprocessor Canny finished.')
 
+        control_image = numpy_to_pytorch(canny_image)
+
         unet = p.sd_model.forge_objects.unet
 
-        unet = apply_controlnet_advanced(unet=unet, controlnet=self.model, image=canny_image,
+        unet = apply_controlnet_advanced(unet=unet, controlnet=self.model, cond_hint=control_image,
                                          strength=1.0, start_percent=0.0, end_percent=1.0,
                                          positive_advanced_weighting=None, negative_advanced_weighting=None)
 

@@ -54,6 +54,7 @@ def cond_from_a1111_to_patched_ldm_weighted(cond, weights):
 
 def forge_sample(self, denoiser_params, cond_scale, cond_composition):
     model = self.inner_model.inner_model.forge_objects.unet.model
+    control = self.inner_model.inner_model.forge_objects.unet.controlnet_linked_list
     x = denoiser_params.x
     timestep = denoiser_params.sigma
     uncond = cond_from_a1111_to_patched_ldm(denoiser_params.text_uncond)
@@ -68,6 +69,10 @@ def forge_sample(self, denoiser_params, cond_scale, cond_composition):
                 and image_cond_in.shape[3] == x.shape[3]:
             uncond[0]['model_conds']['c_concat'] = CONDRegular(image_cond_in)
             cond[0]['model_conds']['c_concat'] = CONDRegular(image_cond_in)
+
+    if control is not None:
+        for h in cond + uncond:
+            h['control'] = control
 
     denoised = sampling_function(model, x, timestep, uncond, cond, cond_scale, model_options, seed)
     return denoised

@@ -81,7 +81,7 @@ class ControlNetExampleForge(scripts.Script):
 
         unet = p.sd_model.forge_objects.unet
 
-        unet = apply_controlnet_advanced(unet=unet, controlnet=self.model, cond_hint=control_image,
+        unet = apply_controlnet_advanced(unet=unet, controlnet=self.model, image_bhwc=control_image,
                                          strength=1.0, start_percent=0.0, end_percent=1.0,
                                          positive_advanced_weighting=None, negative_advanced_weighting=None)
 

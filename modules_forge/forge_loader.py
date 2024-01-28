@@ -16,6 +16,7 @@ from modules import sd_hijack
 from modules.sd_models_xl import extend_sdxl
 from ldm.util import instantiate_from_config
 from modules_forge import forge_clip
+from modules_forge.unet_patcher import UnetPatcher
 
 import open_clip
 from transformers import CLIPTextModel, CLIPTokenizer
@@ -116,7 +117,7 @@ def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_c
         print("left over keys:", left_over)
 
     if output_model:
-        model_patcher = ldm_patched.modules.model_patcher.ModelPatcher(model, load_device=load_device, offload_device=model_management.unet_offload_device(), current_device=inital_load_device)
+        model_patcher = UnetPatcher(model, load_device=load_device, offload_device=model_management.unet_offload_device(), current_device=inital_load_device)
         if inital_load_device != torch.device("cpu"):
             print("loaded straight to GPU")
             model_management.load_model_gpu(model_patcher)

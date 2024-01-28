@@ -2,40 +2,8 @@ import torch
 import ldm_patched.modules.samplers
 
 from ldm_patched.modules.controlnet import ControlBase
-from ldm_patched.modules.model_patcher import ModelPatcher
 from ldm_patched.modules.samplers import get_area_and_mult, can_concat_cond, cond_cat
 from ldm_patched.modules import model_management
-
-
-og_model_patcher_init = ModelPatcher.__init__
-og_model_patcher_clone = ModelPatcher.clone
-
-
-def patched_model_patcher_init(self, *args, **kwargs):
-    h = og_model_patcher_init(self, *args, **kwargs)
-    self.controlnet_linked_list = None
-    return h
-
-
-def patched_model_patcher_clone(self):
-    cloned = og_model_patcher_clone(self)
-    cloned.controlnet_linked_list = self.controlnet_linked_list
-    return cloned
-
-
-def model_patcher_add_patched_controlnet(self, cnet):
-    cnet.set_previous_controlnet(self.controlnet_linked_list)
-    self.controlnet_linked_list = cnet
-    return
-
-
-def model_patcher_list_controlnets(self):
-    results = []
-    pointer = self.controlnet_linked_list
-    while pointer is not None:
-        results.append(pointer)
-        pointer = pointer.previous_controlnet
-    return results
 
 
 def patched_control_merge(self, control_input, control_output, control_prev, output_dtype):
@@ -208,10 +176,6 @@ def patched_calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_op
 
 
 def patch_all_basics():
-    ModelPatcher.__init__ = patched_model_patcher_init
-    ModelPatcher.clone = patched_model_patcher_clone
-    ModelPatcher.add_patched_controlnet = model_patcher_add_patched_controlnet
-    ModelPatcher.list_controlnets = model_patcher_list_controlnets
     ControlBase.control_merge = patched_control_merge
     ldm_patched.modules.samplers.calc_cond_uncond_batch = patched_calc_cond_uncond_batch
     return

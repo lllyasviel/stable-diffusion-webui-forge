@@ -447,7 +447,8 @@ class ControlNetExampleForge(scripts.Script):
 
         unet = p.sd_model.forge_objects.unet
 
-        # Unet has input, middle, output blocks, and we can give different weights to each layers in all blocks.
+        # Unet has input, middle, output blocks, and we can give different 
+        # weights to each layers in all blocks.
         # Below is an example for stronger control in middle block.
         # This is helpful for some high-res fix passes. (p.is_hr_pass)
         positive_advanced_weighting = {
@@ -464,7 +465,8 @@ class ControlNetExampleForge(scripts.Script):
         # The advanced_frame_weighting is a weight applied to each image in a batch.
         # The length of this list must be same with batch size
         # For example, if batch size is 5, the below list is [0, 0.25, 0.5, 0.75, 1.0]
-        # If you view the 5 images as 5 frames in a video, this will lead to progressively stronger control over time.
+        # If you view the 5 images as 5 frames in a video, this will lead to 
+        # progressively stronger control over time.
         advanced_frame_weighting = [float(i) / float(batch_size - 1) for i in range(batch_size)]
 
         # But in this simple example we do not use them

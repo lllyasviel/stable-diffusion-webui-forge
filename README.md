@@ -476,6 +476,7 @@ class ControlNetExampleForge(scripts.Script):
         positive_advanced_weighting = None
         negative_advanced_weighting = None
         advanced_frame_weighting = None
+        advanced_sigma_weighting = None
 
         unet = apply_controlnet_advanced(unet=unet, controlnet=self.model, image_bhwc=control_image,
                                          strength=0.6, start_percent=0.0, end_percent=0.8,

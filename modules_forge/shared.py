@@ -51,6 +51,7 @@ class Preprocessor:
         if not model_management.should_use_fp16(load_device):
             dtype = torch.float32
 
+        model.eval()
         model = model.to(device=offload_device, dtype=dtype)
 
         self.model_patcher = ModelPatcher(model=model, load_device=load_device, offload_device=offload_device, **kwargs)

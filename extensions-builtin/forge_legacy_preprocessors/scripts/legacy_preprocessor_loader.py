@@ -8,6 +8,7 @@ from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocess
 # No newer preprocessors should be written in this legacy way.
 
 from legacy_preprocessors.preprocessor_meta import cn_preprocessor_modules, cn_preprocessor_unloadable, ui_preprocessor_keys, reverse_preprocessor_aliases
+from legacy_preprocessors.preprocessor import model_free_preprocessors, no_control_mode_preprocessors, flag_preprocessor_resolution, preprocessor_sliders_config, preprocessor_filters, preprocessor_filters_aliases
 
 
 class LegacyPreprocessor(Preprocessor):

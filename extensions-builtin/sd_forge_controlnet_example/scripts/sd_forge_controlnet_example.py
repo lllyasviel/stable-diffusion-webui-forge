@@ -1,6 +1,7 @@
 # Use --show-controlnet-example to see this extension.
 
 import os
+import cv2
 import gradio as gr
 
 from modules import scripts
@@ -51,6 +52,9 @@ class ControlNetExampleForge(scripts.Script):
         print('The model [control_v11p_sd15_canny_fp16.safetensors] download finished.')
 
         controlnet = load_controlnet(controlnet_canny_path)
+        input_image = cv2.resize(input_image, (p.height, p.width))
+
+        p.extra_result_images.append(input_image)
 
         return
 

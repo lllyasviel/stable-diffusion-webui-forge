@@ -18,16 +18,16 @@ def apply_controlnet_advanced(
     Below is an example for stronger control in middle block.
     This is helpful for some high-res fix passes.
 
-    positive_advanced_weighting = {
-        'input': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2],
-        'middle': [1.0],
-        'output': [1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
-    }
-    negative_advanced_weighting = {
-        'input': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2],
-        'middle': [1.0],
-        'output': [1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
-    }
+        positive_advanced_weighting = {
+            'input': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2],
+            'middle': [1.0],
+            'output': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]
+        }
+        negative_advanced_weighting = {
+            'input': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2],
+            'middle': [1.0],
+            'output': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]
+        }
 
     # advanced_frame_weighting
 
@@ -42,9 +42,9 @@ def apply_controlnet_advanced(
     weights given diffusion timestep (sigma).
     For example below code can softly make beginning steps stronger than ending steps.
 
-    sigma_max = unet.model.model_sampling.percent_to_sigma(0.0)
-    sigma_min = unet.model.model_sampling.percent_to_sigma(1.0)
-    advanced_sigma_weighting = lambda s: (s - sigma_min) / (sigma_max - sigma_min)
+        sigma_max = unet.model.model_sampling.percent_to_sigma(0.0)
+        sigma_min = unet.model.model_sampling.percent_to_sigma(1.0)
+        advanced_sigma_weighting = lambda s: (s - sigma_min) / (sigma_max - sigma_min)
 
     """
 
@@ -67,4 +67,14 @@ def compute_controlnet_weighting(
         advanced_sigma_weighting,
         transformer_options
 ):
+    if positive_advanced_weighting is None and negative_advanced_weighting is None \
+            and advanced_frame_weighting is None and advanced_sigma_weighting is None:
+        return control
+
+    cond_or_uncond = transformer_options['cond_or_uncond']
+    sigmas = transformer_options['sigmas']
+
+    if advanced_sigma_weighting is not None:
+        advanced_sigma_weighting = advanced_sigma_weighting(sigmas)
+
     return control

@@ -48,6 +48,9 @@ class PreprocessorBase:
 
         self.model_patcher = ModelPatcher(model=model, load_device=load_device, offload_device=offload_device, **kwargs)
         return
+    
+    def load_models_gpu(self):
+        model_management.load_models_gpu([self.model_patcher])
 
     def process_before_every_sampling(self, process, cnet):
         return

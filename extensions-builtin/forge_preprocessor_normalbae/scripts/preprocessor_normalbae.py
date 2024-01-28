@@ -1,3 +1,5 @@
+from modules_forge.shared import PreprocessorBase
+
 import os
 import types
 import torch
@@ -5,8 +7,6 @@ import numpy as np
 
 from einops import rearrange
 from annotator.normalbae.models.NNET import NNET
-from modules import devices
-from annotator.annotator_path import models_path
 import torchvision.transforms as transforms
 
 a = 0

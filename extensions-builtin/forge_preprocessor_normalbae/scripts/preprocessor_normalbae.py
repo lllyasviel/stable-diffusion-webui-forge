@@ -34,6 +34,9 @@ class PreprocessorNormalBae(Preprocessor):
         self.norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
     def load_model(self):
+        if self.model_patcher is not None:
+            return
+
         remote_model_path = "https://huggingface.co/lllyasviel/Annotators/resolve/main/scannet.pt"
         modelpath = os.path.join(preprocessor_dir, "scannet.pt")
         if not os.path.exists(modelpath):
@@ -50,9 +53,7 @@ class PreprocessorNormalBae(Preprocessor):
         self.setup_model_patcher(model)
 
     def __call__(self, input_image):
-        if self.model_patcher is None:
-            self.load_model()
-
+        self.load_model()
         self.load_models_gpu()
 
         assert input_image.ndim == 3

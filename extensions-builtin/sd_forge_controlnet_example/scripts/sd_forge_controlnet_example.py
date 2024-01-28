@@ -76,14 +76,13 @@ class ControlNetExampleForge(scripts.Script):
         batch_size = p.batch_size
 
         input_image = cv2.resize(input_image, (width, height))
-
-        # Below are two methods to preprocess images.
-        # Method 1: do it in your own way
         canny_image = cv2.cvtColor(cv2.Canny(input_image, 100, 200), cv2.COLOR_GRAY2RGB)
 
-        # Method 2: use built-in preprocessor
+        # # Or you can get a list of preprocessors in this way
         # from modules_forge.shared import shared_preprocessors
-        # canny_image = shared_preprocessors['canny'](input_image, 100, 200)
+        # canny_preprocessor = shared_preprocessors['canny']
+        # canny_image = canny_preprocessor(
+        #     input_image, resolution=512, slider_1=100, slider_2=200, slider_3=None)
 
         # Output preprocessor result. Now called every sampling. Cache in your own way.
         p.extra_result_images.append(canny_image)

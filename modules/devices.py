@@ -32,7 +32,7 @@ def get_optimal_device():
 
 
 def get_device_for(task):
-    return get_optimal_device()
+    return model_management.get_torch_device()
 
 
 def torch_gc():

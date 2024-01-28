@@ -361,7 +361,8 @@ from modules.paths import models_path
 from modules.modelloader import load_file_from_url
 from ldm_patched.modules.controlnet import load_controlnet
 from modules_forge.controlnet import apply_controlnet_advanced
-from modules_forge.forge_util import pytorch_to_numpy, numpy_to_pytorch
+from modules_forge.forge_util import numpy_to_pytorch
+from modules_forge.shared import controlnet_dir
 
 
 class ControlNetExampleForge(scripts.Script):
@@ -393,8 +394,6 @@ class ControlNetExampleForge(scripts.Script):
         if input_image is None:
             return
 
-        model_dir = os.path.join(models_path, 'ControlNet')
-        os.makedirs(model_dir, exist_ok=True)
         # controlnet_canny_path = load_file_from_url(
         #     url='https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/sai_xl_canny_256lora.safetensors',
         #     model_dir=model_dir,
@@ -402,7 +401,7 @@ class ControlNetExampleForge(scripts.Script):
         # )
         controlnet_canny_path = load_file_from_url(
             url='https://huggingface.co/lllyasviel/fav_models/resolve/main/fav/control_v11p_sd15_canny_fp16.safetensors',
-            model_dir=model_dir,
+            model_dir=controlnet_dir,
             file_name='control_v11p_sd15_canny_fp16.safetensors'
         )
         print('The model [control_v11p_sd15_canny_fp16.safetensors] download finished.')
@@ -427,14 +426,13 @@ class ControlNetExampleForge(scripts.Script):
         batch_size = p.batch_size
 
         input_image = cv2.resize(input_image, (width, height))
-
-        # Below are two methods to preprocess images.
-        # Method 1: do it in your own way
         canny_image = cv2.cvtColor(cv2.Canny(input_image, 100, 200), cv2.COLOR_GRAY2RGB)
-
-        # Method 2: use built-in preprocessor
+        
+        # # Or you can get a list of preprocessors in this way
         # from modules_forge.shared import shared_preprocessors
-        # canny_image = shared_preprocessors['canny'](input_image, 100, 200)
+        # canny_preprocessor = shared_preprocessors['canny']
+        # canny_image = canny_preprocessor(
+        #     input_image, resolution=512, slider_1=100, slider_2=200, slider_3=None)
 
         # Output preprocessor result. Now called every sampling. Cache in your own way.
         p.extra_result_images.append(canny_image)
@@ -505,6 +503,94 @@ if not cmd_opts.show_controlnet_example:
 ```
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/0a703d8b-27df-4608-8b12-aff750f20ffa)
+
+
+### Add a preprocessor
+
+Below is the full codes to add a normalbae preprocessor with perfect memory managements.
+
+You can use arbitrary independent extensions to add a preprocessor.
+
+Your preprocessor will be read by all other extensions using `modules_forge.shared.preprocessors`
+
+Below codes are in `extensions-builtin\forge_preprocessor_normalbae\scripts\preprocessor_normalbae.py`
+
+```python
+from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocessor_dir, load_file_from_url, add_preprocessor
+from modules_forge.forge_util import resize_image_with_pad
+
+import types
+import torch
+import numpy as np
+
+from einops import rearrange
+from annotator.normalbae.models.NNET import NNET
+from annotator.normalbae import load_checkpoint
+from torchvision import transforms
+
+
+class PreprocessorNormalBae(Preprocessor):
+    def __init__(self):
+        super().__init__()
+        self.name = 'normalbae'
+        self.tag = 'NormalMap'
+        self.slider_resolution = PreprocessorParameter(
+            label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
+        self.slider_1 = PreprocessorParameter(visible=False)
+        self.slider_2 = PreprocessorParameter(visible=False)
+        self.slider_3 = PreprocessorParameter(visible=False)
+        self.show_control_mode = True
+        self.do_not_need_model = False
+
+    def load_model(self):
+        if self.model_patcher is not None:
+            return
+
+        model_path = load_file_from_url(
+            "https://huggingface.co/lllyasviel/Annotators/resolve/main/scannet.pt",
+            model_dir=preprocessor_dir)
+
+        args = types.SimpleNamespace()
+        args.mode = 'client'
+        args.architecture = 'BN'
+        args.pretrained = 'scannet'
+        args.sampling_ratio = 0.4
+        args.importance_ratio = 0.7
+        model = NNET(args)
+        model = load_checkpoint(model_path, model)
+        self.norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+
+        self.model_patcher = self.setup_model_patcher(model)
+
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+        input_image, remove_pad = resize_image_with_pad(input_image, resolution)
+
+        self.load_model()
+
+        self.move_all_model_patchers_to_gpu()
+
+        assert input_image.ndim == 3
+        image_normal = input_image
+
+        with torch.no_grad():
+            image_normal = self.send_tensor_to_model_device(torch.from_numpy(image_normal))
+            image_normal = image_normal / 255.0
+            image_normal = rearrange(image_normal, 'h w c -> 1 c h w')
+            image_normal = self.norm(image_normal)
+
+            normal = self.model_patcher.model(image_normal)
+            normal = normal[0][-1][:, :3]
+            normal = ((normal + 1) * 0.5).clip(0, 1)
+
+            normal = rearrange(normal[0], 'c h w -> h w c').cpu().numpy()
+            normal_image = (normal * 255.0).clip(0, 255).astype(np.uint8)
+
+        return remove_pad(normal_image)
+
+
+add_preprocessor(PreprocessorNormalBae)
+
+```
 
 
 # About Extensions

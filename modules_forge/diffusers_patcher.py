@@ -19,8 +19,9 @@ class DiffusersPatcher:
 
         with use_patched_ops(ops.manual_cast):
             with modeling_utils.no_init_weights():
-                self.pipeline = pipeline_class.from_pretrained(*args, **kwargs).to(dtype)
+                self.pipeline = pipeline_class.from_pretrained(*args, **kwargs)
 
+        self.pipeline = self.pipeline.to(device=offload_device, dtype=dtype)
         self.pipeline.eval()
 
         self.patcher = ModelPatcher(

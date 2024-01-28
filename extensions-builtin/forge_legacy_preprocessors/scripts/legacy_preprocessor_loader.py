@@ -4,3 +4,7 @@
 # see also the forge_preprocessor_normalbae/scripts/preprocessor_normalbae for
 # how to make better implementation of preprocessors.
 # No newer preprocessors should be written in this legacy way.
+
+from legacy_preprocessors.preprocessor_meta import cn_preprocessor_modules, cn_preprocessor_unloadable
+
+a = 0

@@ -75,6 +75,18 @@ class ControlNetExampleForge(scripts.Script):
 
         print('Preprocessor Canny finished.')
 
+        unet = p.sd_model.forge_objects.unet
+
+        # unet = opFreeU_V2.patch(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)[0]
+
+        p.sd_model.forge_objects.unet = unet
+
+        # Below codes will add some logs to the texts below the image outputs on UI.
+        # The extra_generation_params does not influence results.
+        p.extra_generation_params.update(dict(
+            controlnet_info='You should see these texts below output images!',
+        ))
+
         return
 
 

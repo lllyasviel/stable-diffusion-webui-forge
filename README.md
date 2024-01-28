@@ -10,7 +10,7 @@ If you see this, please join our private Discord server for discussion: https://
 
 Stable Diffusion Web UI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) to make development easier, and optimize the speed and resource consumption.
 
-The name "Forge" is inspired from "Minecraft Forge". This project will become SD WebUI's Forge..
+The name "Forge" is inspired from "Minecraft Forge". This project will become SD WebUI's Forge.
 
 Forge will give you:
 
@@ -516,7 +516,7 @@ Your preprocessor will be read by all other extensions using `modules_forge.shar
 Below codes are in `extensions-builtin\forge_preprocessor_normalbae\scripts\preprocessor_normalbae.py`
 
 ```python
-from modules_forge.shared import Preprocessor, preprocessor_dir, load_file_from_url, add_preprocessor
+from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocessor_dir, load_file_from_url, add_preprocessor
 from modules_forge.forge_util import resize_image_with_pad
 
 import types
@@ -534,8 +534,12 @@ class PreprocessorNormalBae(Preprocessor):
         super().__init__()
         self.name = 'normalbae'
         self.tag = 'NormalMap'
-
-        self.norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        self.slider_resolution = PreprocessorParameter(label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
+        self.slider_1 = PreprocessorParameter(visible=False)
+        self.slider_2 = PreprocessorParameter(visible=False)
+        self.slider_3 = PreprocessorParameter(visible=False)
+        self.show_control_mode = True
+        self.do_not_need_model = False
 
     def load_model(self):
         if self.model_patcher is not None:
@@ -553,12 +557,11 @@ class PreprocessorNormalBae(Preprocessor):
         args.importance_ratio = 0.7
         model = NNET(args)
         model = load_checkpoint(model_path, model)
+        self.norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
         self.model_patcher = self.setup_model_patcher(model)
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
-        # A flexiable function to pad image to 64 divisions and then remove the pad
-        # So that preprocessors work with arbitary resolutions.
         input_image, remove_pad = resize_image_with_pad(input_image, resolution)
 
         self.load_model()

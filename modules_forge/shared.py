@@ -42,6 +42,7 @@ class Preprocessor:
         self.slider_3 = PreprocessorParameter()
         self.model_patcher: ModelPatcher = None
         self.show_control_mode = True
+        self.do_not_need_model = False
 
     def setup_model_patcher(self, model, load_device=None, offload_device=None, dtype=torch.float32, **kwargs):
         if load_device is None:

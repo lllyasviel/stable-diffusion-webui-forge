@@ -1,4 +1,4 @@
-from modules_forge.shared import Preprocessor, preprocessor_dir, load_file_from_url, add_preprocessor
+from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocessor_dir, load_file_from_url, add_preprocessor
 from modules_forge.forge_util import resize_image_with_pad
 
 import types
@@ -16,8 +16,12 @@ class PreprocessorNormalBae(Preprocessor):
         super().__init__()
         self.name = 'normalbae'
         self.tag = 'NormalMap'
-
-        self.norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        self.slider_resolution = PreprocessorParameter(label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
+        self.slider_1 = PreprocessorParameter(visible=False)
+        self.slider_2 = PreprocessorParameter(visible=False)
+        self.slider_3 = PreprocessorParameter(visible=False)
+        self.show_control_mode = True
+        self.do_not_need_model = False
 
     def load_model(self):
         if self.model_patcher is not None:
@@ -35,6 +39,7 @@ class PreprocessorNormalBae(Preprocessor):
         args.importance_ratio = 0.7
         model = NNET(args)
         model = load_checkpoint(model_path, model)
+        self.norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
         self.model_patcher = self.setup_model_patcher(model)
 

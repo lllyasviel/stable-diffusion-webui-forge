@@ -9,6 +9,4 @@ def apply_controlnet_advanced(
         negative_advanced_weighting=None):
     m = unet.clone()
 
-    
-
     return m

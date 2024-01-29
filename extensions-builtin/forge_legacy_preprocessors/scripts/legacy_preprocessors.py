@@ -17,7 +17,7 @@ from modules_forge.shared import Preprocessor, PreprocessorParameter, add_prepro
 class LegacyPreprocessor(Preprocessor):
     def __init__(self, legacy_dict):
         super().__init__()
-        self.name = legacy_dict['name']
+        self.name = legacy_dict['label']
         self.call_function = legacy_dict['call_function']
         self.unload_function = legacy_dict['unload_function']
         self.managed_model = legacy_dict['managed_model']

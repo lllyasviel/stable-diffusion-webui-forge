@@ -62,6 +62,7 @@ for name in ui_preprocessor_keys:
         slider_2=slider_2,
         slider_3=slider_3,
         priority=0,
+        tag=None
     )
 
 
@@ -71,7 +72,9 @@ for tag, best in preprocessor_filters.items():
         bp['priority'] = 100
 
 for tag, best in preprocessor_filters.items():
-    marks = [tag.lower()] + preprocessor_filters_aliases.get(tag, [])
-    a = 0
+    marks = [tag.lower()] + preprocessor_filters_aliases.get(tag.lower(), [])
+    for k, p in legacy_preprocessors.items():
+        if any(x.lower() in k.lower() for x in marks):
+            p['tag'] = tag
 
 a = 0

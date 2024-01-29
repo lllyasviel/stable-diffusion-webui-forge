@@ -69,7 +69,9 @@ def get_all_preprocessor_tags():
     tags = []
     for k, p in supported_preprocessors.items():
         tags += p.tags
-    return list(set(tags))
+    tags = list(set(tags))
+    tags = sorted(tags)
+    return tags
 
 
 def get_filtered_preprocessors(tag):

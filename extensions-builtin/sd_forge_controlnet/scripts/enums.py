@@ -43,57 +43,6 @@ class StableDiffusionVersion(Enum):
         )
 
 
-class ControlModelType(Enum):
-    """
-    The type of Control Models (supported or not).
-    """
-
-    ControlNet = "ControlNet, Lvmin Zhang"
-    T2I_Adapter = "T2I_Adapter, Chong Mou"
-    T2I_StyleAdapter = "T2I_StyleAdapter, Chong Mou"
-    T2I_CoAdapter = "T2I_CoAdapter, Chong Mou"
-    MasaCtrl = "MasaCtrl, Mingdeng Cao"
-    GLIGEN = "GLIGEN, Yuheng Li"
-    AttentionInjection = "AttentionInjection, Lvmin Zhang"  # A simple attention injection written by Lvmin
-    StableSR = "StableSR, Jianyi Wang"
-    PromptDiffusion = "PromptDiffusion, Zhendong Wang"
-    ControlLoRA = "ControlLoRA, Wu Hecong"
-    ReVision = "ReVision, Stability"
-    IPAdapter = "IPAdapter, Hu Ye"
-    Controlllite = "Controlllite, Kohya"
-    InstantID = "InstantID, Qixun Wang"
-
-    def is_controlnet(self) -> bool:
-        """Returns whether the control model should be treated as ControlNet."""
-        return self in (
-            ControlModelType.ControlNet,
-            ControlModelType.ControlLoRA,
-            ControlModelType.InstantID,
-        )
-
-    def allow_context_sharing(self) -> bool:
-        """Returns whether this control model type allows the same PlugableControlModel
-        object map to multiple ControlNetUnit.
-        Both IPAdapter and Controlllite have unit specific input (clip/image) stored
-        on the model object during inference. Sharing the context means that the input
-        set earlier gets lost.
-        """
-        return self not in (
-            ControlModelType.IPAdapter,
-            ControlModelType.Controlllite,
-        )
-
-# Written by Lvmin
-class AutoMachine(Enum):
-    """
-    Lvmin's algorithm for Attention/AdaIn AutoMachine States.
-    """
-
-    Read = "Read"
-    Write = "Write"
-    StyleAlign = "StyleAlign"
-
-
 class HiResFixOption(Enum):
     BOTH = "Both"
     LOW_RES_ONLY = "Low res only"

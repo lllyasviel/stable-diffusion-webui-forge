@@ -164,7 +164,7 @@ legacy_preprocessors = {}
 for name in ui_preprocessor_keys:
     call_function = special_get(cn_preprocessor_modules, name, None)
     assert call_function is not None
-    unload_function = special_get(cn_preprocessor_unloadable, name, None)
+    unload_function = special_get(cn_preprocessor_unloadable, name, 'None')
 
     model_free = special_judge_in(model_free_preprocessors, name)
     no_control_mode = special_judge_in(no_control_mode_preprocessors, name)
@@ -177,8 +177,9 @@ for name in ui_preprocessor_keys:
 
     legacy_preprocessors[name] = dict(
         name=name,
-        call_function=call_function,
-        unload_function=unload_function,
+        call_function='***' + call_function + '***',
+        unload_function='***' + unload_function + '***',
+        managed_model='***None***',
         model_free=model_free,
         no_control_mode=no_control_mode,
         resolution=resolution,
@@ -201,5 +202,12 @@ for tag, best in preprocessor_filters.items():
         if any(x.lower() in k.lower() for x in marks):
             p['tag'] = tag
 
-print(json.dumps(legacy_preprocessors, indent=4))
-a = 0
+
+compiled_filename = __file__.replace('compiler', 'compiled')
+
+with open(compiled_filename, 'wt') as fp:
+    result = json.dumps(legacy_preprocessors, indent=4).replace('null', 'None')\
+        .replace('false', 'False').replace('true', 'True').replace('***"', '').replace('"***', '').replace('\\"', '"').replace('"Balanced"', 'Balanced')
+    fp.write('import functools\nfrom legacy_preprocessors.preprocessor import *\n\n\nlegacy_preprocessors = ' + result)
+
+print('ok')

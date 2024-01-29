@@ -228,12 +228,6 @@ class ControlNetForForgeOfficial(scripts.Script):
         return tuple(controls)
 
     @staticmethod
-    def clear_control_model_cache():
-        Script.model_cache.clear()
-        gc.collect()
-        devices.torch_gc()
-
-    @staticmethod
     def get_remote_call(p, attribute, default=None, idx=0, strict=False, force=False):
         if not force and not shared.opts.data.get("control_net_allow_script_control", False):
             return default
@@ -249,9 +243,8 @@ class ControlNetForForgeOfficial(scripts.Script):
         attribute_value = get_element(getattr(p, attribute, None), strict)
         return attribute_value if attribute_value is not None else default
 
-    @staticmethod
-    def parse_remote_call(p, unit: external_code.ControlNetUnit, idx):
-        selector = Script.get_remote_call
+    def parse_remote_call(self, p, unit: external_code.ControlNetUnit, idx):
+        selector = self.get_remote_call
 
         unit.enabled = selector(p, "control_net_enabled", unit.enabled, idx, strict=True)
         unit.module = selector(p, "control_net_module", unit.module, idx)
@@ -385,18 +378,17 @@ class ControlNetForForgeOfficial(scripts.Script):
             detected_map = safe_numpy(detected_map)
             return get_pytorch_control(detected_map), detected_map
 
-    @staticmethod
-    def get_enabled_units(p):
+    def get_enabled_units(self, p):
         units = external_code.get_all_units_in_processing(p)
         if len(units) == 0:
             # fill a null group
-            remote_unit = Script.parse_remote_call(p, Script.get_default_ui_unit(), 0)
+            remote_unit = self.parse_remote_call(p, self.get_default_ui_unit(), 0)
             if remote_unit.enabled:
                 units.append(remote_unit)
 
         enabled_units = []
         for idx, unit in enumerate(units):
-            local_unit = Script.parse_remote_call(p, unit, idx)
+            local_unit = self.parse_remote_call(p, unit, idx)
             if not local_unit.enabled:
                 continue
             if hasattr(local_unit, "unfold_merged"):

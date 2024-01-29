@@ -7,7 +7,7 @@ import numpy as np
 
 from modules import scripts
 from modules.shared_cmd_options import cmd_opts
-from modules.paths import models_path
+from modules_forge.shared import shared_preprocessors
 from modules.modelloader import load_file_from_url
 from ldm_patched.modules.controlnet import load_controlnet
 from modules_forge.controlnet import apply_controlnet_advanced
@@ -75,24 +75,23 @@ class ControlNetExampleForge(scripts.Script):
         width = W * 8
         batch_size = p.batch_size
 
-        input_image = cv2.resize(input_image, (width, height))
-        canny_image = cv2.cvtColor(cv2.Canny(input_image, 100, 200), cv2.COLOR_GRAY2RGB)
+        preprocessor = shared_preprocessors['canny']
 
-        from modules_forge.shared import shared_preprocessors
-        a = 0
+        # detect control at certain resolution
+        control_image = preprocessor(
+            input_image, resolution=512, slider_1=100, slider_2=200, slider_3=None)
 
-        # # Or you can get a list of preprocessors in this way
-        # from modules_forge.shared import shared_preprocessors
-        # canny_preprocessor = shared_preprocessors['canny']
-        # canny_image = canny_preprocessor(
-        #     input_image, resolution=512, slider_1=100, slider_2=200, slider_3=None)
+        # here we just use nearest neighbour to align input shape.
+        # You may want crop and resize, or crop and fill, or others.
+        control_image = cv2.resize(
+            control_image, (width, height), interpolation=cv2.INTER_NEAREST)
 
         # Output preprocessor result. Now called every sampling. Cache in your own way.
-        p.extra_result_images.append(canny_image)
+        p.extra_result_images.append(control_image)
 
         print('Preprocessor Canny finished.')
 
-        control_image = numpy_to_pytorch(canny_image)
+        control_image_bchw = numpy_to_pytorch(control_image).movedim(-1, 1)
 
         unet = p.sd_model.forge_objects.unet
 
@@ -131,7 +130,7 @@ class ControlNetExampleForge(scripts.Script):
         advanced_frame_weighting = None
         advanced_sigma_weighting = None
 
-        unet = apply_controlnet_advanced(unet=unet, controlnet=self.model, image_bchw=control_image.movedim(-1, 1),
+        unet = apply_controlnet_advanced(unet=unet, controlnet=self.model, image_bchw=control_image_bchw,
                                          strength=0.6, start_percent=0.0, end_percent=0.8,
                                          positive_advanced_weighting=positive_advanced_weighting,
                                          negative_advanced_weighting=negative_advanced_weighting,

@@ -11,6 +11,8 @@
 
 
 import contextlib
+
+from annotator.util import HWC3
 from modules_forge.ops import automatic_memory_management
 from legacy_preprocessors.preprocessor_compiled import legacy_preprocessors
 from modules_forge.shared import Preprocessor, PreprocessorParameter, add_preprocessor
@@ -55,12 +57,15 @@ class LegacyPreprocessor(Preprocessor):
         del slider_3
 
         if self.unload_function is not None or self.managed_model is not None:
-            context = contextlib.nullcontext()
-        else:
             context = automatic_memory_management()
+        else:
+            context = contextlib.nullcontext()
 
         with context:
-            result = self.call_function(img=input_image, res=resolution, thr_a=slider_1, thr_b=slider_2, **kwargs)
+            result, is_image = self.call_function(img=input_image, res=resolution, thr_a=slider_1, thr_b=slider_2, **kwargs)
+
+        del is_image  # Not used anymore
+        result = HWC3(result)
 
         if self.unload_function is not None:
             self.unload_function()

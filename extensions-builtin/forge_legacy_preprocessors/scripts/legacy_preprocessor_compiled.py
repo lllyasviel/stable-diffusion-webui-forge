@@ -15,7 +15,7 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": None
+        "tags": []
     },
     "invert (from white bg & black line)": {
         "name": "invert (from white bg & black line)",
@@ -29,7 +29,7 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": None
+        "tags": []
     },
     "animal_openpose": {
         "name": "animal_openpose",
@@ -48,7 +48,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "OpenPose"
+        "tags": [
+            "OpenPose"
+        ]
     },
     "blur_gaussian": {
         "name": "blur_gaussian",
@@ -72,7 +74,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Tile/Blur"
+        "tags": [
+            "Tile/Blur"
+        ]
     },
     "canny": {
         "name": "canny",
@@ -101,7 +105,9 @@ legacy_preprocessors = {
         },
         "slider_3": None,
         "priority": 100,
-        "tag": "Canny"
+        "tags": [
+            "Canny"
+        ]
     },
     "densepose (pruple bg & purple torso)": {
         "name": "densepose (pruple bg & purple torso)",
@@ -120,7 +126,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "OpenPose"
+        "tags": [
+            "OpenPose"
+        ]
     },
     "densepose_parula (black bg & blue torso)": {
         "name": "densepose_parula (black bg & blue torso)",
@@ -139,7 +147,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "OpenPose"
+        "tags": [
+            "OpenPose"
+        ]
     },
     "depth_anything": {
         "name": "depth_anything",
@@ -153,7 +163,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Depth"
+        "tags": [
+            "Depth"
+        ]
     },
     "depth_hand_refiner": {
         "name": "depth_hand_refiner",
@@ -172,7 +184,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Depth"
+        "tags": [
+            "Depth"
+        ]
     },
     "depth_leres": {
         "name": "depth_leres",
@@ -203,7 +217,9 @@ legacy_preprocessors = {
         },
         "slider_3": None,
         "priority": 0,
-        "tag": "Depth"
+        "tags": [
+            "Depth"
+        ]
     },
     "depth_leres++": {
         "name": "depth_leres++",
@@ -234,7 +250,9 @@ legacy_preprocessors = {
         },
         "slider_3": None,
         "priority": 0,
-        "tag": "Depth"
+        "tags": [
+            "Depth"
+        ]
     },
     "depth_midas": {
         "name": "depth_midas",
@@ -253,7 +271,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "Depth"
+        "tags": [
+            "Depth"
+        ]
     },
     "depth_zoe": {
         "name": "depth_zoe",
@@ -267,7 +287,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Depth"
+        "tags": [
+            "Depth"
+        ]
     },
     "dw_openpose_full": {
         "name": "dw_openpose_full",
@@ -286,7 +308,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "OpenPose"
+        "tags": [
+            "OpenPose"
+        ]
     },
     "inpaint_global_harmonious": {
         "name": "inpaint_global_harmonious",
@@ -300,7 +324,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Inpaint"
+        "tags": [
+            "Inpaint"
+        ]
     },
     "inpaint_only": {
         "name": "inpaint_only",
@@ -314,7 +340,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "Inpaint"
+        "tags": [
+            "Inpaint"
+        ]
     },
     "inpaint_only+lama": {
         "name": "inpaint_only+lama",
@@ -328,7 +356,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Inpaint"
+        "tags": [
+            "Inpaint"
+        ]
     },
     "instant_id_face_embedding": {
         "name": "instant_id_face_embedding",
@@ -342,7 +372,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Instant_ID"
+        "tags": [
+            "Instant_ID"
+        ]
     },
     "instant_id_face_keypoints": {
         "name": "instant_id_face_keypoints",
@@ -356,7 +388,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Instant_ID"
+        "tags": [
+            "Instant_ID"
+        ]
     },
     "ip-adapter_clip_sd15": {
         "name": "ip-adapter_clip_sd15",
@@ -370,7 +404,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "IP-Adapter"
+        "tags": [
+            "IP-Adapter"
+        ]
     },
     "ip-adapter_clip_sdxl": {
         "name": "ip-adapter_clip_sdxl",
@@ -384,7 +420,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "IP-Adapter"
+        "tags": [
+            "IP-Adapter"
+        ]
     },
     "ip-adapter_clip_sdxl_plus_vith": {
         "name": "ip-adapter_clip_sdxl_plus_vith",
@@ -398,7 +436,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "IP-Adapter"
+        "tags": [
+            "IP-Adapter"
+        ]
     },
     "ip-adapter_face_id": {
         "name": "ip-adapter_face_id",
@@ -412,7 +452,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "IP-Adapter"
+        "tags": [
+            "IP-Adapter"
+        ]
     },
     "ip-adapter_face_id_plus": {
         "name": "ip-adapter_face_id_plus",
@@ -426,7 +468,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "IP-Adapter"
+        "tags": [
+            "IP-Adapter"
+        ]
     },
     "lineart_anime": {
         "name": "lineart_anime",
@@ -440,7 +484,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Lineart"
+        "tags": [
+            "Lineart"
+        ]
     },
     "lineart_anime_denoise": {
         "name": "lineart_anime_denoise",
@@ -454,7 +500,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Lineart"
+        "tags": [
+            "Lineart"
+        ]
     },
     "lineart_coarse": {
         "name": "lineart_coarse",
@@ -468,7 +516,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Lineart"
+        "tags": [
+            "Lineart"
+        ]
     },
     "lineart_realistic": {
         "name": "lineart_realistic",
@@ -482,7 +532,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Lineart"
+        "tags": [
+            "Lineart"
+        ]
     },
     "lineart_standard (from white bg & black line)": {
         "name": "lineart_standard (from white bg & black line)",
@@ -496,7 +548,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "Lineart"
+        "tags": [
+            "Lineart"
+        ]
     },
     "mediapipe_face": {
         "name": "mediapipe_face",
@@ -527,7 +581,7 @@ legacy_preprocessors = {
         },
         "slider_3": None,
         "priority": 0,
-        "tag": None
+        "tags": []
     },
     "mlsd": {
         "name": "mlsd",
@@ -558,7 +612,9 @@ legacy_preprocessors = {
         },
         "slider_3": None,
         "priority": 100,
-        "tag": "MLSD"
+        "tags": [
+            "MLSD"
+        ]
     },
     "normal_bae": {
         "name": "normal_bae",
@@ -572,7 +628,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "NormalMap"
+        "tags": [
+            "NormalMap"
+        ]
     },
     "normal_midas": {
         "name": "normal_midas",
@@ -597,7 +655,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "NormalMap"
+        "tags": [
+            "NormalMap"
+        ]
     },
     "openpose": {
         "name": "openpose",
@@ -616,7 +676,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "OpenPose"
+        "tags": [
+            "OpenPose"
+        ]
     },
     "openpose_face": {
         "name": "openpose_face",
@@ -630,7 +692,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "OpenPose"
+        "tags": [
+            "OpenPose"
+        ]
     },
     "openpose_faceonly": {
         "name": "openpose_faceonly",
@@ -644,7 +708,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "OpenPose"
+        "tags": [
+            "OpenPose"
+        ]
     },
     "openpose_full": {
         "name": "openpose_full",
@@ -663,7 +729,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "OpenPose"
+        "tags": [
+            "OpenPose"
+        ]
     },
     "openpose_hand": {
         "name": "openpose_hand",
@@ -677,7 +745,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "OpenPose"
+        "tags": [
+            "OpenPose"
+        ]
     },
     "recolor_intensity": {
         "name": "recolor_intensity",
@@ -697,7 +767,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Recolor"
+        "tags": [
+            "Recolor"
+        ]
     },
     "recolor_luminance": {
         "name": "recolor_luminance",
@@ -717,7 +789,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "Recolor"
+        "tags": [
+            "Recolor"
+        ]
     },
     "reference_adain": {
         "name": "reference_adain",
@@ -737,7 +811,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Reference"
+        "tags": [
+            "Reference"
+        ]
     },
     "reference_adain+attn": {
         "name": "reference_adain+attn",
@@ -757,7 +833,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Reference"
+        "tags": [
+            "Reference"
+        ]
     },
     "reference_only": {
         "name": "reference_only",
@@ -777,7 +855,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "Reference"
+        "tags": [
+            "Reference"
+        ]
     },
     "revision_clipvision": {
         "name": "revision_clipvision",
@@ -796,7 +876,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "Revision"
+        "tags": [
+            "Revision"
+        ]
     },
     "revision_ignore_prompt": {
         "name": "revision_ignore_prompt",
@@ -815,7 +897,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Revision"
+        "tags": [
+            "Revision"
+        ]
     },
     "scribble_hed": {
         "name": "scribble_hed",
@@ -834,7 +918,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Scribble/Sketch"
+        "tags": [
+            "Scribble/Sketch"
+        ]
     },
     "scribble_pidinet": {
         "name": "scribble_pidinet",
@@ -848,7 +934,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "Scribble/Sketch"
+        "tags": [
+            "Scribble/Sketch"
+        ]
     },
     "scribble_xdog": {
         "name": "scribble_xdog",
@@ -872,7 +960,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Scribble/Sketch"
+        "tags": [
+            "Scribble/Sketch"
+        ]
     },
     "seg_anime_face": {
         "name": "seg_anime_face",
@@ -891,7 +981,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Segmentation"
+        "tags": [
+            "Segmentation"
+        ]
     },
     "seg_ofade20k": {
         "name": "seg_ofade20k",
@@ -905,7 +997,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "Segmentation"
+        "tags": [
+            "Segmentation"
+        ]
     },
     "seg_ofcoco": {
         "name": "seg_ofcoco",
@@ -919,7 +1013,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Segmentation"
+        "tags": [
+            "Segmentation"
+        ]
     },
     "seg_ufade20k": {
         "name": "seg_ufade20k",
@@ -938,7 +1034,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Segmentation"
+        "tags": [
+            "Segmentation"
+        ]
     },
     "shuffle": {
         "name": "shuffle",
@@ -952,7 +1050,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "Shuffle"
+        "tags": [
+            "Shuffle"
+        ]
     },
     "softedge_hed": {
         "name": "softedge_hed",
@@ -971,7 +1071,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "SoftEdge"
+        "tags": [
+            "SoftEdge"
+        ]
     },
     "softedge_hedsafe": {
         "name": "softedge_hedsafe",
@@ -990,7 +1092,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "SoftEdge"
+        "tags": [
+            "SoftEdge"
+        ]
     },
     "softedge_pidinet": {
         "name": "softedge_pidinet",
@@ -1004,7 +1108,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "SoftEdge"
+        "tags": [
+            "SoftEdge"
+        ]
     },
     "softedge_pidisafe": {
         "name": "softedge_pidisafe",
@@ -1018,7 +1124,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "SoftEdge"
+        "tags": [
+            "SoftEdge"
+        ]
     },
     "softedge_teed": {
         "name": "softedge_teed",
@@ -1043,7 +1151,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "SoftEdge"
+        "tags": [
+            "SoftEdge"
+        ]
     },
     "t2ia_color_grid": {
         "name": "t2ia_color_grid",
@@ -1062,7 +1172,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "T2I-Adapter"
+        "tags": [
+            "T2I-Adapter"
+        ]
     },
     "t2ia_sketch_pidi": {
         "name": "t2ia_sketch_pidi",
@@ -1076,7 +1188,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "T2I-Adapter"
+        "tags": [
+            "T2I-Adapter"
+        ]
     },
     "t2ia_style_clipvision": {
         "name": "t2ia_style_clipvision",
@@ -1090,7 +1204,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "T2I-Adapter"
+        "tags": [
+            "T2I-Adapter"
+        ]
     },
     "threshold": {
         "name": "threshold",
@@ -1114,7 +1230,7 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": None
+        "tags": []
     },
     "tile_colorfix": {
         "name": "tile_colorfix",
@@ -1134,7 +1250,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tag": "Tile/Blur"
+        "tags": [
+            "Tile/Blur"
+        ]
     },
     "tile_colorfix+sharp": {
         "name": "tile_colorfix+sharp",
@@ -1160,7 +1278,9 @@ legacy_preprocessors = {
         },
         "slider_3": None,
         "priority": 0,
-        "tag": "Tile/Blur"
+        "tags": [
+            "Tile/Blur"
+        ]
     },
     "tile_resample": {
         "name": "tile_resample",
@@ -1180,6 +1300,8 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 100,
-        "tag": "Tile/Blur"
+        "tags": [
+            "Tile/Blur"
+        ]
     }
 }

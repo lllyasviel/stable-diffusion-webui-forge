@@ -567,9 +567,6 @@ class Script(scripts.Script, metaclass=(
                         np.zeros_like(input_image, dtype=np.uint8)[:, :, 0:1],
                     ], axis=2)
         else:
-            # No input image detected.
-            if batch_hijack.instance.is_batch:
-                shared.state.interrupted = True
             raise ValueError("controlnet is enabled but no input image is given")
 
         assert isinstance(input_image, (np.ndarray, list))

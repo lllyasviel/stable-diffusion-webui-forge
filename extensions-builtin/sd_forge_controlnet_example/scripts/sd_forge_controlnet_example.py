@@ -5,7 +5,7 @@ import gradio as gr
 
 from modules import scripts
 from modules.shared_cmd_options import cmd_opts
-from modules_forge.shared import shared_preprocessors
+from modules_forge.shared import supported_preprocessors
 from modules.modelloader import load_file_from_url
 from ldm_patched.modules.controlnet import load_controlnet
 from modules_forge.controlnet import apply_controlnet_advanced
@@ -73,7 +73,7 @@ class ControlNetExampleForge(scripts.Script):
         width = W * 8
         batch_size = p.batch_size
 
-        preprocessor = shared_preprocessors['canny']
+        preprocessor = supported_preprocessors['canny']
 
         # detect control at certain resolution
         control_image = preprocessor(

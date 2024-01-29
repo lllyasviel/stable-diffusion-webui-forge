@@ -15,7 +15,26 @@ import contextlib
 from annotator.util import HWC3
 from modules_forge.ops import automatic_memory_management
 from legacy_preprocessors.preprocessor_compiled import legacy_preprocessors
-from modules_forge.shared import Preprocessor, PreprocessorParameter, add_preprocessor
+from modules_forge.supported_preprocessor import Preprocessor, PreprocessorParameter
+from modules_forge.shared import add_supported_preprocessor
+
+
+###
+
+# This file has lots of unreasonable historical designs and should be viewed as a frozen blackbox library
+
+# If you want to add preprocessor,
+# please instead look at `extensions-builtin/forge_preprocessor_normalbae/scripts/preprocessor_normalbae`
+# If you want to use preprocessor,
+# please instead use `from modules_forge.shared import supported_preprocessors`
+# and then use any preprocessor like: depth_midas = supported_preprocessors['depth_midas']
+
+# Please do not hack/edit/modify/rely-on any codes in this file.
+
+# Never use methods in this file to add anything!
+# This file will be eventually removed but the workload is super high and we need more time to do this.
+
+###
 
 
 class LegacyPreprocessor(Preprocessor):
@@ -29,6 +48,21 @@ class LegacyPreprocessor(Preprocessor):
         self.show_control_mode = not legacy_dict['no_control_mode']
         self.sorting_priority = legacy_dict['priority']
         self.tags = legacy_dict['tags']
+
+        filters_aliases = {
+            'instructp2p': ['ip2p'],
+            'segmentation': ['seg'],
+            'normalmap': ['normal'],
+            't2i-adapter': ['t2i_adapter', 't2iadapter', 't2ia'],
+            'ip-adapter': ['ip_adapter', 'ipadapter'],
+            'openpose': ['openpose', 'densepose'],
+        }
+
+        self.model_filename_filers = []
+        for tag in self.tags:
+            tag_lower = tag.lower()
+            self.model_filename_filers.append(tag_lower)
+            self.model_filename_filers += filters_aliases.get(tag_lower, [])
 
         if legacy_dict['resolution'] is None:
             self.resolution = PreprocessorParameter(visible=False)
@@ -76,4 +110,4 @@ class LegacyPreprocessor(Preprocessor):
 for k, v in legacy_preprocessors.items():
     p = LegacyPreprocessor(v)
     p.name = k
-    add_preprocessor(p)
+    add_supported_preprocessor(p)

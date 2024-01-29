@@ -350,14 +350,12 @@ The memory optimization in this example is fully automatic. You do not need to c
 ```python
 # Use --show-controlnet-example to see this extension.
 
-import os
 import cv2
 import gradio as gr
-import numpy as np
 
 from modules import scripts
 from modules.shared_cmd_options import cmd_opts
-from modules_forge.shared import shared_preprocessors
+from modules_forge.shared import supported_preprocessors
 from modules.modelloader import load_file_from_url
 from ldm_patched.modules.controlnet import load_controlnet
 from modules_forge.controlnet import apply_controlnet_advanced
@@ -425,7 +423,7 @@ class ControlNetExampleForge(scripts.Script):
         width = W * 8
         batch_size = p.batch_size
 
-        preprocessor = shared_preprocessors['canny']
+        preprocessor = supported_preprocessors['canny']
 
         # detect control at certain resolution
         control_image = preprocessor(
@@ -518,7 +516,8 @@ Your preprocessor will be read by all other extensions using `modules_forge.shar
 Below codes are in `extensions-builtin\forge_preprocessor_normalbae\scripts\preprocessor_normalbae.py`
 
 ```python
-from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocessor_dir, add_preprocessor
+from modules_forge.supported_preprocessor import Preprocessor, PreprocessorParameter
+from modules_forge.shared import preprocessor_dir, add_supported_preprocessor
 from modules_forge.forge_util import resize_image_with_pad
 from modules.modelloader import load_file_from_url
 
@@ -537,13 +536,15 @@ class PreprocessorNormalBae(Preprocessor):
         super().__init__()
         self.name = 'normalbae'
         self.tags = ['NormalMap']
-        self.slider_resolution = PreprocessorParameter(label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
+        self.model_filename_filers = ['normal']
+        self.slider_resolution = PreprocessorParameter(
+            label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
         self.slider_1 = PreprocessorParameter(visible=False)
         self.slider_2 = PreprocessorParameter(visible=False)
         self.slider_3 = PreprocessorParameter(visible=False)
         self.show_control_mode = True
         self.do_not_need_model = False
-        self.sorting_priority = 0.0  # higher goes to top in the list
+        self.sorting_priority = 100  # higher goes to top in the list
 
     def load_model(self):
         if self.model_patcher is not None:
@@ -591,7 +592,7 @@ class PreprocessorNormalBae(Preprocessor):
         return remove_pad(normal_image)
 
 
-add_preprocessor(PreprocessorNormalBae)
+add_supported_preprocessor(PreprocessorNormalBae())
 
 ```
 

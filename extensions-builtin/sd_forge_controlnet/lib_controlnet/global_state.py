@@ -87,7 +87,7 @@ def get_all_preprocessor_tags():
 def get_filtered_preprocessors(tag):
     if tag == 'All':
         return supported_preprocessors
-    return {k: v for k, v in get_sorted_preprocessors().items() if tag in v.tags}
+    return {k: v for k, v in get_sorted_preprocessors().items() if tag in v.tags or k == 'None'}
 
 
 def get_filtered_preprocessor_names(tag):

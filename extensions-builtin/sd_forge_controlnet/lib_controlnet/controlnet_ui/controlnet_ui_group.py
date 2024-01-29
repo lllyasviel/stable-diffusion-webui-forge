@@ -6,25 +6,17 @@ from typing import List, Optional, Union, Callable, Dict, Tuple, Literal
 from dataclasses import dataclass
 import numpy as np
 
-from scripts.utils import svg_preprocess, read_image
-from scripts import (
+from lib_controlnet.utils import svg_preprocess, read_image
+from lib_controlnet import (
     global_state,
     external_code,
 )
-from scripts.processor import (
-    preprocessor_sliders_config,
-    no_control_mode_preprocessors,
-    flag_preprocessor_resolution,
-    model_free_preprocessors,
-    preprocessor_filters,
-    HWC3,
-)
-from scripts.logging import logger
-from scripts.controlnet_ui.openpose_editor import OpenposeEditor
-from scripts.controlnet_ui.preset import ControlNetPresetUI
-from scripts.controlnet_ui.tool_button import ToolButton
-from scripts.controlnet_ui.photopea import Photopea
-from scripts.enums import InputMode
+from lib_controlnet.logging import logger
+from lib_controlnet.controlnet_ui.openpose_editor import OpenposeEditor
+from lib_controlnet.controlnet_ui.preset import ControlNetPresetUI
+from lib_controlnet.controlnet_ui.tool_button import ToolButton
+from lib_controlnet.controlnet_ui.photopea import Photopea
+from lib_controlnet.enums import InputMode
 from modules import shared
 from modules.ui_components import FormRow
 

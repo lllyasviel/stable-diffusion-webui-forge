@@ -4,10 +4,9 @@ from copy import copy
 from typing import List, Any, Optional, Union, Tuple, Dict
 import numpy as np
 from modules import scripts, processing, shared
-from scripts import global_state
-from scripts.processor import preprocessor_sliders_config, model_free_preprocessors
-from scripts.logging import logger
-from scripts.enums import HiResFixOption
+from lib_controlnet import global_state
+from lib_controlnet.logging import logger
+from lib_controlnet.enums import HiResFixOption
 
 from modules.api import api
 

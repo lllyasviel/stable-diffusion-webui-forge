@@ -29,7 +29,9 @@ legacy_preprocessors = {
         "slider_2": None,
         "slider_3": None,
         "priority": 0,
-        "tags": []
+        "tags": [
+            "Canny", "Lineart", "Scribble", "Sketch", "MLSD",
+        ]
     },
     "animal_openpose": {
         "name": "animal_openpose",
@@ -75,7 +77,7 @@ legacy_preprocessors = {
         "slider_3": None,
         "priority": 0,
         "tags": [
-            "Tile/Blur"
+            "Tile", "Blur",
         ]
     },
     "canny": {
@@ -919,7 +921,7 @@ legacy_preprocessors = {
         "slider_3": None,
         "priority": 0,
         "tags": [
-            "Scribble/Sketch"
+            "Scribble", "Sketch",
         ]
     },
     "scribble_pidinet": {
@@ -935,7 +937,7 @@ legacy_preprocessors = {
         "slider_3": None,
         "priority": 100,
         "tags": [
-            "Scribble/Sketch"
+            "Scribble", "Sketch",
         ]
     },
     "scribble_xdog": {
@@ -961,7 +963,7 @@ legacy_preprocessors = {
         "slider_3": None,
         "priority": 0,
         "tags": [
-            "Scribble/Sketch"
+            "Scribble", "Sketch",
         ]
     },
     "seg_anime_face": {
@@ -1251,7 +1253,7 @@ legacy_preprocessors = {
         "slider_3": None,
         "priority": 0,
         "tags": [
-            "Tile/Blur"
+            "Tile", "Blur",
         ]
     },
     "tile_colorfix+sharp": {
@@ -1279,7 +1281,7 @@ legacy_preprocessors = {
         "slider_3": None,
         "priority": 0,
         "tags": [
-            "Tile/Blur"
+            "Tile", "Blur",
         ]
     },
     "tile_resample": {
@@ -1301,7 +1303,7 @@ legacy_preprocessors = {
         "slider_3": None,
         "priority": 100,
         "tags": [
-            "Tile/Blur"
+            "Tile", "Blur",
         ]
     }
 }

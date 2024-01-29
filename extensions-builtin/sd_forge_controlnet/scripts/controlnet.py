@@ -1255,7 +1255,7 @@ class Script(scripts.Script, metaclass=(
 def on_ui_settings():
     section = ('control_net', "ControlNet")
     shared.opts.add_option("control_net_detectedmap_dir", shared.OptionInfo(
-        global_state.default_detectedmap_dir, "Directory for detected maps auto saving", section=section))
+        "detected_maps", "Directory for detected maps auto saving", section=section))
     shared.opts.add_option("control_net_models_path", shared.OptionInfo(
         "", "Extra path to scan for ControlNet models (e.g. training output directory)", section=section))
     shared.opts.add_option("control_net_modules_path", shared.OptionInfo(

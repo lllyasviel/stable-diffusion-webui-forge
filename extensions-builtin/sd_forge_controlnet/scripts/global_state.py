@@ -1,51 +1,14 @@
 import os.path
 import stat
-import functools
 from collections import OrderedDict
 
-from modules import shared, scripts, sd_models
-from scripts.utils import ndarray_lru_cache
-from scripts.logging import logger
+from modules import shared, sd_models
 from scripts.enums import StableDiffusionVersion
 
-from typing import Dict, Callable, Optional, Tuple, List
+from typing import Dict, Tuple, List
 
 
 CN_MODEL_EXTS = [".pt", ".pth", ".ckpt", ".safetensors", ".bin"]
-
-
-def cache_preprocessors(preprocessor_modules: Dict[str, Callable]) -> Dict[str, Callable]:
-    """ We want to share the preprocessor results in a single big cache, instead of a small
-     cache for each preprocessor function. """
-    CACHE_SIZE = getattr(shared.cmd_opts, "controlnet_preprocessor_cache_size", 0)
-
-    # Set CACHE_SIZE = 0 will completely remove the caching layer. This can be
-    # helpful when debugging preprocessor code.
-    if CACHE_SIZE == 0:
-        return preprocessor_modules
-
-    logger.debug(f'Create LRU cache (max_size={CACHE_SIZE}) for preprocessor results.')
-
-    @ndarray_lru_cache(max_size=CACHE_SIZE)
-    def unified_preprocessor(preprocessor_name: str, *args, **kwargs):
-        logger.debug(f'Calling preprocessor {preprocessor_name} outside of cache.')
-        return preprocessor_modules[preprocessor_name](*args, **kwargs)
-
-    # TODO: Introduce a seed parameter for shuffle preprocessor?
-    uncacheable_preprocessors = ['shuffle']
-
-    return {
-        k: (
-            v if k in uncacheable_preprocessors
-            else functools.partial(unified_preprocessor, k)
-        )
-        for k, v
-        in preprocessor_modules.items()
-    }
-
-
-default_detectedmap_dir = os.path.join("detected_maps")
-script_dir = scripts.basedir()
 
 
 def traverse_all_files(curr_path, model_list):
@@ -185,22 +148,3 @@ def select_control_type(
         default_option,
         default_model
     )
-
-
-ip_adapter_pairing_model = {
-    "ip-adapter_clip_sdxl": lambda model: "faceid" not in model and "vit" not in model,
-    "ip-adapter_clip_sdxl_plus_vith": lambda model: "faceid" not in model and "vit" in model,
-    "ip-adapter_clip_sd15": lambda model: "faceid" not in model,
-    "ip-adapter_face_id": lambda model: "faceid" in model and "plus" not in model,
-    "ip-adapter_face_id_plus": lambda model: "faceid" in model and "plus" in model,
-}
-
-ip_adapter_pairing_logic_text = """
-{
-    "ip-adapter_clip_sdxl": lambda model: "faceid" not in model and "vit" not in model,
-    "ip-adapter_clip_sdxl_plus_vith": lambda model: "faceid" not in model and "vit" in model,
-    "ip-adapter_clip_sd15": lambda model: "faceid" not in model,
-    "ip-adapter_face_id": lambda model: "faceid" in model and "plus" not in model,
-    "ip-adapter_face_id_plus": lambda model: "faceid" in model and "plus" in model,
-}
-"""

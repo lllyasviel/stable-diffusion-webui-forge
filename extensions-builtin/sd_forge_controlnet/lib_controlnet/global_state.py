@@ -49,8 +49,8 @@ def get_all_models(sort_by, filter_by, path):
     return res
 
 
-cn_models = {}
-cn_models_names = []
+controlnet_filenames = {'None': 'model.safetensors'}
+controlnet_names = ['None']
 
 
 def get_all_preprocessor_names():
@@ -77,11 +77,15 @@ def get_filtered_cn_model_names(tag):
     model_filename_filers = []
     for p in filtered_preprocessors:
         model_filename_filers.append(p.model_filename_filers)
-    return [x for x in cn_models_names if any(f.lower() in x.lower() for f in model_filename_filers)]
+    return [x for x in controlnet_names if any(f.lower() in x.lower() for f in model_filename_filers)]
 
 
 def update_cn_models():
-    cn_models.clear()
+    global controlnet_filenames, controlnet_names
+
+    controlnet_filenames = {'None': 'model.safetensors'}
+    controlnet_names = ['None']
+
     ext_dirs = (shared.opts.data.get("control_net_models_path", None), getattr(shared.cmd_opts, 'controlnet_dir', None))
     extra_lora_paths = (extra_lora_path for extra_lora_path in ext_dirs
                         if extra_lora_path is not None and os.path.exists(extra_lora_path))
@@ -91,19 +95,10 @@ def update_cn_models():
         sort_by = shared.opts.data.get("control_net_models_sort_models_by", "name")
         filter_by = shared.opts.data.get("control_net_models_name_filter", "")
         found = get_all_models(sort_by, filter_by, path)
-        cn_models.update({**found, **cn_models})
+        controlnet_filenames.update(found)
 
-    # insert "None" at the beginning of `cn_models` in-place
-    cn_models_copy = OrderedDict(cn_models)
-    cn_models.clear()
-    cn_models.update({**{"None": None}, **cn_models_copy})
-
-    cn_models_names.clear()
-    for name_and_hash, filename in cn_models.items():
-        if filename is None:
-            continue
-        name = os.path.splitext(os.path.basename(filename))[0].lower()
-        cn_models_names[name] = name_and_hash
+    controlnet_names = list(controlnet_filenames.keys())
+    return
 
 
 def get_sd_version() -> StableDiffusionVersion:

@@ -1,3 +1,4 @@
+import time
 import torch
 import contextlib
 from ldm_patched.modules import model_management
@@ -48,14 +49,14 @@ def automatic_memory_management():
         torch.nn.Module.__init__ = original_init
         torch.nn.Module.to = original_to
 
-    count = 0
-    for module in set(module_list):
-        module_params = getattr(module, '_parameters', [])
-        if len(module_params) > 0:
-            module.cpu()
-            count += 1
+    start = time.perf_counter()
+    module_list = set(module_list)
 
-    print(f'Automatic Memory Management: {count} Modules.')
+    for module in module_list:
+        module.cpu()
+
     model_management.soft_empty_cache()
+    end = time.perf_counter()
 
+    print(f'Automatic Memory Management: {len(module_list)} Modules in {(end - start)%.3} seconds.')
     return

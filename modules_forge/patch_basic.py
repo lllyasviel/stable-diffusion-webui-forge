@@ -1,4 +1,5 @@
 import torch
+import time
 import ldm_patched.modules.samplers
 
 from ldm_patched.modules.controlnet import ControlBase
@@ -183,7 +184,21 @@ def patched_calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_op
     return out_cond, out_uncond
 
 
+def patched_load_models_gpu(*args, **kwargs):
+    execution_start_time = time.perf_counter()
+    y = model_management.load_models_gpu_origin(*args, **kwargs)
+    moving_time = time.perf_counter() - execution_start_time
+    if moving_time > 0.1:
+        print(f'Moving model(s) has taken {moving_time:.2f} seconds')
+    return y
+
+
 def patch_all_basics():
+    if not hasattr(model_management, 'load_models_gpu_origin'):
+        model_management.load_models_gpu_origin = model_management.load_models_gpu
+
+    model_management.load_models_gpu = patched_load_models_gpu
+
     ControlBase.control_merge = patched_control_merge
     ldm_patched.modules.samplers.calc_cond_uncond_batch = patched_calc_cond_uncond_batch
     return

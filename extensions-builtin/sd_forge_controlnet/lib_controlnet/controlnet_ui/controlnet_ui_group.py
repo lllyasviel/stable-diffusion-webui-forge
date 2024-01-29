@@ -792,15 +792,15 @@ class ControlNetUiGroup(object):
 
             preprocessor = global_state.get_preprocessor(module)
 
-            slider_resolution_kwargs = preprocessor.slider_resolution.gradio_update_kwargs
+            slider_resolution_kwargs = preprocessor.slider_resolution.gradio_update_kwargs.copy()
 
             if pp:
                 slider_resolution_kwargs['visible'] = False
 
             grs = [
                 gr.update(**slider_resolution_kwargs),
-                gr.update(**preprocessor.slider_1.gradio_update_kwargs),
-                gr.update(**preprocessor.slider_2.gradio_update_kwargs),
+                gr.update(**preprocessor.slider_1.gradio_update_kwargs.copy()),
+                gr.update(**preprocessor.slider_2.gradio_update_kwargs.copy()),
                 gr.update(visible=True),
                 gr.update(visible=not preprocessor.do_not_need_model),
                 gr.update(visible=not preprocessor.do_not_need_model),
@@ -1187,6 +1187,7 @@ class ControlNetUiGroup(object):
                     fn=clear_preview,
                     inputs=self.use_preview_as_input,
                     outputs=[self.use_preview_as_input, self.generated_image],
+                    show_progress=False
                 )
 
     def register_multi_images_upload(self):

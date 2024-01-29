@@ -21,7 +21,7 @@ from lib_controlnet.logging import logger
 from modules.processing import StableDiffusionProcessingImg2Img, StableDiffusionProcessingTxt2Img, StableDiffusionProcessing
 from modules.images import save_image
 from lib_controlnet.infotext import Infotext
-from annotator.util import HWC3
+from modules_forge.forge_util import HWC3
 
 import cv2
 import numpy as np

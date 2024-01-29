@@ -19,7 +19,7 @@ from lib_controlnet.controlnet_ui.photopea import Photopea
 from lib_controlnet.enums import InputMode
 from modules import shared
 from modules.ui_components import FormRow
-from annotator.util import HWC3
+from modules_forge.forge_util import HWC3
 
 
 @dataclass

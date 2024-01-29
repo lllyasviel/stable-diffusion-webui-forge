@@ -920,7 +920,7 @@ class ControlNetUiGroup(object):
             # effect.
             # TODO: Maybe we should let `preprocessor` return a Dict to alleviate this issue?
             # This requires changing all callsites though.
-            result, is_image = preprocessor(
+            result = preprocessor(
                 input_image=img,
                 resolution=pres,
                 slider_1=pthr_a,
@@ -934,9 +934,8 @@ class ControlNetUiGroup(object):
                 else None,
             )
 
-            if not is_image:
+            if not isinstance(result, np.ndarray) and result.nidm == 3 and result.shape[2] < 5:
                 result = img
-                is_image = True
 
             result = external_code.visualize_inpaint_mask(result)
             return (

@@ -40,7 +40,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -61,7 +61,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "value": 512,
             "minimum": 64,
             "maximum": 2048
@@ -87,7 +87,7 @@ legacy_preprocessors = {
     #     "model_free": False,
     #     "no_control_mode": False,
     #     "resolution": {
-    #         "label": "Preprocessor Resolution",
+    #         "label": "Resolution",
     #         "value": 512,
     #         "minimum": 64,
     #         "maximum": 2048
@@ -118,7 +118,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -139,7 +139,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -176,7 +176,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "value": 512,
             "minimum": 64,
             "maximum": 2048
@@ -197,7 +197,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -230,7 +230,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -263,7 +263,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -300,7 +300,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -561,7 +561,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "value": 512,
             "minimum": 64,
             "maximum": 2048
@@ -592,7 +592,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -641,7 +641,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -668,7 +668,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -721,7 +721,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -910,7 +910,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -947,7 +947,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "value": 512,
             "minimum": 64,
             "maximum": 2048
@@ -973,7 +973,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "value": 512,
             "minimum": 64,
             "maximum": 2048
@@ -1026,7 +1026,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -1063,7 +1063,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -1084,7 +1084,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "minimum": 64,
             "maximum": 2048,
             "value": 512
@@ -1137,7 +1137,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "value": 512,
             "minimum": 64,
             "maximum": 2048
@@ -1164,7 +1164,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "value": 512,
             "minimum": 64,
             "maximum": 2048
@@ -1217,7 +1217,7 @@ legacy_preprocessors = {
         "model_free": False,
         "no_control_mode": False,
         "resolution": {
-            "label": "Preprocessor Resolution",
+            "label": "Resolution",
             "value": 512,
             "minimum": 64,
             "maximum": 2048

@@ -7,13 +7,13 @@ from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocess
 # how to make better implementation of preprocessors.
 # No newer preprocessors should be written in this legacy way.
 
-from legacy_preprocessors.preprocessor_meta import cn_preprocessor_modules, cn_preprocessor_unloadable, ui_preprocessor_keys, reverse_preprocessor_aliases
-from legacy_preprocessors.preprocessor import model_free_preprocessors, no_control_mode_preprocessors, flag_preprocessor_resolution, preprocessor_sliders_config, preprocessor_filters, preprocessor_filters_aliases
+from legacy_preprocessors.preprocessor_meta import cn_preprocessor_modules, cn_preprocessor_unloadable, ui_preprocessor_keys, reverse_preprocessor_aliases, preprocessor_aliases
+from legacy_preprocessors.preprocessor import model_free_preprocessors, no_control_mode_preprocessors, preprocessor_sliders_config, preprocessor_filters, preprocessor_filters_aliases
 
 
 def special_get(d, k, default=None):
     k1 = k
-    k2 = preprocessor_filters_aliases.get(k, k)
+    k2 = preprocessor_aliases.get(k, k)
     k3 = reverse_preprocessor_aliases.get(k, k)
 
     for pk in [k1, k2, k3]:
@@ -25,7 +25,7 @@ def special_get(d, k, default=None):
 
 def special_judge_in(d, k):
     k1 = k
-    k2 = preprocessor_filters_aliases.get(k, k)
+    k2 = preprocessor_aliases.get(k, k)
     k3 = reverse_preprocessor_aliases.get(k, k)
 
     for pk in [k1, k2, k3]:
@@ -62,6 +62,9 @@ for name in ui_preprocessor_keys:
         slider_2=slider_2,
         slider_3=slider_3
     )
+
+
+for tag in preprocessor_filters:
 
 
 a = 0

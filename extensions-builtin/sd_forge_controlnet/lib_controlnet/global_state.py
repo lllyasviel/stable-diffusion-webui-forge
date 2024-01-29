@@ -53,6 +53,15 @@ controlnet_filename_dict = {'None': 'model.safetensors'}
 controlnet_names = ['None']
 
 
+def get_sorted_preprocessors():
+    all_items = list(supported_preprocessors.values())
+    all_items = sorted(all_items, key=lambda x: x.sorting_priority)[::-1]
+    results = OrderedDict()
+    for p in all_items:
+        results[p.name] = p
+    return results
+
+
 def get_all_controlnet_names():
     return controlnet_names
 
@@ -62,7 +71,7 @@ def get_controlnet_filename(controlnet_name):
 
 
 def get_all_preprocessor_names():
-    return list(supported_preprocessors.keys())
+    return list(get_sorted_preprocessors().keys())
 
 
 def get_all_preprocessor_tags():
@@ -71,11 +80,13 @@ def get_all_preprocessor_tags():
         tags += p.tags
     tags = list(set(tags))
     tags = sorted(tags)
-    return tags
+    return ['All'] + tags
 
 
 def get_filtered_preprocessors(tag):
-    return {k: v for k, v in supported_preprocessors.items() if tag in v.tags}
+    if tag == 'All':
+        return supported_preprocessors
+    return {k: v for k, v in get_sorted_preprocessors().items() if tag in v.tags}
 
 
 def get_filtered_preprocessor_names(tag):

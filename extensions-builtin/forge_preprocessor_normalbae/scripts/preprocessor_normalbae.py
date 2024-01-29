@@ -71,4 +71,4 @@ class PreprocessorNormalBae(Preprocessor):
         return remove_pad(normal_image)
 
 
-add_preprocessor(PreprocessorNormalBae)
+add_preprocessor(PreprocessorNormalBae())

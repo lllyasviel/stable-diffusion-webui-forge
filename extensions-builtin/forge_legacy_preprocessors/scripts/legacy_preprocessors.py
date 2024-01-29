@@ -10,4 +10,40 @@ from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocess
 from legacy_preprocessors.preprocessor_compiled import legacy_preprocessors
 
 
-a = 0
+class LegacyPreprocessor(Preprocessor):
+    def __init__(self, legacy_dict):
+        super().__init__()
+        self.name = legacy_dict['name']
+        self.call_function = legacy_dict['call_function']
+        self.unload_function = legacy_dict['unload_function']
+        self.managed_model = legacy_dict['managed_model']
+        self.do_not_need_model = legacy_dict['model_free']
+        self.show_control_mode = not legacy_dict['no_control_mode']
+        self.sorting_priority = legacy_dict['priority']
+        self.tags = legacy_dict['tags']
+
+        if legacy_dict['resolution'] is None:
+            self.resolution = PreprocessorParameter(visible=False)
+        else:
+            self.resolution = PreprocessorParameter(**legacy_dict['resolution'])
+
+        if legacy_dict['slider_1'] is None:
+            self.slider_1 = PreprocessorParameter(visible=False)
+        else:
+            self.slider_1 = PreprocessorParameter(**legacy_dict['slider_1'])
+
+        if legacy_dict['slider_2'] is None:
+            self.slider_2 = PreprocessorParameter(visible=False)
+        else:
+            self.slider_2 = PreprocessorParameter(**legacy_dict['slider_2'])
+
+        if legacy_dict['slider_3'] is None:
+            self.slider_3 = PreprocessorParameter(visible=False)
+        else:
+            self.slider_3 = PreprocessorParameter(**legacy_dict['slider_3'])
+
+
+for k, v in legacy_preprocessors.items():
+    p = LegacyPreprocessor(v)
+    p.name = k
+    add_preprocessor(p)

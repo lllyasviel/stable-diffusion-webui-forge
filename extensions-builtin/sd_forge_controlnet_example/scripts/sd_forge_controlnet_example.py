@@ -78,6 +78,9 @@ class ControlNetExampleForge(scripts.Script):
         input_image = cv2.resize(input_image, (width, height))
         canny_image = cv2.cvtColor(cv2.Canny(input_image, 100, 200), cv2.COLOR_GRAY2RGB)
 
+        from modules_forge.shared import shared_preprocessors
+        a = 0
+
         # # Or you can get a list of preprocessors in this way
         # from modules_forge.shared import shared_preprocessors
         # canny_preprocessor = shared_preprocessors['canny']

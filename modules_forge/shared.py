@@ -19,7 +19,7 @@ shared_preprocessors = {}
 
 def add_preprocessor(preprocessor):
     global shared_preprocessors
-    p = preprocessor()
+    p = preprocessor
     shared_preprocessors[p.name] = p
     return
 
@@ -104,5 +104,5 @@ class PreprocessorCanny(Preprocessor):
         return remove_pad(canny_image)
 
 
-add_preprocessor(PreprocessorNone)
-add_preprocessor(PreprocessorCanny)
+add_preprocessor(PreprocessorNone())
+add_preprocessor(PreprocessorCanny())

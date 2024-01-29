@@ -822,6 +822,12 @@ class ControlNetForForgeOfficial(scripts.Script):
 
     def process_unit_after_click_generate(self, p, unit, params, *args, **kwargs):
         h, w, hr_y, hr_x = self.get_target_dimensions(p)
+        
+        has_high_res_fix = (
+            isinstance(p, StableDiffusionProcessingTxt2Img)
+            and getattr(p, 'enable_hr', False)
+        )
+
         input_image, resize_mode = self.choose_input_image(p, unit)
         assert isinstance(input_image, np.ndarray), 'Invalid input image!'
 

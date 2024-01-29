@@ -7,3 +7,6 @@ from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocess
 # how to make better implementation of preprocessors.
 # No newer preprocessors should be written in this legacy way.
 
+from scripts.preprocessor_compiled import legacy_preprocessors
+
+a = 0

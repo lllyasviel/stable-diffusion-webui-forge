@@ -518,7 +518,7 @@ Your preprocessor will be read by all other extensions using `modules_forge.shar
 Below codes are in `extensions-builtin\forge_preprocessor_normalbae\scripts\preprocessor_normalbae.py`
 
 ```python
-from modules_forge.preprocessor_supported import Preprocessor, PreprocessorParameter
+from modules_forge.supported_preprocessor import Preprocessor, PreprocessorParameter
 from modules_forge.shared import preprocessor_dir, add_supported_preprocessor
 from modules_forge.forge_util import resize_image_with_pad
 from modules.modelloader import load_file_from_url

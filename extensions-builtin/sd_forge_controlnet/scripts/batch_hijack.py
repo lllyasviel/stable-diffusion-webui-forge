@@ -6,6 +6,7 @@ from modules import img2img, processing, shared, script_callbacks
 from scripts import external_code
 from scripts.enums import InputMode
 
+
 class BatchHijack:
     def __init__(self):
         self.is_batch = False

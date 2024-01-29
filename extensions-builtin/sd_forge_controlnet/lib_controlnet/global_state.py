@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from modules import shared, sd_models
 from lib_controlnet.enums import StableDiffusionVersion
-from modules_forge.shared import controlnet_dir
+from modules_forge.shared import controlnet_dir, supported_preprocessors
 
 
 CN_MODEL_EXTS = [".pt", ".pth", ".ckpt", ".safetensors", ".bin"]
@@ -51,6 +51,10 @@ def get_all_models(sort_by, filter_by, path):
 
 cn_models = {}
 cn_models_names = []
+
+
+def get_preprocessor_names():
+    return list(supported_preprocessors.keys())
 
 
 def update_cn_models():

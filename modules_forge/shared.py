@@ -43,6 +43,7 @@ class Preprocessor:
         self.model_patcher: ModelPatcher = None
         self.show_control_mode = True
         self.do_not_need_model = False
+        self.sorting_priority = 0.0  # higher goes to top in the list
 
     def setup_model_patcher(self, model, load_device=None, offload_device=None, dtype=torch.float32, **kwargs):
         if load_device is None:

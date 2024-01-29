@@ -10,6 +10,8 @@
 # is much more effective and maintainable
 
 
+import contextlib
+from modules_forge.ops import automatic_memory_management
 from legacy_preprocessors.preprocessor_compiled import legacy_preprocessors
 from modules_forge.shared import Preprocessor, PreprocessorParameter, add_preprocessor
 
@@ -47,6 +49,23 @@ class LegacyPreprocessor(Preprocessor):
             self.slider_3 = PreprocessorParameter(visible=False)
         else:
             self.slider_3 = PreprocessorParameter(**legacy_dict['slider_3'], visible=True)
+
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+        # Legacy Preprocessors does not have slider 3
+        del slider_3
+
+        if self.unload_function is not None or self.managed_model is not None:
+            context = contextlib.nullcontext()
+        else:
+            context = automatic_memory_management()
+
+        with context:
+            result = self.call_function(img=input_image, res=resolution, thr_a=slider_1, thr_b=slider_2, **kwargs)
+
+        if self.unload_function is not None:
+            self.unload_function()
+
+        return result
 
 
 for k, v in legacy_preprocessors.items():

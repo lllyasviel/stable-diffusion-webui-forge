@@ -5,9 +5,9 @@ from typing import List, Dict, Any, Tuple
 
 from annotator.openpose import decode_json_as_poses, draw_poses
 from annotator.openpose.animalpose import draw_animalposes
-from scripts.controlnet_ui.modal import ModalInterface
+from lib_controlnet.controlnet_ui.modal import ModalInterface
 from modules import shared
-from scripts.logging import logger
+from lib_controlnet.logging import logger
 
 
 def parse_data_url(data_url: str):

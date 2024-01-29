@@ -4,11 +4,10 @@ import gradio as gr
 from typing import Dict, List
 
 from modules import scripts
-from scripts.infotext import parse_unit, serialize_unit
-from scripts.controlnet_ui.tool_button import ToolButton
-from scripts.logging import logger
-from scripts.processor import preprocessor_filters
-from scripts import external_code
+from lib_controlnet.infotext import parse_unit, serialize_unit
+from lib_controlnet.controlnet_ui.tool_button import ToolButton
+from lib_controlnet.logging import logger
+from lib_controlnet import external_code
 
 save_symbol = "\U0001f4be"  # 💾
 delete_symbol = "\U0001f5d1\ufe0f"  # 🗑️

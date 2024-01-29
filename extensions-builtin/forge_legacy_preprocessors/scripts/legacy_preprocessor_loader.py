@@ -1,4 +1,4 @@
-from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocessor_dir, load_file_from_url, add_preprocessor
+from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocessor_dir, add_preprocessor
 
 # This is a python script to convert all old preprocessors to new format.
 # However, the old preprocessors are not very memory effective

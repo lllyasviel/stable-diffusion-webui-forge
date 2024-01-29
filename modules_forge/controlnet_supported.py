@@ -2,19 +2,7 @@ import ldm_patched.modules.utils
 
 from ldm_patched.modules.controlnet import *
 from modules_forge.controlnet import apply_controlnet_advanced
-
-
-supported_control_model_types = []
-
-
-def try_load_supported_control_model(ckpt_path):
-    state_dict = ldm_patched.modules.utils.load_torch_file(ckpt_path, safe_load=True)
-    for supported_type in supported_control_model_types:
-        state_dict_copy = {k: v for k, v in state_dict.items()}
-        model = supported_type.try_build_from_state_dict(state_dict_copy, ckpt_path)
-        if model is not None:
-            return model
-    return None
+from modules_forge.shared import add_supported_control_model
 
 
 class ControlModelPatcher:
@@ -163,4 +151,4 @@ class ControlNetPatcher(ControlModelPatcher):
         return
 
 
-supported_control_model_types.append(ControlNetPatcher)
+add_supported_control_model(ControlNetPatcher)

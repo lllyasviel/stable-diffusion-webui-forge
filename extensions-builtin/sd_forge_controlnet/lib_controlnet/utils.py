@@ -10,7 +10,7 @@ import logging
 
 from typing import Any, Callable, Dict, List
 from modules.safe import unsafe_torch_load
-from scripts.logging import logger
+from lib_controlnet.logging import logger
 
 
 def load_state_dict(ckpt_path, location="cpu"):

@@ -855,6 +855,8 @@ class ControlNetForForgeOfficial(scripts.Script):
     def process_unit_after_click_generate(self, p, unit, params, *args, **kwargs):
         h, w, hr_y, hr_x = self.get_target_dimensions(p)
         input_image, resize_mode = self.choose_input_image(p, unit)
+        assert isinstance(input_image, np.ndarray), 'Invalid input image!'
+
         return
 
     def process_unit_before_every_sampling(self, p, unit, params, *args, **kwargs):

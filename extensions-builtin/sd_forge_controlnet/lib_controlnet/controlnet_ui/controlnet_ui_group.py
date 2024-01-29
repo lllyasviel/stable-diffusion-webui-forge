@@ -783,82 +783,28 @@ class ControlNetUiGroup(object):
 
     def register_build_sliders(self):
         def build_sliders(module: str, pp: bool):
+
             logger.debug(
                 f"Prevent update slider value: {self.prevent_next_n_slider_value_update}"
             )
             logger.debug(f"Build slider for module: {module} - {pp}")
 
-            # Clear old slider values so that they do not cause confusion in
-            # infotext.
-            clear_slider_update = gr.update(
-                visible=False,
-                interactive=True,
-                minimum=-1,
-                maximum=-1,
-                value=-1,
-            )
+            preprocessor = global_state.get_preprocessor(module)
 
-            grs = []
-            module = global_state.get_module_basename(module)
-            if module not in preprocessor_sliders_config:
-                default_res_slider_config = dict(
-                    label=flag_preprocessor_resolution,
-                    minimum=64,
-                    maximum=2048,
-                    step=1,
-                )
-                if self.prevent_next_n_slider_value_update == 0:
-                    default_res_slider_config["value"] = 512
+            slider_resolution_kwargs = preprocessor.slider_resolution.gradio_update_kwargs
 
-                grs += [
-                    gr.update(
-                        **default_res_slider_config,
-                        visible=not pp,
-                        interactive=True,
-                    ),
-                    copy(clear_slider_update),
-                    copy(clear_slider_update),
-                    gr.update(visible=True),
-                ]
-            else:
-                for slider_config in preprocessor_sliders_config[module]:
-                    if isinstance(slider_config, dict):
-                        visible = True
-                        if slider_config["name"] == flag_preprocessor_resolution:
-                            visible = not pp
-                        slider_update = gr.update(
-                            label=slider_config["name"],
-                            minimum=slider_config["min"],
-                            maximum=slider_config["max"],
-                            step=slider_config["step"]
-                            if "step" in slider_config
-                            else 1,
-                            visible=visible,
-                            interactive=True,
-                        )
-                        if self.prevent_next_n_slider_value_update == 0:
-                            slider_update["value"] = slider_config["value"]
+            if pp:
+                slider_resolution_kwargs['visible'] = False
 
-                        grs.append(slider_update)
-
-                    else:
-                        grs.append(copy(clear_slider_update))
-                while len(grs) < 3:
-                    grs.append(copy(clear_slider_update))
-                grs.append(gr.update(visible=True))
-            if module in model_free_preprocessors:
-                grs += [
-                    gr.update(visible=False, value="None"),
-                    gr.update(visible=False),
-                ]
-            else:
-                grs += [gr.update(visible=True), gr.update(visible=True)]
-
-            self.prevent_next_n_slider_value_update = max(
-                0, self.prevent_next_n_slider_value_update - 1
-            )
-
-            grs += [gr.update(visible=module not in no_control_mode_preprocessors)]
+            grs = [
+                gr.update(**slider_resolution_kwargs),
+                gr.update(**preprocessor.slider_1.gradio_update_kwargs),
+                gr.update(**preprocessor.slider_2.gradio_update_kwargs),
+                gr.update(visible=True),
+                gr.update(visible=not preprocessor.do_not_need_model),
+                gr.update(visible=not preprocessor.do_not_need_model),
+                gr.update(visible=preprocessor.show_control_mode),
+            ]
 
             return grs
 

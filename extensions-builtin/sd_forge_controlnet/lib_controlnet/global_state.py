@@ -53,6 +53,10 @@ controlnet_filename_dict = {'None': 'model.safetensors'}
 controlnet_names = ['None']
 
 
+def get_preprocessor(name):
+    return supported_preprocessors.get(name, None)
+
+
 def get_sorted_preprocessors():
     preprocessors = [p for k, p in supported_preprocessors.items() if k != 'None']
     preprocessors = sorted(preprocessors, key=lambda x: str(x.sorting_priority).zfill(8) + x.name)[::-1]

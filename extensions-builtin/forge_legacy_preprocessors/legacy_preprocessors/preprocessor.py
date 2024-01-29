@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 import torch
 import math
+import functools
+
 from dataclasses import dataclass
 from transformers.models.clip.modeling_clip import CLIPVisionModelOutput
 
@@ -568,19 +570,11 @@ model_normal_bae = None
 
 
 def normal_bae(img, res=512, **kwargs):
-    img, remove_pad = resize_image_with_pad(img, res)
-    global model_normal_bae
-    if model_normal_bae is None:
-        from annotator.normalbae import NormalBaeDetector
-        model_normal_bae = NormalBaeDetector()
-    result = model_normal_bae(img)
-    return remove_pad(result), True
+    pass
 
 
 def unload_normal_bae():
-    global model_normal_bae
-    if model_normal_bae is not None:
-        model_normal_bae.unload_model()
+    pass
 
 
 model_oneformer_coco = None

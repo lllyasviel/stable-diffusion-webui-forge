@@ -1,22 +1,21 @@
-import functools
 from legacy_preprocessors.preprocessor import *
 
 
 legacy_preprocessors = {
-    "none": {
-        "name": "none",
-        "call_function": lambda x, *args, **kwargs: (x, True),
-        "unload_function": None,
-        "managed_model": None,
-        "model_free": False,
-        "no_control_mode": False,
-        "resolution": None,
-        "slider_1": None,
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 100,
-        "tags": []
-    },
+    # "none": {
+    #     "name": "none",
+    #     "call_function": lambda x, *args, **kwargs: (x, True),
+    #     "unload_function": None,
+    #     "managed_model": None,
+    #     "model_free": False,
+    #     "no_control_mode": False,
+    #     "resolution": None,
+    #     "slider_1": None,
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 100,
+    #     "tags": []
+    # },
     "invert (from white bg & black line)": {
         "name": "invert (from white bg & black line)",
         "call_function": invert,
@@ -80,37 +79,37 @@ legacy_preprocessors = {
             "Tile", "Blur",
         ]
     },
-    "canny": {
-        "name": "canny",
-        "call_function": canny,
-        "unload_function": None,
-        "managed_model": "model_canny",
-        "model_free": False,
-        "no_control_mode": False,
-        "resolution": {
-            "name": "Preprocessor Resolution",
-            "value": 512,
-            "min": 64,
-            "max": 2048
-        },
-        "slider_1": {
-            "name": "Canny Low Threshold",
-            "value": 100,
-            "min": 1,
-            "max": 255
-        },
-        "slider_2": {
-            "name": "Canny High Threshold",
-            "value": 200,
-            "min": 1,
-            "max": 255
-        },
-        "slider_3": None,
-        "priority": 100,
-        "tags": [
-            "Canny"
-        ]
-    },
+    # "canny": {
+    #     "name": "canny",
+    #     "call_function": canny,
+    #     "unload_function": None,
+    #     "managed_model": "model_canny",
+    #     "model_free": False,
+    #     "no_control_mode": False,
+    #     "resolution": {
+    #         "name": "Preprocessor Resolution",
+    #         "value": 512,
+    #         "min": 64,
+    #         "max": 2048
+    #     },
+    #     "slider_1": {
+    #         "name": "Canny Low Threshold",
+    #         "value": 100,
+    #         "min": 1,
+    #         "max": 255
+    #     },
+    #     "slider_2": {
+    #         "name": "Canny High Threshold",
+    #         "value": 200,
+    #         "min": 1,
+    #         "max": 255
+    #     },
+    #     "slider_3": None,
+    #     "priority": 100,
+    #     "tags": [
+    #         "Canny"
+    #     ]
+    # },
     "densepose (pruple bg & purple torso)": {
         "name": "densepose (pruple bg & purple torso)",
         "call_function": functools.partial(densepose, cmap="viridis"),
@@ -618,22 +617,22 @@ legacy_preprocessors = {
             "MLSD"
         ]
     },
-    "normal_bae": {
-        "name": "normal_bae",
-        "call_function": normal_bae,
-        "unload_function": unload_normal_bae,
-        "managed_model": "model_normal_bae",
-        "model_free": False,
-        "no_control_mode": False,
-        "resolution": None,
-        "slider_1": None,
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 100,
-        "tags": [
-            "NormalMap"
-        ]
-    },
+    # "normal_bae": {
+    #     "name": "normal_bae",
+    #     "call_function": normal_bae,
+    #     "unload_function": unload_normal_bae,
+    #     "managed_model": "model_normal_bae",
+    #     "model_free": False,
+    #     "no_control_mode": False,
+    #     "resolution": None,
+    #     "slider_1": None,
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 100,
+    #     "tags": [
+    #         "NormalMap"
+    #     ]
+    # },
     "normal_midas": {
         "name": "normal_midas",
         "call_function": midas_normal,

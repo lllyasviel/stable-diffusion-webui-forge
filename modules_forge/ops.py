@@ -1,5 +1,6 @@
 import torch
 import contextlib
+from ldm_patched.modules import model_management
 
 
 @contextlib.contextmanager
@@ -20,29 +21,41 @@ def use_patched_ops(operations):
 
 
 @contextlib.contextmanager
-def capture_model():
+def automatic_memory_management():
+    model_management.free_memory(
+        memory_required=3 * 1024 * 1024 * 1024,
+        device=model_management.get_torch_device()
+    )
+
     module_list = []
-    backup_init = torch.nn.Module.__init__
+
+    original_init = torch.nn.Module.__init__
+    original_to = torch.nn.Module.to
 
     def patched_init(self, *args, **kwargs):
         module_list.append(self)
-        return backup_init(self, *args, **kwargs)
+        return original_init(self, *args, **kwargs)
+
+    def patched_to(self, *args, **kwargs):
+        module_list.append(self)
+        return original_to(self, *args, **kwargs)
 
     try:
         torch.nn.Module.__init__ = patched_init
+        torch.nn.Module.to = patched_to
         yield
     finally:
-        torch.nn.Module.__init__ = backup_init
+        torch.nn.Module.__init__ = original_init
+        torch.nn.Module.to = original_to
 
-    results = []
-    for item in module_list:
-        item_params = getattr(item, '_parameters', [])
-        if len(item_params) > 0:
-            results.append(item)
+    count = 0
+    for module in set(module_list):
+        module_params = getattr(module, '_parameters', [])
+        if len(module_params) > 0:
+            module.cpu()
+            count += 1
 
-    if len(results) == 0:
-        return None
+    print(f'Automatic Memory Management: {count} Modules.')
+    model_management.soft_empty_cache()
 
-    captured_model = torch.nn.ModuleList(results)
-
-    return captured_model
+    return

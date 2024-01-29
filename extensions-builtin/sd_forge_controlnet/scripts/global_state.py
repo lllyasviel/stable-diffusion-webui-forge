@@ -4,8 +4,7 @@ from collections import OrderedDict
 
 from modules import shared, sd_models
 from scripts.enums import StableDiffusionVersion
-
-from typing import Dict, Tuple, List
+from modules_forge.shared import controlnet_dir
 
 
 CN_MODEL_EXTS = [".pt", ".pth", ".ckpt", ".safetensors", ".bin"]
@@ -50,16 +49,19 @@ def get_all_models(sort_by, filter_by, path):
     return res
 
 
+cn_models = {}
+cn_models_names = []
+
+
 def update_cn_models():
     cn_models.clear()
     ext_dirs = (shared.opts.data.get("control_net_models_path", None), getattr(shared.cmd_opts, 'controlnet_dir', None))
     extra_lora_paths = (extra_lora_path for extra_lora_path in ext_dirs
                 if extra_lora_path is not None and os.path.exists(extra_lora_path))
-    paths = [cn_models_dir, cn_models_dir_old, *extra_lora_paths]
+    paths = [controlnet_dir, *extra_lora_paths]
 
     for path in paths:
-        sort_by = shared.opts.data.get(
-            "control_net_models_sort_models_by", "name")
+        sort_by = shared.opts.data.get("control_net_models_sort_models_by", "name")
         filter_by = shared.opts.data.get("control_net_models_name_filter", "")
         found = get_all_models(sort_by, filter_by, path)
         cn_models.update({**found, **cn_models})
@@ -86,65 +88,3 @@ def get_sd_version() -> StableDiffusionVersion:
         return StableDiffusionVersion.SD1x
     else:
         return StableDiffusionVersion.UNKNOWN
-
-
-def select_control_type(
-    control_type: str,
-    sd_version: StableDiffusionVersion = StableDiffusionVersion.UNKNOWN,
-    cn_models: Dict = cn_models, # Override or testing
-) -> Tuple[List[str], List[str], str, str]:
-    default_option = processor.preprocessor_filters[control_type]
-    pattern = control_type.lower()
-    preprocessor_list = ui_preprocessor_keys
-    all_models = list(cn_models.keys())
-
-    if pattern == "all":
-        return [
-            preprocessor_list,
-            all_models,
-            'none', #default option
-            "None"  #default model
-        ]
-    filtered_preprocessor_list = [
-        x
-        for x in preprocessor_list
-        if ((
-            pattern in x.lower() or
-            any(a in x.lower() for a in processor.preprocessor_filters_aliases.get(pattern, [])) or
-            x.lower() == "none"
-        ) and (
-            sd_version.is_compatible_with(StableDiffusionVersion.detect_from_model_name(x))
-        ))
-    ]
-    if pattern in ["canny", "lineart", "scribble/sketch", "mlsd"]:
-        filtered_preprocessor_list += [
-            x for x in preprocessor_list if "invert" in x.lower()
-        ]
-    filtered_model_list = [
-        model for model in all_models
-        if model.lower() == "none" or
-        ((
-            pattern in model.lower() or
-            any(a in model.lower() for a in processor.preprocessor_filters_aliases.get(pattern, []))
-        ) and (
-            sd_version.is_compatible_with(StableDiffusionVersion.detect_from_model_name(model))
-        ))
-    ]
-    assert len(filtered_model_list) > 0, "'None' model should always be available."
-    if default_option not in filtered_preprocessor_list:
-        default_option = filtered_preprocessor_list[0]
-    if len(filtered_model_list) == 1:
-        default_model = "None"
-    else:
-        default_model = filtered_model_list[1]
-        for x in filtered_model_list:
-            if "11" in x.split("[")[0]:
-                default_model = x
-                break
-
-    return (
-        filtered_preprocessor_list,
-        filtered_model_list,
-        default_option,
-        default_model
-    )

@@ -769,17 +769,14 @@ class ControlNetUiGroup(object):
         )
 
     def register_refresh_all_models(self):
-        def refresh_all_models(model1: str, model2: str):
+        def refresh_all_models():
             global_state.update_controlnet_filenames()
-            choices = list(global_state.cn_models.keys())
             return gr.Dropdown.update(
-                value=model1 if model1 in global_state.cn_models else "None",
-                choices=choices,
+                choices=global_state.get_all_controlnet_names(),
             )
 
         self.refresh_models.click(
             refresh_all_models,
-            inputs=[self.model],
             outputs=[self.model],
             show_progress=False,
         )

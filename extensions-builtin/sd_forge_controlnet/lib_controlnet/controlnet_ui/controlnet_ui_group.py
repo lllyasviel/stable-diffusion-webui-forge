@@ -218,7 +218,6 @@ class ControlNetUiGroup(object):
         self,
         is_img2img: bool,
         default_unit: external_code.ControlNetUnit,
-        preprocessors: List[Callable],
         photopea: Optional[Photopea],
     ):
         # Whether callbacks have been registered.
@@ -228,7 +227,6 @@ class ControlNetUiGroup(object):
 
         self.is_img2img = is_img2img
         self.default_unit = default_unit
-        self.preprocessors = preprocessors
         self.photopea = photopea
         self.webcam_enabled = False
         self.webcam_mirrored = False

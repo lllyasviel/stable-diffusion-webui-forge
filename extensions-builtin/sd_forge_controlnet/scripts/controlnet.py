@@ -200,7 +200,6 @@ class Script(scripts.Script, metaclass=(
         group = ControlNetUiGroup(
             is_img2img,
             Script.get_default_ui_unit(),
-            self.preprocessor,
             photopea,
         )
         return group, group.render(tabname, elem_id_tabname)

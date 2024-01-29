@@ -49,8 +49,16 @@ def get_all_models(sort_by, filter_by, path):
     return res
 
 
-controlnet_filenames = {'None': 'model.safetensors'}
+controlnet_filename_dict = {'None': 'model.safetensors'}
 controlnet_names = ['None']
+
+
+def get_all_controlnet_names():
+    return controlnet_names
+
+
+def get_controlnet_filename(controlnet_name):
+    return controlnet_filename_dict[controlnet_name]
 
 
 def get_all_preprocessor_names():
@@ -59,7 +67,7 @@ def get_all_preprocessor_names():
 
 def get_all_preprocessor_tags():
     tags = []
-    for p in supported_preprocessors:
+    for k, p in supported_preprocessors.items():
         tags += p.tags
     return list(set(tags))
 
@@ -81,9 +89,9 @@ def get_filtered_cn_model_names(tag):
 
 
 def update_cn_models():
-    global controlnet_filenames, controlnet_names
+    global controlnet_filename_dict, controlnet_names
 
-    controlnet_filenames = {'None': 'model.safetensors'}
+    controlnet_filename_dict = {'None': 'model.safetensors'}
     controlnet_names = ['None']
 
     ext_dirs = (shared.opts.data.get("control_net_models_path", None), getattr(shared.cmd_opts, 'controlnet_dir', None))
@@ -95,9 +103,9 @@ def update_cn_models():
         sort_by = shared.opts.data.get("control_net_models_sort_models_by", "name")
         filter_by = shared.opts.data.get("control_net_models_name_filter", "")
         found = get_all_models(sort_by, filter_by, path)
-        controlnet_filenames.update(found)
+        controlnet_filename_dict.update(found)
 
-    controlnet_names = list(controlnet_filenames.keys())
+    controlnet_names = list(controlnet_filename_dict.keys())
     return
 
 

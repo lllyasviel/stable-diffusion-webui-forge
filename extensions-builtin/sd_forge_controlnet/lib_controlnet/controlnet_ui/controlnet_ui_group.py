@@ -514,7 +514,7 @@ class ControlNetUiGroup(object):
 
         with gr.Row(elem_classes=["controlnet_control_type", "controlnet_row"]):
             self.type_filter = gr.Radio(
-                global_state.get_preprocessor_tags(),
+                global_state.get_all_preprocessor_tags(),
                 label=f"Control Type",
                 value="All",
                 elem_id=f"{elem_id_tabname}_{tabname}_controlnet_type_filter_radio",
@@ -523,7 +523,7 @@ class ControlNetUiGroup(object):
 
         with gr.Row(elem_classes=["controlnet_preprocessor_model", "controlnet_row"]):
             self.module = gr.Dropdown(
-                global_state.get_preprocessor_names(),
+                global_state.get_all_preprocessor_names(),
                 label=f"Preprocessor",
                 value=self.default_unit.module,
                 elem_id=f"{elem_id_tabname}_{tabname}_controlnet_preprocessor_dropdown",
@@ -536,7 +536,7 @@ class ControlNetUiGroup(object):
                 tooltip=ControlNetUiGroup.tooltips[ControlNetUiGroup.trigger_symbol],
             )
             self.model = gr.Dropdown(
-                list(global_state.cn_models.keys()),
+                global_state.get_all_controlnet_names(),
                 label=f"Model",
                 value=self.default_unit.model,
                 elem_id=f"{elem_id_tabname}_{tabname}_controlnet_model_dropdown",

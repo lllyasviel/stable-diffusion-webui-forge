@@ -4,7 +4,7 @@ import os
 import logging
 from collections import OrderedDict
 from copy import copy
-from typing import Dict, Optional, Tuple, List, NamedTuple
+from typing import Dict, Optional, Tuple, List, Union
 import modules.scripts as scripts
 from modules import shared, devices, script_callbacks, processing, masking, images
 from modules.api.api import decode_base64_to_image
@@ -13,7 +13,7 @@ import time
 
 from einops import rearrange
 from lib_controlnet import global_state, external_code, utils
-from lib_controlnet.utils import load_state_dict, get_unique_axis0, align_dim_latent
+from lib_controlnet.utils import get_unique_axis0, align_dim_latent
 from lib_controlnet.enums import StableDiffusionVersion, HiResFixOption
 from lib_controlnet.controlnet_ui.controlnet_ui_group import ControlNetUiGroup, UiControlNetUnit
 from lib_controlnet.controlnet_ui.photopea import Photopea
@@ -21,6 +21,7 @@ from lib_controlnet.logging import logger
 from modules.processing import StableDiffusionProcessingImg2Img, StableDiffusionProcessingTxt2Img, StableDiffusionProcessing
 from modules.images import save_image
 from lib_controlnet.infotext import Infotext
+from annotator.util import HWC3
 
 import cv2
 import numpy as np
@@ -287,63 +288,6 @@ class Script(scripts.Script, metaclass=(
         devices.torch_gc()
 
     @staticmethod
-    def load_control_model(p, unet, model) -> ControlModel:
-        if model in Script.model_cache:
-            logger.info(f"Loading model from cache: {model}")
-            control_model = Script.model_cache[model]
-            if control_model.type == ControlModelType.Controlllite:
-                # Falls through to load Controlllite model fresh.
-                # TODO Fix context sharing issue for Controlllite.
-                pass
-            elif not control_model.type.allow_context_sharing():
-                # Creates a shallow-copy of control_model so that configs/inputs
-                # from different units can be bind correctly. While heavy objects
-                # of the underlying nn.Module is not copied.
-                return ControlModel(copy(control_model.model), control_model.type)
-            else:
-                return control_model
-
-        # Remove model from cache to clear space before building another model
-        if len(Script.model_cache) > 0 and len(Script.model_cache) >= shared.opts.data.get("control_net_model_cache_size", 2):
-            Script.model_cache.popitem(last=False)
-            gc.collect()
-            devices.torch_gc()
-
-        control_model = Script.build_control_model(p, unet, model)
-
-        if shared.opts.data.get("control_net_model_cache_size", 2) > 0:
-            Script.model_cache[model] = control_model
-
-        return control_model
-
-    @staticmethod
-    def build_control_model(p, unet, model) -> ControlModel:
-        if model is None or model == 'None':
-            raise RuntimeError(f"You have not selected any ControlNet Model.")
-
-        model_path = global_state.cn_models.get(model, None)
-        if model_path is None:
-            model = find_closest_lora_model_name(model)
-            model_path = global_state.cn_models.get(model, None)
-
-        if model_path is None:
-            raise RuntimeError(f"model not found: {model}")
-
-        # trim '"' at start/end
-        if model_path.startswith("\"") and model_path.endswith("\""):
-            model_path = model_path[1:-1]
-
-        if not os.path.exists(model_path):
-            raise ValueError(f"file not found: {model_path}")
-
-        logger.info(f"Loading model: {model}")
-        state_dict = load_state_dict(model_path)
-        control_model = build_model_by_guess(state_dict, unet, model_path)
-        control_model.model.to('cpu', dtype=p.sd_model.dtype)
-        logger.info(f"ControlNet model {model} loaded.")
-        return control_model
-
-    @staticmethod
     def get_remote_call(p, attribute, default=None, idx=0, strict=False, force=False):
         if not force and not shared.opts.data.get("control_net_allow_script_control", False):
             return default
@@ -564,7 +508,7 @@ class Script(scripts.Script, metaclass=(
 
         resize_mode = external_code.resize_mode_from_value(unit.resize_mode)
 
-        if batch_hijack.instance.is_batch and p_image_control is not None:
+        if p_image_control is not None:
             logger.warning("Warn: Using legacy field 'p.image_control'.")
             input_image = HWC3(np.asarray(p_image_control))
         elif p_input_image is not None:

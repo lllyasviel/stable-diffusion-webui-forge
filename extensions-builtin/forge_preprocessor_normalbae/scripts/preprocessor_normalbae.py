@@ -19,7 +19,8 @@ class PreprocessorNormalBae(Preprocessor):
         self.name = 'normalbae'
         self.tags = ['NormalMap']
         self.model_filename_filers = ['normal']
-        self.slider_resolution = PreprocessorParameter(label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
+        self.slider_resolution = PreprocessorParameter(
+            label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
         self.slider_1 = PreprocessorParameter(visible=False)
         self.slider_2 = PreprocessorParameter(visible=False)
         self.slider_3 = PreprocessorParameter(visible=False)

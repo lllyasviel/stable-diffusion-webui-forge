@@ -350,10 +350,8 @@ The memory optimization in this example is fully automatic. You do not need to c
 ```python
 # Use --show-controlnet-example to see this extension.
 
-import os
 import cv2
 import gradio as gr
-import numpy as np
 
 from modules import scripts
 from modules.shared_cmd_options import cmd_opts
@@ -538,8 +536,9 @@ class PreprocessorNormalBae(Preprocessor):
         super().__init__()
         self.name = 'normalbae'
         self.tags = ['NormalMap']
-        self.slider_resolution = PreprocessorParameter(label='Resolution', minimum=128, maximum=2048, value=512, step=8,
-                                                       visible=True)
+        self.model_filename_filers = ['normal']
+        self.slider_resolution = PreprocessorParameter(
+            label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
         self.slider_1 = PreprocessorParameter(visible=False)
         self.slider_2 = PreprocessorParameter(visible=False)
         self.slider_3 = PreprocessorParameter(visible=False)

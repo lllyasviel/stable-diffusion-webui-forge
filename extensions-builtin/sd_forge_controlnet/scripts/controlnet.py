@@ -1,15 +1,10 @@
-import gc
-import tracemalloc
 import os
-import logging
-from collections import OrderedDict
 from copy import copy
 from typing import Dict, Optional, Tuple, List, Union
 import modules.scripts as scripts
 from modules import shared, devices, script_callbacks, processing, masking, images
 from modules.api.api import decode_base64_to_image
 import gradio as gr
-import time
 
 from einops import rearrange
 from lib_controlnet import global_state, external_code, utils
@@ -19,7 +14,6 @@ from lib_controlnet.controlnet_ui.controlnet_ui_group import ControlNetUiGroup, 
 from lib_controlnet.controlnet_ui.photopea import Photopea
 from lib_controlnet.logging import logger
 from modules.processing import StableDiffusionProcessingImg2Img, StableDiffusionProcessingTxt2Img, StableDiffusionProcessing
-from modules.images import save_image
 from lib_controlnet.infotext import Infotext
 from modules_forge.forge_util import HWC3
 

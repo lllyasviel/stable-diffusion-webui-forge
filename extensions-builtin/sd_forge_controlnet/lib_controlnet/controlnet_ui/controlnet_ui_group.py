@@ -918,34 +918,6 @@ class ControlNetUiGroup(object):
             show_progress=False,
         )
 
-    def register_sd_version_changed(self):
-        def sd_version_changed(type_filter: str, current_model: str):
-            """When SD version changes, update model dropdown choices."""
-            (
-                filtered_preprocessor_list,
-                filtered_model_list,
-                default_option,
-                default_model,
-            ) = global_state.select_control_type(
-                type_filter, global_state.get_sd_version()
-            )
-
-            if current_model in filtered_model_list:
-                return gr.update()
-
-            return gr.Dropdown.update(
-                value=default_model,
-                choices=filtered_model_list,
-            )
-
-        if ControlNetUiGroup.a1111_context.setting_sd_model_checkpoint:
-            ControlNetUiGroup.a1111_context.setting_sd_model_checkpoint.change(
-                fn=sd_version_changed,
-                inputs=[self.type_filter, self.model],
-                outputs=[self.model],
-                show_progress=False,
-            )
-
     def register_run_annotator(self):
         def run_annotator(image, module, pres, pthr_a, pthr_b, t2i_w, t2i_h, pp, rm):
             if image is None:

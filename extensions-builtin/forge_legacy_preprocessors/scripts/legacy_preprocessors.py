@@ -1,5 +1,3 @@
-from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocessor_dir, add_preprocessor
-
 # This is a python script to convert all old preprocessors to new format.
 # However, the old preprocessors are not very memory effective
 # and eventually we should move all old preprocessors to new format manually
@@ -7,7 +5,13 @@ from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocess
 # how to make better implementation of preprocessors.
 # No newer preprocessors should be written in this legacy way.
 
+# Never add new leagcy preprocessors please.
+# The new forge_preprocessor_normalbae/scripts/preprocessor_normalbae
+# is much more effective and maintainable
+
+
 from legacy_preprocessors.preprocessor_compiled import legacy_preprocessors
+from modules_forge.shared import Preprocessor, PreprocessorParameter, add_preprocessor
 
 
 class LegacyPreprocessor(Preprocessor):

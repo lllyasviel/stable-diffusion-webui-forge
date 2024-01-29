@@ -88,6 +88,7 @@ class PreprocessorNone(Preprocessor):
     def __init__(self):
         super().__init__()
         self.name = 'None'
+        self.sorting_priority = 10
 
 
 class PreprocessorCanny(Preprocessor):
@@ -97,6 +98,7 @@ class PreprocessorCanny(Preprocessor):
         self.tags = ['Canny']
         self.slider_1 = PreprocessorParameter(minimum=0, maximum=256, step=1, value=100, label='Low Threshold', visible=True)
         self.slider_2 = PreprocessorParameter(minimum=0, maximum=256, step=1, value=200, label='High Threshold', visible=True)
+        self.sorting_priority = 100
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
         input_image, remove_pad = resize_image_with_pad(input_image, resolution)

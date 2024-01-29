@@ -25,22 +25,22 @@ class LegacyPreprocessor(Preprocessor):
         if legacy_dict['resolution'] is None:
             self.resolution = PreprocessorParameter(visible=False)
         else:
-            self.resolution = PreprocessorParameter(**legacy_dict['resolution'])
+            self.resolution = PreprocessorParameter(**legacy_dict['resolution'], visible=True)
 
         if legacy_dict['slider_1'] is None:
             self.slider_1 = PreprocessorParameter(visible=False)
         else:
-            self.slider_1 = PreprocessorParameter(**legacy_dict['slider_1'])
+            self.slider_1 = PreprocessorParameter(**legacy_dict['slider_1'], visible=True)
 
         if legacy_dict['slider_2'] is None:
             self.slider_2 = PreprocessorParameter(visible=False)
         else:
-            self.slider_2 = PreprocessorParameter(**legacy_dict['slider_2'])
+            self.slider_2 = PreprocessorParameter(**legacy_dict['slider_2'], visible=True)
 
         if legacy_dict['slider_3'] is None:
             self.slider_3 = PreprocessorParameter(visible=False)
         else:
-            self.slider_3 = PreprocessorParameter(**legacy_dict['slider_3'])
+            self.slider_3 = PreprocessorParameter(**legacy_dict['slider_3'], visible=True)
 
 
 for k, v in legacy_preprocessors.items():

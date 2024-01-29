@@ -68,7 +68,7 @@ def update_cn_models():
     cn_models.clear()
     ext_dirs = (shared.opts.data.get("control_net_models_path", None), getattr(shared.cmd_opts, 'controlnet_dir', None))
     extra_lora_paths = (extra_lora_path for extra_lora_path in ext_dirs
-                if extra_lora_path is not None and os.path.exists(extra_lora_path))
+                        if extra_lora_path is not None and os.path.exists(extra_lora_path))
     paths = [controlnet_dir, *extra_lora_paths]
 
     for path in paths:

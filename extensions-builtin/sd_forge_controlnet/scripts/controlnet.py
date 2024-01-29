@@ -12,76 +12,28 @@ import gradio as gr
 import time
 
 from einops import rearrange
-from scripts import global_state, hook, external_code, batch_hijack, controlnet_version, utils
-from scripts.controlnet_lora import bind_control_lora, unbind_control_lora
-from scripts.processor import *
-from scripts.controlnet_lllite import clear_all_lllite
-from scripts.controlmodel_ipadapter import clear_all_ip_adapter
-from scripts.utils import load_state_dict, get_unique_axis0, align_dim_latent
-from scripts.hook import ControlParams, UnetHook, HackedImageRNG
-from scripts.enums import ControlModelType, StableDiffusionVersion, HiResFixOption
-from scripts.controlnet_ui.controlnet_ui_group import ControlNetUiGroup, UiControlNetUnit
-from scripts.controlnet_ui.photopea import Photopea
-from scripts.logging import logger
+from lib_controlnet import global_state, external_code, utils
+from lib_controlnet.utils import load_state_dict, get_unique_axis0, align_dim_latent
+from lib_controlnet.enums import StableDiffusionVersion, HiResFixOption
+from lib_controlnet.controlnet_ui.controlnet_ui_group import ControlNetUiGroup, UiControlNetUnit
+from lib_controlnet.controlnet_ui.photopea import Photopea
+from lib_controlnet.logging import logger
 from modules.processing import StableDiffusionProcessingImg2Img, StableDiffusionProcessingTxt2Img, StableDiffusionProcessing
 from modules.images import save_image
-from scripts.infotext import Infotext
+from lib_controlnet.infotext import Infotext
 
 import cv2
 import numpy as np
 import torch
 
 from PIL import Image, ImageFilter, ImageOps
-from scripts.lvminthin import lvmin_thin, nake_nms
-from scripts.processor import model_free_preprocessors
-from scripts.controlnet_model_guess import build_model_by_guess, ControlModel
-from scripts.hook import torch_dfs
+from lib_controlnet.lvminthin import lvmin_thin, nake_nms
 
 
 # Gradio 3.32 bug fix
 import tempfile
 gradio_tempfile_path = os.path.join(tempfile.gettempdir(), 'gradio')
 os.makedirs(gradio_tempfile_path, exist_ok=True)
-
-
-def clear_all_secondary_control_models(m):
-    all_modules = torch_dfs(m)
-
-    for module in all_modules:
-        _original_inner_forward_cn_hijack = getattr(module, '_original_inner_forward_cn_hijack', None)
-        original_forward_cn_hijack = getattr(module, 'original_forward_cn_hijack', None)
-        if _original_inner_forward_cn_hijack is not None:
-            module._forward = _original_inner_forward_cn_hijack
-        if original_forward_cn_hijack is not None:
-            module.forward = original_forward_cn_hijack
-
-    clear_all_lllite()
-    clear_all_ip_adapter()
-
-
-def find_closest_lora_model_name(search: str):
-    if not search:
-        return None
-    if search in global_state.cn_models:
-        return search
-    search = search.lower()
-    if search in global_state.cn_models_names:
-        return global_state.cn_models_names.get(search)
-    applicable = [name for name in global_state.cn_models_names.keys()
-                  if search in name.lower()]
-    if not applicable:
-        return None
-    applicable = sorted(applicable, key=lambda name: len(name))
-    return global_state.cn_models_names[applicable[0]]
-
-
-def swap_img2img_pipeline(p: processing.StableDiffusionProcessingImg2Img):
-    p.__class__ = processing.StableDiffusionProcessingTxt2Img
-    dummy = processing.StableDiffusionProcessingTxt2Img()
-    for k,v in dummy.__dict__.items():
-        if hasattr(p, k):
-            continue
-        setattr(p, k, v)
 
 
 global_state.update_cn_models()

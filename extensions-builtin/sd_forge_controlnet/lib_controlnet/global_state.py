@@ -57,6 +57,13 @@ def get_preprocessor_names():
     return list(supported_preprocessors.keys())
 
 
+def get_preprocessor_tags():
+    tags = []
+    for p in supported_preprocessors:
+        tags += p.tags
+    return list(set(tags))
+
+
 def update_cn_models():
     cn_models.clear()
     ext_dirs = (shared.opts.data.get("control_net_models_path", None), getattr(shared.cmd_opts, 'controlnet_dir', None))

@@ -53,15 +53,31 @@ cn_models = {}
 cn_models_names = []
 
 
-def get_preprocessor_names():
+def get_all_preprocessor_names():
     return list(supported_preprocessors.keys())
 
 
-def get_preprocessor_tags():
+def get_all_preprocessor_tags():
     tags = []
     for p in supported_preprocessors:
         tags += p.tags
     return list(set(tags))
+
+
+def get_filtered_preprocessors(tag):
+    return {k: v for k, v in supported_preprocessors.items() if tag in v.tags}
+
+
+def get_filtered_preprocessor_names(tag):
+    return list(get_filtered_preprocessors(tag).keys())
+
+
+def get_filtered_cn_model_names(tag):
+    filtered_preprocessors = get_filtered_preprocessors(tag)
+    model_filename_filers = []
+    for p in filtered_preprocessors:
+        model_filename_filers.append(p.model_filename_filers)
+    return [x for x in cn_models_names if any(f.lower() in x.lower() for f in model_filename_filers)]
 
 
 def update_cn_models():

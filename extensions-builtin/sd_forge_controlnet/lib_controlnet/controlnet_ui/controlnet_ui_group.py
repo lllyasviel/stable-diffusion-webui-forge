@@ -894,6 +894,12 @@ class ControlNetUiGroup(object):
             default_preprocessor = filtered_preprocessor_list[0]
             default_controlnet_name = filtered_controlnet_names[0]
 
+            if k != 'All':
+                if len(filtered_preprocessor_list) > 1:
+                    default_preprocessor = filtered_preprocessor_list[1]
+                if len(filtered_controlnet_names) > 1:
+                    default_controlnet_name = filtered_controlnet_names[1]
+
             if self.prevent_next_n_module_update > 0:
                 self.prevent_next_n_module_update -= 1
                 return [

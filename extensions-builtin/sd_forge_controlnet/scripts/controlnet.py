@@ -20,9 +20,11 @@ from modules_forge.forge_util import HWC3
 import cv2
 import numpy as np
 import torch
+import functools
 
 from PIL import Image, ImageFilter, ImageOps
 from lib_controlnet.lvminthin import lvmin_thin, nake_nms
+from modules_forge.shared import try_load_supported_control_model
 
 
 # Gradio 3.32 bug fix
@@ -32,6 +34,11 @@ os.makedirs(gradio_tempfile_path, exist_ok=True)
 
 
 global_state.update_controlnet_filenames()
+
+
+@functools.lru_cache(maxsize=shared.opts.data.get("control_net_model_cache_size", 5))
+def cached_controlnet_loader(filename):
+    return try_load_supported_control_model(filename)
 
 
 def image_dict_from_any(image) -> Optional[Dict[str, np.ndarray]]:
@@ -978,7 +985,7 @@ def on_ui_settings():
     shared.opts.add_option("control_net_unit_count", shared.OptionInfo(
         3, "Multi-ControlNet: ControlNet unit number (requires restart)", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}, section=section))
     shared.opts.add_option("control_net_model_cache_size", shared.OptionInfo(
-        2, "Model cache size (requires restart)", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}, section=section))
+        5, "Model cache size (requires restart)", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}, section=section))
     shared.opts.add_option("control_net_inpaint_blur_sigma", shared.OptionInfo(
         7, "ControlNet inpainting Gaussian blur sigma", gr.Slider, {"minimum": 0, "maximum": 64, "step": 1}, section=section))
     shared.opts.add_option("control_net_no_detectmap", shared.OptionInfo(

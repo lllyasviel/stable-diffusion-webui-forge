@@ -58,5 +58,5 @@ def automatic_memory_management():
     model_management.soft_empty_cache()
     end = time.perf_counter()
 
-    print(f'Automatic Memory Management: {len(module_list)} Modules in {(end - start)%.3} seconds.')
+    print(f'Automatic Memory Management: {len(module_list)} Modules in {(end - start):.2f} seconds.')
     return

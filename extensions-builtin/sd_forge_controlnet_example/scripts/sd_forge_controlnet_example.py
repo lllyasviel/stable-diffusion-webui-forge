@@ -1,9 +1,7 @@
 # Use --show-controlnet-example to see this extension.
 
-import os
 import cv2
 import gradio as gr
-import numpy as np
 
 from modules import scripts
 from modules.shared_cmd_options import cmd_opts

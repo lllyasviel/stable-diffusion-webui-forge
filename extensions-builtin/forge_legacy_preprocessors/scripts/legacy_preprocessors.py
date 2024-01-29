@@ -37,16 +37,6 @@ from modules_forge.shared import add_supported_preprocessor
 ###
 
 
-filters_aliases = {
-    'instructp2p': ['ip2p'],
-    'segmentation': ['seg'],
-    'normalmap': ['normal'],
-    't2i-adapter': ['t2i_adapter', 't2iadapter', 't2ia'],
-    'ip-adapter': ['ip_adapter', 'ipadapter'],
-    'openpose':['openpose', 'densepose'],
-}
-
-
 class LegacyPreprocessor(Preprocessor):
     def __init__(self, legacy_dict):
         super().__init__()
@@ -58,6 +48,15 @@ class LegacyPreprocessor(Preprocessor):
         self.show_control_mode = not legacy_dict['no_control_mode']
         self.sorting_priority = legacy_dict['priority']
         self.tags = legacy_dict['tags']
+
+        filters_aliases = {
+            'instructp2p': ['ip2p'],
+            'segmentation': ['seg'],
+            'normalmap': ['normal'],
+            't2i-adapter': ['t2i_adapter', 't2iadapter', 't2ia'],
+            'ip-adapter': ['ip_adapter', 'ipadapter'],
+            'openpose': ['openpose', 'densepose'],
+        }
 
         self.model_filename_filers = []
         for tag in self.tags:

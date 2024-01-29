@@ -3,7 +3,7 @@ import stat
 from collections import OrderedDict
 
 from modules import shared, sd_models
-from scripts.enums import StableDiffusionVersion
+from lib_controlnet.enums import StableDiffusionVersion
 from modules_forge.shared import controlnet_dir
 
 

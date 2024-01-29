@@ -185,7 +185,7 @@ class ControlNetForForgeOfficial(scripts.Script):
     def uigroup(self, tabname: str, is_img2img: bool, elem_id_tabname: str, photopea: Optional[Photopea]) -> Tuple[ControlNetUiGroup, gr.State]:
         group = ControlNetUiGroup(
             is_img2img,
-            Script.get_default_ui_unit(),
+            self.get_default_ui_unit(),
             photopea,
         )
         return group, group.render(tabname, elem_id_tabname)
@@ -216,8 +216,6 @@ class ControlNetForForgeOfficial(scripts.Script):
                         group, state = self.uigroup(f"ControlNet", is_img2img, elem_id_tabname, photopea)
                         ui_groups.append(group)
                         controls.append(state)
-                with gr.Accordion(f"Batch Options", open=False, elem_id="controlnet_batch_options"):
-                    self.ui_batch_options(is_img2img, elem_id_tabname)
 
         for i, ui_group in enumerate(ui_groups):
             infotext.register_unit(i, ui_group)

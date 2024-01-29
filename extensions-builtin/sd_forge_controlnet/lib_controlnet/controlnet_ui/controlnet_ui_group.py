@@ -770,7 +770,7 @@ class ControlNetUiGroup(object):
 
     def register_refresh_all_models(self):
         def refresh_all_models(model1: str, model2: str):
-            global_state.update_cn_models()
+            global_state.update_controlnet_filenames()
             choices = list(global_state.cn_models.keys())
             return gr.Dropdown.update(
                 value=model1 if model1 in global_state.cn_models else "None",
@@ -888,26 +888,25 @@ class ControlNetUiGroup(object):
         def filter_selected(k: str):
             logger.debug(f"Prevent update {self.prevent_next_n_module_update}")
             logger.debug(f"Switch to control type {k}")
-            (
-                filtered_preprocessor_list,
-                filtered_model_list,
-                default_option,
-                default_model,
-            ) = global_state.select_control_type(k, global_state.get_sd_version())
+
+            filtered_preprocessor_list = global_state.get_filtered_preprocessor_names(k)
+            filtered_controlnet_names = global_state.get_filtered_controlnet_names(k)
+            default_preprocessor = filtered_preprocessor_list[0]
+            default_controlnet_name = filtered_controlnet_names[0]
 
             if self.prevent_next_n_module_update > 0:
                 self.prevent_next_n_module_update -= 1
                 return [
                     gr.Dropdown.update(choices=filtered_preprocessor_list),
-                    gr.Dropdown.update(choices=filtered_model_list),
+                    gr.Dropdown.update(choices=filtered_controlnet_names),
                 ]
             else:
                 return [
                     gr.Dropdown.update(
-                        value=default_option, choices=filtered_preprocessor_list
+                        value=default_preprocessor, choices=filtered_preprocessor_list
                     ),
                     gr.Dropdown.update(
-                        value=default_model, choices=filtered_model_list
+                        value=default_controlnet_name, choices=filtered_controlnet_names
                     ),
                 ]
 
@@ -1306,7 +1305,6 @@ class ControlNetUiGroup(object):
             return
 
         self.callbacks_registered = True
-        self.register_sd_version_changed()
         self.register_send_dimensions()
         self.register_run_annotator()
         self.register_sync_batch_dir()

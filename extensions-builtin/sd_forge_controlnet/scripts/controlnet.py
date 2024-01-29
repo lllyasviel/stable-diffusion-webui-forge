@@ -37,7 +37,7 @@ gradio_tempfile_path = os.path.join(tempfile.gettempdir(), 'gradio')
 os.makedirs(gradio_tempfile_path, exist_ok=True)
 
 
-global_state.update_cn_models()
+global_state.update_controlnet_filenames()
 
 
 def image_dict_from_any(image) -> Optional[Dict[str, np.ndarray]]:

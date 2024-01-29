@@ -4,7 +4,7 @@ import numpy as np
 from modules import scripts, shared
 
 try:
-    from lib_controlnet.global_state import update_cn_models, cn_models_names, get_preprocessor_names
+    from lib_controlnet.global_state import update_controlnet_filenames, cn_models_names, get_preprocessor_names
     from lib_controlnet.external_code import ResizeMode, ControlMode
 
 except (ImportError, NameError):
@@ -398,7 +398,7 @@ def add_axis_options(xyz_grid):
         return ["False", "True"]
 
     def choices_model():
-        update_cn_models()
+        update_controlnet_filenames()
         return list(cn_models_names.values())
 
     def choices_control_mode():

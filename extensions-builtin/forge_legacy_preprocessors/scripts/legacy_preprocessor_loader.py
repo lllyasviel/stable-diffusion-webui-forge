@@ -60,11 +60,18 @@ for name in ui_preprocessor_keys:
         resolution=resolution,
         slider_1=slider_1,
         slider_2=slider_2,
-        slider_3=slider_3
+        slider_3=slider_3,
+        priority=0,
     )
 
 
-for tag in preprocessor_filters:
+for tag, best in preprocessor_filters.items():
+    bp = special_get(legacy_preprocessors, best, None)
+    if bp is not None:
+        bp['priority'] = 100
 
+for tag, best in preprocessor_filters.items():
+    marks = [tag.lower()] + preprocessor_filters_aliases.get(tag, [])
+    a = 0
 
 a = 0

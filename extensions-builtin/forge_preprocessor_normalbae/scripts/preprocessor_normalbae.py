@@ -23,6 +23,7 @@ class PreprocessorNormalBae(Preprocessor):
         self.slider_3 = PreprocessorParameter(visible=False)
         self.show_control_mode = True
         self.do_not_need_model = False
+        self.sorting_priority = 0.0  # higher goes to top in the list
 
     def load_model(self):
         if self.model_patcher is not None:

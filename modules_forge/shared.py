@@ -34,7 +34,7 @@ class PreprocessorParameter:
 class Preprocessor:
     def __init__(self):
         self.name = 'PreprocessorBase'
-        self.tag = None
+        self.tags = []
         self.slider_resolution = PreprocessorParameter(label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
         self.slider_1 = PreprocessorParameter()
         self.slider_2 = PreprocessorParameter()
@@ -94,7 +94,7 @@ class PreprocessorCanny(Preprocessor):
     def __init__(self):
         super().__init__()
         self.name = 'canny'
-        self.tag = 'Canny'
+        self.tags = ['Canny']
         self.slider_1 = PreprocessorParameter(minimum=0, maximum=256, step=1, value=100, label='Low Threshold', visible=True)
         self.slider_2 = PreprocessorParameter(minimum=0, maximum=256, step=1, value=200, label='High Threshold', visible=True)
 

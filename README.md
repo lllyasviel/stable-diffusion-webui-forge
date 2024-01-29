@@ -534,9 +534,8 @@ class PreprocessorNormalBae(Preprocessor):
     def __init__(self):
         super().__init__()
         self.name = 'normalbae'
-        self.tag = 'NormalMap'
-        self.slider_resolution = PreprocessorParameter(
-            label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
+        self.tags = ['NormalMap']
+        self.slider_resolution = PreprocessorParameter(label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
         self.slider_1 = PreprocessorParameter(visible=False)
         self.slider_2 = PreprocessorParameter(visible=False)
         self.slider_3 = PreprocessorParameter(visible=False)

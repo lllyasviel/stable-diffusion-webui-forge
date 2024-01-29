@@ -34,26 +34,29 @@ class ControlNet(ControlModel):
     def patch_to_process(self, p, control_image):
         unet = p.sd_model.forge_objects.unet
 
-        # But in this simple example we do not use them
-        positive_advanced_weighting = None
-        negative_advanced_weighting = None
-        advanced_frame_weighting = None
-        advanced_sigma_weighting = None
-
         unet = apply_controlnet_advanced(
             unet=unet,
             controlnet=self.model_patcher,
             image_bchw=control_image,
-            strength=0.6,
-            start_percent=0.0,
-            end_percent=0.8,
-            positive_advanced_weighting=positive_advanced_weighting,
-            negative_advanced_weighting=negative_advanced_weighting,
-            advanced_frame_weighting=advanced_frame_weighting,
-            advanced_sigma_weighting=advanced_sigma_weighting)
+            strength=self.strength,
+            start_percent=self.start_percent,
+            end_percent=self.end_percent,
+            positive_advanced_weighting=self.positive_advanced_weighting,
+            negative_advanced_weighting=self.negative_advanced_weighting,
+            advanced_frame_weighting=self.advanced_frame_weighting,
+            advanced_sigma_weighting=self.advanced_sigma_weighting)
 
         p.sd_model.forge_objects.unet = unet
         return
 
 
 supported_control_model_types.append(ControlNet)
+
+
+def try_load_supported_control_model(state_dict):
+    for supported_type in supported_control_model_types:
+        state_dict_copy = {k: v for k, v in state_dict.items()}
+        model, loaded = supported_type.try_build_from_state_dict(state_dict_copy)
+        if loaded:
+            return model
+    return None

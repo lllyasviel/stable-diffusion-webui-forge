@@ -29,6 +29,7 @@ class LegacyPreprocessor(Preprocessor):
         if legacy_dict['resolution'] is None:
             self.resolution = PreprocessorParameter(visible=False)
         else:
+            legacy_dict['resolution']['label'] = 'Resolution'
             self.resolution = PreprocessorParameter(**legacy_dict['resolution'], visible=True)
 
         if legacy_dict['slider_1'] is None:

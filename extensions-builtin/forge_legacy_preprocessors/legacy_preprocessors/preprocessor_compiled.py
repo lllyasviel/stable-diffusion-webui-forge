@@ -27,7 +27,7 @@ legacy_preprocessors = {
         "slider_1": None,
         "slider_2": None,
         "slider_3": None,
-        "priority": 0,
+        "priority": 20,
         "tags": [
             "Canny", "Lineart", "Scribble", "Sketch", "MLSD",
         ]

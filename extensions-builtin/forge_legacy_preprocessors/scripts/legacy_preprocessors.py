@@ -16,7 +16,7 @@ from annotator.util import HWC3
 from modules_forge.ops import automatic_memory_management
 from legacy_preprocessors.preprocessor_compiled import legacy_preprocessors
 from modules_forge.preprocessor_supported import Preprocessor, PreprocessorParameter
-from modules_forge.shared import add_preprocessor
+from modules_forge.shared import add_supported_preprocessor
 
 
 class LegacyPreprocessor(Preprocessor):
@@ -77,4 +77,4 @@ class LegacyPreprocessor(Preprocessor):
 for k, v in legacy_preprocessors.items():
     p = LegacyPreprocessor(v)
     p.name = k
-    add_preprocessor(p)
+    add_supported_preprocessor(p)

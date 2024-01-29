@@ -357,7 +357,7 @@ import numpy as np
 
 from modules import scripts
 from modules.shared_cmd_options import cmd_opts
-from modules_forge.shared import shared_preprocessors
+from modules_forge.shared import supported_preprocessors
 from modules.modelloader import load_file_from_url
 from ldm_patched.modules.controlnet import load_controlnet
 from modules_forge.controlnet import apply_controlnet_advanced
@@ -425,7 +425,7 @@ class ControlNetExampleForge(scripts.Script):
         width = W * 8
         batch_size = p.batch_size
 
-        preprocessor = shared_preprocessors['canny']
+        preprocessor = supported_preprocessors['canny']
 
         # detect control at certain resolution
         control_image = preprocessor(
@@ -519,7 +519,7 @@ Below codes are in `extensions-builtin\forge_preprocessor_normalbae\scripts\prep
 
 ```python
 from modules_forge.preprocessor_supported import Preprocessor, PreprocessorParameter
-from modules_forge.shared import preprocessor_dir, add_preprocessor
+from modules_forge.shared import preprocessor_dir, add_supported_preprocessor
 from modules_forge.forge_util import resize_image_with_pad
 from modules.modelloader import load_file_from_url
 
@@ -538,7 +538,8 @@ class PreprocessorNormalBae(Preprocessor):
         super().__init__()
         self.name = 'normalbae'
         self.tags = ['NormalMap']
-        self.slider_resolution = PreprocessorParameter(label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
+        self.slider_resolution = PreprocessorParameter(label='Resolution', minimum=128, maximum=2048, value=512, step=8,
+                                                       visible=True)
         self.slider_1 = PreprocessorParameter(visible=False)
         self.slider_2 = PreprocessorParameter(visible=False)
         self.slider_3 = PreprocessorParameter(visible=False)
@@ -592,7 +593,7 @@ class PreprocessorNormalBae(Preprocessor):
         return remove_pad(normal_image)
 
 
-add_preprocessor(PreprocessorNormalBae())
+add_supported_preprocessor(PreprocessorNormalBae())
 
 ```
 

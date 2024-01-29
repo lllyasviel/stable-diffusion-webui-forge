@@ -10,14 +10,14 @@ os.makedirs(controlnet_dir, exist_ok=True)
 preprocessor_dir = os.path.join(models_path, 'ControlNetPreprocessor')
 os.makedirs(preprocessor_dir, exist_ok=True)
 
-shared_preprocessors = {}
+supported_preprocessors = {}
 supported_control_models = []
 
 
-def add_preprocessor(preprocessor):
-    global shared_preprocessors
+def add_supported_preprocessor(preprocessor):
+    global supported_preprocessors
     p = preprocessor
-    shared_preprocessors[p.name] = p
+    supported_preprocessors[p.name] = p
     return
 
 

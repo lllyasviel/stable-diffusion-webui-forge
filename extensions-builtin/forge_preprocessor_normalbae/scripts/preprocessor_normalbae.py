@@ -1,5 +1,5 @@
 from modules_forge.preprocessor_supported import Preprocessor, PreprocessorParameter
-from modules_forge.shared import preprocessor_dir, add_preprocessor
+from modules_forge.shared import preprocessor_dir, add_supported_preprocessor
 from modules_forge.forge_util import resize_image_with_pad
 from modules.modelloader import load_file_from_url
 
@@ -72,4 +72,4 @@ class PreprocessorNormalBae(Preprocessor):
         return remove_pad(normal_image)
 
 
-add_preprocessor(PreprocessorNormalBae())
+add_supported_preprocessor(PreprocessorNormalBae())

@@ -1,7 +1,7 @@
 import cv2
 import torch
 
-from modules_forge.shared import add_preprocessor
+from modules_forge.shared import add_supported_preprocessor
 from ldm_patched.modules import model_management
 from ldm_patched.modules.model_patcher import ModelPatcher
 from modules_forge.forge_util import resize_image_with_pad
@@ -89,5 +89,5 @@ class PreprocessorCanny(Preprocessor):
         return remove_pad(canny_image)
 
 
-add_preprocessor(PreprocessorNone())
-add_preprocessor(PreprocessorCanny())
+add_supported_preprocessor(PreprocessorNone())
+add_supported_preprocessor(PreprocessorCanny())

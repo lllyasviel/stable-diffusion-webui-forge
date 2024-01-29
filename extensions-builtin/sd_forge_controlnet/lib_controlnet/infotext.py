@@ -4,8 +4,8 @@ import gradio as gr
 
 from modules.processing import StableDiffusionProcessing
 
-from scripts import external_code
-from scripts.logging import logger
+from lib_controlnet import external_code
+from lib_controlnet.logging import logger
 
 
 def field_to_displaytext(fieldname: str) -> str:

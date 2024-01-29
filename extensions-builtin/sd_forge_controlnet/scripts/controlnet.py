@@ -1030,11 +1030,6 @@ class Script(scripts.Script, metaclass=(
         return
 
     def before_process_batch(self, p, *args, **kwargs):
-        if self.noise_modifier is not None:
-            p.rng = HackedImageRNG(rng=p.rng,
-                                   noise_modifier=self.noise_modifier,
-                                   sd_model=p.sd_model)
-        self.noise_modifier = None
         if Script.process_has_sdxl_refiner(p):
             self.controlnet_hack(p)
         return
@@ -1115,7 +1110,8 @@ class Script(scripts.Script, metaclass=(
 
     def batch_tab_process_each(self, p, *args, **kwargs):
         for unit_i, unit in enumerate(self.enabled_units):
-            if getattr(unit, 'loopback', False) and batch_hijack.instance.batch_index > 0: continue
+            if getattr(unit, 'loopback', False):
+                continue
 
             unit.image = next(unit.batch_images)
 
@@ -1126,7 +1122,8 @@ class Script(scripts.Script, metaclass=(
                 if output_images:
                     unit.image = np.array(output_images[0])
                 else:
-                    logger.warning(f'Warning: No loopback image found for controlnet unit {unit_i}. Using control map from last batch iteration instead')
+                    logger.warning(f'Warning: No loopback image found for controlnet unit {unit_i}. '
+                                   f'Using control map from last batch iteration instead')
 
     def batch_tab_postprocess(self, p, *args, **kwargs):
         self.enabled_units.clear()
@@ -1178,7 +1175,6 @@ def on_ui_settings():
         gr.Checkbox, {"interactive": True}, section=section))
 
 
-batch_hijack.instance.do_hijack()
 script_callbacks.on_ui_settings(on_ui_settings)
 script_callbacks.on_infotext_pasted(Infotext.on_infotext_pasted)
 script_callbacks.on_after_component(ControlNetUiGroup.on_after_component)

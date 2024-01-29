@@ -168,13 +168,11 @@ def get_pytorch_control(x: np.ndarray) -> torch.Tensor:
 class Script(scripts.Script, metaclass=(
     utils.TimeMeta if logger.level == logging.DEBUG else type)):
 
-    model_cache: Dict[str, ControlModel] = OrderedDict()
+    model_cache = OrderedDict()
 
     def __init__(self) -> None:
         super().__init__()
         self.latest_network = None
-        self.preprocessor = global_state.cache_preprocessors(global_state.cn_preprocessor_modules)
-        self.unloadable = global_state.cn_preprocessor_unloadable
         self.input_image = None
         self.latest_model_hash = ""
         self.enabled_units = []
@@ -182,10 +180,6 @@ class Script(scripts.Script, metaclass=(
         self.post_processors = []
         self.noise_modifier = None
         self.ui_batch_option_state = [external_code.BatchOption.DEFAULT.value, False]
-        batch_hijack.instance.process_batch_callbacks.append(self.batch_tab_process)
-        batch_hijack.instance.process_batch_each_callbacks.append(self.batch_tab_process_each)
-        batch_hijack.instance.postprocess_batch_each_callbacks.insert(0, self.batch_tab_postprocess_each)
-        batch_hijack.instance.postprocess_batch_callbacks.insert(0, self.batch_tab_postprocess)
 
     def title(self):
         return "ControlNet"

@@ -5,7 +5,6 @@ import torch
 from modules.paths import models_path
 from ldm_patched.modules import model_management
 from ldm_patched.modules.model_patcher import ModelPatcher
-from modules.modelloader import load_file_from_url
 from modules_forge.forge_util import resize_image_with_pad
 
 

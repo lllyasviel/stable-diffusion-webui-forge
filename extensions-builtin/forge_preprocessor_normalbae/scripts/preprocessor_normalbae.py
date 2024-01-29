@@ -1,5 +1,6 @@
-from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocessor_dir, load_file_from_url, add_preprocessor
+from modules_forge.shared import Preprocessor, PreprocessorParameter, preprocessor_dir, add_preprocessor
 from modules_forge.forge_util import resize_image_with_pad
+from modules.modelloader import load_file_from_url
 
 import types
 import torch

@@ -632,38 +632,6 @@ class ControlNetForForgeOfficial(scripts.Script):
     def controlnet_main_entry(self, p):
         for idx, unit in enumerate(self.enabled_units):
 
-            input_image, resize_mode = Script.choose_input_image(p, unit, idx)
-            if isinstance(input_image, list):
-                assert unit.accepts_multiple_inputs()
-                input_images = input_image
-            else: # Following operations are only for single input image.
-                input_image = Script.try_crop_image_with_a1111_mask(p, unit, input_image, resize_mode)
-                input_image = np.ascontiguousarray(input_image.copy()).copy() # safe numpy
-                if unit.module == 'inpaint_only+lama' and resize_mode == external_code.ResizeMode.OUTER_FIT:
-                    # inpaint_only+lama is special and required outpaint fix
-                    _, input_image = Script.detectmap_proc(input_image, unit.module, resize_mode, hr_y, hr_x)
-                if unit.pixel_perfect:
-                    unit.processor_res = external_code.pixel_perfect_resolution(
-                        input_image,
-                        target_H=h,
-                        target_W=w,
-                        resize_mode=resize_mode,
-                    )
-                input_images = [input_image]
-            # Preprocessor result may depend on numpy random operations, use the
-            # random seed in `StableDiffusionProcessing` to make the
-            # preprocessor result reproducable.
-            # Currently following preprocessors use numpy random:
-            # - shuffle
-            seed = set_numpy_seed(p)
-            logger.debug(f"Use numpy seed {seed}.")
-            logger.info(f"Using preprocessor: {unit.module}")
-            logger.info(f'preprocessor resolution = {unit.processor_res}')
-
-            def store_detected_map(detected_map, module: str) -> None:
-                if unit.save_detected_map:
-                    detected_maps.append((detected_map, module))
-
             def preprocess_input_image(input_image: np.ndarray):
                 """ Preprocess single input image. """
                 detected_map, is_image = self.preprocessor[unit.module](
@@ -856,6 +824,31 @@ class ControlNetForForgeOfficial(scripts.Script):
         h, w, hr_y, hr_x = self.get_target_dimensions(p)
         input_image, resize_mode = self.choose_input_image(p, unit)
         assert isinstance(input_image, np.ndarray), 'Invalid input image!'
+
+        input_image = self.try_crop_image_with_a1111_mask(p, unit, input_image, resize_mode)
+        input_image = np.ascontiguousarray(input_image.copy()).copy()  # safe numpy
+
+        if unit.pixel_perfect:
+            unit.processor_res = external_code.pixel_perfect_resolution(
+                input_image,
+                target_H=h,
+                target_W=w,
+                resize_mode=resize_mode,
+            )
+
+        seed = set_numpy_seed(p)
+        logger.debug(f"Use numpy seed {seed}.")
+        logger.info(f"Using preprocessor: {unit.module}")
+        logger.info(f'preprocessor resolution = {unit.processor_res}')
+
+        detected_map = global_state.get_preprocessor(unit.module)(
+            input_image=input_image,
+            resolution=unit.processor_res,
+            slider_1=unit.threshold_a,
+            slider_2=unit.threshold_b,
+        )
+
+        detected_map_is_image = detected_map.ndim == 3 and detected_map.shape[2] < 5
 
         return
 

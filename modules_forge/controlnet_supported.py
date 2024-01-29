@@ -115,7 +115,8 @@ class ControlNetPatcher(ControlModelPatcher):
 
         global_average_pooling = False
         filename = os.path.splitext(ckpt_path)[0]
-        if filename.endswith("_shuffle") or filename.endswith("_shuffle_fp16"):  # TODO: smarter way of enabling global_average_pooling
+        if filename.endswith("_shuffle") or filename.endswith("_shuffle_fp16"):
+            # TODO: smarter way of enabling global_average_pooling
             global_average_pooling = True
 
         control = ControlNet(control_model, global_average_pooling=global_average_pooling, load_device=load_device,

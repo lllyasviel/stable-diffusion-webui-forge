@@ -889,8 +889,7 @@ class ControlNetUiGroup(object):
             ):
                 img = HWC3(image["mask"][:, :, 0])
 
-            module = global_state.get_module_basename(module)
-            preprocessor = self.preprocessors[module]
+            preprocessor = global_state.get_preprocessor(module)
 
             if pp:
                 pres = external_code.pixel_perfect_resolution(
@@ -922,10 +921,10 @@ class ControlNetUiGroup(object):
             # TODO: Maybe we should let `preprocessor` return a Dict to alleviate this issue?
             # This requires changing all callsites though.
             result, is_image = preprocessor(
-                img,
-                res=pres,
-                thr_a=pthr_a,
-                thr_b=pthr_b,
+                input_image=img,
+                resolution=pres,
+                slider_1=pthr_a,
+                slider_2=pthr_b,
                 low_vram=(
                     ("clip" in module or module == "ip-adapter_face_id_plus")
                     and shared.opts.data.get("controlnet_clip_detector_on_cpu", False)

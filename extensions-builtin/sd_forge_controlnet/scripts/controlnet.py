@@ -1018,7 +1018,7 @@ class Script(scripts.Script, metaclass=(
                 logger.info(stat)
 
         if len(self.enabled_units) > 0:
-            logger.info(f'ControlNet Hooked - Time = {time.time() - t}')
+            logger.info(f'ControlNet Patched - Time = {time.time() - t}')
 
     @staticmethod
     def process_has_sdxl_refiner(p):

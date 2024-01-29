@@ -942,9 +942,12 @@ class ControlNetForForgeOfficial(scripts.Script):
         self.post_processors = post_processors
 
     def process_unit_after_click_generate(self, p, unit, params, *args, **kwargs):
+        h, w, hr_y, hr_x = self.get_target_dimensions(p)
         return
 
     def process_unit_before_every_sampling(self, p, unit, params, *args, **kwargs):
+        h, w, hr_y, hr_x = self.get_target_dimensions(p)
+        is_hr_pass = p.is_hr_pass
         return
 
     def process(self, p, *args, **kwargs):

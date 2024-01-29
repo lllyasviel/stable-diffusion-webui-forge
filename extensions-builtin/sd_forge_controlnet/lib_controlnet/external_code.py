@@ -439,67 +439,6 @@ def update_cn_script_in_place(
             script.args_to += cn_script_args_diff
 
 
-def get_models(update: bool = False) -> List[str]:
-    """
-    Fetch the list of available models.
-    Each value is a valid candidate of `ControlNetUnit.model`.
-
-    Keyword arguments:
-    update -- Whether to refresh the list from disk. (default False)
-    """
-
-    if update:
-        global_state.update_cn_models()
-
-    return list(global_state.cn_models_names.values())
-
-
-def get_modules(alias_names: bool = False) -> List[str]:
-    """
-    Fetch the list of available preprocessors.
-    Each value is a valid candidate of `ControlNetUnit.module`.
-
-    Keyword arguments:
-    alias_names -- Whether to get the ui alias names instead of internal keys
-    """
-
-    modules = list(global_state.cn_preprocessor_modules.keys())
-
-    if alias_names:
-        modules = [global_state.preprocessor_aliases.get(module, module) for module in modules]
-
-    return modules
-
-
-def get_modules_detail(alias_names: bool = False) -> Dict[str, Any]:
-    """
-    get the detail of all preprocessors including
-    sliders: the slider config in Auto1111 webUI
-
-    Keyword arguments:
-    alias_names -- Whether to get the module detail with alias names instead of internal keys
-    """
-
-    _module_detail = {}
-    _module_list = get_modules(False)
-    _module_list_alias = get_modules(True)
-
-    _output_list = _module_list if not alias_names else _module_list_alias
-    for index, module in enumerate(_output_list):
-        if _module_list[index] in preprocessor_sliders_config:
-            _module_detail[module] = {
-                "model_free": module in model_free_preprocessors,
-                "sliders": preprocessor_sliders_config[_module_list[index]]
-            }
-        else:
-            _module_detail[module] = {
-                "model_free": False,
-                "sliders": []
-            }
-
-    return _module_detail
-
-
 def find_cn_script(script_runner: scripts.ScriptRunner) -> Optional[scripts.Script]:
     """
     Find the ControlNet script in `script_runner`. Returns `None` if `script_runner` does not contain a ControlNet script.

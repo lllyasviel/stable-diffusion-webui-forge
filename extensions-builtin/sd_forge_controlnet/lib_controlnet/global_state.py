@@ -55,7 +55,7 @@ controlnet_names = ['None']
 
 def get_sorted_preprocessors():
     preprocessors = [p for k, p in supported_preprocessors.items() if k != 'None']
-    preprocessors = sorted(preprocessors, key=lambda x: x.sorting_priority)[::-1]
+    preprocessors = sorted(preprocessors, key=lambda x: str(x.sorting_priority).zfill(8) + x.name)[::-1]
     results = OrderedDict()
     results['None'] = supported_preprocessors['None']
     for p in preprocessors:

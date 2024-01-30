@@ -154,7 +154,7 @@ class ControlNetUnit:
     Represents an entire ControlNet processing unit.
     """
     enabled: bool = True
-    module: str = "none"
+    module: str = "None"
     model: str = "None"
     weight: float = 1.0
     image: Optional[Union[InputImage, List[InputImage]]] = None

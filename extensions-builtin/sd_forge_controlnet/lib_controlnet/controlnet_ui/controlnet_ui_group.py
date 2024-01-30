@@ -143,7 +143,7 @@ class UiControlNetUnit(external_code.ControlNetUnit):
     ):
         if use_preview_as_input and generated_image is not None:
             input_image = generated_image
-            module = "none"
+            module = "None"
         else:
             input_image = image
 

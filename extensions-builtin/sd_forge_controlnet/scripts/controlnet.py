@@ -58,7 +58,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         cls = UiControlNetUnit if is_ui else external_code.ControlNetUnit
         return cls(
             enabled=False,
-            module="none",
+            module="None",
             model="None"
         )
 

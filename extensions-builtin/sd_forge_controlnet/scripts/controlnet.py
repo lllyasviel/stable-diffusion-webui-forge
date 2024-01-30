@@ -470,6 +470,14 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         kwargs.update(dict(unit=unit, params=params))
 
+        params.model.strength = float(unit.weight)
+        params.model.start_percent = float(unit.guidance_start)
+        params.model.end_percent = float(unit.guidance_end)
+        params.model.positive_advanced_weighting = None
+        params.model.negative_advanced_weighting = None
+        params.model.advanced_frame_weighting = None
+        params.model.advanced_sigma_weighting = None
+
         params.preprocessor.process_before_every_sampling(process=p, cond=cond, **kwargs)
         params.model.process_before_every_sampling(process=p, cond=cond, **kwargs)
 

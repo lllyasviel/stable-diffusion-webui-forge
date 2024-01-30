@@ -1,4 +1,4 @@
-from modules_forge.supported_preprocessor import Preprocessor
+from modules_forge.supported_preprocessor import Preprocessor, PreprocessorParameter
 from modules_forge.shared import preprocessor_dir, add_supported_preprocessor
 from modules.modelloader import load_file_from_url
 from modules_forge.forge_util import numpy_to_pytorch
@@ -14,6 +14,7 @@ class PreprocessorClipVision(Preprocessor):
         self.filename = filename
         self.tags = ['IP-Adapter']
         self.model_filename_filters = ['IP-Adapter', 'IP_Adapter']
+        self.slider_resolution = PreprocessorParameter(visible=False)
         self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
         self.show_control_mode = False
         self.sorting_priority = 1

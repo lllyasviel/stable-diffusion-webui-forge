@@ -2,7 +2,8 @@ from modules_forge.shared import add_supported_control_model
 from modules_forge.supported_controlnet import ControlModelPatcher
 from lib_ipadapter.IPAdapterPlus import IPAdapterApply
 
-opIPAdapterApply = IPAdapterApply()
+
+opIPAdapterApply = IPAdapterApply().apply_ipadapter
 
 
 class IPAdapterPatcher(ControlModelPatcher):
@@ -31,7 +32,27 @@ class IPAdapterPatcher(ControlModelPatcher):
 
     def process_before_every_sampling(self, process, cond, *args, **kwargs):
         clip_vision, image = cond
-        a = 0
+        unet = process.sd_model.forge_objects.unet
+
+        unet = opIPAdapterApply(
+            ipadapter=self.ipadapter,
+            model=unet,
+            weight=self.strength,
+            clip_vision=clip_vision,
+            image=image,
+            weight_type="original",
+            noise=None,
+            embeds=None,
+            attn_mask=None,
+            start_at=0.0,
+            end_at=1.0,
+            unfold_batch=False,
+            insightface=None,
+            faceid_v2=False,
+            weight_v2=False
+        )[0]
+
+        process.sd_model.forge_objects.unet = unet
         return
 
 

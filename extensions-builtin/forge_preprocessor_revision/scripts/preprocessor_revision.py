@@ -41,14 +41,14 @@ def revision_conditioning_modifier(model, x, timestep, uncond, cond, cond_scale,
     uncond = copy.deepcopy(uncond)
 
     for c in cond:
-        a = 0
+        c['model_conds']['y'].cond[:, :1280] = new_y.clone()
 
     for c in uncond:
-        a = 0
+        c['model_conds']['y'].cond[:, :1280] = torch.zeros_like(new_y)
 
     if ignore_prompt:
         for c in cond + uncond:
-            a = 0
+            c['model_conds']['c_crossattn'].cond = torch.zeros_like(c['model_conds']['c_crossattn'].cond)
 
     return model, x, timestep, uncond, cond, cond_scale, model_options, seed
 

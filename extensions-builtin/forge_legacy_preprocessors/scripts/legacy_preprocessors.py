@@ -98,8 +98,8 @@ class LegacyPreprocessor(Preprocessor):
         with context:
             result, is_image = self.call_function(img=input_image, res=resolution, thr_a=slider_1, thr_b=slider_2, **kwargs)
 
-        del is_image  # Not used anymore
-        result = HWC3(result)
+        if is_image:
+            result = HWC3(result)
 
         if self.unload_function is not None:
             self.unload_function()

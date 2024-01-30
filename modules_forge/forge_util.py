@@ -6,6 +6,8 @@ import random
 import string
 import cv2
 
+from ldm_patched.modules import model_management
+
 
 def HWC3(x):
     assert x.dtype == np.uint8
@@ -124,3 +126,9 @@ def resize_image_with_pad(img, resolution):
         return safer_memory(x[:H_target, :W_target])
 
     return safer_memory(img_padded), remove_pad
+
+
+def lazy_memory_management(model):
+    required_memory = model_management.module_size(model) + model_management.minimum_inference_memory()
+    model_management.free_memory(required_memory, device=model_management.get_torch_device())
+    return

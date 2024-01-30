@@ -23,7 +23,10 @@ class ControlModelPatcher:
         self.advanced_frame_weighting = None
         self.advanced_sigma_weighting = None
 
-    def patch_to_process(self, p, control_image):
+    def process_after_running_preprocessors(self, process, params, *args, **kwargs):
+        return
+
+    def process_before_every_sampling(self, process, cond, *args, **kwargs):
         return
 
 

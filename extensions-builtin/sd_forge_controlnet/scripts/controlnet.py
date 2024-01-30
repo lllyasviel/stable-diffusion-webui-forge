@@ -460,6 +460,9 @@ class ControlNetForForgeOfficial(scripts.Script):
         params.model = cached_controlnet_loader(model_filename)
         params.preprocessor = preprocessor
 
+        params.preprocessor.process_after_running_preprocessors(process=p, params=params, **kwargs)
+        params.model.process_after_running_preprocessors(process=p, params=params, **kwargs)
+
         logger.info(f"Current ControlNet {type(params.model).__name__}: {model_filename}")
         return
 

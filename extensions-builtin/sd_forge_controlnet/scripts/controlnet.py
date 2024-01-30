@@ -2,13 +2,12 @@ import os
 from copy import copy
 from typing import Dict, Optional, Tuple, List, Union
 import modules.scripts as scripts
-from modules import shared, devices, script_callbacks, processing, masking, images
+from modules import shared, script_callbacks, processing, masking, images
 from modules.api.api import decode_base64_to_image
 import gradio as gr
 
-from einops import rearrange
-from lib_controlnet import global_state, external_code, utils
-from lib_controlnet.utils import get_unique_axis0, align_dim_latent
+from lib_controlnet import global_state, external_code
+from lib_controlnet.utils import align_dim_latent, image_dict_from_any, set_numpy_seed, crop_and_resize_image, prepare_mask
 from lib_controlnet.enums import StableDiffusionVersion, HiResFixOption
 from lib_controlnet.controlnet_ui.controlnet_ui_group import ControlNetUiGroup, UiControlNetUnit
 from lib_controlnet.controlnet_ui.photopea import Photopea
@@ -22,8 +21,7 @@ import numpy as np
 import torch
 import functools
 
-from PIL import Image, ImageFilter, ImageOps
-from lib_controlnet.lvminthin import lvmin_thin, nake_nms
+from PIL import Image
 from modules_forge.shared import try_load_supported_control_model
 
 
@@ -39,132 +37,6 @@ global_state.update_controlnet_filenames()
 @functools.lru_cache(maxsize=shared.opts.data.get("control_net_model_cache_size", 5))
 def cached_controlnet_loader(filename):
     return try_load_supported_control_model(filename)
-
-
-def image_dict_from_any(image) -> Optional[Dict[str, np.ndarray]]:
-    if image is None:
-        return None
-
-    if isinstance(image, (tuple, list)):
-        image = {'image': image[0], 'mask': image[1]}
-    elif not isinstance(image, dict):
-        image = {'image': image, 'mask': None}
-    else:  # type(image) is dict
-        # copy to enable modifying the dict and prevent response serialization error
-        image = dict(image)
-
-    if isinstance(image['image'], str):
-        if os.path.exists(image['image']):
-            image['image'] = np.array(Image.open(image['image'])).astype('uint8')
-        elif image['image']:
-            image['image'] = external_code.to_base64_nparray(image['image'])
-        else:
-            image['image'] = None
-
-    # If there is no image, return image with None image and None mask
-    if image['image'] is None:
-        image['mask'] = None
-        return image
-
-    if 'mask' not in image or image['mask'] is None:
-        image['mask'] = np.zeros_like(image['image'], dtype=np.uint8)
-    elif isinstance(image['mask'], str):
-        if os.path.exists(image['mask']):
-            image['mask'] = np.array(Image.open(image['mask'])).astype('uint8')
-        elif image['mask']:
-            image['mask'] = external_code.to_base64_nparray(image['mask'])
-        else:
-            image['mask'] = np.zeros_like(image['image'], dtype=np.uint8)
-
-    return image
-
-
-def prepare_mask(
-    mask: Image.Image, p: processing.StableDiffusionProcessing
-) -> Image.Image:
-    """
-    Prepare an image mask for the inpainting process.
-
-    This function takes as input a PIL Image object and an instance of the 
-    StableDiffusionProcessing class, and performs the following steps to prepare the mask:
-
-    1. Convert the mask to grayscale (mode "L").
-    2. If the 'inpainting_mask_invert' attribute of the processing instance is True,
-       invert the mask colors.
-    3. If the 'mask_blur' attribute of the processing instance is greater than 0,
-       apply a Gaussian blur to the mask with a radius equal to 'mask_blur'.
-
-    Args:
-        mask (Image.Image): The input mask as a PIL Image object.
-        p (processing.StableDiffusionProcessing): An instance of the StableDiffusionProcessing class 
-                                                   containing the processing parameters.
-
-    Returns:
-        mask (Image.Image): The prepared mask as a PIL Image object.
-    """
-    mask = mask.convert("L")
-    if getattr(p, "inpainting_mask_invert", False):
-        mask = ImageOps.invert(mask)
-
-    if hasattr(p, 'mask_blur_x'):
-        if getattr(p, "mask_blur_x", 0) > 0:
-            np_mask = np.array(mask)
-            kernel_size = 2 * int(2.5 * p.mask_blur_x + 0.5) + 1
-            np_mask = cv2.GaussianBlur(np_mask, (kernel_size, 1), p.mask_blur_x)
-            mask = Image.fromarray(np_mask)
-        if getattr(p, "mask_blur_y", 0) > 0:
-            np_mask = np.array(mask)
-            kernel_size = 2 * int(2.5 * p.mask_blur_y + 0.5) + 1
-            np_mask = cv2.GaussianBlur(np_mask, (1, kernel_size), p.mask_blur_y)
-            mask = Image.fromarray(np_mask)
-    else:
-        if getattr(p, "mask_blur", 0) > 0:
-            mask = mask.filter(ImageFilter.GaussianBlur(p.mask_blur))
-
-    return mask
-
-
-def set_numpy_seed(p: processing.StableDiffusionProcessing) -> Optional[int]:
-    """
-    Set the random seed for NumPy based on the provided parameters.
-
-    Args:
-        p (processing.StableDiffusionProcessing): The instance of the StableDiffusionProcessing class.
-
-    Returns:
-        Optional[int]: The computed random seed if successful, or None if an exception occurs.
-
-    This function sets the random seed for NumPy using the seed and subseed values from the given instance of
-    StableDiffusionProcessing. If either seed or subseed is -1, it uses the first value from `all_seeds`.
-    Otherwise, it takes the maximum of the provided seed value and 0.
-
-    The final random seed is computed by adding the seed and subseed values, applying a bitwise AND operation
-    with 0xFFFFFFFF to ensure it fits within a 32-bit integer.
-    """
-    try:
-        tmp_seed = int(p.all_seeds[0] if p.seed == -1 else max(int(p.seed), 0))
-        tmp_subseed = int(p.all_seeds[0] if p.subseed == -1 else max(int(p.subseed), 0))
-        seed = (tmp_seed + tmp_subseed) & 0xFFFFFFFF
-        np.random.seed(seed)
-        return seed
-    except Exception as e:
-        logger.warning(e)
-        logger.warning('Warning: Failed to use consistent random seed.')
-        return None
-
-
-def get_pytorch_control(x: np.ndarray) -> torch.Tensor:
-    # A very safe method to make sure that Apple/Mac works
-    y = x
-
-    # below is very boring but do not change these. If you change these Apple or Mac may fail.
-    y = torch.from_numpy(y)
-    y = y.float() / 255.0
-    y = rearrange(y, 'h w c -> 1 c h w')
-    y = y.clone()
-    y = y.to(devices.get_device_for("controlnet"))
-    y = y.clone()
-    return y
 
 
 class ControlNetCachedParameters:
@@ -270,118 +142,6 @@ class ControlNetForForgeOfficial(scripts.Script):
         unit.pixel_perfect = selector(p, "control_net_pixel_perfect", unit.pixel_perfect, idx)
 
         return unit
-
-    @staticmethod
-    def detectmap_proc(detected_map, module, resize_mode, h, w):
-
-        if 'inpaint' in module:
-            detected_map = detected_map.astype(np.float32)
-        else:
-            detected_map = HWC3(detected_map)
-
-        def safe_numpy(x):
-            # A very safe method to make sure that Apple/Mac works
-            y = x
-
-            # below is very boring but do not change these. If you change these Apple or Mac may fail.
-            y = y.copy()
-            y = np.ascontiguousarray(y)
-            y = y.copy()
-            return y
-
-        def high_quality_resize(x, size):
-            # Written by lvmin
-            # Super high-quality control map up-scaling, considering binary, seg, and one-pixel edges
-
-            inpaint_mask = None
-            if x.ndim == 3 and x.shape[2] == 4:
-                inpaint_mask = x[:, :, 3]
-                x = x[:, :, 0:3]
-
-            if x.shape[0] != size[1] or x.shape[1] != size[0]:
-                new_size_is_smaller = (size[0] * size[1]) < (x.shape[0] * x.shape[1])
-                new_size_is_bigger = (size[0] * size[1]) > (x.shape[0] * x.shape[1])
-                unique_color_count = len(get_unique_axis0(x.reshape(-1, x.shape[2])))
-                is_one_pixel_edge = False
-                is_binary = False
-                if unique_color_count == 2:
-                    is_binary = np.min(x) < 16 and np.max(x) > 240
-                    if is_binary:
-                        xc = x
-                        xc = cv2.erode(xc, np.ones(shape=(3, 3), dtype=np.uint8), iterations=1)
-                        xc = cv2.dilate(xc, np.ones(shape=(3, 3), dtype=np.uint8), iterations=1)
-                        one_pixel_edge_count = np.where(xc < x)[0].shape[0]
-                        all_edge_count = np.where(x > 127)[0].shape[0]
-                        is_one_pixel_edge = one_pixel_edge_count * 2 > all_edge_count
-
-                if 2 < unique_color_count < 200:
-                    interpolation = cv2.INTER_NEAREST
-                elif new_size_is_smaller:
-                    interpolation = cv2.INTER_AREA
-                else:
-                    interpolation = cv2.INTER_CUBIC  # Must be CUBIC because we now use nms. NEVER CHANGE THIS
-
-                y = cv2.resize(x, size, interpolation=interpolation)
-                if inpaint_mask is not None:
-                    inpaint_mask = cv2.resize(inpaint_mask, size, interpolation=interpolation)
-
-                if is_binary:
-                    y = np.mean(y.astype(np.float32), axis=2).clip(0, 255).astype(np.uint8)
-                    if is_one_pixel_edge:
-                        y = nake_nms(y)
-                        _, y = cv2.threshold(y, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-                        y = lvmin_thin(y, prunings=new_size_is_bigger)
-                    else:
-                        _, y = cv2.threshold(y, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-                    y = np.stack([y] * 3, axis=2)
-            else:
-                y = x
-
-            if inpaint_mask is not None:
-                inpaint_mask = (inpaint_mask > 127).astype(np.float32) * 255.0
-                inpaint_mask = inpaint_mask[:, :, None].clip(0, 255).astype(np.uint8)
-                y = np.concatenate([y, inpaint_mask], axis=2)
-
-            return y
-
-        if resize_mode == external_code.ResizeMode.RESIZE:
-            detected_map = high_quality_resize(detected_map, (w, h))
-            detected_map = safe_numpy(detected_map)
-            return get_pytorch_control(detected_map), detected_map
-
-        old_h, old_w, _ = detected_map.shape
-        old_w = float(old_w)
-        old_h = float(old_h)
-        k0 = float(h) / old_h
-        k1 = float(w) / old_w
-
-        safeint = lambda x: int(np.round(x))
-
-        if resize_mode == external_code.ResizeMode.OUTER_FIT:
-            k = min(k0, k1)
-            borders = np.concatenate([detected_map[0, :, :], detected_map[-1, :, :], detected_map[:, 0, :], detected_map[:, -1, :]], axis=0)
-            high_quality_border_color = np.median(borders, axis=0).astype(detected_map.dtype)
-            if len(high_quality_border_color) == 4:
-                # Inpaint hijack
-                high_quality_border_color[3] = 255
-            high_quality_background = np.tile(high_quality_border_color[None, None], [h, w, 1])
-            detected_map = high_quality_resize(detected_map, (safeint(old_w * k), safeint(old_h * k)))
-            new_h, new_w, _ = detected_map.shape
-            pad_h = max(0, (h - new_h) // 2)
-            pad_w = max(0, (w - new_w) // 2)
-            high_quality_background[pad_h:pad_h + new_h, pad_w:pad_w + new_w] = detected_map
-            detected_map = high_quality_background
-            detected_map = safe_numpy(detected_map)
-            return get_pytorch_control(detected_map), detected_map
-        else:
-            k = max(k0, k1)
-            detected_map = high_quality_resize(detected_map, (safeint(old_w * k), safeint(old_h * k)))
-            new_h, new_w, _ = detected_map.shape
-            pad_h = max(0, (new_h - h) // 2)
-            pad_w = max(0, (new_w - w) // 2)
-            detected_map = detected_map[pad_h:pad_h+h, pad_w:pad_w+w]
-            detected_map = safe_numpy(detected_map)
-            return get_pytorch_control(detected_map), detected_map
 
     def get_enabled_units(self, p):
         units = external_code.get_all_units_in_processing(p)
@@ -822,7 +582,7 @@ class ControlNetForForgeOfficial(scripts.Script):
 
     def process_unit_after_click_generate(self, p, unit, params, *args, **kwargs):
         h, w, hr_y, hr_x = self.get_target_dimensions(p)
-        
+
         has_high_res_fix = (
             isinstance(p, StableDiffusionProcessingTxt2Img)
             and getattr(p, 'enable_hr', False)
@@ -855,6 +615,13 @@ class ControlNetForForgeOfficial(scripts.Script):
         )
 
         detected_map_is_image = detected_map.ndim == 3 and detected_map.shape[2] < 5
+
+        if detected_map_is_image:
+            control, detected_map = Script.detectmap_proc(detected_map, unit.module, resize_mode, h, w)
+            store_detected_map(detected_map, unit.module)
+        else:
+            control = detected_map
+            store_detected_map(input_image, unit.module)
 
         return
 

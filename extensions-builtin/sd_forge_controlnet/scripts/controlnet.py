@@ -16,9 +16,7 @@ from modules.processing import StableDiffusionProcessingImg2Img, StableDiffusion
 from lib_controlnet.infotext import Infotext
 from modules_forge.forge_util import HWC3, numpy_to_pytorch
 
-import cv2
 import numpy as np
-import torch
 import functools
 
 from PIL import Image

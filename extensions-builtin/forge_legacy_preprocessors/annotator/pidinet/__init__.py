@@ -6,7 +6,7 @@ from annotator.pidinet.model import pidinet
 from annotator.util import safe_step
 from modules import devices
 from annotator.annotator_path import models_path
-from scripts.utils import load_state_dict
+from ldm_patched.modules.utils import load_torch_file
 
 netNetwork = None
 remote_model_path = "https://huggingface.co/lllyasviel/Annotators/resolve/main/table5_pidinet.pth"
@@ -24,9 +24,9 @@ def apply_pidinet(input_image, is_safe=False, apply_fliter=False):
             from modules.modelloader import load_file_from_url
             load_file_from_url(remote_model_path, model_dir=modeldir)
         netNetwork = pidinet()
-        ckp = load_state_dict(modelpath)
+        ckp = load_torch_file(modelpath)
         netNetwork.load_state_dict({k.replace('module.',''):v for k, v in ckp.items()})
-        
+
     netNetwork = netNetwork.to(devices.get_device_for("controlnet"))
     netNetwork.eval()
     assert input_image.ndim == 3

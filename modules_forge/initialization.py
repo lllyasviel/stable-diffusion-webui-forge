@@ -24,4 +24,7 @@ def initialize_forge():
         model_management.lowvram_available = True
         model_management.OOM_EXCEPTION = Exception
 
+    from modules_forge import supported_preprocessor
+    from modules_forge import supported_controlnet
+
     return

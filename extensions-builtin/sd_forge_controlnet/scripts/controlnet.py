@@ -535,6 +535,18 @@ class ControlNetForForgeOfficial(scripts.Script):
         logger.info(f"ControlNet Method {params.preprocessor.name} patched.")
         return
 
+    @torch.no_grad()
+    @torch.inference_mode()
+    def process_unit_after_every_sampling(self,
+                                          p: StableDiffusionProcessing,
+                                          unit: external_code.ControlNetUnit,
+                                          params: ControlNetCachedParameters,
+                                          *args, **kwargs):
+
+        params.preprocessor.process_after_every_sampling(process=p, params=params, **kwargs)
+        params.model.process_after_every_sampling(process=p, params=params, **kwargs)
+        return
+
     def process(self, p, *args, **kwargs):
         self.current_params = {}
         for i, unit in enumerate(self.get_enabled_units(p)):
@@ -549,7 +561,9 @@ class ControlNetForForgeOfficial(scripts.Script):
             self.process_unit_before_every_sampling(p, unit, self.current_params[i], *args, **kwargs)
         return
 
-    def postprocess(self, p, processed, *args):
+    def postprocess_batch(self, p, *args, **kwargs):
+        for i, unit in enumerate(self.get_enabled_units(p)):
+            self.process_unit_after_every_sampling(p, unit, self.current_params[i], *args, **kwargs)
         self.current_params = {}
         return
 

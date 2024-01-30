@@ -29,6 +29,9 @@ class ControlModelPatcher:
     def process_before_every_sampling(self, process, cond, *args, **kwargs):
         return
 
+    def process_after_every_sampling(self, process, params, *args, **kwargs):
+        return
+
 
 class ControlNetPatcher(ControlModelPatcher):
     @staticmethod

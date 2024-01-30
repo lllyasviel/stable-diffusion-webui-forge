@@ -15,7 +15,7 @@ class PreprocessorInpaint(Preprocessor):
 class PreprocessorInpaintOnly(PreprocessorInpaint):
     def __init__(self):
         super().__init__()
-        self.name = 'inpaint_global_harmonious'
+        self.name = 'inpaint_only'
         self.tags = ['Inpaint']
         self.model_filename_filters = ['inpaint']
         self.slider_resolution = PreprocessorParameter(visible=False)
@@ -30,7 +30,7 @@ class PreprocessorInpaintOnly(PreprocessorInpaint):
 class PreprocessorInpaintLama(PreprocessorInpaintOnly):
     def __init__(self):
         super().__init__()
-        self.name = 'inpaint_global_harmonious'
+        self.name = 'inpaint_only+lama'
         self.tags = ['Inpaint']
         self.model_filename_filters = ['inpaint']
         self.slider_resolution = PreprocessorParameter(visible=False)

@@ -14,7 +14,7 @@ from PIL import Image
 import torch.nn.functional as F
 import torchvision.transforms as TT
 
-from .resampler import PerceiverAttention, FeedForward, Resampler
+from lib_ipadapter.resampler import PerceiverAttention, FeedForward, Resampler
 
 
 GLOBAL_MODELS_DIR = preprocessor_dir

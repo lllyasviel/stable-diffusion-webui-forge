@@ -1,6 +1,6 @@
 from modules_forge.shared import add_supported_control_model
 from modules_forge.supported_controlnet import ControlModelPatcher
-from IPAdapterPlus import IPAdapterApply
+from lib_ipadapter.IPAdapterPlus import IPAdapterApply
 
 opIPAdapterApply = IPAdapterApply()
 
@@ -30,6 +30,7 @@ class IPAdapterPatcher(ControlModelPatcher):
         return
 
     def process_before_every_sampling(self, process, cond, *args, **kwargs):
+        clip_vision, image = cond
         a = 0
         return
 

@@ -41,7 +41,7 @@ class IPAdapterPatcher(ControlModelPatcher):
             clip_vision=clip_vision,
             image=image,
             weight_type="original",
-            noise=None,
+            noise=0.0,
             embeds=None,
             attn_mask=None,
             start_at=self.start_percent,

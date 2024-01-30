@@ -30,7 +30,7 @@ class PreprocessorClipVision(Preprocessor):
             self.clipvision = ldm_patched.modules.clip_vision.load(ckpt_path)
 
         # For IPAdapter Format
-        return self.clipvision, input_image
+        return self.clipvision, numpy_to_pytorch(input_image)
 
 
 add_supported_preprocessor(PreprocessorClipVision(

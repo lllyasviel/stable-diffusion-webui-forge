@@ -439,7 +439,7 @@ class ControlNetForForgeOfficial(scripts.Script):
             slider_2=unit.threshold_b,
         )
 
-        preprocessor_output_is_image, need_inpaint_fix = judge_image_type(preprocessor_output)
+        preprocessor_output_is_image = judge_image_type(preprocessor_output)
 
         if preprocessor_output_is_image:
             params.control_cond = crop_and_resize_image(preprocessor_output, resize_mode, h, w)
@@ -452,11 +452,6 @@ class ControlNetForForgeOfficial(scripts.Script):
                 params.control_cond_for_hr_fix = numpy_to_pytorch(params.control_cond_for_hr_fix).movedim(-1, 1)
             else:
                 params.control_cond_for_hr_fix = params.control_cond
-
-            if need_inpaint_fix:
-                fixer = lambda x: x[:, :3] * (1.0 - x[:, 3:]) - x[:, 3:]
-                params.control_cond = fixer(params.control_cond)
-                params.control_cond_for_hr_fix = fixer(params.control_cond_for_hr_fix)
         else:
             params.control_cond = preprocessor_output
             params.control_cond_for_hr_fix = preprocessor_output
@@ -493,6 +488,11 @@ class ControlNetForForgeOfficial(scripts.Script):
             cond = params.control_cond
 
         kwargs.update(dict(unit=unit, params=params))
+
+        # CN inpaint fix
+        if cond.ndim == 4 and cond.shape[1] == 4:
+            kwargs['cond_before_inpaint_fix'] = cond.clone()
+            cond = cond[:, :3] * (1.0 - cond[:, 3:]) - cond[:, 3:]
 
         params.model.strength = float(unit.weight)
         params.model.start_percent = float(unit.guidance_start)

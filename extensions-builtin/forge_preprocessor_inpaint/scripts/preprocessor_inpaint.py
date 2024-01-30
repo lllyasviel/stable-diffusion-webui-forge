@@ -17,9 +17,6 @@ class PreprocessorInpaintOnly(PreprocessorInpaint):
         super().__init__()
         self.name = 'inpaint_only'
 
-    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
-        return input_image
-
     def process_before_every_sampling(self, process, cond, *args, **kwargs):
         return
 
@@ -31,9 +28,6 @@ class PreprocessorInpaintLama(PreprocessorInpaintOnly):
     def __init__(self):
         super().__init__()
         self.name = 'inpaint_only+lama'
-
-    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
-        return input_image
 
 
 add_supported_preprocessor(PreprocessorInpaint())

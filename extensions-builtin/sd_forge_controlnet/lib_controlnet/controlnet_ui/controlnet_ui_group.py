@@ -935,9 +935,9 @@ class ControlNetUiGroup(object):
                 else None,
             )
 
-            is_hwc, is_png = judge_image_type(result)
+            is_image = judge_image_type(result)
 
-            if not is_hwc:
+            if not is_image:
                 result = img
 
             result = external_code.visualize_inpaint_mask(result)

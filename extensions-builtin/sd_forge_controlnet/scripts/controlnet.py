@@ -466,6 +466,32 @@ class ControlNetForForgeOfficial(scripts.Script):
         controlnet_model.advanced_frame_weighting = None
         controlnet_model.advanced_sigma_weighting = None
 
+        soft_weighting = {
+            'input': [0.09941396206337118, 0.12050177219802567, 0.14606275417942507, 0.17704576264172736,
+                      0.214600924414215,
+                      0.26012233262329093, 0.3152997971191405, 0.3821815722656249, 0.4632503906249999, 0.561515625,
+                      0.6806249999999999, 0.825],
+            'middle': [1.0],
+            'output': [0.09941396206337118, 0.12050177219802567, 0.14606275417942507, 0.17704576264172736,
+                       0.214600924414215,
+                       0.26012233262329093, 0.3152997971191405, 0.3821815722656249, 0.4632503906249999, 0.561515625,
+                       0.6806249999999999, 0.825]
+        }
+
+        zero_weighting = {
+            'input': [0.0] * 12,
+            'middle': [0.0],
+            'output': [0.0] * 12
+        }
+
+        if unit.control_mode == external_code.ControlMode.CONTROL:
+            controlnet_model.positive_advanced_weighting = soft_weighting.copy()
+            controlnet_model.negative_advanced_weighting = zero_weighting.copy()
+
+        if unit.control_mode == external_code.ControlMode.PROMPT:
+            controlnet_model.positive_advanced_weighting = soft_weighting.copy()
+            controlnet_model.negative_advanced_weighting = soft_weighting.copy()
+
         params.model = controlnet_model
         logger.info(f"Current ControlNet: {model_filename}")
 

@@ -1233,76 +1233,76 @@ legacy_preprocessors = {
         "priority": 0,
         "tags": []
     },
-    "tile_colorfix": {
-        "label": "tile_colorfix",
-        "call_function": identity,
-        "unload_function": None,
-        "managed_model": None,
-        "model_free": False,
-        "no_control_mode": False,
-        "resolution": None,
-        "slider_1": {
-            "label": "Variation",
-            "value": 8.0,
-            "minimum": 3.0,
-            "maximum": 32.0,
-            "step": 1.0
-        },
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 0,
-        "tags": [
-            "Tile", "Blur",
-        ]
-    },
-    "tile_colorfix+sharp": {
-        "label": "tile_colorfix+sharp",
-        "call_function": identity,
-        "unload_function": None,
-        "managed_model": None,
-        "model_free": False,
-        "no_control_mode": False,
-        "resolution": None,
-        "slider_1": {
-            "label": "Variation",
-            "value": 8.0,
-            "minimum": 3.0,
-            "maximum": 32.0,
-            "step": 1.0
-        },
-        "slider_2": {
-            "label": "Sharpness",
-            "value": 1.0,
-            "minimum": 0.0,
-            "maximum": 2.0,
-            "step": 0.01
-        },
-        "slider_3": None,
-        "priority": 0,
-        "tags": [
-            "Tile", "Blur",
-        ]
-    },
-    "tile_resample": {
-        "label": "tile_resample",
-        "call_function": tile_resample,
-        "unload_function": None,
-        "managed_model": None,
-        "model_free": False,
-        "no_control_mode": False,
-        "resolution": None,
-        "slider_1": {
-            "label": "Down Sampling Rate",
-            "value": 1.0,
-            "minimum": 1.0,
-            "maximum": 8.0,
-            "step": 0.01
-        },
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 100,
-        "tags": [
-            "Tile", "Blur",
-        ]
-    }
+    # "tile_colorfix": {
+    #     "label": "tile_colorfix",
+    #     "call_function": identity,
+    #     "unload_function": None,
+    #     "managed_model": None,
+    #     "model_free": False,
+    #     "no_control_mode": False,
+    #     "resolution": None,
+    #     "slider_1": {
+    #         "label": "Variation",
+    #         "value": 8.0,
+    #         "minimum": 3.0,
+    #         "maximum": 32.0,
+    #         "step": 1.0
+    #     },
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 0,
+    #     "tags": [
+    #         "Tile", "Blur",
+    #     ]
+    # },
+    # "tile_colorfix+sharp": {
+    #     "label": "tile_colorfix+sharp",
+    #     "call_function": identity,
+    #     "unload_function": None,
+    #     "managed_model": None,
+    #     "model_free": False,
+    #     "no_control_mode": False,
+    #     "resolution": None,
+    #     "slider_1": {
+    #         "label": "Variation",
+    #         "value": 8.0,
+    #         "minimum": 3.0,
+    #         "maximum": 32.0,
+    #         "step": 1.0
+    #     },
+    #     "slider_2": {
+    #         "label": "Sharpness",
+    #         "value": 1.0,
+    #         "minimum": 0.0,
+    #         "maximum": 2.0,
+    #         "step": 0.01
+    #     },
+    #     "slider_3": None,
+    #     "priority": 0,
+    #     "tags": [
+    #         "Tile", "Blur",
+    #     ]
+    # },
+    # "tile_resample": {
+    #     "label": "tile_resample",
+    #     "call_function": tile_resample,
+    #     "unload_function": None,
+    #     "managed_model": None,
+    #     "model_free": False,
+    #     "no_control_mode": False,
+    #     "resolution": None,
+    #     "slider_1": {
+    #         "label": "Down Sampling Rate",
+    #         "value": 1.0,
+    #         "minimum": 1.0,
+    #         "maximum": 8.0,
+    #         "step": 0.01
+    #     },
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 100,
+    #     "tags": [
+    #         "Tile", "Blur",
+    #     ]
+    # }
 }

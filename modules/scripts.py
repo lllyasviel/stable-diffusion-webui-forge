@@ -518,7 +518,7 @@ def load_scripts():
 
     syspath = sys.path
 
-    print(f'Current System Paths = {syspath}')
+    # print(f'Current System Paths = {syspath}')
 
     def register_scripts_from_module(module):
         for script_class in module.__dict__.values():

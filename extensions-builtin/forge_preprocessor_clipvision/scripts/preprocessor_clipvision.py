@@ -13,6 +13,7 @@ class PreprocessorClipVision(Preprocessor):
         self.url = url
         self.filename = filename
         self.tags = ['IP-Adapter']
+        self.model_filename_filters = ['IP-Adapter', 'IP_Adapter']
         self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
         self.show_control_mode = False
         self.sorting_priority = 1

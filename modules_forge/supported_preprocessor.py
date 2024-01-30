@@ -125,6 +125,8 @@ class PreprocessorClipVision(Preprocessor):
 
         return self.clipvision
 
+    @torch.no_grad()
+    @torch.inference_mode()
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
         clipvision = self.load_clipvision()
         return clipvision.encode_image(numpy_to_pytorch(input_image))

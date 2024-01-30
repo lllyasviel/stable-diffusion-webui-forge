@@ -36,6 +36,7 @@ def revision_conditioning_modifier(model, x, timestep, uncond, cond, cond_scale,
                                                  noise_level=torch.tensor([noise_level], device=x.device))
         adm_out = torch.cat((c_adm, noise_level_emb), 1)
 
+    new_y = adm_out[:, :1280]
     cond = copy.deepcopy(cond)
     uncond = copy.deepcopy(uncond)
 

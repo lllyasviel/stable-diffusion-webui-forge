@@ -935,7 +935,9 @@ class ControlNetUiGroup(object):
                 else None,
             )
 
-            if not isinstance(result, np.ndarray) and result.nidm == 3 and result.shape[2] < 5:
+            is_image = isinstance(result, np.ndarray) and result.ndim == 3 and result.shape[2] < 5
+
+            if not is_image:
                 result = img
 
             result = external_code.visualize_inpaint_mask(result)

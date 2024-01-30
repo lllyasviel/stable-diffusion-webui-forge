@@ -27,7 +27,7 @@ class PreprocessorClipVision(Preprocessor):
             )
             self.clipvision = ldm_patched.modules.clip_vision.load(ckpt_path)
 
-        input_image = numpy_to_pytorch(input_image).to(self.clipvision.patcher.current_device)
+        input_image = numpy_to_pytorch(input_image)
 
         return self.clipvision.encode_image(input_image)
 

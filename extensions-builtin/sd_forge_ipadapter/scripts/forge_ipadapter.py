@@ -20,7 +20,7 @@ class IPAdapterPatcher(ControlModelPatcher):
                     st_model["ip_adapter"][key.replace("ip_adapter.", "")] = model[key]
             model = st_model
 
-        if "ip_adapter" not in model.keys() or not model["ip_adapter"]:
+        if "ip_adapter" not in model.keys() or len(model["ip_adapter"]) == 0:
             return None
 
         return IPAdapterPatcher(model)

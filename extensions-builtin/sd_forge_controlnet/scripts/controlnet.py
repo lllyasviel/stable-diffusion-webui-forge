@@ -463,8 +463,10 @@ class ControlNetForForgeOfficial(scripts.Script):
                                            params: ControlNetCachedParameters,
                                            *args, **kwargs):
 
-        is_hr_pass = getattr(p, 'is_hr_pass', False)
-        cond = params.control_cond_for_hr_fix if is_hr_pass else params.control_cond
+        if getattr(p, 'is_hr_pass', False):
+            cond = params.control_cond_for_hr_fix
+        else:
+            cond = params.control_cond
 
         kwargs.update(dict(unit=unit, params=params))
 

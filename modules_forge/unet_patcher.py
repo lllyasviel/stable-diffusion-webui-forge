@@ -34,12 +34,16 @@ class UnetPatcher(ModelPatcher):
             pointer = pointer.previous_controlnet
         return results
 
-    def add_conditioning_modifier(self, modifier, ensure_uniqueness=False):
-        if 'conditioning_modifiers' not in self.model_options:
-            self.model_options['conditioning_modifiers'] = []
+    def append_model_option(self, k, v, ensure_uniqueness=False):
+        if k not in self.model_options:
+            self.model_options[k] = []
 
-        if ensure_uniqueness and modifier in self.model_options['conditioning_modifiers']:
+        if ensure_uniqueness and v in self.model_options[k]:
             return
 
-        self.model_options['conditioning_modifiers'].append(modifier)
+        self.model_options[k].append(v)
+        return
+
+    def add_conditioning_modifier(self, modifier, ensure_uniqueness=False):
+        self.append_model_option('conditioning_modifiers', modifier, ensure_uniqueness)
         return

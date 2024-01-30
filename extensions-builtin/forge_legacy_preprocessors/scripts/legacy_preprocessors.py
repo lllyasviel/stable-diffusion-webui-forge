@@ -21,7 +21,7 @@ from modules_forge.shared import add_supported_preprocessor
 
 ###
 
-# This file has lots of unreasonable historical designs and should be viewed as a frozen blackbox library
+# This file has lots of unreasonable historical designs and should be viewed as a frozen blackbox library.
 
 # If you want to add preprocessor,
 # please instead look at `extensions-builtin/forge_preprocessor_normalbae/scripts/preprocessor_normalbae`

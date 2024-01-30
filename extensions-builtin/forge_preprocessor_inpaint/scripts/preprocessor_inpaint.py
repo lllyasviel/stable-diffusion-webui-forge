@@ -93,7 +93,7 @@ class PreprocessorInpaintLama(PreprocessorInpaintOnly):
         return
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
-        input_image, remove_pad = resize_image_with_pad(input_image, resolution)
+        input_image, remove_pad = resize_image_with_pad(input_image, 256)
 
         self.load_model()
 
@@ -114,7 +114,8 @@ class PreprocessorInpaintLama(PreprocessorInpaintOnly):
             result *= 255.0
             result = result.detach().cpu().numpy().clip(0, 255).astype(np.uint8)
 
-        return remove_pad(result)
+        result = remove_pad(result)
+        return result
 
 
 add_supported_preprocessor(PreprocessorInpaint())

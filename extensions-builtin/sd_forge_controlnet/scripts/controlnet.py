@@ -456,13 +456,12 @@ class ControlNetForForgeOfficial(scripts.Script):
             params.control_cond_for_hr_fix = preprocessor_output
             p.extra_result_images.append(input_image)
 
+        model_filename = global_state.get_controlnet_filename(unit.model)
+
+        params.model = cached_controlnet_loader(model_filename)
         params.preprocessor = preprocessor
 
-        model_filename = global_state.get_controlnet_filename(unit.model)
-        params.model = cached_controlnet_loader(model_filename)
-
         logger.info(f"Current ControlNet: {model_filename}")
-
         return
 
     def process_unit_before_every_sampling(self,

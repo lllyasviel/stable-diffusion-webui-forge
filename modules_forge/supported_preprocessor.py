@@ -1,10 +1,13 @@
 import cv2
 import torch
 
-from modules_forge.shared import add_supported_preprocessor
+from modules_forge.shared import add_supported_preprocessor, preprocessor_dir
 from ldm_patched.modules import model_management
 from ldm_patched.modules.model_patcher import ModelPatcher
 from modules_forge.forge_util import resize_image_with_pad
+import ldm_patched.modules.clip_vision
+from modules.modelloader import load_file_from_url
+from modules_forge.forge_util import numpy_to_pytorch
 
 
 class PreprocessorParameter:
@@ -88,3 +91,40 @@ class PreprocessorCanny(Preprocessor):
 
 add_supported_preprocessor(PreprocessorNone())
 add_supported_preprocessor(PreprocessorCanny())
+
+
+class PreprocessorClipVision(Preprocessor):
+    global_cache = {}
+
+    def __init__(self, name, url, filename):
+        super().__init__()
+        self.name = name
+        self.url = url
+        self.filename = filename
+        self.slider_resolution = PreprocessorParameter(visible=False)
+        self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
+        self.show_control_mode = False
+        self.sorting_priority = 1
+        self.clipvision = None
+
+    def load_clipvision(self):
+        if self.clipvision is not None:
+            return self.clipvision
+
+        ckpt_path = load_file_from_url(
+            url=self.url,
+            model_dir=preprocessor_dir,
+            file_name=self.filename
+        )
+
+        if ckpt_path in PreprocessorClipVision.global_cache:
+            self.clipvision = PreprocessorClipVision.global_cache[ckpt_path]
+        else:
+            self.clipvision = ldm_patched.modules.clip_vision.load(ckpt_path)
+            PreprocessorClipVision.global_cache[ckpt_path] = self.clipvision
+
+        return self.clipvision
+
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+        clipvision = self.load_clipvision()
+        return clipvision.encode_image(numpy_to_pytorch(input_image))

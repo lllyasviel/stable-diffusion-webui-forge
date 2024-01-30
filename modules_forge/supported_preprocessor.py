@@ -26,7 +26,7 @@ class Preprocessor:
         self.model_patcher: ModelPatcher = None
         self.show_control_mode = True
         self.do_not_need_model = False
-        self.sorting_priority = 0.0  # higher goes to top in the list
+        self.sorting_priority = 0  # higher goes to top in the list
         self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = True
 
     def setup_model_patcher(self, model, load_device=None, offload_device=None, dtype=torch.float32, **kwargs):

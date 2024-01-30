@@ -393,86 +393,86 @@ legacy_preprocessors = {
             "Instant_ID"
         ]
     },
-    "ip-adapter_clip_sd15": {
-        "label": "ip-adapter_clip_sd15",
-        "call_function": functools.partial(clip, config='clip_h'),
-        "unload_function": functools.partial(unload_clip, config='clip_h'),
-        "managed_model": "unknown",
-        "model_free": False,
-        "no_control_mode": True,
-        "resolution": None,
-        "slider_1": None,
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 100,
-        "tags": [
-            "IP-Adapter"
-        ]
-    },
-    "ip-adapter_clip_sdxl": {
-        "label": "ip-adapter_clip_sdxl",
-        "call_function": functools.partial(clip, config='clip_g'),
-        "unload_function": functools.partial(unload_clip, config='clip_g'),
-        "managed_model": "unknown",
-        "model_free": False,
-        "no_control_mode": True,
-        "resolution": None,
-        "slider_1": None,
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 0,
-        "tags": [
-            "IP-Adapter"
-        ]
-    },
-    "ip-adapter_clip_sdxl_plus_vith": {
-        "label": "ip-adapter_clip_sdxl_plus_vith",
-        "call_function": functools.partial(clip, config='clip_h'),
-        "unload_function": functools.partial(unload_clip, config='clip_h'),
-        "managed_model": "unknown",
-        "model_free": False,
-        "no_control_mode": True,
-        "resolution": None,
-        "slider_1": None,
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 0,
-        "tags": [
-            "IP-Adapter"
-        ]
-    },
-    "ip-adapter_face_id": {
-        "label": "ip-adapter_face_id",
-        "call_function": g_insight_face_model.run_model,
-        "unload_function": None,
-        "managed_model": "g_insight_face_model",
-        "model_free": False,
-        "no_control_mode": True,
-        "resolution": None,
-        "slider_1": None,
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 0,
-        "tags": [
-            "IP-Adapter"
-        ]
-    },
-    "ip-adapter_face_id_plus": {
-        "label": "ip-adapter_face_id_plus",
-        "call_function": face_id_plus,
-        "unload_function": functools.partial(unload_clip, config='clip_h'),
-        "managed_model": "unknown",
-        "model_free": False,
-        "no_control_mode": True,
-        "resolution": None,
-        "slider_1": None,
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 0,
-        "tags": [
-            "IP-Adapter"
-        ]
-    },
+    # "ip-adapter_clip_sd15": {
+    #     "label": "ip-adapter_clip_sd15",
+    #     "call_function": functools.partial(clip, config='clip_h'),
+    #     "unload_function": functools.partial(unload_clip, config='clip_h'),
+    #     "managed_model": "unknown",
+    #     "model_free": False,
+    #     "no_control_mode": True,
+    #     "resolution": None,
+    #     "slider_1": None,
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 100,
+    #     "tags": [
+    #         "IP-Adapter"
+    #     ]
+    # },
+    # "ip-adapter_clip_sdxl": {
+    #     "label": "ip-adapter_clip_sdxl",
+    #     "call_function": functools.partial(clip, config='clip_g'),
+    #     "unload_function": functools.partial(unload_clip, config='clip_g'),
+    #     "managed_model": "unknown",
+    #     "model_free": False,
+    #     "no_control_mode": True,
+    #     "resolution": None,
+    #     "slider_1": None,
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 0,
+    #     "tags": [
+    #         "IP-Adapter"
+    #     ]
+    # },
+    # "ip-adapter_clip_sdxl_plus_vith": {
+    #     "label": "ip-adapter_clip_sdxl_plus_vith",
+    #     "call_function": functools.partial(clip, config='clip_h'),
+    #     "unload_function": functools.partial(unload_clip, config='clip_h'),
+    #     "managed_model": "unknown",
+    #     "model_free": False,
+    #     "no_control_mode": True,
+    #     "resolution": None,
+    #     "slider_1": None,
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 0,
+    #     "tags": [
+    #         "IP-Adapter"
+    #     ]
+    # },
+    # "ip-adapter_face_id": {
+    #     "label": "ip-adapter_face_id",
+    #     "call_function": g_insight_face_model.run_model,
+    #     "unload_function": None,
+    #     "managed_model": "g_insight_face_model",
+    #     "model_free": False,
+    #     "no_control_mode": True,
+    #     "resolution": None,
+    #     "slider_1": None,
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 0,
+    #     "tags": [
+    #         "IP-Adapter"
+    #     ]
+    # },
+    # "ip-adapter_face_id_plus": {
+    #     "label": "ip-adapter_face_id_plus",
+    #     "call_function": face_id_plus,
+    #     "unload_function": functools.partial(unload_clip, config='clip_h'),
+    #     "managed_model": "unknown",
+    #     "model_free": False,
+    #     "no_control_mode": True,
+    #     "resolution": None,
+    #     "slider_1": None,
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 0,
+    #     "tags": [
+    #         "IP-Adapter"
+    #     ]
+    # },
     "lineart_anime": {
         "label": "lineart_anime",
         "call_function": lineart_anime,
@@ -1193,22 +1193,22 @@ legacy_preprocessors = {
             "T2I-Adapter"
         ]
     },
-    "t2ia_style_clipvision": {
-        "label": "t2ia_style_clipvision",
-        "call_function": functools.partial(clip, config='clip_vitl'),
-        "unload_function": functools.partial(unload_clip, config='clip_vitl'),
-        "managed_model": "unknown",
-        "model_free": False,
-        "no_control_mode": True,
-        "resolution": None,
-        "slider_1": None,
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 0,
-        "tags": [
-            "T2I-Adapter"
-        ]
-    },
+    # "t2ia_style_clipvision": {
+    #     "label": "t2ia_style_clipvision",
+    #     "call_function": functools.partial(clip, config='clip_vitl'),
+    #     "unload_function": functools.partial(unload_clip, config='clip_vitl'),
+    #     "managed_model": "unknown",
+    #     "model_free": False,
+    #     "no_control_mode": True,
+    #     "resolution": None,
+    #     "slider_1": None,
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 0,
+    #     "tags": [
+    #         "T2I-Adapter"
+    #     ]
+    # },
     "threshold": {
         "label": "threshold",
         "call_function": threshold,

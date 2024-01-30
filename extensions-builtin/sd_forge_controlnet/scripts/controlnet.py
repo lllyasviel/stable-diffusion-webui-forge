@@ -269,6 +269,7 @@ class ControlNetForForgeOfficial(scripts.Script):
             unit: external_code.ControlNetUnit,
             input_image: np.ndarray,
             resize_mode: external_code.ResizeMode,
+            preprocessor
     ) -> np.ndarray:
         """
         Crop ControlNet input image based on A1111 inpaint mask given.
@@ -290,7 +291,7 @@ class ControlNetForForgeOfficial(scripts.Script):
                 a1111_mask_image is not None
         )
         if (
-                'reference' not in unit.module
+                preprocessor.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab
                 and is_only_masked_inpaint
                 and (is_upscale_script or unit.inpaint_crop_input_image)
         ):
@@ -408,7 +409,9 @@ class ControlNetForForgeOfficial(scripts.Script):
         input_image, resize_mode = self.choose_input_image(p, unit)
         assert isinstance(input_image, np.ndarray), 'Invalid input image!'
 
-        input_image = self.try_crop_image_with_a1111_mask(p, unit, input_image, resize_mode)
+        preprocessor = global_state.get_preprocessor(unit.module)
+
+        input_image = self.try_crop_image_with_a1111_mask(p, unit, input_image, resize_mode, preprocessor)
         input_image = np.ascontiguousarray(input_image.copy()).copy()  # safe numpy
 
         if unit.pixel_perfect:
@@ -423,8 +426,6 @@ class ControlNetForForgeOfficial(scripts.Script):
         logger.debug(f"Use numpy seed {seed}.")
         logger.info(f"Using preprocessor: {unit.module}")
         logger.info(f'preprocessor resolution = {unit.processor_res}')
-
-        preprocessor = global_state.get_preprocessor(unit.module)
 
         preprocessor_output = preprocessor(
             input_image=input_image,

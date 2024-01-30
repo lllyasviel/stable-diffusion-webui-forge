@@ -389,7 +389,12 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         return h, w, hr_y, hr_x
 
-    def process_unit_after_click_generate(self, p, unit, params, *args, **kwargs):
+    def process_unit_after_click_generate(self,
+                                          p: StableDiffusionProcessing,
+                                          unit: external_code.ControlNetUnit,
+                                          params: ControlNetCachedParameters,
+                                          *args, **kwargs):
+
         h, w, hr_y, hr_x = self.get_target_dimensions(p)
 
         has_high_res_fix = (
@@ -452,9 +457,18 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         return
 
-    def process_unit_before_every_sampling(self, p, unit, params, *args, **kwargs):
+    def process_unit_before_every_sampling(self,
+                                           p: StableDiffusionProcessing,
+                                           unit: external_code.ControlNetUnit,
+                                           params: ControlNetCachedParameters,
+                                           *args, **kwargs):
+
         h, w, hr_y, hr_x = self.get_target_dimensions(p)
-        is_hr_pass = p.is_hr_pass
+        is_hr_pass = p.get('is_hr_pass', False)
+        cond = params.control_cond_for_hr_fix if is_hr_pass else params.control_cond
+
+        a = 0
+
         return
 
     def process(self, p, *args, **kwargs):

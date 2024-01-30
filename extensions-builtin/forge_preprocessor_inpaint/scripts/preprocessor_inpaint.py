@@ -31,7 +31,7 @@ class PreprocessorInpaintLama(PreprocessorInpaintOnly):
     def __init__(self):
         super().__init__()
         self.name = 'inpaint_only+lama'
-    
+
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
         return input_image
 

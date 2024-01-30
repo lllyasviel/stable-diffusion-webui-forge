@@ -12,7 +12,7 @@
 # from annotator.normalbae import load_checkpoint
 # from torchvision import transforms
 #
-# 
+#
 # class PreprocessorNormalBae(Preprocessor):
 #     def __init__(self):
 #         super().__init__()

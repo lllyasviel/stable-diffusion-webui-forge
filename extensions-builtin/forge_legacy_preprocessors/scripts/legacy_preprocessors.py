@@ -58,11 +58,11 @@ class LegacyPreprocessor(Preprocessor):
             'openpose': ['openpose', 'densepose'],
         }
 
-        self.model_filename_filers = []
+        self.model_filename_filters = []
         for tag in self.tags:
             tag_lower = tag.lower()
-            self.model_filename_filers.append(tag_lower)
-            self.model_filename_filers += filters_aliases.get(tag_lower, [])
+            self.model_filename_filters.append(tag_lower)
+            self.model_filename_filters += filters_aliases.get(tag_lower, [])
 
         if legacy_dict['resolution'] is None:
             self.resolution = PreprocessorParameter(visible=False)

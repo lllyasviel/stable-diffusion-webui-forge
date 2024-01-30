@@ -100,10 +100,10 @@ def get_filtered_preprocessor_names(tag):
 
 def get_filtered_controlnet_names(tag):
     filtered_preprocessors = get_filtered_preprocessors(tag)
-    model_filename_filers = []
+    model_filename_filters = []
     for p in filtered_preprocessors.values():
-        model_filename_filers += p.model_filename_filers
-    return [x for x in controlnet_names if any(f.lower() in x.lower() for f in model_filename_filers) or x == 'None']
+        model_filename_filters += p.model_filename_filters
+    return [x for x in controlnet_names if any(f.lower() in x.lower() for f in model_filename_filters) or x == 'None']
 
 
 def update_controlnet_filenames():

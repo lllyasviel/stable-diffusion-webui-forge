@@ -18,7 +18,7 @@ class Preprocessor:
     def __init__(self):
         self.name = 'PreprocessorBase'
         self.tags = []
-        self.model_filename_filers = []
+        self.model_filename_filters = []
         self.slider_resolution = PreprocessorParameter(label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
         self.slider_1 = PreprocessorParameter()
         self.slider_2 = PreprocessorParameter()
@@ -80,7 +80,7 @@ class PreprocessorCanny(Preprocessor):
         super().__init__()
         self.name = 'canny'
         self.tags = ['Canny']
-        self.model_filename_filers = ['canny']
+        self.model_filename_filters = ['canny']
         self.slider_1 = PreprocessorParameter(minimum=0, maximum=256, step=1, value=100, label='Low Threshold', visible=True)
         self.slider_2 = PreprocessorParameter(minimum=0, maximum=256, step=1, value=200, label='High Threshold', visible=True)
         self.sorting_priority = 100

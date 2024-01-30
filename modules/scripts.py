@@ -514,7 +514,7 @@ def load_scripts():
 
     for s in scripts_list:
         if s.basedir not in sys.path:
-            sys.path = [s] + sys.path
+            sys.path = [s.basedir] + sys.path
 
     syspath = sys.path
 

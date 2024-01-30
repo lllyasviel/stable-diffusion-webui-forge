@@ -13,7 +13,7 @@ class ControlModelPatcher:
     def try_build_from_state_dict(state_dict, ckpt_path):
         return None
 
-    def __init__(self, model_patcher):
+    def __init__(self, model_patcher=None):
         self.model_patcher = model_patcher
         self.strength = 1.0
         self.start_percent = 0.0

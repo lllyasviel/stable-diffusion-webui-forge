@@ -25,9 +25,9 @@ class IPAdapterPatcher(ControlModelPatcher):
 
         return IPAdapterPatcher(model)
 
-    def __init__(self, model_patcher):
-        super().__init__(model_patcher)
-        self.ipadapter = model_patcher
+    def __init__(self, state_dict):
+        super().__init__()
+        self.ip_adapter = state_dict
         return
 
     def process_before_every_sampling(self, process, cond, *args, **kwargs):
@@ -35,7 +35,7 @@ class IPAdapterPatcher(ControlModelPatcher):
         unet = process.sd_model.forge_objects.unet
 
         unet = opIPAdapterApply(
-            ipadapter=self.ipadapter,
+            ipadapter=self.ip_adapter,
             model=unet,
             weight=self.strength,
             clip_vision=clip_vision,

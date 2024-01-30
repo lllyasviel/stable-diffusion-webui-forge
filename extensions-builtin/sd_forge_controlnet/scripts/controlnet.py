@@ -428,29 +428,32 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         preprocessor = global_state.get_preprocessor(unit.module)
 
-        detected_map = preprocessor(
+        preprocessor_output = preprocessor(
             input_image=input_image,
             resolution=unit.processor_res,
             slider_1=unit.threshold_a,
             slider_2=unit.threshold_b,
         )
 
-        detected_map_is_image = detected_map.ndim == 3 and detected_map.shape[2] < 5
+        preprocessor_output_is_image = \
+            isinstance(preprocessor_output, np.ndarray) \
+            and preprocessor_output.ndim == 3 \
+            and preprocessor_output.shape[2] < 5
 
-        if detected_map_is_image:
-            params.control_cond = crop_and_resize_image(detected_map, resize_mode, h, w)
+        if preprocessor_output_is_image:
+            params.control_cond = crop_and_resize_image(preprocessor_output, resize_mode, h, w)
             p.extra_result_images.append(params.control_cond)
             params.control_cond = numpy_to_pytorch(params.control_cond).movedim(-1, 1)
 
             if has_high_res_fix:
-                params.control_cond_for_hr_fix = crop_and_resize_image(detected_map, resize_mode, hr_y, hr_x)
+                params.control_cond_for_hr_fix = crop_and_resize_image(preprocessor_output, resize_mode, hr_y, hr_x)
                 p.extra_result_images.append(params.control_cond_for_hr_fix)
                 params.control_cond_for_hr_fix = numpy_to_pytorch(params.control_cond_for_hr_fix).movedim(-1, 1)
             else:
                 params.control_cond_for_hr_fix = params.control_cond
         else:
-            params.control_cond = detected_map
-            params.control_cond_for_hr_fix = detected_map
+            params.control_cond = preprocessor_output
+            params.control_cond_for_hr_fix = preprocessor_output
             p.extra_result_images.append(input_image)
 
         params.preprocessor = preprocessor

@@ -91,11 +91,11 @@ class LegacyPreprocessor(Preprocessor):
         del slider_3
 
         if self.unload_function is not None or self.managed_model is not None:
-            context = automatic_memory_management()
+            context = automatic_memory_management
         else:
-            context = contextlib.nullcontext()
+            context = contextlib.nullcontext
 
-        with context:
+        with context():
             result, is_image = self.call_function(img=input_image, res=resolution, thr_a=slider_1, thr_b=slider_2, **kwargs)
 
         if is_image:

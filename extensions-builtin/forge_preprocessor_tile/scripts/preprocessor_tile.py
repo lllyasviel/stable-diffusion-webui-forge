@@ -18,14 +18,14 @@ class PreprocessorTileColorFix(PreprocessorTile):
     def __init__(self):
         super().__init__()
         self.name = 'tile_colorfix'
-        self.slider_1 = PreprocessorParameter(label='Variation', value=8.0, minimum=3.0, maximum=32.0, step=1.0)
+        self.slider_1 = PreprocessorParameter(label='Variation', value=8.0, minimum=3.0, maximum=32.0, step=1.0, visible=True)
 
 
 class PreprocessorTileColorFixSharp(PreprocessorTileColorFix):
     def __init__(self):
         super().__init__()
         self.name = 'tile_colorfix+sharp'
-        self.slider_2 = PreprocessorParameter(label='Sharpness', value=1.0, minimum=0.0, maximum=2.0, step=0.01)
+        self.slider_2 = PreprocessorParameter(label='Sharpness', value=1.0, minimum=0.0, maximum=2.0, step=0.01, visible=True)
 
 
 add_supported_preprocessor(PreprocessorTile())

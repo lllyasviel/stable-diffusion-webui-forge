@@ -28,6 +28,7 @@ class PreprocessorInpaintOnly(PreprocessorInpaint):
         self.name = 'inpaint_only'
         self.image = None
         self.mask = None
+        self.latent = None
 
     def process_before_every_sampling(self, process, cond, *args, **kwargs):
         self.image = kwargs['cond_before_inpaint_fix'][:, 0:3]
@@ -55,6 +56,8 @@ class PreprocessorInpaintOnly(PreprocessorInpaint):
         unet.set_model_sampler_post_cfg_function(post_cfg)
 
         process.sd_model.forge_objects.unet = unet
+
+        self.latent = latent_image
         return
 
     def process_after_every_sampling(self, process, params, *args, **kwargs):
@@ -127,6 +130,13 @@ class PreprocessorInpaintLama(PreprocessorInpaintOnly):
 
         result = np.concatenate([fin_color, raw_mask], axis=2)
         return result
+
+    def process_before_every_sampling(self, process, cond, *args, **kwargs):
+        super().process_before_every_sampling(process, cond, *args, **kwargs)
+        sigma_max = process.sd_model.forge_objects.unet.model.model_sampling.sigma_max
+        original_noise = kwargs['noise']
+        process.modified_noise = original_noise + self.latent.to(original_noise) / sigma_max.to(original_noise)
+        return
 
 
 add_supported_preprocessor(PreprocessorInpaint())

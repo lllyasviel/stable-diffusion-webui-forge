@@ -257,6 +257,7 @@ class StableDiffusionProcessing:
         self.cached_c = StableDiffusionProcessing.cached_c
 
         self.extra_result_images = []
+        self.modified_noise = None
 
     @property
     def sd_model(self):
@@ -1256,6 +1257,10 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                                                            c=conditioning,
                                                            uc=unconditional_conditioning)
 
+            if self.modified_noise is not None:
+                x = self.modified_noise
+                self.modified_noise = None
+
             samples = self.sampler.sample(self, x, conditioning, unconditional_conditioning, image_conditioning=self.txt2img_image_conditioning(x))
             del x
 
@@ -1364,6 +1369,10 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                                                        noise=noise,
                                                        c=self.hr_c,
                                                        uc=self.hr_uc)
+
+        if self.modified_noise is not None:
+            noise = self.modified_noise
+            self.modified_noise = None
 
         samples = self.sampler.sample_img2img(self, samples, noise, self.hr_c, self.hr_uc, steps=self.hr_second_pass_steps or self.steps, image_conditioning=image_conditioning)
 
@@ -1675,6 +1684,10 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
                                                        noise=x,
                                                        c=conditioning,
                                                        uc=unconditional_conditioning)
+
+        if self.modified_noise is not None:
+            x = self.modified_noise
+            self.modified_noise = None
 
         samples = self.sampler.sample_img2img(self, self.init_latent, x, conditioning, unconditional_conditioning, image_conditioning=self.image_conditioning)
 

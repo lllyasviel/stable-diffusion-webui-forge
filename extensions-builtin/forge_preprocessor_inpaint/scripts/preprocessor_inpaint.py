@@ -4,11 +4,18 @@ from modules_forge.forge_util import numpy_to_pytorch
 
 
 class PreprocessorInpaint(Preprocessor):
-    def __init__(self, name, use_inpaint_sampler=False, use_lama=False):
+    def __init__(self):
         super().__init__()
-        self.name = name
-        self.use_inpaint_sampler = use_inpaint_sampler
-        self.use_lama = use_lama
+        self.name = 'inpaint_global_harmonious'
+        self.tags = ['Inpaint']
+        self.model_filename_filters = ['inpaint']
+        self.slider_resolution = PreprocessorParameter(visible=False)
+
+
+class PreprocessorInpaintOnly(PreprocessorInpaint):
+    def __init__(self):
+        super().__init__()
+        self.name = 'inpaint_global_harmonious'
         self.tags = ['Inpaint']
         self.model_filename_filters = ['inpaint']
         self.slider_resolution = PreprocessorParameter(visible=False)
@@ -20,20 +27,17 @@ class PreprocessorInpaint(Preprocessor):
         return
 
 
-add_supported_preprocessor(PreprocessorInpaint(
-    name='inpaint_global_harmonious',
-    use_inpaint_sampler=False,
-    use_lama=False
-))
+class PreprocessorInpaintLama(PreprocessorInpaintOnly):
+    def __init__(self):
+        super().__init__()
+        self.name = 'inpaint_global_harmonious'
+        self.tags = ['Inpaint']
+        self.model_filename_filters = ['inpaint']
+        self.slider_resolution = PreprocessorParameter(visible=False)
 
-add_supported_preprocessor(PreprocessorInpaint(
-    name='inpaint_only',
-    use_inpaint_sampler=False,
-    use_lama=False
-))
 
-add_supported_preprocessor(PreprocessorInpaint(
-    name='inpaint_only+lama',
-    use_inpaint_sampler=False,
-    use_lama=False
-))
+add_supported_preprocessor(PreprocessorInpaint())
+
+add_supported_preprocessor(PreprocessorInpaintOnly())
+
+add_supported_preprocessor(PreprocessorInpaintLama())

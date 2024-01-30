@@ -470,7 +470,6 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         params.preprocessor.process_before_every_sampling(process=p, cond=cond, **kwargs)
         params.model.process_before_every_sampling(process=p, cond=cond, **kwargs)
-        a = 0
 
         return
 

@@ -1,10 +1,16 @@
+import os
 import cv2
 import torch
 import numpy as np
+import yaml
+import einops
 
+from omegaconf import OmegaConf
 from modules_forge.supported_preprocessor import Preprocessor, PreprocessorParameter
-from modules_forge.shared import add_supported_preprocessor
-from modules_forge.forge_util import numpy_to_pytorch
+from modules_forge.forge_util import numpy_to_pytorch, resize_image_with_pad
+from modules_forge.shared import preprocessor_dir, add_supported_preprocessor
+from modules.modelloader import load_file_from_url
+from annotator.lama.saicinpainting.training.trainers import load_checkpoint
 
 
 class PreprocessorInpaint(Preprocessor):
@@ -73,6 +79,42 @@ class PreprocessorInpaintLama(PreprocessorInpaintOnly):
     def __init__(self):
         super().__init__()
         self.name = 'inpaint_only+lama'
+
+    def load_model(self):
+        remote_model_path = "https://huggingface.co/lllyasviel/Annotators/resolve/main/ControlNetLama.pth"
+        model_path = load_file_from_url(remote_model_path, model_dir=preprocessor_dir)
+        config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lama_config.yaml')
+        cfg = yaml.safe_load(open(config_path, 'rt'))
+        cfg = OmegaConf.create(cfg)
+        cfg.training_model.predict_only = True
+        cfg.visualizer.kind = 'noop'
+        model = load_checkpoint(cfg, os.path.abspath(model_path), strict=False, map_location='cpu')
+        self.setup_model_patcher(model)
+        return
+
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+        input_image, remove_pad = resize_image_with_pad(input_image, resolution)
+
+        self.load_model()
+
+        self.move_all_model_patchers_to_gpu()
+
+        color = np.ascontiguousarray(input_image[:, :, 0:3]).astype(np.float32) / 255.0
+        mask = np.ascontiguousarray(input_image[:, :, 3:4]).astype(np.float32) / 255.0
+        with torch.no_grad():
+            color = self.send_tensor_to_model_device(torch.from_numpy(color))
+            mask = self.send_tensor_to_model_device(torch.from_numpy(mask))
+            mask = (mask > 0.5).float()
+            color = color * (1 - mask)
+            image_feed = torch.cat([color, mask], dim=2)
+            image_feed = einops.rearrange(image_feed, 'h w c -> 1 c h w')
+            result = self.model_patcher.model(image_feed)[0]
+            result = einops.rearrange(result, 'c h w -> h w c')
+            result = result * mask + color * (1 - mask)
+            result *= 255.0
+            result = result.detach().cpu().numpy().clip(0, 255).astype(np.uint8)
+
+        return remove_pad(result)
 
 
 add_supported_preprocessor(PreprocessorInpaint())

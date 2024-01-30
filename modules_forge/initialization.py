@@ -33,6 +33,9 @@ def initialize_forge():
     import modules_forge.patch_basic
     modules_forge.patch_basic.patch_all_basics()
 
+    import modules_forge.unet_patcher
+    modules_forge.unet_patcher.patch_all()
+
     if model_management.directml_enabled:
         model_management.lowvram_available = True
         model_management.OOM_EXCEPTION = Exception

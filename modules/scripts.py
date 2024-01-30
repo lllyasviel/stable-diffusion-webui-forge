@@ -512,6 +512,10 @@ def load_scripts():
 
     scripts_list = list_scripts("scripts", ".py") + list_scripts("modules/processing_scripts", ".py", include_extensions=False)
 
+    for s in scripts_list:
+        if s.basedir not in sys.path:
+            sys.path = [s] + sys.path
+
     syspath = sys.path
 
     print(f'Current System Paths = {syspath}')

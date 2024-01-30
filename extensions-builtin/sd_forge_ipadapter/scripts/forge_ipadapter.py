@@ -28,7 +28,7 @@ class IPAdapterPatcher(ControlModelPatcher):
         super().__init__(model_patcher)
         self.ipadapter = model_patcher
         return
-    
+
     def process_before_every_sampling(self, process, cond, *args, **kwargs):
         a = 0
         return

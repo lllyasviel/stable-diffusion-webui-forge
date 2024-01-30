@@ -484,11 +484,11 @@ class ControlNetForForgeOfficial(scripts.Script):
             'output': [0.0] * 12
         }
 
-        if unit.control_mode == external_code.ControlMode.CONTROL:
+        if unit.control_mode == external_code.ControlMode.CONTROL.value:
             controlnet_model.positive_advanced_weighting = soft_weighting.copy()
             controlnet_model.negative_advanced_weighting = zero_weighting.copy()
 
-        if unit.control_mode == external_code.ControlMode.PROMPT:
+        if unit.control_mode == external_code.ControlMode.PROMPT.value:
             controlnet_model.positive_advanced_weighting = soft_weighting.copy()
             controlnet_model.negative_advanced_weighting = soft_weighting.copy()
 

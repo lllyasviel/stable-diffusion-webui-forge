@@ -1,6 +1,9 @@
 import os
 from copy import copy
 from typing import Dict, Optional, Tuple, List, Union
+
+import torch
+
 import modules.scripts as scripts
 from modules import shared, script_callbacks, processing, masking, images
 from modules.api.api import decode_base64_to_image
@@ -394,6 +397,8 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         return h, w, hr_y, hr_x
 
+    @torch.no_grad()
+    @torch.inference_mode()
     def process_unit_after_click_generate(self,
                                           p: StableDiffusionProcessing,
                                           unit: external_code.ControlNetUnit,
@@ -472,6 +477,8 @@ class ControlNetForForgeOfficial(scripts.Script):
         logger.info(f"Current ControlNet {type(params.model).__name__}: {model_filename}")
         return
 
+    @torch.no_grad()
+    @torch.inference_mode()
     def process_unit_before_every_sampling(self,
                                            p: StableDiffusionProcessing,
                                            unit: external_code.ControlNetUnit,

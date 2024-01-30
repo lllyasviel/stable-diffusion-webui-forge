@@ -463,10 +463,13 @@ class ControlNetForForgeOfficial(scripts.Script):
                                            params: ControlNetCachedParameters,
                                            *args, **kwargs):
 
-        h, w, hr_y, hr_x = self.get_target_dimensions(p)
-        is_hr_pass = p.get('is_hr_pass', False)
+        is_hr_pass = getattr(p, 'is_hr_pass', False)
         cond = params.control_cond_for_hr_fix if is_hr_pass else params.control_cond
 
+        kwargs.update(dict(unit=unit, params=params))
+
+        params.preprocessor.process_before_every_sampling(process=p, cond=cond, **kwargs)
+        params.model.process_before_every_sampling(process=p, cond=cond, **kwargs)
         a = 0
 
         return

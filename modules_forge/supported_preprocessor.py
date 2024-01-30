@@ -61,7 +61,7 @@ class Preprocessor:
         model_management.free_memory(required_memory, device=model_management.get_torch_device())
         return
 
-    def process_before_every_sampling(self, process, cnet):
+    def process_before_every_sampling(self, process, cond, *args, **kwargs):
         return
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):

@@ -136,13 +136,13 @@ class ControlNetPatcher(ControlModelPatcher):
         self.advanced_frame_weighting = None
         self.advanced_sigma_weighting = None
 
-    def patch_to_process(self, p, control_image):
-        unet = p.sd_model.forge_objects.unet
+    def process_before_every_sampling(self, process, cond, *args, **kwargs):
+        unet = process.sd_model.forge_objects.unet
 
         unet = apply_controlnet_advanced(
             unet=unet,
             controlnet=self.model_patcher,
-            image_bchw=control_image,
+            image_bchw=cond,
             strength=self.strength,
             start_percent=self.start_percent,
             end_percent=self.end_percent,
@@ -151,7 +151,7 @@ class ControlNetPatcher(ControlModelPatcher):
             advanced_frame_weighting=self.advanced_frame_weighting,
             advanced_sigma_weighting=self.advanced_sigma_weighting)
 
-        p.sd_model.forge_objects.unet = unet
+        process.sd_model.forge_objects.unet = unet
         return
 
 

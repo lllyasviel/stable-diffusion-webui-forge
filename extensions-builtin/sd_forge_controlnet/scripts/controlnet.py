@@ -456,8 +456,17 @@ class ControlNetForForgeOfficial(scripts.Script):
         params.preprocessor = preprocessor
 
         model_filename = global_state.get_controlnet_filename(unit.model)
-        params.model = cached_controlnet_loader(model_filename)
+        controlnet_model = cached_controlnet_loader(model_filename)
 
+        controlnet_model.strength = float(unit.weight)
+        controlnet_model.start_percent = float(unit.guidance_start)
+        controlnet_model.end_percent = float(unit.guidance_end)
+        controlnet_model.positive_advanced_weighting = None
+        controlnet_model.negative_advanced_weighting = None
+        controlnet_model.advanced_frame_weighting = None
+        controlnet_model.advanced_sigma_weighting = None
+
+        params.model = controlnet_model
         logger.info(f"Current ControlNet: {model_filename}")
 
         return
@@ -474,14 +483,6 @@ class ControlNetForForgeOfficial(scripts.Script):
             cond = params.control_cond
 
         kwargs.update(dict(unit=unit, params=params))
-
-        params.model.strength = float(unit.weight)
-        params.model.start_percent = float(unit.guidance_start)
-        params.model.end_percent = float(unit.guidance_end)
-        params.model.positive_advanced_weighting = None
-        params.model.negative_advanced_weighting = None
-        params.model.advanced_frame_weighting = None
-        params.model.advanced_sigma_weighting = None
 
         params.preprocessor.process_before_every_sampling(process=p, cond=cond, **kwargs)
         params.model.process_before_every_sampling(process=p, cond=cond, **kwargs)

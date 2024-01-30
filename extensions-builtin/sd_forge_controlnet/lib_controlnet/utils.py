@@ -408,3 +408,9 @@ def crop_and_resize_image(detected_map, resize_mode, h, w):
         detected_map = detected_map[pad_h:pad_h+h, pad_w:pad_w+w]
         detected_map = safe_numpy(detected_map)
         return detected_map
+
+
+def judge_image_type(img):
+    is_image_hw3or4 = isinstance(img, np.ndarray) and img.ndim == 3 and int(img.shape[2]) in [3, 4]
+    is_png = is_image_hw3or4 and int(img.shape[2]) == 4
+    return is_image_hw3or4, is_png

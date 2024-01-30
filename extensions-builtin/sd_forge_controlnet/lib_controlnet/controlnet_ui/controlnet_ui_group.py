@@ -6,7 +6,7 @@ from typing import List, Optional, Union, Callable, Dict, Tuple, Literal
 from dataclasses import dataclass
 import numpy as np
 
-from lib_controlnet.utils import svg_preprocess, read_image
+from lib_controlnet.utils import svg_preprocess, read_image, judge_image_type
 from lib_controlnet import (
     global_state,
     external_code,
@@ -935,9 +935,9 @@ class ControlNetUiGroup(object):
                 else None,
             )
 
-            is_image = isinstance(result, np.ndarray) and result.ndim == 3 and result.shape[2] < 5
+            is_hwc, is_png = judge_image_type(result)
 
-            if not is_image:
+            if not is_hwc:
                 result = img
 
             result = external_code.visualize_inpaint_mask(result)

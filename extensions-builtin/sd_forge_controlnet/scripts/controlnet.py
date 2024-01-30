@@ -8,7 +8,7 @@ import gradio as gr
 
 from lib_controlnet import global_state, external_code
 from lib_controlnet.utils import align_dim_latent, image_dict_from_any, set_numpy_seed, crop_and_resize_image, prepare_mask
-from lib_controlnet.enums import StableDiffusionVersion, HiResFixOption
+from lib_controlnet.enums import StableDiffusionVersion
 from lib_controlnet.controlnet_ui.controlnet_ui_group import ControlNetUiGroup, UiControlNetUnit
 from lib_controlnet.controlnet_ui.photopea import Photopea
 from lib_controlnet.logging import logger
@@ -506,8 +506,6 @@ def on_ui_settings():
         3, "Multi-ControlNet: ControlNet unit number (requires restart)", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}, section=section))
     shared.opts.add_option("control_net_model_cache_size", shared.OptionInfo(
         5, "Model cache size (requires restart)", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}, section=section))
-    shared.opts.add_option("control_net_inpaint_blur_sigma", shared.OptionInfo(
-        7, "ControlNet inpainting Gaussian blur sigma", gr.Slider, {"minimum": 0, "maximum": 64, "step": 1}, section=section))
     shared.opts.add_option("control_net_no_detectmap", shared.OptionInfo(
         False, "Do not append detectmap to output", gr.Checkbox, {"interactive": True}, section=section))
     shared.opts.add_option("control_net_detectmap_autosaving", shared.OptionInfo(

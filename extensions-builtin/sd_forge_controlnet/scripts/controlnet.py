@@ -473,6 +473,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         params.preprocessor.process_before_every_sampling(process=p, cond=cond, **kwargs)
         params.model.process_before_every_sampling(process=p, cond=cond, **kwargs)
 
+        logger.info(f"ControlNet Method {params.preprocessor.name} patched.")
         return
 
     def process(self, p, *args, **kwargs):
@@ -485,8 +486,8 @@ class ControlNetForForgeOfficial(scripts.Script):
         return
 
     def process_before_every_sampling(self, p, *args, **kwargs):
-        for unit, params in zip(self.get_enabled_units(p), self.current_params):
-            self.process_unit_before_every_sampling(p, unit, params, *args, **kwargs)
+        for i, unit in enumerate(self.get_enabled_units(p)):
+            self.process_unit_before_every_sampling(p, unit, self.current_params[i], *args, **kwargs)
         return
 
     def postprocess(self, p, processed, *args):

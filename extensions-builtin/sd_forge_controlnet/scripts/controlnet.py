@@ -460,7 +460,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         params.model = cached_controlnet_loader(model_filename)
         params.preprocessor = preprocessor
 
-        logger.info(f"Current ControlNet: {model_filename}")
+        logger.info(f"Current ControlNet {type(params.model).__name__}: {model_filename}")
         return
 
     def process_unit_before_every_sampling(self,

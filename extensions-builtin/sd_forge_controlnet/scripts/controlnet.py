@@ -529,8 +529,8 @@ class ControlNetForForgeOfficial(scripts.Script):
             params.model.positive_advanced_weighting = soft_weighting.copy()
             params.model.negative_advanced_weighting = soft_weighting.copy()
 
-        params.preprocessor.process_before_every_sampling(process=p, cond=cond, **kwargs)
-        params.model.process_before_every_sampling(process=p, cond=cond, **kwargs)
+        params.preprocessor.process_before_every_sampling(p, cond, *args, **kwargs)
+        params.model.process_before_every_sampling(p, cond, *args, **kwargs)
 
         logger.info(f"ControlNet Method {params.preprocessor.name} patched.")
         return
@@ -542,8 +542,8 @@ class ControlNetForForgeOfficial(scripts.Script):
                                           params: ControlNetCachedParameters,
                                           *args, **kwargs):
 
-        params.preprocessor.process_after_every_sampling(process=p, params=params, **kwargs)
-        params.model.process_after_every_sampling(process=p, params=params, **kwargs)
+        params.preprocessor.process_after_every_sampling(p, params, *args, **kwargs)
+        params.model.process_after_every_sampling(p, params, *args, **kwargs)
         return
 
     def process(self, p, *args, **kwargs):
@@ -560,7 +560,7 @@ class ControlNetForForgeOfficial(scripts.Script):
             self.process_unit_before_every_sampling(p, unit, self.current_params[i], *args, **kwargs)
         return
 
-    def postprocess_batch(self, p, *args, **kwargs):
+    def postprocess_batch_list(self, p, *args, **kwargs):
         for i, unit in enumerate(self.get_enabled_units(p)):
             self.process_unit_after_every_sampling(p, unit, self.current_params[i], *args, **kwargs)
         self.current_params = {}

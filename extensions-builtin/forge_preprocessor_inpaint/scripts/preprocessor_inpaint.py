@@ -1,4 +1,6 @@
+import cv2
 import torch
+import numpy as np
 
 from modules_forge.supported_preprocessor import Preprocessor, PreprocessorParameter
 from modules_forge.shared import add_supported_preprocessor
@@ -50,6 +52,20 @@ class PreprocessorInpaintOnly(PreprocessorInpaint):
         return
 
     def process_after_every_sampling(self, process, params, *args, **kwargs):
+        a1111_batch_result = args[0]
+        new_results = []
+
+        for img in a1111_batch_result.images:
+            sigma = 7
+            mask = self.mask[0, 0].detach().cpu().numpy().astype(np.float32)
+            mask = cv2.dilate(mask, np.ones((sigma, sigma), dtype=np.uint8))
+            mask = cv2.blur(mask, (sigma, sigma))[None]
+            mask = torch.from_numpy(np.ascontiguousarray(mask).copy()).to(img).clip(0, 1)
+            raw = self.image[0].to(img).clip(0, 1)
+            img = img.clip(0, 1)
+            new_results.append(raw * (1.0 - mask) + img * mask)
+
+        a1111_batch_result.images = new_results
         return
 
 

@@ -15,6 +15,13 @@ class ControlModelPatcher:
 
     def __init__(self, model_patcher):
         self.model_patcher = model_patcher
+        self.strength = 1.0
+        self.start_percent = 0.0
+        self.end_percent = 1.0
+        self.positive_advanced_weighting = None
+        self.negative_advanced_weighting = None
+        self.advanced_frame_weighting = None
+        self.advanced_sigma_weighting = None
 
     def patch_to_process(self, p, control_image):
         return
@@ -128,13 +135,6 @@ class ControlNetPatcher(ControlModelPatcher):
 
     def __init__(self, model_patcher):
         super().__init__(model_patcher)
-        self.strength = 1.0
-        self.start_percent = 0.0
-        self.end_percent = 1.0
-        self.positive_advanced_weighting = None
-        self.negative_advanced_weighting = None
-        self.advanced_frame_weighting = None
-        self.advanced_sigma_weighting = None
 
     def process_before_every_sampling(self, process, cond, *args, **kwargs):
         unet = process.sd_model.forge_objects.unet

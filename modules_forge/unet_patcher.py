@@ -33,3 +33,13 @@ class UnetPatcher(ModelPatcher):
             results.append(pointer)
             pointer = pointer.previous_controlnet
         return results
+
+    def add_conditioning_modifier(self, modifier, ensure_uniqueness=False):
+        if 'conditioning_modifiers' not in self.model_options:
+            self.model_options['conditioning_modifiers'] = []
+
+        if ensure_uniqueness and modifier in self.model_options['conditioning_modifiers']:
+            return
+
+        self.model_options['conditioning_modifiers'].append(modifier)
+        return

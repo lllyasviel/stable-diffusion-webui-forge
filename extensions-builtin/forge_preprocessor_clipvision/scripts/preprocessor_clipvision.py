@@ -22,12 +22,12 @@ add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
 
 add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
     name='CLIP-ViT-bigG (IPAdapter)',
-    url='https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors',
+    url='https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors',
     filename='CLIP-ViT-bigG.safetensors'
 ))
 
 add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
     name='CLIP-ViT-L (IPAdapter)',
     url='https://huggingface.co/openai/clip-vit-large-patch14/resolve/main/pytorch_model.bin',
-    filename='CLIP-ViT-bigG.safetensors'
+    filename='CLIP-ViT-L.safetensors'
 ))

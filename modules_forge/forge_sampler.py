@@ -76,6 +76,9 @@ def forge_sample(self, denoiser_params, cond_scale, cond_composition):
         for h in cond + uncond:
             h['control'] = control
 
+    for modifier in model_options.get('conditioning_modifiers', []):
+        model, x, timestep, uncond, cond, cond_scale, model_options, seed = modifier(model, x, timestep, uncond, cond, cond_scale, model_options, seed)
+
     denoised = sampling_function(model, x, timestep, uncond, cond, cond_scale, model_options, seed)
     return denoised
 

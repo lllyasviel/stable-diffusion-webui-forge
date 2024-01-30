@@ -860,48 +860,48 @@ legacy_preprocessors = {
             "Reference"
         ]
     },
-    "revision_clipvision": {
-        "label": "revision_clipvision",
-        "call_function": functools.partial(clip, config='clip_g'),
-        "unload_function": functools.partial(unload_clip, config='clip_g'),
-        "managed_model": None,
-        "model_free": True,
-        "no_control_mode": True,
-        "resolution": None,
-        "slider_1": {
-            "label": "Noise Augmentation",
-            "value": 0.0,
-            "minimum": 0.0,
-            "maximum": 1.0
-        },
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 100,
-        "tags": [
-            "Revision"
-        ]
-    },
-    "revision_ignore_prompt": {
-        "label": "revision_ignore_prompt",
-        "call_function": functools.partial(clip, config='clip_g'),
-        "unload_function": functools.partial(unload_clip, config='clip_g'),
-        "managed_model": None,
-        "model_free": True,
-        "no_control_mode": True,
-        "resolution": None,
-        "slider_1": {
-            "label": "Noise Augmentation",
-            "value": 0.0,
-            "minimum": 0.0,
-            "maximum": 1.0
-        },
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 0,
-        "tags": [
-            "Revision"
-        ]
-    },
+    # "revision_clipvision": {
+    #     "label": "revision_clipvision",
+    #     "call_function": functools.partial(clip, config='clip_g'),
+    #     "unload_function": functools.partial(unload_clip, config='clip_g'),
+    #     "managed_model": None,
+    #     "model_free": True,
+    #     "no_control_mode": True,
+    #     "resolution": None,
+    #     "slider_1": {
+    #         "label": "Noise Augmentation",
+    #         "value": 0.0,
+    #         "minimum": 0.0,
+    #         "maximum": 1.0
+    #     },
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 100,
+    #     "tags": [
+    #         "Revision"
+    #     ]
+    # },
+    # "revision_ignore_prompt": {
+    #     "label": "revision_ignore_prompt",
+    #     "call_function": functools.partial(clip, config='clip_g'),
+    #     "unload_function": functools.partial(unload_clip, config='clip_g'),
+    #     "managed_model": None,
+    #     "model_free": True,
+    #     "no_control_mode": True,
+    #     "resolution": None,
+    #     "slider_1": {
+    #         "label": "Noise Augmentation",
+    #         "value": 0.0,
+    #         "minimum": 0.0,
+    #         "maximum": 1.0
+    #     },
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 0,
+    #     "tags": [
+    #         "Revision"
+    #     ]
+    # },
     "scribble_hed": {
         "label": "scribble_hed",
         "call_function": scribble_hed,

@@ -23,6 +23,7 @@ import functools
 
 from PIL import Image
 from modules_forge.shared import try_load_supported_control_model
+from modules_forge.supported_controlnet import ControlModelPatcher
 
 # Gradio 3.32 bug fix
 import tempfile
@@ -455,9 +456,14 @@ class ControlNetForForgeOfficial(scripts.Script):
             params.control_cond_for_hr_fix = preprocessor_output
             p.extra_result_images.append(input_image)
 
-        model_filename = global_state.get_controlnet_filename(unit.model)
+        if preprocessor.do_not_need_model:
+            model_filename = 'Not Needed'
+            params.model = ControlModelPatcher()
+        else:
+            model_filename = global_state.get_controlnet_filename(unit.model)
+            params.model = cached_controlnet_loader(model_filename)
+            assert params.model is not None, logger.error(f"Recognizing Control Model failed: {model_filename}")
 
-        params.model = cached_controlnet_loader(model_filename)
         params.preprocessor = preprocessor
 
         params.preprocessor.process_after_running_preprocessors(process=p, params=params, **kwargs)

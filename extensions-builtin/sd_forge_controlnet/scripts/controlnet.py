@@ -537,6 +537,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         return
 
     def postprocess(self, p, processed, *args):
+        self.current_params = {}
         return
 
 

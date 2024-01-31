@@ -490,7 +490,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         kwargs.update(dict(unit=unit, params=params))
 
         # CN inpaint fix
-        if cond.ndim == 4 and cond.shape[1] == 4:
+        if isinstance(cond, torch.Tensor) and cond.ndim == 4 and cond.shape[1] == 4:
             kwargs['cond_before_inpaint_fix'] = cond.clone()
             cond = cond[:, :3] * (1.0 - cond[:, 3:]) - cond[:, 3:]
 

@@ -82,7 +82,8 @@ class PreprocessorReference(Preprocessor):
                 self.recorded_h[location] = h
                 return h
             else:
-                cond_mark = transformer_options['cond_mark'][:, None, None, None]  # cond is 0
+                cond_indices = transformer_options['cond_indices']
+                uncond_indices = transformer_options['uncond_indices']
                 rh = self.recorded_h[location]
                 return h
 
@@ -101,11 +102,35 @@ class PreprocessorReference(Preprocessor):
                 self.recorded_attn1[location] = (k, v)
                 return sdp(q, k, v, transformer_options)
             else:
-                cond_mark = transformer_options['cond_mark'][:, None, None, None]  # cond is 0
-                rk, rv = self.recorded_attn1[location]
-                rk = torch.cat([k, rk], dim=1)
-                rv = torch.cat([v, rv], dim=1)
-                return sdp(q, k, v, transformer_options)
+                cond_indices = transformer_options['cond_indices']
+                uncond_indices = transformer_options['uncond_indices']
+                cond_or_uncond = transformer_options['cond_or_uncond']
+
+                q_c = q[cond_indices]
+                q_uc = q[uncond_indices]
+
+                k_c = k[cond_indices]
+                k_uc = k[uncond_indices]
+
+                v_c = v[cond_indices]
+                v_uc = v[uncond_indices]
+
+                k_r, v_r = self.recorded_attn1[location]
+
+                o_c = sdp(q_c, torch.cat([k_c, k_r], dim=1), torch.cat([v_c, v_r], dim=1), transformer_options)
+                o_uc_strong = sdp(q_uc, k_uc, v_uc, transformer_options)
+                o_uc_weak = sdp(q_uc, torch.cat([k_uc, k_r], dim=1), torch.cat([v_uc, v_r], dim=1), transformer_options)
+                o_uc = o_uc_weak + (o_uc_strong - o_uc_weak) * style_fidelity
+
+                recon = []
+                for cx in cond_or_uncond:
+                    if cx == 0:
+                        recon.append(o_c)
+                    else:
+                        recon.append(o_uc)
+
+                o = torch.cat(recon, dim=0)
+                return o
 
         unet.add_block_modifier(block_proc)
         unet.add_conditioning_modifier(conditioning_modifier)

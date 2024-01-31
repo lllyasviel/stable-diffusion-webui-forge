@@ -8,7 +8,7 @@ from ldm_patched.modules.controlnet import ControlBase
 from ldm_patched.modules.samplers import get_area_and_mult, can_concat_cond, cond_cat
 from ldm_patched.modules import model_management
 from modules_forge.controlnet import compute_controlnet_weighting
-from modules_forge.forge_util import compute_cond_mark
+from modules_forge.forge_util import compute_cond_mark, compute_cond_indices
 
 
 def patched_control_merge(self, control_input, control_output, control_prev, output_dtype):
@@ -155,8 +155,8 @@ def patched_calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_op
         transformer_options["cond_or_uncond"] = cond_or_uncond[:]
         transformer_options["sigmas"] = timestep
 
-        cond_mark = compute_cond_mark(cond_or_uncond=cond_or_uncond, sigmas=timestep)
-        transformer_options["cond_mark"] = cond_mark
+        transformer_options["cond_mark"] = compute_cond_mark(cond_or_uncond=cond_or_uncond, sigmas=timestep)
+        transformer_options["cond_indices"], transformer_options["uncond_indices"] = compute_cond_indices(cond_or_uncond=cond_or_uncond, sigmas=timestep)
 
         c['transformer_options'] = transformer_options
 

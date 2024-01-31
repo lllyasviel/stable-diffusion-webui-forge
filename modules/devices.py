@@ -39,6 +39,10 @@ def torch_gc():
     model_management.soft_empty_cache()
 
 
+def torch_npu_set_device():
+    return
+
+
 def enable_tf32():
     return
 
@@ -96,4 +100,3 @@ def test_for_nans(x, where):
 
 def first_time_calculation():
     return
-

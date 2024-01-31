@@ -1,3 +1,5 @@
+# This file is exactly same with https://github.com/cubiq/ComfyUI_IPAdapter_plus/blob/main/IPAdapterPlus.py
+
 import torch
 import contextlib
 import os

@@ -4,6 +4,7 @@ from modules_forge.forge_util import numpy_to_pytorch
 from modules_forge.shared import add_supported_control_model
 from modules_forge.supported_controlnet import ControlModelPatcher
 from lib_ipadapter.IPAdapterPlus import IPAdapterApply, InsightFaceLoader
+from pathlib import Path
 
 
 opIPAdapterApply = IPAdapterApply().apply_ipadapter
@@ -90,11 +91,20 @@ class IPAdapterPatcher(ControlModelPatcher):
         if "ip_adapter" not in model.keys() or len(model["ip_adapter"]) == 0:
             return None
 
-        return IPAdapterPatcher(model)
+        o = IPAdapterPatcher(model)
+
+        model_filename = Path(ckpt_path).name.lower()
+        if 'v2' in model_filename:
+            o.faceid_v2 = True
+            o.weight_v2 = True
+
+        return o
 
     def __init__(self, state_dict):
         super().__init__()
         self.ip_adapter = state_dict
+        self.faceid_v2 = False
+        self.weight_v2 = False
         return
 
     def process_before_every_sampling(self, process, cond, *args, **kwargs):
@@ -106,8 +116,8 @@ class IPAdapterPatcher(ControlModelPatcher):
             weight=self.strength,
             start_at=self.start_percent,
             end_at=self.end_percent,
-            faceid_v2=False,
-            weight_v2=False,
+            faceid_v2=self.faceid_v2,
+            weight_v2=self.weight_v2,
             **cond,
         )[0]
 

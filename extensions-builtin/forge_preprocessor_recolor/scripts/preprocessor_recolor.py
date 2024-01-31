@@ -21,6 +21,7 @@ class PreprocessorRecolor(Preprocessor):
             maximum=2.0,
             step=0.001
         )
+        self.current_cond = None
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
         gamma = slider_1
@@ -36,6 +37,23 @@ class PreprocessorRecolor(Preprocessor):
         result = (result * 255.0).clip(0, 255).astype(np.uint8)
         result = cv2.cvtColor(result, cv2.COLOR_GRAY2RGB)
         return result
+
+    def process_before_every_sampling(self, process, cond, *args, **kwargs):
+        self.current_cond = cond
+        return
+
+    def process_after_every_sampling(self, process, params, *args, **kwargs):
+        a1111_batch_result = args[0]
+        new_results = []
+
+        for img in a1111_batch_result.images:
+            new_mean = self.current_cond[0].mean(dim=0, keepdim=True)
+            img = img - img.mean(dim=0, keepdim=True) + new_mean
+            img = img.clip(0, 1)
+            new_results.append(img)
+
+        a1111_batch_result.images = new_results
+        return
 
 
 add_supported_preprocessor(PreprocessorRecolor(

@@ -13,7 +13,7 @@ class PreprocessorReference(Preprocessor):
         self.sorting_priority = priority
         self.tags = ['Reference']
         self.slider_resolution = PreprocessorParameter(visible=False)
-        self.slider_1 = PreprocessorParameter(label='Style Fidelity', value=0.5, minimum=0.0, maximum=1.0, step=0.01)
+        self.slider_1 = PreprocessorParameter(label='Style Fidelity', value=0.5, minimum=0.0, maximum=1.0, step=0.01, visible=True)
         self.show_control_mode = False
         self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
         self.do_not_need_model = True

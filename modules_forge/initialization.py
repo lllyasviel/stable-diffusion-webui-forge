@@ -25,16 +25,6 @@ def initialize_forge():
     torch.zeros((1, 1)).to(device, torch.float32)
     model_management.soft_empty_cache()
 
-    import ldm_patched.utils.path_utils as ldm_patched_path_utils
-    from modules.paths import models_path, data_path
-
-    ldm_patched_path_utils.base_path = data_path
-    ldm_patched_path_utils.models_dir = models_path
-    ldm_patched_path_utils.output_directory = os.path.join(data_path, "output")
-    ldm_patched_path_utils.temp_directory = os.path.join(data_path, "temp")
-    ldm_patched_path_utils.input_directory = os.path.join(data_path, "input")
-    ldm_patched_path_utils.user_directory = os.path.join(data_path, "user")
-
     import modules_forge.patch_basic
     modules_forge.patch_basic.patch_all_basics()
 

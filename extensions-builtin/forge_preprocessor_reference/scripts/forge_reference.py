@@ -103,6 +103,8 @@ class PreprocessorReference(Preprocessor):
             else:
                 cond_mark = transformer_options['cond_mark'][:, None, None, None]  # cond is 0
                 rk, rv = self.recorded_attn1[location]
+                rk = torch.cat([k, rk], dim=1)
+                rv = torch.cat([v, rv], dim=1)
                 return sdp(q, k, v, transformer_options)
 
         unet.add_block_modifier(block_proc)

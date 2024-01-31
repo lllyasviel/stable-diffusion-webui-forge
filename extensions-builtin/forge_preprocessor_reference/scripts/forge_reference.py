@@ -82,6 +82,7 @@ class PreprocessorReference(Preprocessor):
                 self.recorded_h[location] = h
             else:
                 cond_mark = transformer_options['cond_mark'][:, None, None, None]  # cond is 0
+                recorded_h = self.recorded_h[location]
                 b = 0
 
             return h
@@ -101,6 +102,7 @@ class PreprocessorReference(Preprocessor):
                 self.recorded_attn1[location] = (k, v)
             else:
                 cond_mark = transformer_options['cond_mark'][:, None, None, None]  # cond is 0
+                recorded_attn1 = self.recorded_attn1[location]
                 b = 0
 
             return sdp(q, k, v, transformer_options)

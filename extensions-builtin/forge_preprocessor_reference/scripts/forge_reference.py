@@ -94,7 +94,7 @@ class PreprocessorReference(Preprocessor):
         unet.add_block_modifier(block_proc)
         unet.add_conditioning_modifier(conditioning_modifier)
         unet.set_model_attn1_patch(attn1_proc)
-        unet.set_model_attn1_patch(attn1_output_proc)
+        unet.set_model_attn1_output_patch(attn1_output_proc)
 
         process.sd_model.forge_objects.unet = unet
 

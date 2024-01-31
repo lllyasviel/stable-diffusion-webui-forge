@@ -72,8 +72,8 @@ class UnetPatcher(ModelPatcher):
 
     def set_model_replace_all(self, patch, target="attn1"):
         for block_name in ['input', 'middle', 'output']:
-            for number in range(64):
-                for transformer_index in range(64):
+            for number in range(8):
+                for transformer_index in range(16):
                     self.set_model_patch_replace(patch, target, block_name, number, transformer_index)
         return
 

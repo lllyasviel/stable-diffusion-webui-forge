@@ -26,12 +26,12 @@ class PreprocessorReference(Preprocessor):
         end_percent = float(unit.guidance_end)
 
         unet = process.sd_model.forge_objects.unet.clone()
-        sigma_max = unet.model_sampling.percent_to_sigma(start_percent)
-        sigma_min = unet.model_sampling.percent_to_sigma(end_percent)
+        sigma_max = unet.model.model_sampling.percent_to_sigma(start_percent)
+        sigma_min = unet.model.model_sampling.percent_to_sigma(end_percent)
 
         def conditioning_modifier(model, x, timestep, uncond, cond, cond_scale, model_options, seed):
             sigma = timestep[0].item()
-            if not (sigma_min < sigma < sigma_max):
+            if not (sigma_min <= sigma <= sigma_max):
                 return model, x, timestep, uncond, cond, cond_scale, model_options, seed
 
             a = 0
@@ -40,7 +40,7 @@ class PreprocessorReference(Preprocessor):
 
         def block_proc(h, flag, transformer_options):
             sigma = transformer_options["sigmas"][0].item()
-            if not (sigma_min < sigma < sigma_max):
+            if not (sigma_min <= sigma <= sigma_max):
                 return h
 
             a = 0
@@ -49,7 +49,7 @@ class PreprocessorReference(Preprocessor):
 
         def attn1_proc(q, k, v, transformer_options):
             sigma = transformer_options["sigmas"][0].item()
-            if not (sigma_min < sigma < sigma_max):
+            if not (sigma_min <= sigma <= sigma_max):
                 return q, k, v
 
             a = 0

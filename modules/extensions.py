@@ -8,7 +8,7 @@ import re
 from modules import shared, errors, cache, scripts
 from modules.gitpython_hack import Repo
 from modules.paths_internal import extensions_dir, extensions_builtin_dir, script_path  # noqa: F401
-from modules_forge.shared import always_disabled_extensions
+from modules_forge.config import always_disabled_extensions
 
 
 os.makedirs(extensions_dir, exist_ok=True)

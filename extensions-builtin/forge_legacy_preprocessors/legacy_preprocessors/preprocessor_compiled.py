@@ -441,22 +441,22 @@ legacy_preprocessors = {
     #         "IP-Adapter"
     #     ]
     # },
-    "ip-adapter_face_id": {
-        "label": "insight_face_face_id",
-        "call_function": g_insight_face_model.run_model,
-        "unload_function": None,
-        "managed_model": "g_insight_face_model",
-        "model_free": False,
-        "no_control_mode": True,
-        "resolution": None,
-        "slider_1": None,
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 0,
-        "tags": [
-            "IP-Adapter"
-        ]
-    },
+    # "ip-adapter_face_id": {
+    #     "label": "insight_face_face_id",
+    #     "call_function": g_insight_face_model.run_model,
+    #     "unload_function": None,
+    #     "managed_model": "g_insight_face_model",
+    #     "model_free": False,
+    #     "no_control_mode": True,
+    #     "resolution": None,
+    #     "slider_1": None,
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 0,
+    #     "tags": [
+    #         "IP-Adapter"
+    #     ]
+    # },
     # "ip-adapter_face_id_plus": {
     #     "label": "ip-adapter_face_id_plus",
     #     "call_function": face_id_plus,

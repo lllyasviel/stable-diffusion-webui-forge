@@ -79,7 +79,7 @@ class PreprocessorReference(Preprocessor):
                 return h
 
             if self.is_recording_style:
-                a = 0
+                self.recorded_h[location] = h
             else:
                 b = 0
 
@@ -97,7 +97,7 @@ class PreprocessorReference(Preprocessor):
                         transformer_options['block_index'])
 
             if self.is_recording_style:
-                a = 0
+                self.recorded_attn1[location] = (k, v)
             else:
                 b = 0
 

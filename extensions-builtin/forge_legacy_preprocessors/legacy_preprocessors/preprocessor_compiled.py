@@ -750,50 +750,50 @@ legacy_preprocessors = {
             "OpenPose"
         ]
     },
-    "recolor_intensity": {
-        "label": "recolor_intensity",
-        "call_function": recolor_intensity,
-        "unload_function": None,
-        "managed_model": None,
-        "model_free": False,
-        "no_control_mode": False,
-        "resolution": None,
-        "slider_1": {
-            "label": "Gamma Correction",
-            "value": 1.0,
-            "minimum": 0.1,
-            "maximum": 2.0,
-            "step": 0.001
-        },
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 0,
-        "tags": [
-            "Recolor"
-        ]
-    },
-    "recolor_luminance": {
-        "label": "recolor_luminance",
-        "call_function": recolor_luminance,
-        "unload_function": None,
-        "managed_model": None,
-        "model_free": False,
-        "no_control_mode": False,
-        "resolution": None,
-        "slider_1": {
-            "label": "Gamma Correction",
-            "value": 1.0,
-            "minimum": 0.1,
-            "maximum": 2.0,
-            "step": 0.001
-        },
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 100,
-        "tags": [
-            "Recolor"
-        ]
-    },
+    # "recolor_intensity": {
+    #     "label": "recolor_intensity",
+    #     "call_function": recolor_intensity,
+    #     "unload_function": None,
+    #     "managed_model": None,
+    #     "model_free": False,
+    #     "no_control_mode": False,
+    #     "resolution": None,
+    #     "slider_1": {
+    #         "label": "Gamma Correction",
+    #         "value": 1.0,
+    #         "minimum": 0.1,
+    #         "maximum": 2.0,
+    #         "step": 0.001
+    #     },
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 0,
+    #     "tags": [
+    #         "Recolor"
+    #     ]
+    # },
+    # "recolor_luminance": {
+    #     "label": "recolor_luminance",
+    #     "call_function": recolor_luminance,
+    #     "unload_function": None,
+    #     "managed_model": None,
+    #     "model_free": False,
+    #     "no_control_mode": False,
+    #     "resolution": None,
+    #     "slider_1": {
+    #         "label": "Gamma Correction",
+    #         "value": 1.0,
+    #         "minimum": 0.1,
+    #         "maximum": 2.0,
+    #         "step": 0.001
+    #     },
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 100,
+    #     "tags": [
+    #         "Recolor"
+    #     ]
+    # },
     # "reference_adain": {
     #     "label": "reference_adain",
     #     "call_function": identity,

@@ -218,7 +218,17 @@ def list_extensions():
                 continue
 
             is_builtin = dirname == extensions_builtin_dir
-            extension = Extension(name=extension_dirname, path=path, enabled=extension_dirname not in shared.opts.disabled_extensions, is_builtin=is_builtin, metadata=metadata)
+
+            disabled_extensions = shared.opts.disabled_extensions + shared.always_disabled_extensions
+
+            extension = Extension(
+                name=extension_dirname,
+                path=path,
+                enabled=extension_dirname not in disabled_extensions,
+                is_builtin=is_builtin,
+                metadata=metadata
+            )
+
             extensions.append(extension)
             loaded_extensions[canonical_name] = extension
 

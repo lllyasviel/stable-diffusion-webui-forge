@@ -14,7 +14,7 @@ from functools import lru_cache
 from modules import cmd_args, errors
 from modules.paths_internal import script_path, extensions_dir, extensions_builtin_dir
 from modules.timer import startup_timer
-from modules import logging_config
+from modules import logging_config, shared
 from modules_forge import forge_version
 
 args, _ = cmd_args.parser.parse_known_args()
@@ -257,7 +257,7 @@ def list_extensions(settings_file):
         errors.report(f'\nCould not load settings\nThe config file "{settings_file}" is likely corrupted\nIt has been moved to the "tmp/config.json"\nReverting config to default\n\n''', exc_info=True)
         os.replace(settings_file, os.path.join(script_path, "tmp", "config.json"))
 
-    disabled_extensions = set(settings.get('disabled_extensions', []))
+    disabled_extensions = set(settings.get('disabled_extensions', []) + shared.always_disabled_extensions)
     disable_all_extensions = settings.get('disable_all_extensions', 'none')
 
     if disable_all_extensions != 'none' or args.disable_extra_extensions or args.disable_all_extensions or not os.path.isdir(extensions_dir):

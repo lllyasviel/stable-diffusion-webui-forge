@@ -70,7 +70,9 @@ class PreprocessorReference(Preprocessor):
                 return h
 
             if flag != 'after':
-                return
+                return h
+
+            location = transformer_options['block']
 
             sigma = transformer_options["sigmas"][0].item()
             if not (sigma_min <= sigma <= sigma_max):
@@ -90,6 +92,9 @@ class PreprocessorReference(Preprocessor):
             sigma = transformer_options["sigmas"][0].item()
             if not (sigma_min <= sigma <= sigma_max):
                 return sdp(q, k, v, transformer_options)
+
+            location = (transformer_options['block'][0], transformer_options['block'][1],
+                        transformer_options['block_index'])
 
             if self.is_recording_style:
                 a = 0

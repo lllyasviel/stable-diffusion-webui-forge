@@ -7,7 +7,7 @@ import ldm_patched.modules.utils
 import ldm_patched.modules.model_management
 from ldm_patched.modules.clip_vision import clip_preprocess
 from ldm_patched.ldm.modules.attention import optimized_attention
-from modules_forge.shared import preprocessor_dir
+from ldm_patched.utils import path_utils as folder_paths
 
 from torch import nn
 from PIL import Image
@@ -16,13 +16,16 @@ import torchvision.transforms as TT
 
 from lib_ipadapter.resampler import PerceiverAttention, FeedForward, Resampler
 
+# set the models directory backward compatible
+GLOBAL_MODELS_DIR = os.path.join(folder_paths.models_dir, "ipadapter")
+MODELS_DIR = GLOBAL_MODELS_DIR if os.path.isdir(GLOBAL_MODELS_DIR) else os.path.join(os.path.dirname(os.path.realpath(__file__)), "models")
+if "ipadapter" not in folder_paths.folder_names_and_paths:
+    current_paths = [MODELS_DIR]
+else:
+    current_paths, _ = folder_paths.folder_names_and_paths["ipadapter"]
+folder_paths.folder_names_and_paths["ipadapter"] = (current_paths, folder_paths.supported_pt_extensions)
 
-GLOBAL_MODELS_DIR = preprocessor_dir
-MODELS_DIR = preprocessor_dir
-INSIGHTFACE_DIR = os.path.join(preprocessor_dir, "insightface")
-
-os.makedirs(INSIGHTFACE_DIR, exist_ok=True)
-
+INSIGHTFACE_DIR = os.path.join(folder_paths.models_dir, "insightface")
 
 class FacePerceiverResampler(torch.nn.Module):
     def __init__(
@@ -486,12 +489,17 @@ class CrossAttentionPatch:
         return out.to(dtype=org_dtype)
 
 class IPAdapterModelLoader:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": { "ipadapter_file": (folder_paths.get_filename_list("ipadapter"), )}}
 
     RETURN_TYPES = ("IPADAPTER",)
     FUNCTION = "load_ipadapter_model"
     CATEGORY = "ipadapter"
 
-    def load_ipadapter_model(self, ckpt_path):
+    def load_ipadapter_model(self, ipadapter_file):
+        ckpt_path = folder_paths.get_full_path("ipadapter", ipadapter_file)
+
         model = ldm_patched.modules.utils.load_torch_file(ckpt_path, safe_load=True)
 
         if ckpt_path.lower().endswith(".safetensors"):
@@ -925,6 +933,49 @@ class IPAdapterApplyEncoded(IPAdapterApply):
             }
         }
 
+class IPAdapterSaveEmbeds:
+    def __init__(self):
+        self.output_dir = folder_paths.get_output_directory()
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {
+            "embeds": ("EMBEDS",),
+            "filename_prefix": ("STRING", {"default": "embeds/IPAdapter"})
+            },
+        }
+
+    RETURN_TYPES = ()
+    FUNCTION = "save"
+    OUTPUT_NODE = True
+    CATEGORY = "ipadapter"
+
+    def save(self, embeds, filename_prefix):
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir)
+        file = f"{filename}_{counter:05}_.ipadpt"
+        file = os.path.join(full_output_folder, file)
+
+        torch.save(embeds, file)
+        return (None, )
+
+
+class IPAdapterLoadEmbeds:
+    @classmethod
+    def INPUT_TYPES(s):
+        input_dir = folder_paths.get_input_directory()
+        files = [os.path.relpath(os.path.join(root, file), input_dir) for root, dirs, files in os.walk(input_dir) for file in files if file.endswith('.ipadpt')]
+        return {"required": {"embeds": [sorted(files), ]}, }
+
+    RETURN_TYPES = ("EMBEDS", )
+    FUNCTION = "load"
+    CATEGORY = "ipadapter"
+
+    def load(self, embeds):
+        path = folder_paths.get_annotated_filepath(embeds)
+        output = torch.load(path).cpu()
+
+        return (output, )
+
 
 class IPAdapterBatchEmbeds:
     @classmethod
@@ -941,3 +992,30 @@ class IPAdapterBatchEmbeds:
     def batch(self, embed1, embed2):
         return (torch.cat((embed1, embed2), dim=1), )
 
+NODE_CLASS_MAPPINGS = {
+    "IPAdapterModelLoader": IPAdapterModelLoader,
+    "IPAdapterApply": IPAdapterApply,
+    "IPAdapterApplyFaceID": IPAdapterApplyFaceID,
+    "IPAdapterApplyEncoded": IPAdapterApplyEncoded,
+    "PrepImageForClipVision": PrepImageForClipVision,
+    "IPAdapterEncoder": IPAdapterEncoder,
+    "IPAdapterSaveEmbeds": IPAdapterSaveEmbeds,
+    "IPAdapterLoadEmbeds": IPAdapterLoadEmbeds,
+    "IPAdapterBatchEmbeds": IPAdapterBatchEmbeds,
+    "InsightFaceLoader": InsightFaceLoader,
+    "PrepImageForInsightFace": PrepImageForInsightFace,
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "IPAdapterModelLoader": "Load IPAdapter Model",
+    "IPAdapterApply": "Apply IPAdapter",
+    "IPAdapterApplyFaceID": "Apply IPAdapter FaceID",
+    "IPAdapterApplyEncoded": "Apply IPAdapter from Encoded",
+    "PrepImageForClipVision": "Prepare Image For Clip Vision",
+    "IPAdapterEncoder": "Encode IPAdapter Image",
+    "IPAdapterSaveEmbeds": "Save IPAdapter Embeds",
+    "IPAdapterLoadEmbeds": "Load IPAdapter Embeds",
+    "IPAdapterBatchEmbeds": "IPAdapter Batch Embeds",
+    "InsightFaceLoader": "Load InsightFace",
+    "PrepImageForInsightFace": "Prepare Image For InsightFace",
+}

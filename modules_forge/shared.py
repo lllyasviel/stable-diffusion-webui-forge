@@ -2,12 +2,14 @@ import os
 import ldm_patched.modules.utils
 
 from modules.paths import models_path
-
+from modules import shared
 
 controlnet_dir = os.path.join(models_path, 'ControlNet')
 os.makedirs(controlnet_dir, exist_ok=True)
 
-preprocessor_dir = os.path.join(models_path, 'ControlNetPreprocessor')
+preprocessor_dir = getattr(shared.cmd_opts, 'controlnet_annotator_models_path', None)
+if not preprocessor_dir:
+    preprocessor_dir = os.path.join(models_path, 'ControlNetPreprocessor')
 os.makedirs(preprocessor_dir, exist_ok=True)
 
 supported_preprocessors = {}

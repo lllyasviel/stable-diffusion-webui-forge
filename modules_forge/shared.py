@@ -4,6 +4,9 @@ import ldm_patched.modules.utils
 from modules.paths import models_path
 
 
+always_disabled_extensions = ['sd-webui-controlnet']
+
+
 controlnet_dir = os.path.join(models_path, 'ControlNet')
 os.makedirs(controlnet_dir, exist_ok=True)
 

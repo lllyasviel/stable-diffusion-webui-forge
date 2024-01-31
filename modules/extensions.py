@@ -8,6 +8,7 @@ import re
 from modules import shared, errors, cache, scripts
 from modules.gitpython_hack import Repo
 from modules.paths_internal import extensions_dir, extensions_builtin_dir, script_path  # noqa: F401
+from modules_forge.shared import always_disabled_extensions
 
 
 os.makedirs(extensions_dir, exist_ok=True)
@@ -219,7 +220,7 @@ def list_extensions():
 
             is_builtin = dirname == extensions_builtin_dir
 
-            disabled_extensions = shared.opts.disabled_extensions + shared.always_disabled_extensions
+            disabled_extensions = shared.opts.disabled_extensions + always_disabled_extensions
 
             extension = Extension(
                 name=extension_dirname,

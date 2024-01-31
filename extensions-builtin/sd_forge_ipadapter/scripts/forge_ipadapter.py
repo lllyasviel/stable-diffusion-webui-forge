@@ -16,10 +16,8 @@ class PreprocessorClipVisionForIPAdapter(PreprocessorClipVision):
         self.model_filename_filters = ['IP-Adapter', 'IP_Adapter']
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
-        clipvision = self.load_clipvision()
-
-        cond = dict(
-            clipvision=clipvision,
+        return dict(
+            clip_vision=self.load_clipvision(),
             image=numpy_to_pytorch(input_image),
             weight_type="original",
             noise=0.0,
@@ -27,8 +25,6 @@ class PreprocessorClipVisionForIPAdapter(PreprocessorClipVision):
             attn_mask=None,
             unfold_batch=False,
         )
-
-        return cond
 
 
 add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(

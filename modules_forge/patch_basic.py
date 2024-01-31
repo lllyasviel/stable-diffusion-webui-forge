@@ -161,7 +161,10 @@ def patched_calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_op
         c['transformer_options'] = transformer_options
 
         if control is not None:
-            control.transformer_options = transformer_options
+            p = control
+            while p is not None:
+                p.transformer_options = transformer_options
+                p = p.previous_controlnet
             c['control'] = control.get_control(input_x, timestep_, c, len(cond_or_uncond))
 
         if 'model_function_wrapper' in model_options:

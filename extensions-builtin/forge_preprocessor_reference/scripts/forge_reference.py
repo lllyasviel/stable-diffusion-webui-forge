@@ -56,9 +56,19 @@ class PreprocessorReference(Preprocessor):
 
             return q, k, v
 
+        def attn1_output_proc(h, transformer_options):
+            sigma = transformer_options["sigmas"][0].item()
+            if not (sigma_min <= sigma <= sigma_max):
+                return h
+
+            a = 0
+
+            return h
+
         unet.add_block_modifier(block_proc)
         unet.add_conditioning_modifier(conditioning_modifier)
         unet.set_model_attn1_patch(attn1_proc)
+        unet.set_model_attn1_patch(attn1_output_proc)
 
         process.sd_model.forge_objects.unet = unet
 

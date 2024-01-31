@@ -126,6 +126,29 @@ def cond_cat(c_list):
 
     return out
 
+def compute_cond_mark(cond_or_uncond, sigmas):
+    cond_or_uncond_size = int(sigmas.shape[0])
+
+    cond_mark = []
+    for cx in cond_or_uncond:
+        cond_mark += [cx] * cond_or_uncond_size
+
+    cond_mark = torch.Tensor(cond_mark).to(sigmas)
+    return cond_mark
+
+def compute_cond_indices(cond_or_uncond, sigmas):
+    cl = int(sigmas.shape[0])
+
+    cond_indices = []
+    uncond_indices = []
+    for i, cx in enumerate(cond_or_uncond):
+        if cx == 0:
+            cond_indices += list(range(i * cl, (i + 1) * cl))
+        else:
+            uncond_indices += list(range(i * cl, (i + 1) * cl))
+
+    return cond_indices, uncond_indices
+
 def calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_options):
     out_cond = torch.zeros_like(x_in)
     out_count = torch.ones_like(x_in) * 1e-37
@@ -193,9 +216,6 @@ def calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_options):
         c = cond_cat(c)
         timestep_ = torch.cat([timestep] * batch_chunks)
 
-        if control is not None:
-            c['control'] = control.get_control(input_x, timestep_, c, len(cond_or_uncond))
-
         transformer_options = {}
         if 'transformer_options' in model_options:
             transformer_options = model_options['transformer_options'].copy()
@@ -214,7 +234,17 @@ def calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_options):
         transformer_options["cond_or_uncond"] = cond_or_uncond[:]
         transformer_options["sigmas"] = timestep
 
+        transformer_options["cond_mark"] = compute_cond_mark(cond_or_uncond=cond_or_uncond, sigmas=timestep)
+        transformer_options["cond_indices"], transformer_options["uncond_indices"] = compute_cond_indices(cond_or_uncond=cond_or_uncond, sigmas=timestep)
+
         c['transformer_options'] = transformer_options
+
+        if control is not None:
+            p = control
+            while p is not None:
+                p.transformer_options = transformer_options
+                p = p.previous_controlnet
+            c['control'] = control.get_control(input_x, timestep_, c, len(cond_or_uncond))
 
         if 'model_function_wrapper' in model_options:
             output = model_options['model_function_wrapper'](model.apply_model, {"input": input_x, "timestep": timestep_, "c": c, "cond_or_uncond": cond_or_uncond}).chunk(batch_chunks)

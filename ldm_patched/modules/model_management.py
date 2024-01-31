@@ -1,3 +1,4 @@
+import time
 import psutil
 from enum import Enum
 from ldm_patched.modules.args_parser import args
@@ -42,8 +43,6 @@ if args.directml is not None:
     else:
         directml_device = torch_directml.device(device_index)
     print("Using directml with device:", torch_directml.device_name(device_index))
-    # torch_directml.disable_tiled_resources(True)
-    lowvram_available = False #TODO: need to find a way to get free memory in directml before this can be enabled by default.
 
 try:
     import intel_extension_for_pytorch as ipex
@@ -126,6 +125,9 @@ if not args.always_normal_vram and not args.always_cpu:
 try:
     OOM_EXCEPTION = torch.cuda.OutOfMemoryError
 except:
+    OOM_EXCEPTION = Exception
+
+if directml_enabled:
     OOM_EXCEPTION = Exception
 
 XFORMERS_VERSION = ""
@@ -376,6 +378,8 @@ def free_memory(memory_required, device, keep_loaded=[]):
 def load_models_gpu(models, memory_required=0):
     global vram_state
 
+    execution_start_time = time.perf_counter()
+
     inference_memory = minimum_inference_memory()
     extra_mem = max(inference_memory, memory_required)
 
@@ -390,7 +394,7 @@ def load_models_gpu(models, memory_required=0):
             models_already_loaded.append(loaded_model)
         else:
             if hasattr(x, "model"):
-                print(f"Requested to load {x.model.__class__.__name__}")
+                print(f"To load target model {x.model.__class__.__name__}")
             models_to_load.append(loaded_model)
 
     if len(models_to_load) == 0:
@@ -398,9 +402,14 @@ def load_models_gpu(models, memory_required=0):
         for d in devs:
             if d != torch.device("cpu"):
                 free_memory(extra_mem, d, models_already_loaded)
+
+        moving_time = time.perf_counter() - execution_start_time
+        if moving_time > 0.1:
+            print(f'Moving model(s) skipped. Freeing memory has taken {moving_time:.2f} seconds')
+
         return
 
-    print(f"Loading {len(models_to_load)} new model{'s' if len(models_to_load) > 1 else ''}")
+    print(f"Begin to load {len(models_to_load)} model{'s' if len(models_to_load) > 1 else ''}")
 
     total_memory_required = {}
     for loaded_model in models_to_load:
@@ -433,6 +442,11 @@ def load_models_gpu(models, memory_required=0):
 
         cur_loaded_model = loaded_model.model_load(lowvram_model_memory)
         current_loaded_models.insert(0, loaded_model)
+
+    moving_time = time.perf_counter() - execution_start_time
+    if moving_time > 0.1:
+        print(f'Moving model(s) has taken {moving_time:.2f} seconds')
+
     return
 
 

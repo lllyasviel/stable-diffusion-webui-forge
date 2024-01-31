@@ -8,6 +8,7 @@ import zipfile
 from . import model_management
 import ldm_patched.modules.clip_model
 import json
+from transformers import CLIPTextModel, CLIPTextConfig, modeling_utils
 
 def gen_empty_tokens(special_tokens, length):
     start_token = special_tokens.get("start", None)
@@ -74,11 +75,17 @@ class SDClipModel(torch.nn.Module, ClipTokenWeightEncoder):
         if textmodel_json_config is None:
             textmodel_json_config = os.path.join(os.path.dirname(os.path.realpath(__file__)), "sd1_clip_config.json")
 
-        with open(textmodel_json_config) as f:
-            config = json.load(f)
+        config = CLIPTextConfig.from_json_file(textmodel_json_config)
+        self.num_layers = config.num_hidden_layers
 
-        self.transformer = model_class(config, dtype, device, ldm_patched.modules.ops.manual_cast)
-        self.num_layers = self.transformer.num_layers
+        with ldm_patched.modules.ops.use_patched_ops(ldm_patched.modules.ops.manual_cast):
+            with modeling_utils.no_init_weights():
+                self.transformer = CLIPTextModel(config)
+
+        if dtype is not None:
+            self.transformer.to(dtype)
+
+        self.transformer.text_model.embeddings.to(torch.float32)
 
         self.max_length = max_length
         if freeze:
@@ -169,16 +176,21 @@ class SDClipModel(torch.nn.Module, ClipTokenWeightEncoder):
                     if tokens[x, y] == max_token:
                         break
 
-        outputs = self.transformer(tokens, attention_mask, intermediate_output=self.layer_idx, final_layer_norm_intermediate=self.layer_norm_hidden_state)
+        outputs = self.transformer(input_ids=tokens, attention_mask=attention_mask,
+                                   output_hidden_states=self.layer == "hidden")
         self.transformer.set_input_embeddings(backup_embeds)
 
         if self.layer == "last":
-            z = outputs[0]
+            z = outputs.last_hidden_state
+        elif self.layer == "pooled":
+            z = outputs.pooler_output[:, None, :]
         else:
-            z = outputs[1]
+            z = outputs.hidden_states[self.layer_idx]
+            if self.layer_norm_hidden_state:
+                z = self.transformer.text_model.final_layer_norm(z)
 
-        if outputs[2] is not None:
-            pooled_output = outputs[2].float()
+        if hasattr(outputs, "pooler_output"):
+            pooled_output = outputs.pooler_output.float()
         else:
             pooled_output = None
 

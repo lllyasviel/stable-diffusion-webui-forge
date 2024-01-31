@@ -83,6 +83,8 @@ class PreprocessorReference(Preprocessor):
             if not (sigma_min <= sigma <= sigma_max):
                 return h
 
+            C = int(h.shape[1])
+
             if self.is_recording_style:
                 self.recorded_h[location] = torch.std_mean(h, dim=(2, 3), keepdim=True, correction=0)
                 return h
@@ -120,6 +122,8 @@ class PreprocessorReference(Preprocessor):
 
             location = (transformer_options['block'][0], transformer_options['block'][1],
                         transformer_options['block_index'])
+
+            C = int(q.shape[2])
 
             if self.is_recording_style:
                 self.recorded_attn1[location] = (k, v)

@@ -25,6 +25,8 @@ class PreprocessorReference(Preprocessor):
         self.do_not_need_model = True
 
         self.is_recording_style = False
+        self.recorded_attn1 = {}
+        self.recorded_h = {}
 
     def process_before_every_sampling(self, process, cond, *args, **kwargs):
         unit = kwargs['unit']
@@ -45,6 +47,9 @@ class PreprocessorReference(Preprocessor):
         unet = process.sd_model.forge_objects.unet.clone()
         sigma_max = unet.model.model_sampling.percent_to_sigma(start_percent)
         sigma_min = unet.model.model_sampling.percent_to_sigma(end_percent)
+
+        self.recorded_attn1 = {}
+        self.recorded_h = {}
 
         def conditioning_modifier(model, x, timestep, uncond, cond, cond_scale, model_options, seed):
             sigma = timestep[0].item()

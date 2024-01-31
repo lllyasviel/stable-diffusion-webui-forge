@@ -30,6 +30,30 @@ class PreprocessorClipVisionForIPAdapter(PreprocessorClipVision):
         return cond
 
 
+class PreprocessorInsightFaceForIPAdapter(PreprocessorClipVisionForIPAdapter):
+    def __init__(self, name, url, filename):
+        super().__init__(name, url, filename)
+        self.cached_insightface = None
+
+    def load_insightface(self):
+        if self.cached_insightface is None:
+            self.cached_insightface = opInsightFaceLoader("CPU")[0]
+        return self.cached_insightface
+
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+        cond = dict(
+            clip_vision=self.load_clipvision(),
+            insightface=self.load_insightface(),
+            image=numpy_to_pytorch(input_image),
+            weight_type="original",
+            noise=0.0,
+            embeds=None,
+            attn_mask=None,
+            unfold_batch=False,
+        )
+        return cond
+
+
 add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
     name='CLIP-ViT-H (IPAdapter)',
     url='https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors',
@@ -42,30 +66,11 @@ add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
     filename='CLIP-ViT-bigG.safetensors'
 ))
 
-
-class PreprocessorInsightFaceForIPAdapter(PreprocessorClipVisionForIPAdapter):
-    def __init__(self):
-        super().__init__(
-            name='InsightFace (IPAdapter)',
-            url='https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors',
-            filename='CLIP-ViT-H-14.safetensors'
-        )
-
-    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
-        cond = dict(
-            clip_vision=self.load_clipvision(),
-            insightface=opInsightFaceLoader("CPU")[0],
-            image=numpy_to_pytorch(input_image),
-            weight_type="original",
-            noise=0.0,
-            embeds=None,
-            attn_mask=None,
-            unfold_batch=False,
-        )
-        return cond
-
-
-add_supported_preprocessor(PreprocessorInsightFaceForIPAdapter())
+add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
+    name='InsightFace+CLIP-H (IPAdapter)',
+    url='https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors',
+    filename='CLIP-ViT-H-14.safetensors'
+))
 
 
 class IPAdapterPatcher(ControlModelPatcher):

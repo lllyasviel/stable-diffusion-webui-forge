@@ -5,12 +5,13 @@ supported_pt_extensions = set(['.ckpt', '.pt', '.bin', '.pth', '.safetensors'])
 
 folder_names_and_paths = {}
 
-base_path = os.getcwd()
-models_dir = os.path.join(base_path, "models")
-output_directory = os.path.join(base_path, "output")
-temp_directory = os.path.join(base_path, "temp")
-input_directory = os.path.join(base_path, "input")
-user_directory = os.path.join(base_path, "user")
+# Will be assigned by modules.paths
+base_path = None
+models_dir = None
+output_directory = None
+temp_directory = None
+input_directory = None
+user_directory = None
 
 filename_list_cache = {}
 

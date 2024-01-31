@@ -18,7 +18,7 @@ class PreprocessorClipVisionForIPAdapter(PreprocessorClipVision):
         self.sorting_priority = 20
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
-        return dict(
+        cond = dict(
             clip_vision=self.load_clipvision(),
             image=numpy_to_pytorch(input_image),
             weight_type="original",
@@ -27,6 +27,7 @@ class PreprocessorClipVisionForIPAdapter(PreprocessorClipVision):
             attn_mask=None,
             unfold_batch=False,
         )
+        return cond
 
 
 class PreprocessorInsightFaceForIPAdapter(Preprocessor):
@@ -41,7 +42,7 @@ class PreprocessorInsightFaceForIPAdapter(Preprocessor):
         self.sorting_priority = 1
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
-        return dict(
+        cond = dict(
             insightface=opInsightFaceLoader("CPU")[0],
             image=numpy_to_pytorch(input_image),
             weight_type="original",
@@ -50,6 +51,7 @@ class PreprocessorInsightFaceForIPAdapter(Preprocessor):
             attn_mask=None,
             unfold_batch=False,
         )
+        return cond
 
 
 add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(

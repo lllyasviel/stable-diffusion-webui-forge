@@ -42,7 +42,7 @@ class PreprocessorInsightFaceForIPAdapter(Preprocessor):
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
         return dict(
-            insightface=opInsightFaceLoader("CPU"),
+            insightface=opInsightFaceLoader("CPU")[0],
             image=numpy_to_pytorch(input_image),
             weight_type="original",
             noise=0.0,

@@ -33,18 +33,12 @@ folder_names_and_paths["photomaker"] = ([os.path.join(models_dir, "photomaker")]
 
 folder_names_and_paths["classifiers"] = ([os.path.join(models_dir, "classifiers")], {""})
 
-output_directory = os.path.join(os.getcwd(), "output")
-temp_directory = os.path.join(os.getcwd(), "temp")
-input_directory = os.path.join(os.getcwd(), "input")
-user_directory = os.path.join(os.getcwd(), "user")
+output_directory = os.path.join(base_path, "output")
+temp_directory = os.path.join(base_path, "temp")
+input_directory = os.path.join(base_path, "input")
+user_directory = os.path.join(base_path, "user")
 
 filename_list_cache = {}
-
-if not os.path.exists(input_directory):
-    try:
-        pass  # os.makedirs(input_directory)
-    except:
-        print("Failed to create input directory")
 
 def set_output_directory(output_dir):
     global output_directory

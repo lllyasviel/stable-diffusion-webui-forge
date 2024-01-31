@@ -66,14 +66,14 @@ def apply_controlnet_advanced(
     return m
 
 
-def compute_controlnet_weighting(
-        control,
-        positive_advanced_weighting,
-        negative_advanced_weighting,
-        advanced_frame_weighting,
-        advanced_sigma_weighting,
-        transformer_options
-):
+def compute_controlnet_weighting(control, cnet):
+
+    positive_advanced_weighting = cnet.positive_advanced_weighting
+    negative_advanced_weighting = cnet.negative_advanced_weighting
+    advanced_frame_weighting = cnet.advanced_frame_weighting
+    advanced_sigma_weighting = cnet.advanced_sigma_weighting
+    transformer_options = cnet.transformer_options
+
     if positive_advanced_weighting is None and negative_advanced_weighting is None \
             and advanced_frame_weighting is None and advanced_sigma_weighting is None:
         return control

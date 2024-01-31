@@ -11,6 +11,9 @@ import ldm_patched.controlnet.cldm
 import ldm_patched.t2ia.adapter
 
 
+compute_controlnet_weighting = None
+
+
 def broadcast_image_to(tensor, target_batch_size, batched_number):
     current_batch_size = tensor.shape[0]
     #print(current_batch_size, target_batch_size)
@@ -114,6 +117,10 @@ class ControlBase:
                         x = x.to(output_dtype)
 
                 out[key].append(x)
+
+        if compute_controlnet_weighting is not None:
+            out = compute_controlnet_weighting(out, self)
+
         if control_prev is not None:
             for x in ['input', 'middle', 'output']:
                 o = out[x]

@@ -50,11 +50,11 @@ class PreprocessorReference(Preprocessor):
         def attn1_proc(q, k, v, transformer_options):
             sigma = transformer_options["sigmas"][0].item()
             if not (sigma_min < sigma < sigma_max):
-                return q, k, k
+                return q, k, v
 
             a = 0
 
-            return q, k, k
+            return q, k, v
 
         unet.add_block_modifier(block_proc)
         unet.add_conditioning_modifier(conditioning_modifier)

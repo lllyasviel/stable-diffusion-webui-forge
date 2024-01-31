@@ -17,7 +17,18 @@ class PreprocessorClipVisionForIPAdapter(PreprocessorClipVision):
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
         clipvision = self.load_clipvision()
-        return clipvision, numpy_to_pytorch(input_image)
+
+        cond = dict(
+            clipvision=clipvision,
+            image=numpy_to_pytorch(input_image),
+            weight_type="original",
+            noise=0.0,
+            embeds=None,
+            attn_mask=None,
+            unfold_batch=False,
+        )
+
+        return cond
 
 
 add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
@@ -58,25 +69,17 @@ class IPAdapterPatcher(ControlModelPatcher):
         return
 
     def process_before_every_sampling(self, process, cond, *args, **kwargs):
-        clip_vision, image = cond
         unet = process.sd_model.forge_objects.unet
 
         unet = opIPAdapterApply(
             ipadapter=self.ip_adapter,
             model=unet,
             weight=self.strength,
-            clip_vision=clip_vision,
-            image=image,
-            weight_type="original",
-            noise=0.0,
-            embeds=None,
-            attn_mask=None,
             start_at=self.start_percent,
             end_at=self.end_percent,
-            unfold_batch=False,
-            insightface=None,
             faceid_v2=False,
-            weight_v2=False
+            weight_v2=False,
+            **cond,
         )[0]
 
         process.sd_model.forge_objects.unet = unet

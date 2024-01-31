@@ -315,87 +315,84 @@ class ControlNetUiGroup(object):
 
         with gr.Group(visible=not self.is_img2img) as self.image_upload_panel:
             self.save_detected_map = gr.Checkbox(value=True, visible=False)
-            with gr.Row(elem_classes=["cnet-image-row"], equal_height=True):
-                with gr.Group(elem_classes=["cnet-input-image-group"]):
-                    self.image = gr.Image(
-                        source="upload",
-                        brush_radius=20,
-                        mirror_webcam=False,
-                        type="numpy",
-                        tool="sketch",
-                        elem_id=f"{elem_id_tabname}_{tabname}_input_image",
-                        elem_classes=["cnet-image"],
-                        brush_color=shared.opts.img2img_inpaint_mask_brush_color
-                        if hasattr(
-                            shared.opts, "img2img_inpaint_mask_brush_color"
-                        )
-                        else None,
-                    )
-                    self.image.preprocess = functools.partial(
-                        svg_preprocess, preprocess=self.image.preprocess
-                    )
-                    self.openpose_editor.render_upload()
-
-                with gr.Group(
-                        visible=False, elem_classes=["cnet-generated-image-group"]
-                ) as self.generated_image_group:
-                    self.generated_image = gr.Image(
-                        value=None,
-                        label="Preprocessor Preview",
-                        elem_id=f"{elem_id_tabname}_{tabname}_generated_image",
-                        elem_classes=["cnet-image"],
-                        interactive=True,
-                        height=242,
-                    )  # Gradio's magic number. Only 242 works.
-
-                    with gr.Group(
-                            elem_classes=["cnet-generated-image-control-group"]
-                    ):
-                        if self.photopea:
-                            self.photopea.render_child_trigger()
-                        self.openpose_editor.render_edit()
-                        preview_check_elem_id = f"{elem_id_tabname}_{tabname}_controlnet_preprocessor_preview_checkbox"
-                        preview_close_button_js = f"document.querySelector('#{preview_check_elem_id} input[type=\\'checkbox\\']').click();"
-                        gr.HTML(
-                            value=f"""<a title="Close Preview" onclick="{preview_close_button_js}">Close</a>""",
-                            visible=True,
-                            elem_classes=["cnet-close-preview"],
-                        )
-
-                with gr.Group(
-                        visible=False, elem_classes=["cnet-mask-image-group"]
-                ) as self.mask_image_group:
-                    self.mask_image = gr.Image(
-                        value=None,
-                        label="Upload Mask",
-                        elem_id=f"{elem_id_tabname}_{tabname}_mask_image",
-                        elem_classes=["cnet-mask-image"],
-                        interactive=True,
-                    )
-
-            with gr.Row(visible=False):
-                with gr.Tabs():
-                    with gr.Tab(label="Single Image") as self.upload_tab:
-                        pass
-
-                    with gr.Tab(label="Batch") as self.batch_tab:
-                        self.batch_image_dir = gr.Textbox(
-                            label="Input Directory",
-                            placeholder="Leave empty to use img2img batch controlnet input directory",
-                            elem_id=f"{elem_id_tabname}_{tabname}_batch_image_dir",
-                        )
-
-                    with gr.Tab(label="Multi-Inputs") as self.merge_tab:
-                        self.merge_gallery = gr.Gallery(
-                            columns=[4], rows=[2], object_fit="contain", height="auto"
-                        )
-                        with gr.Row():
-                            self.merge_upload_button = gr.UploadButton(
-                                "Upload Images",
-                                file_types=["image"],
-                                file_count="multiple",
+            with gr.Tabs():
+                with gr.Tab(label="Single Image") as self.upload_tab:
+                    with gr.Row(elem_classes=["cnet-image-row"], equal_height=True):
+                        with gr.Group(elem_classes=["cnet-input-image-group"]):
+                            self.image = gr.Image(
+                                source="upload",
+                                brush_radius=20,
+                                mirror_webcam=False,
+                                type="numpy",
+                                tool="sketch",
+                                elem_id=f"{elem_id_tabname}_{tabname}_input_image",
+                                elem_classes=["cnet-image"],
+                                brush_color=shared.opts.img2img_inpaint_mask_brush_color
+                                if hasattr(
+                                    shared.opts, "img2img_inpaint_mask_brush_color"
+                                )
+                                else None,
                             )
-                            self.merge_clear_button = gr.Button("Clear Images")
+                            self.image.preprocess = functools.partial(
+                                svg_preprocess, preprocess=self.image.preprocess
+                            )
+                            self.openpose_editor.render_upload()
+
+                        with gr.Group(
+                            visible=False, elem_classes=["cnet-generated-image-group"]
+                        ) as self.generated_image_group:
+                            self.generated_image = gr.Image(
+                                value=None,
+                                label="Preprocessor Preview",
+                                elem_id=f"{elem_id_tabname}_{tabname}_generated_image",
+                                elem_classes=["cnet-image"],
+                                interactive=True,
+                                height=242,
+                            )  # Gradio's magic number. Only 242 works.
+
+                            with gr.Group(
+                                elem_classes=["cnet-generated-image-control-group"]
+                            ):
+                                if self.photopea:
+                                    self.photopea.render_child_trigger()
+                                self.openpose_editor.render_edit()
+                                preview_check_elem_id = f"{elem_id_tabname}_{tabname}_controlnet_preprocessor_preview_checkbox"
+                                preview_close_button_js = f"document.querySelector('#{preview_check_elem_id} input[type=\\'checkbox\\']').click();"
+                                gr.HTML(
+                                    value=f"""<a title="Close Preview" onclick="{preview_close_button_js}">Close</a>""",
+                                    visible=True,
+                                    elem_classes=["cnet-close-preview"],
+                                )
+
+                        with gr.Group(
+                            visible=False, elem_classes=["cnet-mask-image-group"]
+                        ) as self.mask_image_group:
+                            self.mask_image = gr.Image(
+                                value=None,
+                                label="Upload Mask",
+                                elem_id=f"{elem_id_tabname}_{tabname}_mask_image",
+                                elem_classes=["cnet-mask-image"],
+                                interactive=True,
+                            )
+
+                with gr.Tab(label="Batch") as self.batch_tab:
+                    self.batch_image_dir = gr.Textbox(
+                        label="Input Directory",
+                        placeholder="Leave empty to use img2img batch controlnet input directory",
+                        elem_id=f"{elem_id_tabname}_{tabname}_batch_image_dir",
+                    )
+
+                with gr.Tab(label="Multi-Inputs") as self.merge_tab:
+                    self.merge_gallery = gr.Gallery(
+                        columns=[4], rows=[2], object_fit="contain", height="auto"
+                    )
+                    with gr.Row():
+                        self.merge_upload_button = gr.UploadButton(
+                            "Upload Images",
+                            file_types=["image"],
+                            file_count="multiple",
+                        )
+                        self.merge_clear_button = gr.Button("Clear Images")
 
             if self.photopea:
                 self.photopea.attach_photopea_output(self.generated_image)

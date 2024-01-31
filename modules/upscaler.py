@@ -6,6 +6,13 @@ from PIL import Image
 
 import modules.shared
 from modules import modelloader, shared
+from ldm_patched.modules import model_management
+
+
+def prepare_free_memory():
+    model_management.free_memory(memory_required=1024*1024*3, device=model_management.get_torch_device())
+    print('Upscale script freed memory successfully.')
+
 
 LANCZOS = (Image.Resampling.LANCZOS if hasattr(Image, 'Resampling') else Image.LANCZOS)
 NEAREST = (Image.Resampling.NEAREST if hasattr(Image, 'Resampling') else Image.NEAREST)

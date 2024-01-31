@@ -167,9 +167,15 @@ def update_token_counter(text, steps, *, is_positive=True):
         # messages related to it in console
         prompt_schedules = [[[steps, text]]]
 
+    try:
+        cond_stage_model = sd_models.model_data.sd_model.cond_stage_model
+        assert cond_stage_model is not None
+    except Exception:
+        return f"<span class='gr-box gr-text-input'>?/?</span>"
+
     flat_prompts = reduce(lambda list1, list2: list1+list2, prompt_schedules)
     prompts = [prompt_text for step, prompt_text in flat_prompts]
-    token_count, max_length = max([model_hijack.get_prompt_lengths(prompt) for prompt in prompts], key=lambda args: args[0])
+    token_count, max_length = max([model_hijack.get_prompt_lengths(prompt, cond_stage_model) for prompt in prompts], key=lambda args: args[0])
     return f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>"
 
 

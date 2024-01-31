@@ -12,9 +12,10 @@ import json
 from functools import lru_cache
 
 from modules import cmd_args, errors
-from modules.paths_internal import script_path, extensions_dir
+from modules.paths_internal import script_path, extensions_dir, extensions_builtin_dir
 from modules.timer import startup_timer
 from modules import logging_config
+from modules_forge import forge_version
 
 args, _ = cmd_args.parser.parse_known_args()
 logging_config.setup_logging(args.loglevel)
@@ -70,7 +71,7 @@ def commit_hash():
 
 
 @lru_cache()
-def git_tag():
+def git_tag_a1111():
     try:
         return subprocess.check_output([git, "-C", script_path, "describe", "--tags"], shell=False, encoding='utf8').strip()
     except Exception:
@@ -83,6 +84,10 @@ def git_tag():
                 return line
         except Exception:
             return "<none>"
+
+
+def git_tag():
+    return 'f' + forge_version.version + '-' + git_tag_a1111()
 
 
 def run(command, desc=None, errdesc=None, custom_env=None, live: bool = default_command_live) -> str:
@@ -261,6 +266,27 @@ def list_extensions(settings_file):
     return [x for x in os.listdir(extensions_dir) if x not in disabled_extensions]
 
 
+def list_extensions_builtin(settings_file):
+    settings = {}
+
+    try:
+        with open(settings_file, "r", encoding="utf8") as file:
+            settings = json.load(file)
+    except FileNotFoundError:
+        pass
+    except Exception:
+        errors.report(f'\nCould not load settings\nThe config file "{settings_file}" is likely corrupted\nIt has been moved to the "tmp/config.json"\nReverting config to default\n\n''', exc_info=True)
+        os.replace(settings_file, os.path.join(script_path, "tmp", "config.json"))
+
+    disabled_extensions = set(settings.get('disabled_extensions', []))
+    disable_all_extensions = settings.get('disable_all_extensions', 'none')
+
+    if disable_all_extensions != 'none' or args.disable_extra_extensions or args.disable_all_extensions or not os.path.isdir(extensions_builtin_dir):
+        return []
+
+    return [x for x in os.listdir(extensions_builtin_dir) if x not in disabled_extensions]
+
+
 def run_extensions_installers(settings_file):
     if not os.path.isdir(extensions_dir):
         return
@@ -274,6 +300,21 @@ def run_extensions_installers(settings_file):
             if os.path.isdir(path):
                 run_extension_installer(path)
                 startup_timer.record(dirname_extension)
+
+    if not os.path.isdir(extensions_builtin_dir):
+        return
+
+    with startup_timer.subcategory("run extensions_builtin installers"):
+        for dirname_extension in list_extensions_builtin(settings_file):
+            logging.debug(f"Installing {dirname_extension}")
+
+            path = os.path.join(extensions_builtin_dir, dirname_extension)
+
+            if os.path.isdir(path):
+                run_extension_installer(path)
+                startup_timer.record(dirname_extension)
+
+    return
 
 
 re_requirement = re.compile(r"\s*([-_a-zA-Z0-9]+)\s*(?:==\s*([-+_.a-zA-Z0-9]+))?\s*")

@@ -7,6 +7,8 @@ from modules.script_callbacks import ExtraNoiseParams, extra_noise_callback
 
 from modules.shared import opts
 import modules.shared as shared
+from modules_forge.forge_sampler import sampling_prepare, sampling_cleanup
+
 
 samplers_k_diffusion = [
     ('DPM++ 2M Karras', 'sample_dpmpp_2m', ['k_dpmpp_2m_ka'], {'scheduler': 'karras'}),
@@ -139,11 +141,18 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         return sigmas
 
     def sample_img2img(self, p, x, noise, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
+        unet_patcher = self.model_wrap.inner_model.forge_objects.unet
+        sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
+
+        self.model_wrap.log_sigmas = self.model_wrap.log_sigmas.to(unet_patcher.current_device)
+        self.model_wrap.sigmas = self.model_wrap.sigmas.to(unet_patcher.current_device)
+
         steps, t_enc = sd_samplers_common.setup_img2img_steps(p, steps)
 
         sigmas = self.get_sigmas(p, steps)
         sigma_sched = sigmas[steps - t_enc - 1:]
 
+        x = x.to(noise)
         xi = x + noise * sigma_sched[0]
 
         if opts.img2img_extra_noise > 0:
@@ -189,9 +198,17 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
 
         self.add_infotext(p)
 
+        sampling_cleanup(unet_patcher)
+
         return samples
 
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
+        unet_patcher = self.model_wrap.inner_model.forge_objects.unet
+        sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
+
+        self.model_wrap.log_sigmas = self.model_wrap.log_sigmas.to(unet_patcher.current_device)
+        self.model_wrap.sigmas = self.model_wrap.sigmas.to(unet_patcher.current_device)
+
         steps = steps or p.steps
 
         sigmas = self.get_sigmas(p, steps)
@@ -234,6 +251,8 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         samples = self.launch_sampling(steps, lambda: self.func(self.model_wrap_cfg, x, extra_args=self.sampler_extra_args, disable=False, callback=self.callback_state, **extra_params_kwargs))
 
         self.add_infotext(p)
+
+        sampling_cleanup(unet_patcher)
 
         return samples
 

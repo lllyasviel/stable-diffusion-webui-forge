@@ -926,10 +926,7 @@ class ControlNetUiGroup(object):
                 resolution=pres,
                 slider_1=pthr_a,
                 slider_2=pthr_b,
-                low_vram=(
-                    ("clip" in module or module == "ip-adapter_face_id_plus")
-                    and shared.opts.data.get("controlnet_clip_detector_on_cpu", False)
-                ),
+                low_vram=shared.opts.data.get("controlnet_clip_detector_on_cpu", False),
                 json_pose_callback=json_acceptor.accept
                 if is_openpose(module)
                 else None,

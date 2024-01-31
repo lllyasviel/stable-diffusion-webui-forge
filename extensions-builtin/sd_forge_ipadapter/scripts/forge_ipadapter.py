@@ -43,19 +43,17 @@ add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
 ))
 
 
-class PreprocessorInsightFaceForIPAdapter(Preprocessor):
+class PreprocessorInsightFaceForIPAdapter(PreprocessorClipVisionForIPAdapter):
     def __init__(self):
-        super().__init__()
-        self.name = 'InsightFace (IPAdapter)'
-        self.tags = ['IP-Adapter']
-        self.model_filename_filters = ['IP-Adapter', 'IP_Adapter']
-        self.slider_resolution = PreprocessorParameter(visible=False)
-        self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
-        self.show_control_mode = False
-        self.sorting_priority = 1
+        super().__init__(
+            name='InsightFace (IPAdapter)',
+            url='https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors',
+            filename='CLIP-ViT-H-14.safetensors'
+        )
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
         cond = dict(
+            clip_vision=self.load_clipvision(),
             insightface=opInsightFaceLoader("CPU")[0],
             image=numpy_to_pytorch(input_image),
             weight_type="original",

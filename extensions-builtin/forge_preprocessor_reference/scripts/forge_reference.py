@@ -18,12 +18,20 @@ class PreprocessorReference(Preprocessor):
         self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
         self.do_not_need_model = True
 
+        self.is_recording_style = False
+
     def process_before_every_sampling(self, process, cond, *args, **kwargs):
         unit = kwargs['unit']
         weight = float(unit.weight)
         style_fidelity = float(unit.threshold_a)
         start_percent = float(unit.guidance_start)
         end_percent = float(unit.guidance_end)
+
+        vae = process.sd_model.forge_objects.vae
+        # This is a powerful VAE with integrated memory management, bf16, and tiled fallback.
+
+        latent_image = vae.encode(cond.movedim(1, -1))
+        latent_image = process.sd_model.forge_objects.unet.model.latent_format.process_in(latent_image)
 
         unet = process.sd_model.forge_objects.unet.clone()
         sigma_max = unet.model.model_sampling.percent_to_sigma(start_percent)
@@ -34,7 +42,9 @@ class PreprocessorReference(Preprocessor):
             if not (sigma_min <= sigma <= sigma_max):
                 return model, x, timestep, uncond, cond, cond_scale, model_options, seed
 
-            a = 0
+            self.is_recording_style = True
+
+            self.is_recording_style = False
 
             return model, x, timestep, uncond, cond, cond_scale, model_options, seed
 

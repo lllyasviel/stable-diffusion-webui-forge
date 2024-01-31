@@ -64,7 +64,7 @@ add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
     filename='CLIP-ViT-bigG.safetensors'
 ))
 
-add_supported_preprocessor(InsightFaceLoader())
+add_supported_preprocessor(PreprocessorInsightFaceForIPAdapter())
 
 
 class IPAdapterPatcher(ControlModelPatcher):

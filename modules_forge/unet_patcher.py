@@ -70,6 +70,13 @@ class UnetPatcher(ModelPatcher):
         self.append_transformer_option('block_modifiers', modifier, ensure_uniqueness)
         return
 
+    def set_model_replace_all(self, patch, target="attn1"):
+        for block_name in ['input', 'middle', 'output']:
+            for number in range(64):
+                for transformer_index in range(64):
+                    self.set_model_patch_replace(patch, target, block_name, number, transformer_index)
+        return
+
 
 def forge_unet_forward(self, x, timesteps=None, context=None, y=None, control=None, transformer_options=None, **kwargs):
     if transformer_options is None:

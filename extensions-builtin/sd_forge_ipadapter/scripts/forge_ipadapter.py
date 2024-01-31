@@ -30,7 +30,7 @@ class PreprocessorClipVisionForIPAdapter(PreprocessorClipVision):
         return cond
 
 
-class PreprocessorInsightFaceForIPAdapter(PreprocessorClipVisionForIPAdapter):
+class PreprocessorClipVisionWithInsightFaceForIPAdapter(PreprocessorClipVisionForIPAdapter):
     def __init__(self, name, url, filename):
         super().__init__(name, url, filename)
         self.cached_insightface = None
@@ -66,7 +66,7 @@ add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
     filename='CLIP-ViT-bigG.safetensors'
 ))
 
-add_supported_preprocessor(PreprocessorInsightFaceForIPAdapter(
+add_supported_preprocessor(PreprocessorClipVisionWithInsightFaceForIPAdapter(
     name='InsightFace+CLIP-H (IPAdapter)',
     url='https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors',
     filename='CLIP-ViT-H-14.safetensors'

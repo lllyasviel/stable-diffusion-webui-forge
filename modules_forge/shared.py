@@ -1,7 +1,7 @@
 import os
 import ldm_patched.modules.utils
 
-from modules.paths import models_path
+from modules.paths_internal import models_path
 
 
 controlnet_dir = os.path.join(models_path, 'ControlNet')

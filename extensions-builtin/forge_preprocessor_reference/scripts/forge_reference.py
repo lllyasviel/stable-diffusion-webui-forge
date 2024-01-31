@@ -54,6 +54,9 @@ class PreprocessorReference(Preprocessor):
         start_percent = float(unit.guidance_start)
         end_percent = float(unit.guidance_end)
 
+        if process.sd_model.is_sdxl:
+            style_fidelity = style_fidelity ** 3.0  # sdxl is very sensitive to reference so we lower the weights
+
         vae = process.sd_model.forge_objects.vae
         # This is a powerful VAE with integrated memory management, bf16, and tiled fallback.
 

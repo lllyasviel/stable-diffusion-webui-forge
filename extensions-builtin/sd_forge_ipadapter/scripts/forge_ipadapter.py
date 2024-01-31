@@ -66,7 +66,7 @@ add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
     filename='CLIP-ViT-bigG.safetensors'
 ))
 
-add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
+add_supported_preprocessor(PreprocessorInsightFaceForIPAdapter(
     name='InsightFace+CLIP-H (IPAdapter)',
     url='https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors',
     filename='CLIP-ViT-H-14.safetensors'

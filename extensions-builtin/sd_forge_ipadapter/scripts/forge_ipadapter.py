@@ -30,6 +30,19 @@ class PreprocessorClipVisionForIPAdapter(PreprocessorClipVision):
         return cond
 
 
+add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
+    name='CLIP-ViT-H (IPAdapter)',
+    url='https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors',
+    filename='CLIP-ViT-H-14.safetensors'
+))
+
+add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
+    name='CLIP-ViT-bigG (IPAdapter)',
+    url='https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors',
+    filename='CLIP-ViT-bigG.safetensors'
+))
+
+
 class PreprocessorInsightFaceForIPAdapter(Preprocessor):
     def __init__(self):
         super().__init__()
@@ -53,18 +66,6 @@ class PreprocessorInsightFaceForIPAdapter(Preprocessor):
         )
         return cond
 
-
-add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
-    name='CLIP-ViT-H (IPAdapter)',
-    url='https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors',
-    filename='CLIP-ViT-H-14.safetensors'
-))
-
-add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
-    name='CLIP-ViT-bigG (IPAdapter)',
-    url='https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors',
-    filename='CLIP-ViT-bigG.safetensors'
-))
 
 add_supported_preprocessor(PreprocessorInsightFaceForIPAdapter())
 

@@ -2,6 +2,7 @@ import torch
 
 from modules_forge.supported_preprocessor import Preprocessor, PreprocessorParameter
 from modules_forge.shared import add_supported_preprocessor
+from ldm_patched.modules.samplers import sampling_function
 
 
 class PreprocessorReference(Preprocessor):
@@ -33,6 +34,9 @@ class PreprocessorReference(Preprocessor):
         latent_image = vae.encode(cond.movedim(1, -1))
         latent_image = process.sd_model.forge_objects.unet.model.latent_format.process_in(latent_image)
 
+        gen_seed = process.seeds[0] + 1
+        gen_cpu = torch.Generator().manual_seed(gen_seed)
+
         unet = process.sd_model.forge_objects.unet.clone()
         sigma_max = unet.model.model_sampling.percent_to_sigma(start_percent)
         sigma_min = unet.model.model_sampling.percent_to_sigma(end_percent)
@@ -44,6 +48,9 @@ class PreprocessorReference(Preprocessor):
 
             self.is_recording_style = True
 
+            xt = latent_image.to(x) + torch.randn(x.size(), dtype=x.dtype, generator=gen_cpu).to(x) * sigma
+            sampling_function(model, xt, timestep, uncond, cond, 1, model_options, seed)
+
             self.is_recording_style = False
 
             return model, x, timestep, uncond, cond, cond_scale, model_options, seed
@@ -53,7 +60,10 @@ class PreprocessorReference(Preprocessor):
             if not (sigma_min <= sigma <= sigma_max):
                 return h
 
-            a = 0
+            if self.is_recording_style:
+                a = 0
+            else:
+                b = 0
 
             return h
 
@@ -62,7 +72,10 @@ class PreprocessorReference(Preprocessor):
             if not (sigma_min <= sigma <= sigma_max):
                 return q, k, v
 
-            a = 0
+            if self.is_recording_style:
+                a = 0
+            else:
+                b = 0
 
             return q, k, v
 
@@ -71,7 +84,10 @@ class PreprocessorReference(Preprocessor):
             if not (sigma_min <= sigma <= sigma_max):
                 return h
 
-            a = 0
+            if self.is_recording_style:
+                a = 0
+            else:
+                b = 0
 
             return h
 

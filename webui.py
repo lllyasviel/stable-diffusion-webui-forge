@@ -7,8 +7,12 @@ from modules import timer
 from modules import initialize_util
 from modules import initialize
 
+from modules_forge.initialization import initialize_forge
+
 startup_timer = timer.startup_timer
 startup_timer.record("launcher")
+
+initialize_forge()
 
 initialize.imports()
 

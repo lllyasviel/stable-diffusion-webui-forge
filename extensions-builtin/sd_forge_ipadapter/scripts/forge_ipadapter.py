@@ -1,12 +1,13 @@
-from modules_forge.supported_preprocessor import PreprocessorClipVision
+from modules_forge.supported_preprocessor import PreprocessorClipVision, Preprocessor, PreprocessorParameter
 from modules_forge.shared import add_supported_preprocessor
 from modules_forge.forge_util import numpy_to_pytorch
 from modules_forge.shared import add_supported_control_model
 from modules_forge.supported_controlnet import ControlModelPatcher
-from lib_ipadapter.IPAdapterPlus import IPAdapterApply
+from lib_ipadapter.IPAdapterPlus import IPAdapterApply, InsightFaceLoader
 
 
 opIPAdapterApply = IPAdapterApply().apply_ipadapter
+opInsightFaceLoader = InsightFaceLoader().load_insight_face
 
 
 class PreprocessorClipVisionForIPAdapter(PreprocessorClipVision):
@@ -14,10 +15,34 @@ class PreprocessorClipVisionForIPAdapter(PreprocessorClipVision):
         super().__init__(name, url, filename)
         self.tags = ['IP-Adapter']
         self.model_filename_filters = ['IP-Adapter', 'IP_Adapter']
+        self.sorting_priority = 20
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
         return dict(
             clip_vision=self.load_clipvision(),
+            image=numpy_to_pytorch(input_image),
+            weight_type="original",
+            noise=0.0,
+            embeds=None,
+            attn_mask=None,
+            unfold_batch=False,
+        )
+
+
+class PreprocessorInsightFaceForIPAdapter(Preprocessor):
+    def __init__(self):
+        super().__init__()
+        self.name = 'InsightFace (IPAdapter)'
+        self.tags = ['IP-Adapter']
+        self.model_filename_filters = ['IP-Adapter', 'IP_Adapter']
+        self.slider_resolution = PreprocessorParameter(visible=False)
+        self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
+        self.show_control_mode = False
+        self.sorting_priority = 1
+
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+        return dict(
+            insightface=opInsightFaceLoader("CPU"),
             image=numpy_to_pytorch(input_image),
             weight_type="original",
             noise=0.0,
@@ -38,6 +63,8 @@ add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
     url='https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors',
     filename='CLIP-ViT-bigG.safetensors'
 ))
+
+add_supported_preprocessor(InsightFaceLoader())
 
 
 class IPAdapterPatcher(ControlModelPatcher):

@@ -794,72 +794,72 @@ legacy_preprocessors = {
             "Recolor"
         ]
     },
-    "reference_adain": {
-        "label": "reference_adain",
-        "call_function": identity,
-        "unload_function": None,
-        "managed_model": None,
-        "model_free": True,
-        "no_control_mode": False,
-        "resolution": None,
-        "slider_1": {
-            "label": "Style Fidelity (only for Balanced mode)",
-            "value": 0.5,
-            "minimum": 0.0,
-            "maximum": 1.0,
-            "step": 0.01
-        },
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 0,
-        "tags": [
-            "Reference"
-        ]
-    },
-    "reference_adain+attn": {
-        "label": "reference_adain+attn",
-        "call_function": identity,
-        "unload_function": None,
-        "managed_model": None,
-        "model_free": True,
-        "no_control_mode": False,
-        "resolution": None,
-        "slider_1": {
-            "label": "Style Fidelity (only for Balanced mode)",
-            "value": 0.5,
-            "minimum": 0.0,
-            "maximum": 1.0,
-            "step": 0.01
-        },
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 0,
-        "tags": [
-            "Reference"
-        ]
-    },
-    "reference_only": {
-        "label": "reference_only",
-        "call_function": identity,
-        "unload_function": None,
-        "managed_model": None,
-        "model_free": True,
-        "no_control_mode": False,
-        "resolution": None,
-        "slider_1": {
-            "label": "Style Fidelity (only for Balanced mode)",
-            "value": 0.5,
-            "minimum": 0.0,
-            "maximum": 1.0,
-            "step": 0.01
-        },
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 100,
-        "tags": [
-            "Reference"
-        ]
-    },
+    # "reference_adain": {
+    #     "label": "reference_adain",
+    #     "call_function": identity,
+    #     "unload_function": None,
+    #     "managed_model": None,
+    #     "model_free": True,
+    #     "no_control_mode": False,
+    #     "resolution": None,
+    #     "slider_1": {
+    #         "label": "Style Fidelity (only for Balanced mode)",
+    #         "value": 0.5,
+    #         "minimum": 0.0,
+    #         "maximum": 1.0,
+    #         "step": 0.01
+    #     },
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 0,
+    #     "tags": [
+    #         "Reference"
+    #     ]
+    # },
+    # "reference_adain+attn": {
+    #     "label": "reference_adain+attn",
+    #     "call_function": identity,
+    #     "unload_function": None,
+    #     "managed_model": None,
+    #     "model_free": True,
+    #     "no_control_mode": False,
+    #     "resolution": None,
+    #     "slider_1": {
+    #         "label": "Style Fidelity (only for Balanced mode)",
+    #         "value": 0.5,
+    #         "minimum": 0.0,
+    #         "maximum": 1.0,
+    #         "step": 0.01
+    #     },
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 0,
+    #     "tags": [
+    #         "Reference"
+    #     ]
+    # },
+    # "reference_only": {
+    #     "label": "reference_only",
+    #     "call_function": identity,
+    #     "unload_function": None,
+    #     "managed_model": None,
+    #     "model_free": True,
+    #     "no_control_mode": False,
+    #     "resolution": None,
+    #     "slider_1": {
+    #         "label": "Style Fidelity (only for Balanced mode)",
+    #         "value": 0.5,
+    #         "minimum": 0.0,
+    #         "maximum": 1.0,
+    #         "step": 0.01
+    #     },
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 100,
+    #     "tags": [
+    #         "Reference"
+    #     ]
+    # },
     # "revision_clipvision": {
     #     "label": "revision_clipvision",
     #     "call_function": functools.partial(clip, config='clip_g'),

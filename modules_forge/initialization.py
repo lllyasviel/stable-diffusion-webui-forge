@@ -50,8 +50,4 @@ def initialize_forge():
 
     import modules_forge.patch_basic
     modules_forge.patch_basic.patch_all_basics()
-
-    from modules_forge import supported_preprocessor
-    from modules_forge import supported_controlnet
-
     return

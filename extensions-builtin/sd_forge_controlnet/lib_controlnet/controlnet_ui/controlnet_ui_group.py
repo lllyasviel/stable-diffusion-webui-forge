@@ -382,7 +382,7 @@ class ControlNetUiGroup(object):
                         elem_id=f"{elem_id_tabname}_{tabname}_batch_image_dir",
                     )
 
-                with gr.Tab(label="Multi-Inputs") as self.merge_tab:
+                with gr.Row(visible=False) as self.merge_tab:
                     self.merge_gallery = gr.Gallery(
                         columns=[4], rows=[2], object_fit="contain", height="auto"
                     )
@@ -1283,11 +1283,11 @@ class ControlNetUiGroup(object):
         for ui_group in ui_groups:
             batch_fn = lambda: InputMode.BATCH
             simple_fn = lambda: InputMode.SIMPLE
-            merge_fn = lambda: InputMode.MERGE
+            # merge_fn = lambda: InputMode.MERGE
             for input_tab, fn in (
                 (ui_group.upload_tab, simple_fn),
                 (ui_group.batch_tab, batch_fn),
-                (ui_group.merge_tab, merge_fn),
+                # (ui_group.merge_tab, merge_fn),
             ):
                 # Sync input_mode.
                 input_tab.select(

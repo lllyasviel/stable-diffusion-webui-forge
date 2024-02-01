@@ -164,27 +164,6 @@ class UiControlNetUnit(external_code.ControlNetUnit):
         self.output_dir = output_dir
         self.loopback = loopback
 
-    def unfold_merged(self) -> List[external_code.ControlNetUnit]:
-        """Unfolds a merged unit to multiple units. Keeps the unit merged for
-        preprocessors that can accept multiple input images.
-        """
-        if self.input_mode != InputMode.MERGE:
-            return [copy(self)]
-
-        if self.accepts_multiple_inputs():
-            self.input_mode = InputMode.SIMPLE
-            return [copy(self)]
-
-        assert isinstance(self.image, list)
-        result = []
-        for image in self.image:
-            unit = copy(self)
-            unit.image = image["image"]
-            unit.input_mode = InputMode.SIMPLE
-            unit.weight = self.weight / len(self.image)
-            result.append(unit)
-        return result
-
 
 class ControlNetUiGroup(object):
     refresh_symbol = "\U0001f504"  # 🔄

@@ -711,8 +711,8 @@ class InsightFaceModel:
         """insightface's github release on antelopev2 model is down. Downloading
         from huggingface mirror."""
         from modules.modelloader import load_file_from_url
-        from annotator.annotator_path import models_path
-        model_root = os.path.join(models_path, "insightface", "models", "antelopev2")
+        from modules_forge.shared import models_path
+        model_root = os.path.join(models_path, "insightface", 'models', "antelopev2")
         if not model_root:
             os.makedirs(model_root, exist_ok=True)
         for local_file, url in (
@@ -730,11 +730,12 @@ class InsightFaceModel:
     def load_model(self):
         if self.model is None:
             from insightface.app import FaceAnalysis
-            from annotator.annotator_path import models_path
+            from modules_forge.shared import models_path
+            model_root = os.path.join(models_path, "insightface", 'models', "antelopev2")
             self.model = FaceAnalysis(
                 name=self.face_analysis_model_name,
                 providers=['CUDAExecutionProvider', 'CPUExecutionProvider'],
-                root=os.path.join(models_path, "insightface"),
+                root=model_root,
             )
             self.model.prepare(ctx_id=0, det_size=(640, 640))
 

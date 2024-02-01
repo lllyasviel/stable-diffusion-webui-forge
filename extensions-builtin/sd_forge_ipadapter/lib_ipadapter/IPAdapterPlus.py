@@ -733,6 +733,15 @@ class IPAdapterApply:
 
         work_model = model.clone()
 
+        if self.is_instant_id:
+            def modifier(cnet, x_noisy, t, cond, batched_number):
+                cond_mark = cond['transformer_options']['cond_mark'][:, None, None].to(cond['c_crossattn'])  # cond is 0
+                c_crossattn = image_prompt_embeds * (1.0 - cond_mark) + uncond_image_prompt_embeds * cond_mark
+                cond['c_crossattn'] = c_crossattn
+                return x_noisy, t, cond, batched_number
+
+            work_model.add_controlnet_conditioning_modifier(modifier)
+
         if attn_mask is not None:
             attn_mask = attn_mask.to(self.device)
 

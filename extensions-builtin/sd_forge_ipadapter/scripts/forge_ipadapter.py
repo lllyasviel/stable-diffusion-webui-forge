@@ -83,7 +83,7 @@ class PreprocessorInsightFaceForInstantID(Preprocessor):
             embeds=None,
             attn_mask=None,
             unfold_batch=False,
-            using_instant_id=True
+            instant_id=True
         )
         return cond
 

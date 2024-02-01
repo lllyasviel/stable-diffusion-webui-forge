@@ -38,10 +38,6 @@ def build_loaded(module, loader_name):
 
 
 def patch_all_basics():
-    import ldm_patched.modules.controlnet
-    import modules_forge.controlnet
-
-    ldm_patched.modules.controlnet.compute_controlnet_weighting = modules_forge.controlnet.compute_controlnet_weighting
     build_loaded(safetensors.torch, 'load_file')
     build_loaded(torch, 'load')
     return

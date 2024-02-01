@@ -352,6 +352,7 @@ The memory optimization in this example is fully automatic. You do not need to c
 
 import cv2
 import gradio as gr
+import torch
 
 from modules import scripts
 from modules.shared_cmd_options import cmd_opts
@@ -472,18 +473,26 @@ class ControlNetExampleForge(scripts.Script):
         sigma_min = unet.model.model_sampling.sigma_min
         advanced_sigma_weighting = lambda s: (s - sigma_min) / (sigma_max - sigma_min)
 
+        # You can even input a tensor to mask all control injections
+        # The mask will be automatically resized during inference in UNet.
+        # The size should be B 1 H W and the H and W are not important
+        # because they will be resized automatically
+        advanced_mask_weighting = torch.ones(size=(1, 1, 512, 512))
+
         # But in this simple example we do not use them
         positive_advanced_weighting = None
         negative_advanced_weighting = None
         advanced_frame_weighting = None
         advanced_sigma_weighting = None
+        advanced_mask_weighting = None
 
         unet = apply_controlnet_advanced(unet=unet, controlnet=self.model, image_bchw=control_image_bchw,
                                          strength=0.6, start_percent=0.0, end_percent=0.8,
                                          positive_advanced_weighting=positive_advanced_weighting,
                                          negative_advanced_weighting=negative_advanced_weighting,
                                          advanced_frame_weighting=advanced_frame_weighting,
-                                         advanced_sigma_weighting=advanced_sigma_weighting)
+                                         advanced_sigma_weighting=advanced_sigma_weighting,
+                                         advanced_mask_weighting=advanced_mask_weighting)
 
         p.sd_model.forge_objects.unet = unet
 

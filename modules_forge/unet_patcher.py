@@ -67,6 +67,10 @@ class UnetPatcher(ModelPatcher):
     def add_block_modifier(self, modifier, ensure_uniqueness=False):
         self.append_transformer_option('block_modifiers', modifier, ensure_uniqueness)
         return
+    
+    def add_controlnet_conditioning_modifier(self, modifier, ensure_uniqueness=False):
+        self.append_transformer_option('controlnet_conditioning_modifiers', modifier, ensure_uniqueness)
+        return
 
     def set_model_replace_all(self, patch, target="attn1"):
         for block_name in ['input', 'middle', 'output']:

@@ -1,5 +1,4 @@
 import os
-from copy import copy
 from typing import Dict, Optional, Tuple, List, Union
 
 import torch
@@ -12,7 +11,6 @@ import gradio as gr
 from lib_controlnet import global_state, external_code
 from lib_controlnet.utils import align_dim_latent, image_dict_from_any, set_numpy_seed, crop_and_resize_image, \
     prepare_mask, judge_image_type
-from lib_controlnet.enums import StableDiffusionVersion
 from lib_controlnet.controlnet_ui.controlnet_ui_group import ControlNetUiGroup, UiControlNetUnit
 from lib_controlnet.controlnet_ui.photopea import Photopea
 from lib_controlnet.logging import logger

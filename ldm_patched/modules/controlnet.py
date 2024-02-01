@@ -149,6 +149,11 @@ class ControlNet(ControlBase):
         self.manual_cast_dtype = manual_cast_dtype
 
     def get_control(self, x_noisy, t, cond, batched_number):
+        to = self.transformer_options
+
+        for conditioning_modifier in to.get('controlnet_conditioning_modifiers', []):
+            x_noisy, t, cond, batched_number = conditioning_modifier(self, x_noisy, t, cond, batched_number)
+
         control_prev = None
         if self.previous_controlnet is not None:
             control_prev = self.previous_controlnet.get_control(x_noisy, t, cond, batched_number)
@@ -443,6 +448,11 @@ class T2IAdapter(ControlBase):
         return width, height
 
     def get_control(self, x_noisy, t, cond, batched_number):
+        to = self.transformer_options
+
+        for conditioning_modifier in to.get('controlnet_conditioning_modifiers', []):
+            x_noisy, t, cond, batched_number = conditioning_modifier(self, x_noisy, t, cond, batched_number)
+
         control_prev = None
         if self.previous_controlnet is not None:
             control_prev = self.previous_controlnet.get_control(x_noisy, t, cond, batched_number)

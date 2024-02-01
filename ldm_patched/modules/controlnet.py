@@ -40,6 +40,7 @@ class ControlBase:
         self.timestep_percent_range = (0.0, 1.0)
         self.global_average_pooling = False
         self.timestep_range = None
+        self.transformer_options = {}
 
         if device is None:
             device = ldm_patched.modules.model_management.get_torch_device()

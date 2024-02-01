@@ -7,6 +7,7 @@ class UnetPatcher(ModelPatcher):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.controlnet_linked_list = None
+        self.extra_preserved_memory = 0
 
     def clone(self):
         n = UnetPatcher(self.model, self.load_device, self.offload_device, self.size, self.current_device,
@@ -20,7 +21,16 @@ class UnetPatcher(ModelPatcher):
         n.model_options = copy.deepcopy(self.model_options)
         n.model_keys = self.model_keys
         n.controlnet_linked_list = self.controlnet_linked_list
+        n.extra_preserved_memory = self.extra_preserved_memory
         return n
+
+    def add_preserved_memory(self, memory_in_bytes):
+        # Use this to ask Forge to preserve a certain amount of memory during sampling.
+        # If GPU VRAM is 8 GB, and memory_in_bytes is 2GB, i.e., memory_in_bytes = 2 * 1024 * 1024 * 1024
+        # Then the sampling will always use less than 6GB memory by dynamically offload modules to CPU RAM.
+        # You can estimate this using model_management.module_size(any_pytorch_model) to get size of any pytorch models.
+        self.extra_preserved_memory += memory_in_bytes
+        return
 
     def add_patched_controlnet(self, cnet):
         cnet.set_previous_controlnet(self.controlnet_linked_list)

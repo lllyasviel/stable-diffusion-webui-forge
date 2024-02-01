@@ -86,7 +86,7 @@ def forge_sample(self, denoiser_params, cond_scale, cond_composition):
 def sampling_prepare(unet, x):
     B, C, H, W = x.shape
 
-    unet_inference_memory = unet.memory_required([B * 2, C, H, W])
+    unet_inference_memory = unet.memory_required([B * 2, C, H, W]) + unet.extra_preserved_memory
     additional_inference_memory = 0
     additional_model_patchers = []
 

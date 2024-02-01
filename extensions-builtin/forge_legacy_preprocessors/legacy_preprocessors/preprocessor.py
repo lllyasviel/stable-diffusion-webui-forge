@@ -712,7 +712,7 @@ class InsightFaceModel:
         from huggingface mirror."""
         from modules.modelloader import load_file_from_url
         from modules_forge.shared import models_path
-        model_root = os.path.join(models_path, "insightface", 'models', "antelopev2")
+        model_root = os.path.join(models_path, "insightface", "models", "antelopev2")
         if not model_root:
             os.makedirs(model_root, exist_ok=True)
         for local_file, url in (
@@ -731,11 +731,10 @@ class InsightFaceModel:
         if self.model is None:
             from insightface.app import FaceAnalysis
             from modules_forge.shared import models_path
-            model_root = os.path.join(models_path, "insightface", 'models', "antelopev2")
             self.model = FaceAnalysis(
                 name=self.face_analysis_model_name,
                 providers=['CUDAExecutionProvider', 'CPUExecutionProvider'],
-                root=model_root,
+                root=os.path.join(models_path, "insightface"),
             )
             self.model.prepare(ctx_id=0, det_size=(640, 640))
 

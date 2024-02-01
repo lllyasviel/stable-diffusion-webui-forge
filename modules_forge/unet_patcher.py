@@ -26,7 +26,7 @@ class UnetPatcher(ModelPatcher):
         n.extra_model_patchers_during_sampling = self.extra_model_patchers_during_sampling.copy()
         return n
 
-    def add_extra_preserved_memory_during_sampling(self, memory_in_bytes):
+    def add_extra_preserved_memory_during_sampling(self, memory_in_bytes: int):
         # Use this to ask Forge to preserve a certain amount of memory during sampling.
         # If GPU VRAM is 8 GB, and memory_in_bytes is 2GB, i.e., memory_in_bytes = 2 * 1024 * 1024 * 1024
         # Then the sampling will always use less than 6GB memory by dynamically offload modules to CPU RAM.
@@ -34,7 +34,7 @@ class UnetPatcher(ModelPatcher):
         self.extra_preserved_memory_during_sampling += memory_in_bytes
         return
 
-    def add_extra_model_patcher_during_sampling(self, model_patcher):
+    def add_extra_model_patcher_during_sampling(self, model_patcher: ModelPatcher):
         # Use this to ask Forge to move extra model patchers to GPU during sampling.
         # This method will manage GPU memory perfectly.
         self.extra_model_patchers_during_sampling.append(model_patcher)

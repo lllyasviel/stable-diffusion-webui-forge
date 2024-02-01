@@ -643,7 +643,27 @@ class IPAdapterApply:
             clip_embed = embeds[0].cpu()
             clip_embed_zeroed = embeds[1].cpu()
         else:
-            if self.is_instant_id or self.is_faceid:
+            if self.is_instant_id:
+                insightface.det_model.input_size = (640, 640)  # reset the detection size
+                face_img = tensorToNP(image)
+                face_embed = []
+
+                for i in range(face_img.shape[0]):
+                    for size in [(size, size) for size in range(640, 128, -64)]:
+                        insightface.det_model.input_size = size  # TODO: hacky but seems to be working
+                        face = insightface.get(face_img[i])
+                        if face:
+                            face_embed.append(torch.from_numpy(face[0].embedding).unsqueeze(0))
+
+                            if 640 not in size:
+                                print(f"\033[33mINFO: InsightFace detection resolution lowered to {size}.\033[0m")
+                            break
+                    else:
+                        raise Exception('InsightFace: No face detected.')
+
+                face_embed = torch.stack(face_embed, dim=0)
+                clip_embed = face_embed
+            elif self.is_faceid:
                 insightface.det_model.input_size = (640,640) # reset the detection size
                 face_img = tensorToNP(image)
                 face_embed = []
@@ -668,10 +688,7 @@ class IPAdapterApply:
 
                 neg_image = image_add_noise(image, noise) if noise > 0 else None
 
-                if self.is_instant_id:
-                    clip_embed = face_embed
-                    clip_embed_zeroed = torch.zeros_like(clip_embed)
-                elif self.is_plus:
+                if self.is_plus:
                     clip_embed = clip_vision.encode_image(image).penultimate_hidden_states
                     if noise > 0:
                         clip_embed_zeroed = clip_vision.encode_image(neg_image).penultimate_hidden_states

@@ -599,6 +599,11 @@ add_supported_preprocessor(PreprocessorNormalBae())
 
 # About Extensions
 
+ControlNet and TiledVAE are integrated, and you should uninstall these two extensions:
+
+    sd-webui-controlnet
+    multidiffusion-upscaler-for-automatic1111
+
 All UI related extensions should work without problems, like:
 
     canvas-zoom
@@ -624,9 +629,3 @@ Below extensions will be given up but they may still work
 
 (Tiled diffusion is integrated now and no need to install extra extensions. Also the current smart unet offload is much better than multi-diffusion and people can directly generate 4k images without using multi-diffusion, by automatically offload unet to RAM. If bigger than 4k, use Ultimate SD Upscale.)
 (But if you want to use some special features in MultiDiffusion like inversion or region prompt, probably you can still use it, but it can be very rare.)
-
-Below extensions will be reworked soon
-
-    sd-webui-controlnet
-
-controlnet will not be replaced by another extension. We will have 10+ extensions for different preprocessors, and 10+ extensions for different control. Each extension will have less than 100 lines of codes. Everyone will be able to add preprocessor/control model by adding new extensions. And adding those extensions will be super easy. Those extensions will share a UI managed by Forge.

@@ -33,7 +33,6 @@ def initialize_forge():
             print(f'Please just remove this flag.')
             print(f'In extreme cases, if you want to force previous lowvram/medvram behaviors, '
                   f'please use --always-offload-from-vram')
-            exit(0)
 
     from ldm_patched.modules import args_parser
 

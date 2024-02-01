@@ -641,6 +641,9 @@ class IPAdapterApply:
         cross_attention_dim = 1280 if self.is_plus and self.is_sdxl and not self.is_faceid else output_cross_attention_dim
         clip_extra_context_tokens = 16 if self.is_plus or self.is_portrait else 4
 
+        if self.is_instant_id:
+            cross_attention_dim = output_cross_attention_dim
+
         if embeds is not None:
             embeds = torch.unbind(embeds)
             clip_embed = embeds[0].cpu()

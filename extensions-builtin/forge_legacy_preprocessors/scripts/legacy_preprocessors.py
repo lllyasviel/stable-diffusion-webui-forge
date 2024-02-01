@@ -56,6 +56,7 @@ class LegacyPreprocessor(Preprocessor):
             't2i-adapter': ['t2i_adapter', 't2iadapter', 't2ia'],
             'ip-adapter': ['ip_adapter', 'ipadapter'],
             'openpose': ['openpose', 'densepose'],
+            'instant-iD': ['instant_id', 'instantid'],
         }
 
         self.model_filename_filters = []

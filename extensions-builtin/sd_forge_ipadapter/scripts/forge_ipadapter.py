@@ -38,7 +38,7 @@ class PreprocessorClipVisionWithInsightFaceForIPAdapter(PreprocessorClipVisionFo
 
     def load_insightface(self):
         if self.cached_insightface is None:
-            self.cached_insightface = opInsightFaceLoader("CPU")[0]
+            self.cached_insightface = opInsightFaceLoader()[0]
         return self.cached_insightface
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
@@ -51,6 +51,39 @@ class PreprocessorClipVisionWithInsightFaceForIPAdapter(PreprocessorClipVisionFo
             embeds=None,
             attn_mask=None,
             unfold_batch=False,
+        )
+        return cond
+
+
+class PreprocessorInsightFaceForInstantID(Preprocessor):
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+        self.tags = ['Instant-ID']
+        self.model_filename_filters = ['Instant-ID', 'Instant_ID']
+        self.sorting_priority = 20
+        self.slider_resolution = PreprocessorParameter(visible=False)
+        self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
+        self.show_control_mode = False
+        self.sorting_priority = 10
+        self.cached_insightface = None
+
+    def load_insightface(self):
+        if self.cached_insightface is None:
+            self.cached_insightface = opInsightFaceLoader(name='antelopev2')[0]
+        return self.cached_insightface
+
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+        cond = dict(
+            clip_vision=None,
+            insightface=self.load_insightface(),
+            image=numpy_to_pytorch(input_image),
+            weight_type="original",
+            noise=0.0,
+            embeds=None,
+            attn_mask=None,
+            unfold_batch=False,
+            using_instant_id=True
         )
         return cond
 
@@ -71,6 +104,10 @@ add_supported_preprocessor(PreprocessorClipVisionWithInsightFaceForIPAdapter(
     name='InsightFace+CLIP-H (IPAdapter)',
     url='https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors',
     filename='CLIP-ViT-H-14.safetensors'
+))
+
+add_supported_preprocessor(PreprocessorInsightFaceForInstantID(
+    name='InsightFace (InstantID)',
 ))
 
 

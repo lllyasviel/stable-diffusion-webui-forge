@@ -1,4 +1,4 @@
-# This file is exactly same with https://github.com/cubiq/ComfyUI_IPAdapter_plus/blob/main/IPAdapterPlus.py
+# https://github.com/cubiq/ComfyUI_IPAdapter_plus/blob/main/IPAdapterPlus.py
 
 import torch
 import contextlib
@@ -532,17 +532,34 @@ class InsightFaceLoader:
     FUNCTION = "load_insight_face"
     CATEGORY = "ipadapter"
 
-    def load_insight_face(self, provider):
+    def load_insight_face(self, name="buffalo_l", provider="CPU"):
         try:
             from insightface.app import FaceAnalysis
         except ImportError as e:
             raise Exception(e)
+
+        if name == 'antelopev2':
+            from modules.modelloader import load_file_from_url
+            model_root = os.path.join(INSIGHTFACE_DIR, 'models', "antelopev2")
+            if not model_root:
+                os.makedirs(model_root, exist_ok=True)
+            for local_file, url in (
+                    ("1k3d68.onnx", "https://huggingface.co/DIAMONIK7777/antelopev2/resolve/main/1k3d68.onnx"),
+                    ("2d106det.onnx", "https://huggingface.co/DIAMONIK7777/antelopev2/resolve/main/2d106det.onnx"),
+                    ("genderage.onnx", "https://huggingface.co/DIAMONIK7777/antelopev2/resolve/main/genderage.onnx"),
+                    ("glintr100.onnx", "https://huggingface.co/DIAMONIK7777/antelopev2/resolve/main/glintr100.onnx"),
+                    ("scrfd_10g_bnkps.onnx",
+                     "https://huggingface.co/DIAMONIK7777/antelopev2/resolve/main/scrfd_10g_bnkps.onnx"),
+            ):
+                local_path = os.path.join(model_root, local_file)
+                if not os.path.exists(local_path):
+                    load_file_from_url(url, model_dir=model_root)
         
         from insightface.utils import face_align
         global insightface_face_align
         insightface_face_align = face_align
 
-        model = FaceAnalysis(name="buffalo_l", root=INSIGHTFACE_DIR, providers=[provider + 'ExecutionProvider',])
+        model = FaceAnalysis(name=name, root=INSIGHTFACE_DIR, providers=[provider + 'ExecutionProvider',])
         model.prepare(ctx_id=0, det_size=(640, 640))
 
         return (model,)
@@ -572,7 +589,10 @@ class IPAdapterApply:
     FUNCTION = "apply_ipadapter"
     CATEGORY = "ipadapter"
 
-    def apply_ipadapter(self, ipadapter, model, weight, clip_vision=None, image=None, weight_type="original", noise=None, embeds=None, attn_mask=None, start_at=0.0, end_at=1.0, unfold_batch=False, insightface=None, faceid_v2=False, weight_v2=False):
+    def apply_ipadapter(self, ipadapter, model, weight, clip_vision=None, image=None, weight_type="original",
+                        noise=None, embeds=None, attn_mask=None, start_at=0.0, end_at=1.0, unfold_batch=False,
+                        insightface=None, faceid_v2=False, weight_v2=False, using_instant_id=False):
+
         self.dtype = torch.float16 if ldm_patched.modules.model_management.should_use_fp16() else torch.float32
         self.device = ldm_patched.modules.model_management.get_torch_device()
         self.weight = weight

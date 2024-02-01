@@ -361,22 +361,22 @@ legacy_preprocessors = {
     #         "Inpaint"
     #     ]
     # },
-    "instant_id_face_embedding": {
-        "label": "instant_id_face_embedding",
-        "call_function": functools.partial(g_insight_face_instant_id_model.run_model_instant_id, return_keypoints=False),
-        "unload_function": None,
-        "managed_model": "g_insight_face_instant_id_model",
-        "model_free": False,
-        "no_control_mode": False,
-        "resolution": None,
-        "slider_1": None,
-        "slider_2": None,
-        "slider_3": None,
-        "priority": 0,
-        "tags": [
-            "Instant_ID"
-        ]
-    },
+    # "instant_id_face_embedding": {
+    #     "label": "instant_id_face_embedding",
+    #     "call_function": functools.partial(g_insight_face_instant_id_model.run_model_instant_id, return_keypoints=False),
+    #     "unload_function": None,
+    #     "managed_model": "g_insight_face_instant_id_model",
+    #     "model_free": False,
+    #     "no_control_mode": False,
+    #     "resolution": None,
+    #     "slider_1": None,
+    #     "slider_2": None,
+    #     "slider_3": None,
+    #     "priority": 0,
+    #     "tags": [
+    #         "Instant-ID"
+    #     ]
+    # },
     "instant_id_face_keypoints": {
         "label": "instant_id_face_keypoints",
         "call_function": functools.partial(g_insight_face_instant_id_model.run_model_instant_id, return_keypoints=True),
@@ -390,7 +390,7 @@ legacy_preprocessors = {
         "slider_3": None,
         "priority": 0,
         "tags": [
-            "Instant_ID"
+            "Instant-ID"
         ]
     },
     # "ip-adapter_clip_sd15": {

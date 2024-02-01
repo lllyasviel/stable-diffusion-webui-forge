@@ -4,7 +4,7 @@ Currently, we are only sending invitations to people who may be interested in de
 
 Please do not share codes or info from this project to public.
 
-If you see this, please join our private Discord server for discussion: https://discord.gg/2uvDhfAZ
+If you see this, please join our private Discord server for discussion: https://discord.gg/rgZdjgrDTS
 
 # Stable Diffusion Web UI Forge
 

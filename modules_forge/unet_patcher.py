@@ -99,7 +99,7 @@ class UnetPatcher(ModelPatcher):
                     self.set_model_patch_replace(patch, target, block_name, number, transformer_index)
         return
 
-    def encode_conds_from_clip(self, conds, noise, prompt_type="positive"):
+    def encode_conds_after_clip(self, conds, noise, prompt_type="positive"):
         return encode_model_conds(
             model_function=self.model.extra_conds,
             conds=convert_cond(conds),

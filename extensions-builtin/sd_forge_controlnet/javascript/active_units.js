@@ -99,10 +99,14 @@
              */
             sync_enabled_checkbox() {
                 this.enabledCheckbox.addEventListener("change", () => {
-                    this.enabledAccordionCheckbox.checked = this.enabledCheckbox.checked;
+                    if (this.enabledAccordionCheckbox.checked != this.enabledCheckbox.checked) {
+                        this.enabledAccordionCheckbox.click();
+                    }
                 });
                 this.enabledAccordionCheckbox.addEventListener("change", () => {
-                    this.enabledCheckbox.checked = this.enabledAccordionCheckbox.checked;
+                    if (this.enabledCheckbox.checked != this.enabledAccordionCheckbox.checked) {
+                        this.enabledCheckbox.click();
+                    }
                 });
             }
             /**
@@ -184,12 +188,10 @@
             }
 
             attachEnabledButtonListener() {
-                const update = () => {
+                this.enabledCheckbox.addEventListener('change', () => {
                     this.updateActiveState();
                     this.updateActiveUnitCount();
-                }
-                this.enabledCheckbox.addEventListener('change', update);
-                this.enabledAccordionCheckbox.addEventListener('change', update);
+                });
             }
 
             attachControlTypeRadioListener() {

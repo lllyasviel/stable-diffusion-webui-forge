@@ -151,7 +151,6 @@ class ControlNetUiGroup(object):
         self,
         is_img2img: bool,
         default_unit: external_code.ControlNetUnit,
-        unit_enabled: gr.Checkbox,
         photopea: Optional[Photopea] = None,
     ):
         # Whether callbacks have been registered.
@@ -165,12 +164,11 @@ class ControlNetUiGroup(object):
         self.webcam_enabled = False
         self.webcam_mirrored = False
 
-        # Now the enabled checkbox is moved to display on InputAccordion.
-        self.enabled = unit_enabled
         # Note: All gradio elements declared in `render` will be defined as member variable.
         # Update counter to trigger a force update of UiControlNetUnit.
         # This is useful when a field with no event subscriber available changes.
         # e.g. gr.Gallery, gr.State, etc.
+        self.enabled = None
         self.update_unit_counter = None
         self.upload_tab = None
         self.image = None
@@ -397,6 +395,12 @@ class ControlNetUiGroup(object):
                 )
 
         with FormRow(elem_classes=["controlnet_main_options"]):
+            self.enabled = gr.Checkbox(
+                label="Enable",
+                value=self.default_unit.enabled,
+                elem_id=f"{elem_id_tabname}_{tabname}_controlnet_enable_checkbox",
+                elem_classes=["cnet-unit-enabled"],
+            )
             self.pixel_perfect = gr.Checkbox(
                 label="Pixel Perfect",
                 value=self.default_unit.pixel_perfect,

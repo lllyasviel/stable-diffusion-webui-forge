@@ -4,12 +4,12 @@
   Copyright 2011 Jon Leighton
   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
   associated documentation files (the "Software"), to deal in the Software without restriction,
-  including without limitation the rights to use, copy, modify, merge, publish, distribute, 
+  including without limitation the rights to use, copy, modify, merge, publish, distribute,
   sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
   furnished to do so, subject to the following conditions:
   The above copyright notice and this permission notice shall be included in all copies or substantial
-  portions of the Software. 
-  
+  portions of the Software.
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
   PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
@@ -298,13 +298,13 @@
     }
 
     /**
-     * Fetch detected maps from each ControlNet units. 
+     * Fetch detected maps from each ControlNet units.
      * Create a new photopea document.
      * Add those detected maps to the created document.
      */
     async fetchFromControlNet(tabs) {
       if (tabs.length === 0) return;
-      const isImg2Img = tabs[0].querySelector('.cnet-unit-enabled').id.includes('img2img');
+      const isImg2Img = tabs[0].querySelector('.cnet-mask-upload').id.includes('img2img');
       const generationType = isImg2Img ? 'img2img' : 'txt2img';
       const width = gradioApp().querySelector(`#${generationType}_width input[type=number]`).value;
       const height = gradioApp().querySelector(`#${generationType}_height input[type=number]`).value;
@@ -401,7 +401,7 @@
       }
 
       const closeModalButton = accordion.querySelector('.cnet-photopea-edit .cnet-modal-close');
-      const tabs = accordion.querySelectorAll('.cnet-unit-tab');
+      const tabs = accordion.querySelectorAll('.controlnet .input-accordion');
       const photopeaIframe = accordion.querySelector('.photopea-iframe');
       const photopeaContext = new PhotopeaContext(photopeaIframe, tabs);
 

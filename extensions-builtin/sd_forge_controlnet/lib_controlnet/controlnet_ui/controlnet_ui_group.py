@@ -59,7 +59,7 @@ class A1111Context:
         )
 
     @property
-    def img2img_non_inpaint_tabs(self) -> List[gr.components.IOComponent]:
+    def img2img_non_inpaint_tabs(self) -> Tuple[gr.components.IOComponent]:
         return (
             self.img2img_img2img_tab,
             self.img2img_img2img_sketch_tab,
@@ -151,7 +151,8 @@ class ControlNetUiGroup(object):
         self,
         is_img2img: bool,
         default_unit: external_code.ControlNetUnit,
-        photopea: Optional[Photopea],
+        unit_enabled: gr.Checkbox,
+        photopea: Optional[Photopea] = None,
     ):
         # Whether callbacks have been registered.
         self.callbacks_registered: bool = False
@@ -164,6 +165,8 @@ class ControlNetUiGroup(object):
         self.webcam_enabled = False
         self.webcam_mirrored = False
 
+        # Now the enabled checkbox is moved to display on InputAccordion.
+        self.enabled = unit_enabled
         # Note: All gradio elements declared in `render` will be defined as member variable.
         # Update counter to trigger a force update of UiControlNetUnit.
         # This is useful when a field with no event subscriber available changes.
@@ -190,7 +193,6 @@ class ControlNetUiGroup(object):
         self.webcam_enable = None
         self.webcam_mirror = None
         self.send_dimen_button = None
-        self.enabled = None
         self.pixel_perfect = None
         self.preprocessor_preview = None
         self.mask_upload = None
@@ -393,18 +395,6 @@ class ControlNetUiGroup(object):
                 )
 
         with FormRow(elem_classes=["controlnet_main_options"]):
-            self.enabled = gr.Checkbox(
-                label="Enable",
-                value=self.default_unit.enabled,
-                elem_id=f"{elem_id_tabname}_{tabname}_controlnet_enable_checkbox",
-                elem_classes=["cnet-unit-enabled"],
-            )
-            # self.low_vram = gr.Checkbox(
-            #     label="Low VRAM",
-            #     value=self.default_unit.low_vram,
-            #     elem_id=f"{elem_id_tabname}_{tabname}_controlnet_low_vram_checkbox",
-            #     visible=False,  # Not needed now
-            # )
             self.pixel_perfect = gr.Checkbox(
                 label="Pixel Perfect",
                 value=self.default_unit.pixel_perfect,

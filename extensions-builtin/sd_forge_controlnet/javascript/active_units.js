@@ -1,5 +1,5 @@
 /**
- * Give a badge on ControlNet Accordion indicating total number of active 
+ * Give a badge on ControlNet Accordion indicating total number of active
  * units.
  * Make active unit's tab name green.
  * Append control type to tab name.
@@ -66,30 +66,40 @@
             constructor(tab, accordion) {
                 this.tab = tab;
                 this.accordion = accordion;
-                this.isImg2Img = tab.querySelector('.cnet-unit-enabled').id.includes('img2img');
+                this.isImg2Img = tab.querySelector('.cnet-mask-upload').id.includes('img2img');
 
-                this.enabledCheckbox = tab.querySelector('.cnet-unit-enabled input');
+                this.enabledCheckbox = tab.querySelector('.input-accordion-checkbox');
                 this.inputImage = tab.querySelector('.cnet-input-image-group .cnet-image input[type="file"]');
                 this.inputImageContainer = tab.querySelector('.cnet-input-image-group .cnet-image');
                 this.controlTypeRadios = tab.querySelectorAll('.controlnet_control_type_filter_group input[type="radio"]');
                 this.resizeModeRadios = tab.querySelectorAll('.controlnet_resize_mode_radio input[type="radio"]');
                 this.runPreprocessorButton = tab.querySelector('.cnet-run-preprocessor');
 
-                const tabs = tab.parentNode;
-                this.tabNav = tabs.querySelector('.tab-nav');
-                this.tabIndex = childIndex(tab) - 1; // -1 because tab-nav is also at the same level.
+                this.tabs = tab.parentNode;
+                this.tabIndex = childIndex(tab);
+
+                // By default the InputAccordion checkbox is linked with the state
+                // of accordion's open/close state. To disable this link, we can
+                // simulate click to check the checkbox and uncheck it.
+                this.enabledCheckbox.click();
+                this.enabledCheckbox.click();
 
                 this.attachEnabledButtonListener();
                 this.attachControlTypeRadioListener();
-                this.attachTabNavChangeObserver();
+                // this.attachTabNavChangeObserver();
                 this.attachImageUploadListener();
                 this.attachImageStateChangeObserver();
                 this.attachA1111SendInfoObserver();
                 this.attachPresetDropdownObserver();
             }
 
-            getTabNavButton() {
-                return this.tabNav.querySelector(`:nth-child(${this.tabIndex + 1})`);
+            /**
+             * Get the span that has text "Unit {X}".
+             */
+            getUnitHeaderTextElement() {
+                return this.tab.querySelector(
+                    `:nth-child(${this.tabIndex + 1}) span.svelte-s1r2yt`
+                );
             }
 
             getActiveControlType() {
@@ -102,13 +112,13 @@
             }
 
             updateActiveState() {
-                const tabNavButton = this.getTabNavButton();
-                if (!tabNavButton) return;
+                const unitHeader = this.getUnitHeaderTextElement();
+                if (!unitHeader) return;
 
                 if (this.enabledCheckbox.checked) {
-                    tabNavButton.classList.add('cnet-unit-active');
+                    unitHeader.classList.add('cnet-unit-active');
                 } else {
-                    tabNavButton.classList.remove('cnet-unit-active');
+                    unitHeader.classList.remove('cnet-unit-active');
                 }
             }
 
@@ -144,11 +154,11 @@
              * Add the active control type to tab displayed text.
              */
             updateActiveControlType() {
-                const tabNavButton = this.getTabNavButton();
-                if (!tabNavButton) return;
+                const unitHeader = this.getUnitHeaderTextElement();
+                if (!unitHeader) return;
 
                 // Remove the control if exists
-                const controlTypeSuffix = tabNavButton.querySelector('.control-type-suffix');
+                const controlTypeSuffix = unitHeader.querySelector('.control-type-suffix');
                 if (controlTypeSuffix) controlTypeSuffix.remove();
 
                 // Add new suffix.
@@ -158,31 +168,7 @@
                 const span = document.createElement('span');
                 span.innerHTML = `[${controlType}]`;
                 span.classList.add('control-type-suffix');
-                tabNavButton.appendChild(span);
-            }
-
-            /**
-             * When 'Inpaint' control type is selected in img2img:
-             * - Make image input disabled
-             * - Clear existing image input
-             */
-            updateImageInputState() {
-                if (!this.isImg2Img) return;
-
-                const tabNavButton = this.getTabNavButton();
-                if (!tabNavButton) return;
-
-                const controlType = this.getActiveControlType();
-                if (controlType.toLowerCase() === 'inpaint') {
-                    this.inputImage.disabled = true;
-                    this.inputImage.parentNode.addEventListener('click', imageInputDisabledAlert);
-                    const removeButton = this.tab.querySelector(
-                        '.cnet-input-image-group .cnet-image button[aria-label="Remove Image"]');
-                    if (removeButton) removeButton.click();
-                } else {
-                    this.inputImage.disabled = false;
-                    this.inputImage.parentNode.removeEventListener('click', imageInputDisabledAlert);
-                }
+                unitHeader.appendChild(span);
             }
 
             attachEnabledButtonListener() {
@@ -202,7 +188,7 @@
 
             /**
              * Each time the active tab change, all tab nav buttons are cleared and
-             * regenerated by gradio. So we need to reapply the active states on 
+             * regenerated by gradio. So we need to reapply the active states on
              * them.
              */
             attachTabNavChangeObserver() {
@@ -303,7 +289,7 @@
 
         gradioApp().querySelectorAll('#controlnet').forEach(accordion => {
             if (cnetAllAccordions.has(accordion)) return;
-            accordion.querySelectorAll('.cnet-unit-tab')
+            accordion.querySelectorAll('.input-accordion')
                 .forEach(tab => new ControlNetUnitTab(tab, accordion));
             cnetAllAccordions.add(accordion);
         });

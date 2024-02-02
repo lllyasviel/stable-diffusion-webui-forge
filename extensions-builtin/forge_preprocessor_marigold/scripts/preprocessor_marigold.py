@@ -8,10 +8,9 @@ import torch
 import numpy as np
 
 from marigold.model.marigold_pipeline import MarigoldPipeline
-from einops import rearrange
 from huggingface_hub import snapshot_download
 from modules_forge.diffusers_patcher import DiffusersModelPatcher
-from modules_forge.forge_util import numpy_to_pytorch
+from modules_forge.forge_util import numpy_to_pytorch, HWC3
 from ldm_patched.modules import model_management
 
 
@@ -67,7 +66,7 @@ class PreprocessorMarigold(Preprocessor):
             depth = self.diffusers_patcher.patcher.model(img, num_inference_steps=20, show_pbar=False)
             depth = depth * 0.5 + 0.5
             depth = depth.movedim(1, -1)[0].cpu().numpy()
-            depth_image = (depth * 255.0).clip(0, 255).astype(np.uint8)
+            depth_image = HWC3((depth * 255.0).clip(0, 255).astype(np.uint8))
 
         return remove_pad(depth_image)
 

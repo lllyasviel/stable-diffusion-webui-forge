@@ -27,7 +27,11 @@ class DiffusersModelPatcher:
                 self.pipeline.unet.set_attn_processor(AttnProcessor2_0())
                 print('Attention optimization applied to DiffusersModelPatcher')
 
-        self.pipeline = self.pipeline.to(device=offload_device, dtype=dtype)
+        self.pipeline = self.pipeline.to(device=offload_device)
+
+        if self.dtype == torch.float16:
+            self.pipeline = self.pipeline.half()
+
         self.pipeline.eval()
 
         self.patcher = ModelPatcher(

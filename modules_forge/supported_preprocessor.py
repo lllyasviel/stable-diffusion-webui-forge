@@ -65,7 +65,7 @@ class Preprocessor:
     def process_after_every_sampling(self, process, params, *args, **kwargs):
         return
 
-    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, input_mask=None, **kwargs):
         return input_image
 
 

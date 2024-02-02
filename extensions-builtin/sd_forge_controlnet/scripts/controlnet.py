@@ -338,6 +338,7 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         preprocessor_output = preprocessor(
             input_image=input_image,
+            input_mask=input_mask,
             resolution=unit.processor_res,
             slider_1=unit.threshold_a,
             slider_2=unit.threshold_b,

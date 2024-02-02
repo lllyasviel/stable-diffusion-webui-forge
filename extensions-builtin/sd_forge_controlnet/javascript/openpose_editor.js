@@ -56,7 +56,7 @@
                 }
             });
         }
-        const tabs = gradioApp().querySelectorAll('.cnet-unit-tab');
+        const tabs = gradioApp().querySelectorAll('#controlnet .input-accordion');
         tabs.forEach(tab => {
             if (cnetOpenposeEditorRegisteredElements.has(tab)) return;
             cnetOpenposeEditorRegisteredElements.add(tab);

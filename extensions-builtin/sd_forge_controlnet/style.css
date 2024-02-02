@@ -1,3 +1,29 @@
+/* InputAccordion alignment */
+/* Flex container */
+.controlnet .svelte-vt1mxs {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    gap: 10px;
+    /* Adjusts the space between items */
+}
+
+.controlnet .input-accordion {
+    flex: 1 1 calc(50% - 10px);
+    /* Adjusts for the gap, default 2 columns */
+    /* Additional styling for items */
+}
+
+/* Media query for screens smaller than a specific width */
+@media (max-width: 600px) {
+
+    /* Adjust the threshold as needed */
+    .controlnet .input-accordion {
+        flex: 1 1 100%;
+        /* Changes to 1 column when window width is ≤ 600px */
+    }
+}
+
 .cnet-modal {
     display: none;
     /* Hidden by default */

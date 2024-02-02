@@ -5,7 +5,8 @@ import cv2
 import torch
 
 import modules.scripts as scripts
-from modules import shared, script_callbacks, processing, masking, images
+from modules import shared, script_callbacks, masking, images
+from modules.ui_components import InputAccordion
 from modules.api.api import decode_base64_to_image
 import gradio as gr
 
@@ -58,33 +59,32 @@ class ControlNetForForgeOfficial(scripts.Script):
     def show(self, is_img2img):
         return scripts.AlwaysVisible
 
-    def uigroup(self, tabname: str, is_img2img: bool, elem_id_tabname: str, photopea: Optional[Photopea]) -> Tuple[ControlNetUiGroup, gr.State]:
-        default_unit = UiControlNetUnit(enabled=False, module="None", model="None")
-        group = ControlNetUiGroup(is_img2img, default_unit, photopea)
-        return group, group.render(tabname, elem_id_tabname)
-
     def ui(self, is_img2img):
         infotext = Infotext()
         ui_groups = []
         controls = []
         max_models = shared.opts.data.get("control_net_unit_count", 3)
-        elem_id_tabname = ("img2img" if is_img2img else "txt2img") + "_controlnet"
+        gen_type = "img2img" if is_img2img else "txt2img"
+        elem_id_tabname = gen_type + "_controlnet"
+        default_unit = UiControlNetUnit(enabled=False, module="None", model="None")
         with gr.Group(elem_id=elem_id_tabname):
-            with gr.Accordion(f"ControlNet Integrated", open=False, elem_id="controlnet"):
-                photopea = Photopea() if not shared.opts.data.get("controlnet_disable_photopea_edit", False) else None
-                if max_models > 1:
-                    with gr.Tabs(elem_id=f"{elem_id_tabname}_tabs"):
-                        for i in range(max_models):
-                            with gr.Tab(f"ControlNet Unit {i}",
-                                        elem_classes=['cnet-unit-tab']):
-                                group, state = self.uigroup(f"ControlNet-{i}", is_img2img, elem_id_tabname, photopea)
-                                ui_groups.append(group)
-                                controls.append(state)
-                else:
-                    with gr.Column():
-                        group, state = self.uigroup(f"ControlNet", is_img2img, elem_id_tabname, photopea)
-                        ui_groups.append(group)
-                        controls.append(state)
+            with gr.Accordion(f"ControlNet Integrated", open=False, elem_id="controlnet",
+                              elem_classes=["controlnet"]):
+                photopea = (
+                    Photopea()
+                    if not shared.opts.data.get("controlnet_disable_photopea_edit", False)
+                    else None
+                )
+                with gr.Row(elem_id=elem_id_tabname + "_accordions", elem_classes="accordions"):
+                    for i in range(max_models):
+                        with InputAccordion(
+                            value=False,
+                            label=f"ControlNet Unit {i}",
+                            elem_classes=["cnet-unit-enabled"],
+                        ) as enable_unit:
+                            group = ControlNetUiGroup(is_img2img, default_unit, enable_unit, photopea)
+                            ui_groups.append(group)
+                            controls.append(group.render(f"ControlNet-{i}", elem_id_tabname))
 
         for i, ui_group in enumerate(ui_groups):
             infotext.register_unit(i, ui_group)

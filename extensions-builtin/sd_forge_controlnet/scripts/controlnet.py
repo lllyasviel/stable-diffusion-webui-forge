@@ -394,6 +394,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         params.model.process_after_every_sampling(p, params, *args, **kwargs)
         return
 
+    @torch.no_grad()
     def process(self, p, *args, **kwargs):
         self.current_params = {}
         for i, unit in enumerate(self.get_enabled_units(p)):
@@ -403,11 +404,13 @@ class ControlNetForForgeOfficial(scripts.Script):
             self.current_params[i] = params
         return
 
+    @torch.no_grad()
     def process_before_every_sampling(self, p, *args, **kwargs):
         for i, unit in enumerate(self.get_enabled_units(p)):
             self.process_unit_before_every_sampling(p, unit, self.current_params[i], *args, **kwargs)
         return
 
+    @torch.no_grad()
     def postprocess_batch_list(self, p, *args, **kwargs):
         for i, unit in enumerate(self.get_enabled_units(p)):
             self.process_unit_after_every_sampling(p, unit, self.current_params[i], *args, **kwargs)

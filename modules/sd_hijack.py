@@ -168,6 +168,7 @@ class EmbeddingsWithFixes(torch.nn.Module):
         self.wrapped = wrapped
         self.embeddings = embeddings
         self.textual_inversion_key = textual_inversion_key
+        self.weight = self.wrapped.weight
 
     def forward(self, input_ids):
         batch_fixes = self.embeddings.fixes

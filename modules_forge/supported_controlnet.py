@@ -26,7 +26,7 @@ class ControlModelPatcher:
     def process_after_running_preprocessors(self, process, params, *args, **kwargs):
         return
 
-    def process_before_every_sampling(self, process, cond, *args, **kwargs):
+    def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         return
 
     def process_after_every_sampling(self, process, params, *args, **kwargs):
@@ -142,7 +142,7 @@ class ControlNetPatcher(ControlModelPatcher):
     def __init__(self, model_patcher):
         super().__init__(model_patcher)
 
-    def process_before_every_sampling(self, process, cond, *args, **kwargs):
+    def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         unet = process.sd_model.forge_objects.unet
 
         unet = apply_controlnet_advanced(

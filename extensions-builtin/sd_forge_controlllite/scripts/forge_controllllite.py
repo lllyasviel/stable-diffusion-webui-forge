@@ -18,7 +18,7 @@ class ControlLLLitePatcher(ControlModelPatcher):
         self.state_dict = state_dict
         return
 
-    def process_before_every_sampling(self, process, cond, *args, **kwargs):
+    def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         unet = process.sd_model.forge_objects.unet
 
         unet = opLLLiteLoader(

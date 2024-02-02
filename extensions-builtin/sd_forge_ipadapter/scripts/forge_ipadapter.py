@@ -144,7 +144,7 @@ class IPAdapterPatcher(ControlModelPatcher):
         self.weight_v2 = False
         return
 
-    def process_before_every_sampling(self, process, cond, *args, **kwargs):
+    def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         unet = process.sd_model.forge_objects.unet
 
         unet = opIPAdapterApply(

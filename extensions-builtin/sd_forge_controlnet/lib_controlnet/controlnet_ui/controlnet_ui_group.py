@@ -20,6 +20,7 @@ from lib_controlnet.enums import InputMode
 from modules import shared
 from modules.ui_components import FormRow
 from modules_forge.forge_util import HWC3
+from lib_controlnet.external_code import UiControlNetUnit
 
 
 @dataclass
@@ -118,53 +119,6 @@ class A1111Context:
             )
 
 
-class UiControlNetUnit(external_code.ControlNetUnit):
-    """The data class that stores all states of a ControlNetUnit."""
-
-    def __init__(
-        self,
-        input_mode: InputMode = InputMode.SIMPLE,
-        batch_images: Optional[Union[str, List[external_code.InputImage]]] = None,
-        output_dir: str = "",
-        loopback: bool = False,
-        merge_gallery_files: List[
-            Dict[Union[Literal["name"], Literal["data"]], str]
-        ] = [],
-        use_preview_as_input: bool = False,
-        generated_image: Optional[np.ndarray] = None,
-        mask_image: Optional[np.ndarray] = None,
-        enabled: bool = True,
-        module: Optional[str] = None,
-        model: Optional[str] = None,
-        weight: float = 1.0,
-        image: Optional[Dict[str, np.ndarray]] = None,
-        *args,
-        **kwargs,
-    ):
-        if use_preview_as_input and generated_image is not None:
-            input_image = generated_image
-            module = "None"
-        else:
-            input_image = image
-
-        # Prefer uploaded mask_image over hand-drawn mask.
-        if input_image is not None and mask_image is not None:
-            assert isinstance(input_image, dict)
-            input_image["mask"] = mask_image
-
-        if merge_gallery_files and input_mode == InputMode.MERGE:
-            input_image = [
-                {"image": read_image(file["name"])} for file in merge_gallery_files
-            ]
-
-        super().__init__(enabled, module, model, weight, input_image, *args, **kwargs)
-        self.is_ui = True
-        self.input_mode = input_mode
-        self.batch_images = batch_images
-        self.output_dir = output_dir
-        self.loopback = loopback
-
-
 class ControlNetUiGroup(object):
     refresh_symbol = "\U0001f504"  # 🔄
     switch_values_symbol = "\U000021C5"  # ⇅
@@ -237,7 +191,6 @@ class ControlNetUiGroup(object):
         self.webcam_mirror = None
         self.send_dimen_button = None
         self.enabled = None
-        self.low_vram = None
         self.pixel_perfect = None
         self.preprocessor_preview = None
         self.mask_upload = None
@@ -255,7 +208,6 @@ class ControlNetUiGroup(object):
         self.threshold_b = None
         self.control_mode = None
         self.resize_mode = None
-        self.loopback = None
         self.use_preview_as_input = None
         self.openpose_editor = None
         self.preset_panel = None
@@ -448,12 +400,12 @@ class ControlNetUiGroup(object):
                 elem_id=f"{elem_id_tabname}_{tabname}_controlnet_enable_checkbox",
                 elem_classes=["cnet-unit-enabled"],
             )
-            self.low_vram = gr.Checkbox(
-                label="Low VRAM",
-                value=self.default_unit.low_vram,
-                elem_id=f"{elem_id_tabname}_{tabname}_controlnet_low_vram_checkbox",
-                visible=False,  # Not needed now
-            )
+            # self.low_vram = gr.Checkbox(
+            #     label="Low VRAM",
+            #     value=self.default_unit.low_vram,
+            #     elem_id=f"{elem_id_tabname}_{tabname}_controlnet_low_vram_checkbox",
+            #     visible=False,  # Not needed now
+            # )
             self.pixel_perfect = gr.Checkbox(
                 label="Pixel Perfect",
                 value=self.default_unit.pixel_perfect,
@@ -611,22 +563,22 @@ class ControlNetUiGroup(object):
             visible=not self.is_img2img,
         )
 
-        self.hr_option = gr.Radio(
-            choices=[e.value for e in external_code.HiResFixOption],
-            value=self.default_unit.hr_option.value,
-            label="Hires-Fix Option",
-            elem_id=f"{elem_id_tabname}_{tabname}_controlnet_hr_option_radio",
-            elem_classes="controlnet_hr_option_radio",
-            visible=False,
-        )
-
-        self.loopback = gr.Checkbox(
-            label="[Batch Loopback] Automatically send generated images to this ControlNet unit in batch generation",
-            value=self.default_unit.loopback,
-            elem_id=f"{elem_id_tabname}_{tabname}_controlnet_automatically_send_generated_images_checkbox",
-            elem_classes="controlnet_loopback_checkbox",
-            visible=False,
-        )
+        # self.hr_option = gr.Radio(
+        #     choices=[e.value for e in external_code.HiResFixOption],
+        #     value=self.default_unit.hr_option.value,
+        #     label="Hires-Fix Option",
+        #     elem_id=f"{elem_id_tabname}_{tabname}_controlnet_hr_option_radio",
+        #     elem_classes="controlnet_hr_option_radio",
+        #     visible=False,
+        # )
+        #
+        # self.loopback = gr.Checkbox(
+        #     label="[Batch Loopback] Automatically send generated images to this ControlNet unit in batch generation",
+        #     value=self.default_unit.loopback,
+        #     elem_id=f"{elem_id_tabname}_{tabname}_controlnet_automatically_send_generated_images_checkbox",
+        #     elem_classes="controlnet_loopback_checkbox",
+        #     visible=False,
+        # )
 
         self.preset_panel = ControlNetPresetUI(
             id_prefix=f"{elem_id_tabname}_{tabname}_"
@@ -636,24 +588,15 @@ class ControlNetUiGroup(object):
         self.output_dir_state = gr.State("")
         unit_args = (
             self.input_mode,
-            self.batch_image_dir_state,
-            self.output_dir_state,
-            self.loopback,
-            # Non-persistent fields.
-            # Following inputs will not be persistent on `ControlNetUnit`.
-            # They are only used during object construction.
-            self.merge_gallery,
             self.use_preview_as_input,
             self.generated_image,
             self.mask_image,
-            # End of Non-persistent fields.
             self.enabled,
             self.module,
             self.model,
             self.weight,
             self.image,
             self.resize_mode,
-            self.low_vram,
             self.processor_res,
             self.threshold_a,
             self.threshold_b,
@@ -661,8 +604,6 @@ class ControlNetUiGroup(object):
             self.guidance_end,
             self.pixel_perfect,
             self.control_mode,
-            self.inpaint_crop_input_image,
-            self.hr_option,
         )
 
         unit = gr.State(self.default_unit)
@@ -1018,7 +959,7 @@ class ControlNetUiGroup(object):
                 gr.update(value=None),
                 gr.update(value=None),
                 gr.update(value=False, visible=x),
-            ] + [gr.update(visible=x)] * 4
+            ] + [gr.update(visible=x)] * 3
 
         self.upload_independent_img_in_img2img.change(
             fn_same_checked,
@@ -1029,7 +970,6 @@ class ControlNetUiGroup(object):
                 self.preprocessor_preview,
                 self.image_upload_panel,
                 self.trigger_preprocessor,
-                self.loopback,
                 self.resize_mode,
             ],
             show_progress=False,
@@ -1072,16 +1012,17 @@ class ControlNetUiGroup(object):
         ControlNetUiGroup.a1111_context.img2img_inpaint_area.change(**gradio_kwargs)
 
     def register_shift_hr_options(self):
-        # A1111 version < 1.6.0.
-        if not ControlNetUiGroup.a1111_context.txt2img_enable_hr:
-            return
-
-        ControlNetUiGroup.a1111_context.txt2img_enable_hr.change(
-            fn=lambda checked: gr.update(visible=checked),
-            inputs=[ControlNetUiGroup.a1111_context.txt2img_enable_hr],
-            outputs=[self.hr_option],
-            show_progress=False,
-        )
+        # # A1111 version < 1.6.0.
+        # if not ControlNetUiGroup.a1111_context.txt2img_enable_hr:
+        #     return
+        #
+        # ControlNetUiGroup.a1111_context.txt2img_enable_hr.change(
+        #     fn=lambda checked: gr.update(visible=checked),
+        #     inputs=[ControlNetUiGroup.a1111_context.txt2img_enable_hr],
+        #     outputs=[self.hr_option],
+        #     show_progress=False,
+        # )
+        return
 
     def register_shift_upload_mask(self):
         """Controls whether the upload mask input should be visible."""
@@ -1268,30 +1209,17 @@ class ControlNetUiGroup(object):
         for ui_group in ui_groups:
             batch_fn = lambda: InputMode.BATCH
             simple_fn = lambda: InputMode.SIMPLE
-            # merge_fn = lambda: InputMode.MERGE
+            merge_fn = lambda: InputMode.MERGE
             for input_tab, fn in (
                 (ui_group.upload_tab, simple_fn),
                 (ui_group.batch_tab, batch_fn),
-                # (ui_group.merge_tab, merge_fn),
+                (ui_group.merge_tab, merge_fn),
             ):
                 # Sync input_mode.
                 input_tab.select(
                     fn=fn,
                     inputs=[],
                     outputs=[ui_group.input_mode],
-                    show_progress=False,
-                ).then(
-                    # Update visibility of loopback checkbox.
-                    fn=lambda *mode_values: (
-                        (
-                            gr.update(
-                                visible=any(m == InputMode.BATCH for m in mode_values)
-                            ),
-                        )
-                        * len(ui_groups)
-                    ),
-                    inputs=[g.input_mode for g in ui_groups],
-                    outputs=[g.loopback for g in ui_groups],
                     show_progress=False,
                 )
 

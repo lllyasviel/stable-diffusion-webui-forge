@@ -55,7 +55,11 @@ class PreprocessorMarigold(Preprocessor):
 
         self.load_model()
 
-        model_management.load_models_gpu([self.diffusers_patcher.patcher])
+        H, W, C = input_image.shape
+
+        self.diffusers_patcher.prepare_memory_before_sampling(
+            batchsize=1, latent_width=W // 8, latent_height=H // 8
+        )
 
         with torch.no_grad():
             img = numpy_to_pytorch(input_image).movedim(-1, 1).to(
@@ -63,8 +67,8 @@ class PreprocessorMarigold(Preprocessor):
                 dtype=self.diffusers_patcher.dtype)
 
             img = img * 2.0 - 1.0
-            depth = self.diffusers_patcher.patcher.model(img, num_inference_steps=20, show_pbar=False)
-            depth = depth * 0.5 + 0.5
+            depth = self.diffusers_patcher.pipeline(img, num_inference_steps=20, show_pbar=False)
+            depth = 0.5 - depth * 0.5
             depth = depth.movedim(1, -1)[0].cpu().numpy()
             depth_image = HWC3((depth * 255.0).clip(0, 255).astype(np.uint8))
 

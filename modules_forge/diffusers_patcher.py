@@ -43,6 +43,6 @@ class DiffusersModelPatcher:
         area = 2 * batchsize * latent_width * latent_height
         inference_memory = (((area * 0.6) / 0.9) + 1024) * (1024 * 1024)
         model_management.load_models_gpu(
-            models=[self.pipeline],
+            models=[self.patcher],
             memory_required=inference_memory
         )

@@ -25,7 +25,6 @@ class PreprocessorClipVisionForIPAdapter(PreprocessorClipVision):
             weight_type="original",
             noise=0.0,
             embeds=None,
-            attn_mask=None,
             unfold_batch=False,
         )
         return cond
@@ -49,7 +48,6 @@ class PreprocessorClipVisionWithInsightFaceForIPAdapter(PreprocessorClipVisionFo
             weight_type="original",
             noise=0.0,
             embeds=None,
-            attn_mask=None,
             unfold_batch=False,
         )
         return cond
@@ -81,7 +79,6 @@ class PreprocessorInsightFaceForInstantID(Preprocessor):
             weight_type="original",
             noise=0.0,
             embeds=None,
-            attn_mask=None,
             unfold_batch=False,
             instant_id=True
         )
@@ -155,6 +152,7 @@ class IPAdapterPatcher(ControlModelPatcher):
             end_at=self.end_percent,
             faceid_v2=self.faceid_v2,
             weight_v2=self.weight_v2,
+            attn_mask=mask.squeeze(1) if mask is not None else None,
             **cond,
         )[0]
 

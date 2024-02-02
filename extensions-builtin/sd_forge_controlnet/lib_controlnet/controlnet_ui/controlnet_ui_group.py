@@ -348,10 +348,18 @@ class ControlNetUiGroup(object):
                         ) as self.mask_image_group:
                             self.mask_image = gr.Image(
                                 value=None,
-                                label="Upload Mask",
+                                label="Mask",
                                 elem_id=f"{elem_id_tabname}_{tabname}_mask_image",
                                 elem_classes=["cnet-mask-image"],
                                 interactive=True,
+                                brush_radius=20,
+                                type="numpy",
+                                tool="sketch",
+                                brush_color=shared.opts.img2img_inpaint_mask_brush_color
+                                if hasattr(
+                                    shared.opts, "img2img_inpaint_mask_brush_color"
+                                )
+                                else None,
                             )
 
                 with gr.Tab(label="Batch") as self.batch_tab:
@@ -459,7 +467,7 @@ class ControlNetUiGroup(object):
                 visible=not self.is_img2img,
             )
             self.mask_upload = gr.Checkbox(
-                label="Mask Upload",
+                label="Use Mask",
                 value=False,
                 elem_classes=["cnet-mask-upload"],
                 elem_id=f"{elem_id_tabname}_{tabname}_controlnet_mask_upload_checkbox",
@@ -1082,7 +1090,7 @@ class ControlNetUiGroup(object):
                 # Clear mask_image if unchecked.
                 (gr.update(visible=False), gr.update(value=None))
                 if not checked
-                else (gr.update(visible=True), gr.update())
+                else (gr.update(visible=True), gr.update(value=np.zeros(shape=(512, 512, 3), dtype=np.uint8)))
             ),
             inputs=[self.mask_upload],
             outputs=[self.mask_image_group, self.mask_image],

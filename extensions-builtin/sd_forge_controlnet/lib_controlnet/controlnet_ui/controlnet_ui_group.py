@@ -215,7 +215,6 @@ class ControlNetUiGroup(object):
         self.image_upload_panel = None
         self.save_detected_map = None
         self.input_mode = gr.State(InputMode.SIMPLE)
-        self.inpaint_crop_input_image = None
         self.hr_option = None
         self.batch_image_dir_state = None
         self.output_dir_state = None
@@ -442,15 +441,6 @@ class ControlNetUiGroup(object):
                 )
             else:
                 self.upload_independent_img_in_img2img = None
-
-            # Note: The checkbox needs to exist for both img2img and txt2img as infotext
-            # needs the checkbox value.
-            self.inpaint_crop_input_image = gr.Checkbox(
-                label="Crop input image based on A1111 mask",
-                value=False,
-                elem_classes=["cnet-crop-input-image"],
-                visible=False,
-            )
 
         with gr.Row(elem_classes=["controlnet_control_type", "controlnet_row"]):
             self.type_filter = gr.Radio(
@@ -805,18 +795,10 @@ class ControlNetUiGroup(object):
                 )
 
             img = HWC3(image["image"])
-            has_mask = not (
-                (image["mask"][:, :, 0] <= 5).all()
-                or (image["mask"][:, :, 0] >= 250).all()
-            )
-            if "inpaint" in module:
-                color = HWC3(image["image"])
-                alpha = image["mask"][:, :, 0:1]
-                img = np.concatenate([color, alpha], axis=2)
-            elif has_mask and not shared.opts.data.get(
-                "controlnet_ignore_noninpaint_mask", False
-            ):
-                img = HWC3(image["mask"][:, :, 0])
+            mask = HWC3(image["mask"])
+
+            if not (mask > 5).any():
+                mask = None
 
             preprocessor = global_state.get_preprocessor(module)
 
@@ -854,6 +836,7 @@ class ControlNetUiGroup(object):
                 resolution=pres,
                 slider_1=pthr_a,
                 slider_2=pthr_b,
+                input_mask=mask,
                 low_vram=shared.opts.data.get("controlnet_clip_detector_on_cpu", False),
                 json_pose_callback=json_acceptor.accept
                 if is_openpose(module)
@@ -976,52 +959,9 @@ class ControlNetUiGroup(object):
         )
 
     def register_shift_crop_input_image(self):
-        # A1111 < 1.7.0 compatibility.
-        if any(c is None for c in ControlNetUiGroup.a1111_context.img2img_inpaint_tabs):
-            self.inpaint_crop_input_image.visible = True
-            self.inpaint_crop_input_image.value = True
-            return
-
-        is_inpaint_tab = gr.State(False)
-
-        def shift_crop_input_image(is_inpaint: bool, inpaint_area: int):
-            # Note: inpaint_area (0: Whole picture, 1: Only masked)
-            # By default set value to True, as most preprocessors need cropped result.
-            return gr.update(value=True, visible=is_inpaint and inpaint_area == 1)
-
-        gradio_kwargs = dict(
-            fn=shift_crop_input_image,
-            inputs=[
-                is_inpaint_tab,
-                ControlNetUiGroup.a1111_context.img2img_inpaint_area,
-            ],
-            outputs=[self.inpaint_crop_input_image],
-            show_progress=False,
-        )
-
-        for elem in ControlNetUiGroup.a1111_context.img2img_inpaint_tabs:
-            elem.select(fn=lambda: True, inputs=[], outputs=[is_inpaint_tab]).then(
-                **gradio_kwargs
-            )
-
-        for elem in ControlNetUiGroup.a1111_context.img2img_non_inpaint_tabs:
-            elem.select(fn=lambda: False, inputs=[], outputs=[is_inpaint_tab]).then(
-                **gradio_kwargs
-            )
-
-        ControlNetUiGroup.a1111_context.img2img_inpaint_area.change(**gradio_kwargs)
+        return
 
     def register_shift_hr_options(self):
-        # # A1111 version < 1.6.0.
-        # if not ControlNetUiGroup.a1111_context.txt2img_enable_hr:
-        #     return
-        #
-        # ControlNetUiGroup.a1111_context.txt2img_enable_hr.change(
-        #     fn=lambda checked: gr.update(visible=checked),
-        #     inputs=[ControlNetUiGroup.a1111_context.txt2img_enable_hr],
-        #     outputs=[self.hr_option],
-        #     show_progress=False,
-        # )
         return
 
     def register_shift_upload_mask(self):

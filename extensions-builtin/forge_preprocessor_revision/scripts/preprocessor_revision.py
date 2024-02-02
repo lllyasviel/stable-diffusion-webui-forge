@@ -63,7 +63,7 @@ class PreprocessorClipVisionForRevision(PreprocessorClipVision):
         self.slider_1 = PreprocessorParameter(
             label="Noise Augmentation", minimum=0.0, maximum=1.0, value=0.0, visible=True)
 
-    def process_before_every_sampling(self, process, cond, *args, **kwargs):
+    def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         unit = kwargs['unit']
 
         weight = float(unit.weight)
@@ -84,7 +84,8 @@ class PreprocessorClipVisionForRevision(PreprocessorClipVision):
         unet.add_conditioning_modifier(revision_conditioning_modifier, ensure_uniqueness=True)
 
         process.sd_model.forge_objects.unet = unet
-        return
+
+        return cond, mask
 
 
 add_supported_preprocessor(PreprocessorClipVisionForRevision(

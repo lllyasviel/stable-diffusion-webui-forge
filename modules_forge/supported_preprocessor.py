@@ -31,6 +31,7 @@ class Preprocessor:
         self.do_not_need_model = False
         self.sorting_priority = 0  # higher goes to top in the list
         self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = True
+        self.fill_mask_with_one_when_resize_and_fill = False
 
     def setup_model_patcher(self, model, load_device=None, offload_device=None, dtype=torch.float32, **kwargs):
         if load_device is None:
@@ -59,8 +60,8 @@ class Preprocessor:
     def process_after_running_preprocessors(self, process, params, *args, **kwargs):
         return
 
-    def process_before_every_sampling(self, process, cond, *args, **kwargs):
-        return
+    def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
+        return cond, mask
 
     def process_after_every_sampling(self, process, params, *args, **kwargs):
         return

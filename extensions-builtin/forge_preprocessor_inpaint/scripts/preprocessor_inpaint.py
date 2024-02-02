@@ -29,10 +29,11 @@ class PreprocessorInpaintOnly(PreprocessorInpaint):
         self.image = None
         self.mask = None
         self.latent = None
+        self.fill_mask_with_one_when_resize_and_fill = True
 
-    def process_before_every_sampling(self, process, cond, *args, **kwargs):
-        self.image = kwargs['cond_before_inpaint_fix'][:, 0:3]
-        self.mask = kwargs['cond_before_inpaint_fix'][:, 3:]
+    def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
+        self.image = cond
+        self.mask = mask
 
         vae = process.sd_model.forge_objects.vae
         # This is a powerful VAE with integrated memory management, bf16, and tiled fallback.
@@ -58,7 +59,10 @@ class PreprocessorInpaintOnly(PreprocessorInpaint):
         process.sd_model.forge_objects.unet = unet
 
         self.latent = latent_image
-        return
+
+        mixed_cond = cond * (1.0 - mask) - mask
+
+        return mixed_cond, None
 
     def process_after_every_sampling(self, process, params, *args, **kwargs):
         a1111_batch_result = args[0]
@@ -95,19 +99,21 @@ class PreprocessorInpaintLama(PreprocessorInpaintOnly):
         self.setup_model_patcher(model)
         return
 
-    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, input_mask=None, **kwargs):
         H, W, C = input_image.shape
-        raw_color = input_image[:, :, 0:3].copy()
-        raw_mask = input_image[:, :, 3:4].copy()
+        raw_color = input_image.copy()
+        raw_mask = input_mask.copy()
 
         input_image, remove_pad = resize_image_with_pad(input_image, 256)
+        input_mask, remove_pad = resize_image_with_pad(input_mask, 256)
+        input_mask = input_mask[..., :1]
 
         self.load_model()
 
         self.move_all_model_patchers_to_gpu()
 
-        color = np.ascontiguousarray(input_image[:, :, 0:3]).astype(np.float32) / 255.0
-        mask = np.ascontiguousarray(input_image[:, :, 3:4]).astype(np.float32) / 255.0
+        color = np.ascontiguousarray(input_image).astype(np.float32) / 255.0
+        mask = np.ascontiguousarray(input_mask).astype(np.float32) / 255.0
         with torch.no_grad():
             color = self.send_tensor_to_model_device(torch.from_numpy(color))
             mask = self.send_tensor_to_model_device(torch.from_numpy(mask))
@@ -128,15 +134,14 @@ class PreprocessorInpaintLama(PreprocessorInpaintOnly):
         fin_color = prd_color.astype(np.float32) * alpha + raw_color.astype(np.float32) * (1 - alpha)
         fin_color = fin_color.clip(0, 255).astype(np.uint8)
 
-        result = np.concatenate([fin_color, raw_mask], axis=2)
-        return result
+        return fin_color
 
-    def process_before_every_sampling(self, process, cond, *args, **kwargs):
-        super().process_before_every_sampling(process, cond, *args, **kwargs)
+    def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
+        cond, mask = super().process_before_every_sampling(process, cond, mask, *args, **kwargs)
         sigma_max = process.sd_model.forge_objects.unet.model.model_sampling.sigma_max
         original_noise = kwargs['noise']
         process.modified_noise = original_noise + self.latent.to(original_noise) / sigma_max.to(original_noise)
-        return
+        return cond, mask
 
 
 add_supported_preprocessor(PreprocessorInpaint())

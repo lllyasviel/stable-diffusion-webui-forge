@@ -47,7 +47,7 @@ class PreprocessorReference(Preprocessor):
         self.recorded_attn1 = {}
         self.recorded_h = {}
 
-    def process_before_every_sampling(self, process, cond, *args, **kwargs):
+    def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         unit = kwargs['unit']
         weight = float(unit.weight)
         style_fidelity = float(unit.threshold_a)
@@ -190,7 +190,7 @@ class PreprocessorReference(Preprocessor):
 
         process.sd_model.forge_objects.unet = unet
 
-        return
+        return cond, mask
 
 
 add_supported_preprocessor(PreprocessorReference(

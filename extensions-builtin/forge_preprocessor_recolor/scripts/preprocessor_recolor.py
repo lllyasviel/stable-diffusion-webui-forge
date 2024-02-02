@@ -38,9 +38,9 @@ class PreprocessorRecolor(Preprocessor):
         result = cv2.cvtColor(result, cv2.COLOR_GRAY2RGB)
         return result
 
-    def process_before_every_sampling(self, process, cond, *args, **kwargs):
+    def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         self.current_cond = cond
-        return
+        return cond, mask
 
     def process_after_every_sampling(self, process, params, *args, **kwargs):
         a1111_batch_result = args[0]

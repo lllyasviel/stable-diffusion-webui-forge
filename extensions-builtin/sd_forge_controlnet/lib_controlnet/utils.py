@@ -317,11 +317,6 @@ def high_quality_resize(x, size):
     # Written by lvmin
     # Super high-quality control map up-scaling, considering binary, seg, and one-pixel edges
 
-    inpaint_mask = None
-    if x.ndim == 3 and x.shape[2] == 4:
-        inpaint_mask = x[:, :, 3]
-        x = x[:, :, 0:3]
-
     if x.shape[0] != size[1] or x.shape[1] != size[0]:
         new_size_is_smaller = (size[0] * size[1]) < (x.shape[0] * x.shape[1])
         new_size_is_bigger = (size[0] * size[1]) > (x.shape[0] * x.shape[1])
@@ -346,8 +341,6 @@ def high_quality_resize(x, size):
             interpolation = cv2.INTER_CUBIC  # Must be CUBIC because we now use nms. NEVER CHANGE THIS
 
         y = cv2.resize(x, size, interpolation=interpolation)
-        if inpaint_mask is not None:
-            inpaint_mask = cv2.resize(inpaint_mask, size, interpolation=interpolation)
 
         if is_binary:
             y = np.mean(y.astype(np.float32), axis=2).clip(0, 255).astype(np.uint8)
@@ -361,15 +354,10 @@ def high_quality_resize(x, size):
     else:
         y = x
 
-    if inpaint_mask is not None:
-        inpaint_mask = (inpaint_mask > 127).astype(np.float32) * 255.0
-        inpaint_mask = inpaint_mask[:, :, None].clip(0, 255).astype(np.uint8)
-        y = np.concatenate([y, inpaint_mask], axis=2)
-
     return y
 
 
-def crop_and_resize_image(detected_map, resize_mode, h, w):
+def crop_and_resize_image(detected_map, resize_mode, h, w, fill_border_with_255=False):
     if resize_mode == external_code.ResizeMode.RESIZE:
         detected_map = high_quality_resize(detected_map, (w, h))
         detected_map = safe_numpy(detected_map)
@@ -387,9 +375,8 @@ def crop_and_resize_image(detected_map, resize_mode, h, w):
         k = min(k0, k1)
         borders = np.concatenate([detected_map[0, :, :], detected_map[-1, :, :], detected_map[:, 0, :], detected_map[:, -1, :]], axis=0)
         high_quality_border_color = np.median(borders, axis=0).astype(detected_map.dtype)
-        if len(high_quality_border_color) == 4:
-            # Inpaint hijack
-            high_quality_border_color[3] = 255
+        if fill_border_with_255:
+            high_quality_border_color = np.zeros_like(high_quality_border_color) + 255
         high_quality_background = np.tile(high_quality_border_color[None, None], [h, w, 1])
         detected_map = high_quality_resize(detected_map, (safeint(old_w * k), safeint(old_h * k)))
         new_h, new_w, _ = detected_map.shape

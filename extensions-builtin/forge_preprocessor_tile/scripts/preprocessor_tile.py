@@ -37,7 +37,7 @@ class PreprocessorTileColorFix(PreprocessorTile):
         self.variation = 8
         self.sharpness = None
 
-    def process_before_every_sampling(self, process, cond, *args, **kwargs):
+    def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         self.variation = int(kwargs['unit'].threshold_a)
 
         latent = self.register_latent(process, cond)
@@ -77,7 +77,7 @@ class PreprocessorTileColorFix(PreprocessorTile):
 
         process.sd_model.forge_objects.unet = unet
 
-        return
+        return cond, mask
 
 
 class PreprocessorTileColorFixSharp(PreprocessorTileColorFix):
@@ -86,10 +86,9 @@ class PreprocessorTileColorFixSharp(PreprocessorTileColorFix):
         self.name = 'tile_colorfix+sharp'
         self.slider_2 = PreprocessorParameter(label='Sharpness', value=1.0, minimum=0.0, maximum=2.0, step=0.01, visible=True)
 
-    def process_before_every_sampling(self, process, cond, *args, **kwargs):
+    def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         self.sharpness = float(kwargs['unit'].threshold_b)
-        super().process_before_every_sampling(process, cond, *args, **kwargs)
-        return
+        return super().process_before_every_sampling(process, cond, mask, *args, **kwargs)
 
 
 add_supported_preprocessor(PreprocessorTile())

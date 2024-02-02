@@ -396,7 +396,9 @@ class ControlNetForForgeOfficial(scripts.Script):
     @torch.no_grad()
     def process(self, p, *args, **kwargs):
         self.current_params = {}
-        for i, unit in enumerate(self.get_enabled_units(args)):
+        enabled_units = self.get_enabled_units(args)
+        Infotext.write_infotext(enabled_units, p)
+        for i, unit in enumerate(enabled_units):
             self.bound_check_params(unit)
             params = ControlNetCachedParameters()
             self.process_unit_after_click_generate(p, unit, params, *args, **kwargs)

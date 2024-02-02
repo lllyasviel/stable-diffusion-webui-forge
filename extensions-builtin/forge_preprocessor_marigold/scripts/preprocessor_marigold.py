@@ -11,7 +11,6 @@ from marigold.model.marigold_pipeline import MarigoldPipeline
 from huggingface_hub import snapshot_download
 from modules_forge.diffusers_patcher import DiffusersModelPatcher
 from modules_forge.forge_util import numpy_to_pytorch, HWC3
-from ldm_patched.modules import model_management
 
 
 class PreprocessorMarigold(Preprocessor):

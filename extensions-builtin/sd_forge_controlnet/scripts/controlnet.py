@@ -80,9 +80,9 @@ class ControlNetForForgeOfficial(scripts.Script):
                         with InputAccordion(
                             value=False,
                             label=f"ControlNet Unit {i}",
-                            elem_classes=["cnet-unit-enabled"],
-                        ) as enable_unit:
-                            group = ControlNetUiGroup(is_img2img, default_unit, enable_unit, photopea)
+                            elem_classes=["cnet-unit-enabled-accordion"],  # Class on accordion
+                        ):
+                            group = ControlNetUiGroup(is_img2img, default_unit, photopea)
                             ui_groups.append(group)
                             controls.append(group.render(f"ControlNet-{i}", elem_id_tabname))
 

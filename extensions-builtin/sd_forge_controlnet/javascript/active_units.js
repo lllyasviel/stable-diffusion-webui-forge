@@ -68,7 +68,8 @@
                 this.accordion = accordion;
                 this.isImg2Img = tab.querySelector('.cnet-mask-upload').id.includes('img2img');
 
-                this.enabledCheckbox = tab.querySelector('.input-accordion-checkbox');
+                this.enabledAccordionCheckbox = tab.querySelector('.input-accordion-checkbox');
+                this.enabledCheckbox = tab.querySelector('.cnet-unit-enabled input');
                 this.inputImage = tab.querySelector('.cnet-input-image-group .cnet-image input[type="file"]');
                 this.inputImageContainer = tab.querySelector('.cnet-input-image-group .cnet-image');
                 this.controlTypeRadios = tab.querySelectorAll('.controlnet_control_type_filter_group input[type="radio"]');
@@ -81,9 +82,10 @@
                 // By default the InputAccordion checkbox is linked with the state
                 // of accordion's open/close state. To disable this link, we can
                 // simulate click to check the checkbox and uncheck it.
-                this.enabledCheckbox.click();
-                this.enabledCheckbox.click();
+                this.enabledAccordionCheckbox.click();
+                this.enabledAccordionCheckbox.click();
 
+                this.sync_enabled_checkbox();
                 this.attachEnabledButtonListener();
                 this.attachControlTypeRadioListener();
                 this.attachImageUploadListener();
@@ -92,6 +94,17 @@
                 this.attachPresetDropdownObserver();
             }
 
+            /**
+             * Sync the states of enabledCheckbox and enabledAccordionCheckbox.
+             */
+            sync_enabled_checkbox() {
+                this.enabledCheckbox.addEventListener("change", () => {
+                    this.enabledAccordionCheckbox.checked = this.enabledCheckbox.checked;
+                });
+                this.enabledAccordionCheckbox.addEventListener("change", () => {
+                    this.enabledCheckbox.checked = this.enabledAccordionCheckbox.checked;
+                });
+            }
             /**
              * Get the span that has text "Unit {X}".
              */
@@ -171,10 +184,12 @@
             }
 
             attachEnabledButtonListener() {
-                this.enabledCheckbox.addEventListener('change', () => {
+                const update = () => {
                     this.updateActiveState();
                     this.updateActiveUnitCount();
-                });
+                }
+                this.enabledCheckbox.addEventListener('change', update);
+                this.enabledAccordionCheckbox.addEventListener('change', update);
             }
 
             attachControlTypeRadioListener() {

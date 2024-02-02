@@ -993,7 +993,7 @@ class ControlNetUiGroup(object):
         )
 
         def fn_canvas(h, w):
-            return np.zeros(shape=(h, w, 3), dtype=np.uint8) + 255, gr.Accordion.update(
+            return np.zeros(shape=(h, w, 3), dtype=np.uint8), gr.Accordion.update(
                 visible=False
             )
 

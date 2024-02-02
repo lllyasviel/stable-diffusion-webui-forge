@@ -46,3 +46,6 @@ class DiffusersModelPatcher:
             models=[self.patcher],
             memory_required=inference_memory
         )
+
+    def move_tensor_to_current_device(self, x):
+        return x.to(device=self.patcher.current_device, dtype=self.dtype)

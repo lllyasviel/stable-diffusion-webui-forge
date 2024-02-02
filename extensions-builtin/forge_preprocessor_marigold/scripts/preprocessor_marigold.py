@@ -62,9 +62,8 @@ class PreprocessorMarigold(Preprocessor):
         )
 
         with torch.no_grad():
-            img = numpy_to_pytorch(input_image).movedim(-1, 1).to(
-                device=self.diffusers_patcher.patcher.current_device,
-                dtype=self.diffusers_patcher.dtype)
+            img = numpy_to_pytorch(input_image).movedim(-1, 1)
+            img = self.diffusers_patcher.move_tensor_to_current_device(img)
 
             img = img * 2.0 - 1.0
             depth = self.diffusers_patcher.pipeline(img, num_inference_steps=20, show_pbar=False)

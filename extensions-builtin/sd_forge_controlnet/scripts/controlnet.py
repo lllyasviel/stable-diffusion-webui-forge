@@ -93,8 +93,7 @@ class ControlNetForForgeOfficial(scripts.Script):
             self.paste_field_names = infotext.paste_field_names
         return tuple(controls)
 
-    def get_enabled_units(self, p):
-        units = external_code.get_all_units_in_processing(p)
+    def get_enabled_units(self, units):
         enabled_units = [x for x in units if x.enabled]
         return enabled_units
 
@@ -397,7 +396,7 @@ class ControlNetForForgeOfficial(scripts.Script):
     @torch.no_grad()
     def process(self, p, *args, **kwargs):
         self.current_params = {}
-        for i, unit in enumerate(self.get_enabled_units(p)):
+        for i, unit in enumerate(self.get_enabled_units(args)):
             self.bound_check_params(unit)
             params = ControlNetCachedParameters()
             self.process_unit_after_click_generate(p, unit, params, *args, **kwargs)
@@ -406,14 +405,14 @@ class ControlNetForForgeOfficial(scripts.Script):
 
     @torch.no_grad()
     def process_before_every_sampling(self, p, *args, **kwargs):
-        for i, unit in enumerate(self.get_enabled_units(p)):
+        for i, unit in enumerate(self.get_enabled_units(args)):
             self.process_unit_before_every_sampling(p, unit, self.current_params[i], *args, **kwargs)
         return
 
     @torch.no_grad()
-    def postprocess_batch_list(self, p, *args, **kwargs):
-        for i, unit in enumerate(self.get_enabled_units(p)):
-            self.process_unit_after_every_sampling(p, unit, self.current_params[i], *args, **kwargs)
+    def postprocess_batch_list(self, p, pp, *args, **kwargs):
+        for i, unit in enumerate(self.get_enabled_units(args)):
+            self.process_unit_after_every_sampling(p, unit, self.current_params[i], pp, *args, **kwargs)
         self.current_params = {}
         return
 

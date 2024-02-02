@@ -352,6 +352,9 @@ class ControlNetForForgeOfficial(scripts.Script):
             params.model.negative_advanced_weighting = soft_weighting.copy()
 
         cond, mask = params.preprocessor.process_before_every_sampling(p, cond, mask, *args, **kwargs)
+
+        params.model.advanced_mask_weighting = mask
+
         params.model.process_before_every_sampling(p, cond, mask, *args, **kwargs)
 
         logger.info(f"ControlNet Method {params.preprocessor.name} patched.")

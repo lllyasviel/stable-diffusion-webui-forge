@@ -22,6 +22,7 @@ class ControlModelPatcher:
         self.negative_advanced_weighting = None
         self.advanced_frame_weighting = None
         self.advanced_sigma_weighting = None
+        self.advanced_mask_weighting = None
 
     def process_after_running_preprocessors(self, process, params, *args, **kwargs):
         return
@@ -155,7 +156,9 @@ class ControlNetPatcher(ControlModelPatcher):
             positive_advanced_weighting=self.positive_advanced_weighting,
             negative_advanced_weighting=self.negative_advanced_weighting,
             advanced_frame_weighting=self.advanced_frame_weighting,
-            advanced_sigma_weighting=self.advanced_sigma_weighting)
+            advanced_sigma_weighting=self.advanced_sigma_weighting,
+            advanced_mask_weighting=self.advanced_mask_weighting
+        )
 
         process.sd_model.forge_objects.unet = unet
         return

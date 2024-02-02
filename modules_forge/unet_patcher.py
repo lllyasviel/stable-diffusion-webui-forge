@@ -1,6 +1,8 @@
 import copy
 
 from ldm_patched.modules.model_patcher import ModelPatcher
+from ldm_patched.modules.sample import convert_cond
+from ldm_patched.modules.samplers import encode_model_conds
 
 
 class UnetPatcher(ModelPatcher):
@@ -96,3 +98,12 @@ class UnetPatcher(ModelPatcher):
                 for transformer_index in range(16):
                     self.set_model_patch_replace(patch, target, block_name, number, transformer_index)
         return
+
+    def encode_conds_from_clip(self, conds, noise, prompt_type="positive"):
+        return encode_model_conds(
+            model_function=self.model.extra_conds,
+            conds=convert_cond(conds),
+            noise=noise,
+            device=noise.device,
+            prompt_type=prompt_type
+        )

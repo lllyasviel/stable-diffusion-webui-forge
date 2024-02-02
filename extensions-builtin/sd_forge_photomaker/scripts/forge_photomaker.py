@@ -52,14 +52,7 @@ class PhotomakerPatcher(ControlModelPatcher):
         text = process.prompts[0]
 
         cond_modified = opPhotoMakerEncode(photomaker=self.model, image=cond.movedim(1, -1), clip=clip, text=text)[0]
-        noise = kwargs['x']
-        cond_modified = encode_model_conds(
-            model_function=unet.model.extra_conds,
-            conds=convert_cond(cond_modified),
-            noise=noise,
-            device=noise.device,
-            prompt_type="positive"
-        )[0]
+        cond_modified = unet.encode_conds_from_clip(conds=cond_modified, noise=kwargs['x'])[0]
 
         def conditioning_modifier(model, x, timestep, uncond, cond, cond_scale, model_options, seed):
             cond = cond.copy()

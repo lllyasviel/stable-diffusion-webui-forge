@@ -297,6 +297,14 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         return h, w, hr_y, hr_x
 
+    def get_input_data(self, p, unit, preprocessor):
+        mask = None
+        input_image, resize_mode = self.choose_input_image(p, unit)
+        assert isinstance(input_image, np.ndarray), 'Invalid input image!'
+        input_image = self.try_crop_image_with_a1111_mask(p, unit, input_image, resize_mode, preprocessor)
+        input_image = np.ascontiguousarray(input_image.copy()).copy()  # safe numpy
+        return input_image, mask, resize_mode
+
     @torch.no_grad()
     def process_unit_after_click_generate(self,
                                           p: StableDiffusionProcessing,
@@ -311,13 +319,9 @@ class ControlNetForForgeOfficial(scripts.Script):
                 and getattr(p, 'enable_hr', False)
         )
 
-        input_image, resize_mode = self.choose_input_image(p, unit)
-        assert isinstance(input_image, np.ndarray), 'Invalid input image!'
-
         preprocessor = global_state.get_preprocessor(unit.module)
 
-        input_image = self.try_crop_image_with_a1111_mask(p, unit, input_image, resize_mode, preprocessor)
-        input_image = np.ascontiguousarray(input_image.copy()).copy()  # safe numpy
+        input_image, input_mask, resize_mode = self.get_input_data(p, unit, preprocessor)
 
         if unit.pixel_perfect:
             unit.processor_res = external_code.pixel_perfect_resolution(

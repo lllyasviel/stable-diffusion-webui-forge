@@ -78,7 +78,7 @@ class ControlNetForForgeOfficial(scripts.Script):
                 with gr.Row(elem_id=elem_id_tabname + "_accordions", elem_classes="accordions"):
                     for i in range(max_models):
                         with InputAccordion(
-                            value=i == 0,
+                            value=False,
                             label=f"ControlNet Unit {i}",
                             elem_classes=["cnet-unit-enabled-accordion"],  # Class on accordion
                         ):

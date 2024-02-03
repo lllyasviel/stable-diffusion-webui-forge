@@ -289,8 +289,24 @@
 
         gradioApp().querySelectorAll('#controlnet').forEach(accordion => {
             if (cnetAllAccordions.has(accordion)) return;
-            accordion.querySelectorAll('.input-accordion')
-                .forEach(tab => new ControlNetUnitTab(tab, accordion));
+            const tabs = [...accordion.querySelectorAll('.input-accordion')]
+                .map(tab => new ControlNetUnitTab(tab, accordion));
+
+            // On open of main extension accordion, if no unit is enabled,
+            // open unit 0 for edit.
+            const labelWrap = accordion.querySelector('.label-wrap');
+            const observerAccordionOpen = new MutationObserver(function (mutations) {
+                for (const mutation of mutations) {
+                    if (mutation.target.classList.contains('open') &&
+                        tabs.every(tab => !tab.enabledCheckbox.checked &&
+                                          !tab.tab.querySelector('.label-wrap').classList.contains('open'))
+                    ) {
+                        tabs[0].tab.querySelector('.label-wrap').click();
+                    }
+                }
+            });
+            observerAccordionOpen.observe(labelWrap, { attributes: true, attributeFilter: ['class'] });
+
             cnetAllAccordions.add(accordion);
         });
     });

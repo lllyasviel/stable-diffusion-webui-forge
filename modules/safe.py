@@ -1,3 +1,5 @@
+import contextlib
+
 TypedStorage = None
 
 
@@ -29,8 +31,8 @@ def load_with_extra(filename, extra_handler=None, *args, **kwargs):
     pass
 
 
-class Extra:
-    pass
+def Extra(*args, **kwargs):
+    return contextlib.nullcontext()
 
 
 unsafe_torch_load = None

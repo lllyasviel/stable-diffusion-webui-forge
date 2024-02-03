@@ -100,6 +100,9 @@ class PreprocessorInpaintLama(PreprocessorInpaintOnly):
         return
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, input_mask=None, **kwargs):
+        if input_mask is None:
+            return input_image
+
         H, W, C = input_image.shape
         raw_color = input_image.copy()
         raw_mask = input_mask.copy()

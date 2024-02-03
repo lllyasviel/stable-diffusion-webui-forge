@@ -1061,12 +1061,12 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     res = Processed(
         p,
         images_list=output_images,
-        extra_images_list=p.extra_result_images,
         seed=p.all_seeds[0],
         info=infotexts[0],
         subseed=p.all_subseeds[0],
         index_of_first_image=index_of_first_image,
         infotexts=infotexts,
+        extra_images_list=p.extra_result_images,
     )
 
     if p.scripts is not None:

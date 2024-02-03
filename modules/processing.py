@@ -517,7 +517,7 @@ class StableDiffusionProcessing:
 
 
 class Processed:
-    def __init__(self, p: StableDiffusionProcessing, images_list, extra_images_list, seed=-1, info="", subseed=None, all_prompts=None, all_negative_prompts=None, all_seeds=None, all_subseeds=None, index_of_first_image=0, infotexts=None, comments=""):
+    def __init__(self, p: StableDiffusionProcessing, images_list, seed=-1, info="", subseed=None, all_prompts=None, all_negative_prompts=None, all_seeds=None, all_subseeds=None, index_of_first_image=0, infotexts=None, comments="", extra_images_list=[]):
         self.images = images_list
         self.extra_images = extra_images_list
         self.prompt = p.prompt
@@ -868,7 +868,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             # strength, which is saved as "Model Strength: 1.0" in the infotext
             if n == 0:
                 with open(os.path.join(paths.data_path, "params.txt"), "w", encoding="utf8") as file:
-                    processed = Processed(p, [], [])
+                    processed = Processed(p, [])
                     file.write(processed.infotext(p, 0))
 
             p.setup_conds()

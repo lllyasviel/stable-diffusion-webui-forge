@@ -1,3 +1,4 @@
+import torch
 import contextlib
 
 TypedStorage = None
@@ -35,5 +36,5 @@ def Extra(*args, **kwargs):
     return contextlib.nullcontext()
 
 
-unsafe_torch_load = None
+unsafe_torch_load = torch.load
 global_extra_handler = None

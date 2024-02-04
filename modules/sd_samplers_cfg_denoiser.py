@@ -59,9 +59,10 @@ class CFGDenoiser(torch.nn.Module):
         self.model_wrap = None
         self.p = None
 
-        # NOTE: masking before denoising can cause the original latents to be oversmoothed
-        # as the original latents do not have noise
+        # Backward Compatibility
         self.mask_before_denoising = False
+
+        self.classic_ddim_eps_estimation = False
 
     @property
     def inner_model(self):
@@ -153,9 +154,7 @@ class CFGDenoiser(torch.nn.Module):
         if state.interrupted or state.skipped:
             raise sd_samplers_common.InterruptedException
 
-        classic_ddim_eps_estimation = 'timesteps' in type(self).__name__.lower()
-
-        if classic_ddim_eps_estimation:
+        if self.classic_ddim_eps_estimation:
             acd = self.inner_model.inner_model.alphas_cumprod
             fake_sigmas = ((1 - acd) / acd) ** 0.5
             real_sigma = fake_sigmas[sigma.round().long().clip(0, int(fake_sigmas.shape[0]))]
@@ -205,7 +204,7 @@ class CFGDenoiser(torch.nn.Module):
 
         self.step += 1
 
-        if classic_ddim_eps_estimation:
+        if self.classic_ddim_eps_estimation:
             eps = (x - denoised) / sigma
             return eps
 

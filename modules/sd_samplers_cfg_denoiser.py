@@ -182,6 +182,10 @@ class CFGDenoiser(torch.nn.Module):
         denoised = forge_sampler.forge_sample(self, denoiser_params=denoiser_params,
                                               cond_scale=cond_scale, cond_composition=cond_composition)
 
+        # Blend in the original latents (after)
+        if not self.mask_before_denoising and self.mask is not None:
+            denoised = apply_blend(denoised)
+
         preview = self.sampler.last_latent = denoised
         sd_samplers_common.store_latent(preview)
 

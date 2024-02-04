@@ -217,11 +217,18 @@
                     return isPureBlack;
                 }
                 const maskImg = this.maskImageGroup.querySelector('.cnet-mask-image img');
+                // Hand-drawn mask on mask upload.
                 const handDrawnMaskCanvas = this.maskImageGroup.querySelector('.cnet-mask-image canvas[key="mask"]');
+                // Hand-drawn mask on input image upload.
+                const inputImageHandDrawnMaskCanvas = this.inputImageGroup.querySelector('.cnet-image canvas[key="mask"]');
                 if (!isEmptyCanvas(handDrawnMaskCanvas)) {
                     return handDrawnMaskCanvas.toDataURL();
+                } else if (maskImg) {
+                    return maskImg.src;
+                } else if (!isEmptyCanvas(inputImageHandDrawnMaskCanvas)) {
+                    return inputImageHandDrawnMaskCanvas.toDataURL();
                 } else {
-                    return maskImg ? maskImg.src : null;
+                    return null;
                 }
             }
             setThumbnail(imgSrc, maskSrc) {

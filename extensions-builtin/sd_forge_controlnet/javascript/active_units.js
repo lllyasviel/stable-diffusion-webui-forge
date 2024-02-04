@@ -65,6 +65,7 @@
         class ControlNetUnitTab {
             constructor(tab, accordion) {
                 this.tab = tab;
+                this.tabOpen = false; // Whether the tab is open.
                 this.accordion = accordion;
                 this.isImg2Img = tab.querySelector('.cnet-mask-upload').id.includes('img2img');
 
@@ -72,6 +73,9 @@
                 this.enabledCheckbox = tab.querySelector('.cnet-unit-enabled input');
                 this.inputImage = tab.querySelector('.cnet-input-image-group .cnet-image input[type="file"]');
                 this.inputImageContainer = tab.querySelector('.cnet-input-image-group .cnet-image');
+                this.generatedImageGroup = tab.querySelector('.cnet-generated-image-group');
+                this.maskImageGroup = tab.querySelector('.cnet-mask-image-group');
+                this.inputImageGroup = tab.querySelector('.cnet-input-image-group');
                 this.controlTypeRadios = tab.querySelectorAll('.controlnet_control_type_filter_group input[type="radio"]');
                 this.resizeModeRadios = tab.querySelectorAll('.controlnet_resize_mode_radio input[type="radio"]');
                 this.runPreprocessorButton = tab.querySelector('.cnet-run-preprocessor');
@@ -92,6 +96,7 @@
                 this.attachImageStateChangeObserver();
                 this.attachA1111SendInfoObserver();
                 this.attachPresetDropdownObserver();
+                this.attachAccordionStateObserver();
             }
 
             /**
@@ -185,6 +190,53 @@
                 span.innerHTML = `[${controlType}]`;
                 span.classList.add('control-type-suffix');
                 unitHeader.appendChild(span);
+            }
+            getInputImageSrc() {
+                const img = this.inputImageGroup.querySelector('.cnet-image img');
+                return img ? img.src : null;
+            }
+            getPreprocessorPreviewImageSrc() {
+                const img = this.generatedImageGroup.querySelector('.cnet-image img');
+                return img ? img.src : null;
+            }
+            getMaskImageSrc() {
+                const img = this.maskImageGroup.querySelector('.cnet-mask-image img');
+                return img ? img.src : null;
+            }
+            setThumbnail(imgSrc, maskSrc) {
+                if (!imgSrc) return;
+                const unitHeader = this.getUnitHeaderTextElement();
+                if (!unitHeader) return;
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.classList.add('cnet-thumbnail');
+                unitHeader.appendChild(img);
+
+                if (maskSrc) {
+                    const mask = document.createElement('img');
+                    mask.src = maskSrc;
+                    mask.classList.add('cnet-thumbnail');
+                    unitHeader.appendChild(mask);
+                }
+            }
+            removeThumbnail() {
+                const unitHeader = this.getUnitHeaderTextElement();
+                if (!unitHeader) return;
+                const imgs = unitHeader.querySelectorAll('.cnet-thumbnail');
+                for (const img of imgs) {
+                    img.remove();
+                }
+            }
+            /**
+             * When the accordion is folded, display a thumbnail of input image
+             * and mask on the accordion header.
+             */
+            updateInputImageThumbnail() {
+                if (this.tabOpen) {
+                    this.removeThumbnail();
+                } else {
+                    this.setThumbnail(this.getInputImageSrc(), this.getMaskImageSrc());
+                }
             }
 
             attachEnabledButtonListener() {
@@ -284,6 +336,34 @@
                     childList: true,
                     subtree: true,
                 });
+            }
+            /**
+             * Observer that triggers when the ControlNetUnit's accordion(tab) closes.
+             */
+            attachAccordionStateObserver() {
+                new MutationObserver((mutationsList) => {
+                    for(const mutation of mutationsList) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                            const newState = mutation.target.classList.contains('open');
+                            if (this.tabOpen != newState) {
+                                this.tabOpen = newState;
+                                if (newState) {
+                                    this.onAccordionOpen();
+                                } else {
+                                    this.onAccordionClose();
+                                }
+                            }
+                        }
+                    }
+                }).observe(this.tab.querySelector('.label-wrap'), { attributes: true, attributeFilter: ['class'] });
+            }
+
+            onAccordionOpen() {
+                this.updateInputImageThumbnail();
+            }
+
+            onAccordionClose() {
+                this.updateInputImageThumbnail();
             }
         }
 

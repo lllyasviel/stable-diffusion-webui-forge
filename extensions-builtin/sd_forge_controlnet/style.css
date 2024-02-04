@@ -11,17 +11,37 @@
 .controlnet .input-accordion {
     flex: 1 1 calc(50% - 10px);
     /* Adjusts for the gap, default 2 columns */
-    /* Additional styling for items */
+    display: flex;
+    align-items: center;
 }
 
 /* Media query for screens smaller than a specific width */
 @media (max-width: 600px) {
-
-    /* Adjust the threshold as needed */
     .controlnet .input-accordion {
         flex: 1 1 100%;
         /* Changes to 1 column when window width is ≤ 600px */
     }
+}
+/* Input image thumbnail */
+.cnet-thumbnail {
+    height: 3rem !important;
+    border: 1px solid var(--button-secondary-border-color);
+}
+
+.cnet-unit-active {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+}
+
+.controlnet .input-accordion .icon {
+    height: 1rem;
+    width: 1rem;
+}
+
+.controlnet .input-accordion .label-wrap {
+    align-items: center;
 }
 
 .cnet-modal {

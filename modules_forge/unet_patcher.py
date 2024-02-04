@@ -119,7 +119,7 @@ class UnetPatcher(ModelPatcher):
 
                 unet.add_alphas_cumprod_modifier(modifier)
                 p.sd_model.forge_objects.unet = unet
-                
+
                 return
 
         This add_alphas_cumprod_modifier is the only patch option that should be used in process_batch()

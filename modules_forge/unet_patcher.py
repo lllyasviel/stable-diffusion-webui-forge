@@ -112,13 +112,15 @@ class UnetPatcher(ModelPatcher):
         class ExampleScript(scripts.Script):
 
             def process_batch(self, p, *args, **kwargs):
-                unet = p.sd_model.forge_objects.unet
+                unet = p.sd_model.forge_objects.unet.clone()
 
                 def modifier(x):
                     return x ** 0.5
 
                 unet.add_alphas_cumprod_modifier(modifier)
-            return
+                p.sd_model.forge_objects.unet = unet
+                
+                return
 
         This add_alphas_cumprod_modifier is the only patch option that should be used in process_batch()
         All other patch options should be called in process_before_every_sampling()

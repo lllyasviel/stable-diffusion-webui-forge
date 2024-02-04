@@ -147,6 +147,20 @@ class ControlNetUiGroup(object):
     # All ControlNetUiGroup instances created.
     all_ui_groups: List["ControlNetUiGroup"] = []
 
+    @property
+    def width_slider(self):
+        if self.is_img2img:
+            return ControlNetUiGroup.a1111_context.img2img_w_slider
+        else:
+            return ControlNetUiGroup.a1111_context.txt2img_w_slider
+
+    @property
+    def height_slider(self):
+        if self.is_img2img:
+            return ControlNetUiGroup.a1111_context.img2img_h_slider
+        else:
+            return ControlNetUiGroup.a1111_context.txt2img_h_slider
+
     def __init__(
         self,
         is_img2img: bool,
@@ -640,21 +654,10 @@ class ControlNetUiGroup(object):
             else:
                 return gr.Slider.update(), gr.Slider.update()
 
-        outputs = (
-            [
-                ControlNetUiGroup.a1111_context.img2img_w_slider,
-                ControlNetUiGroup.a1111_context.img2img_h_slider,
-            ]
-            if self.is_img2img
-            else [
-                ControlNetUiGroup.a1111_context.txt2img_w_slider,
-                ControlNetUiGroup.a1111_context.txt2img_h_slider,
-            ]
-        )
         self.send_dimen_button.click(
             fn=send_dimensions,
             inputs=[self.image],
-            outputs=outputs,
+            outputs=[self.width_slider, self.height_slider],
             show_progress=False,
         )
 
@@ -859,12 +862,8 @@ class ControlNetUiGroup(object):
                 self.processor_res,
                 self.threshold_a,
                 self.threshold_b,
-                ControlNetUiGroup.a1111_context.img2img_w_slider
-                if self.is_img2img
-                else ControlNetUiGroup.a1111_context.txt2img_w_slider,
-                ControlNetUiGroup.a1111_context.img2img_h_slider
-                if self.is_img2img
-                else ControlNetUiGroup.a1111_context.txt2img_h_slider,
+                self.width_slider,
+                self.height_slider,
                 self.pixel_perfect,
                 self.resize_mode,
             ],
@@ -959,14 +958,18 @@ class ControlNetUiGroup(object):
 
     def register_shift_upload_mask(self):
         """Controls whether the upload mask input should be visible."""
-        self.mask_upload.change(
-            fn=lambda checked: (
+        def on_checkbox_click(checked: bool, canvas_height: int, canvas_width: int):
+            if not checked:
                 # Clear mask_image if unchecked.
-                (gr.update(visible=False), gr.update(value=None))
-                if not checked
-                else (gr.update(visible=True), gr.update(value=np.zeros(shape=(512, 512, 3), dtype=np.uint8)))
-            ),
-            inputs=[self.mask_upload],
+                return gr.update(visible=False), gr.update(value=None)
+            else:
+                # Init an empty canvas the same size as the generation target.
+                empty_canvas = np.zeros(shape=(canvas_height, canvas_width, 3), dtype=np.uint8)
+                return gr.update(visible=True), gr.update(value=empty_canvas)
+
+        self.mask_upload.change(
+            fn=on_checkbox_click,
+            inputs=[self.mask_upload, self.height_slider, self.width_slider],
             outputs=[self.mask_image_group, self.mask_image],
             show_progress=False,
         )

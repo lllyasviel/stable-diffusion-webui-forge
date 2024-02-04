@@ -43,7 +43,12 @@ class ForgeSD:
         self.clipvision = clipvision
 
     def shallow_copy(self):
-        return ForgeSD(self.unet, self.clip, self.vae, self.clipvision)
+        return ForgeSD(
+            self.unet.clone() if self.unet is not None else None,
+            self.clip.clone() if self.clip is not None else None,
+            self.vae,
+            self.clipvision
+        )
 
 
 @contextlib.contextmanager

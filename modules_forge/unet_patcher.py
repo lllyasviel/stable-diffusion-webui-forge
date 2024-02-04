@@ -103,6 +103,28 @@ class UnetPatcher(ModelPatcher):
         return
 
     def add_alphas_cumprod_modifier(self, modifier, ensure_uniqueness=False):
+        """
+
+        For some reasons, this function only works in A1111's Script.process_batch(self, p, *args, **kwargs)
+
+        For example, below is a worked modification:
+
+        class ExampleScript(scripts.Script):
+
+            def process_batch(self, p, *args, **kwargs):
+                unet = p.sd_model.forge_objects.unet
+
+                def modifier(x):
+                    return x ** 0.5
+
+                unet.add_alphas_cumprod_modifier(modifier)
+            return
+
+        This add_alphas_cumprod_modifier is the only patch option that should be used in process_batch()
+        All other patch options should be called in process_before_every_sampling()
+
+        """
+
         self.append_model_option('alphas_cumprod_modifiers', modifier, ensure_uniqueness)
         return
 

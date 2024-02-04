@@ -58,7 +58,7 @@ class UnetPatcher(ModelPatcher):
         patcher = ModelPatcher(model=m, load_device=self.load_device, offload_device=self.offload_device)
 
         self.add_extra_model_patcher_during_sampling(patcher)
-        return
+        return patcher
 
     def add_patched_controlnet(self, cnet):
         cnet.set_previous_controlnet(self.controlnet_linked_list)

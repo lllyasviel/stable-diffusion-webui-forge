@@ -102,6 +102,10 @@ class UnetPatcher(ModelPatcher):
         self.append_model_option('conditioning_modifiers', modifier, ensure_uniqueness)
         return
 
+    def add_alphas_cumprod_modifier(self, modifier, ensure_uniqueness=False):
+        self.append_model_option('alphas_cumprod_modifiers', modifier, ensure_uniqueness)
+        return
+
     def add_block_modifier(self, modifier, ensure_uniqueness=False):
         self.append_transformer_option('block_modifiers', modifier, ensure_uniqueness)
         return

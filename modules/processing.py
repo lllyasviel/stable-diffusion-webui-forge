@@ -909,7 +909,18 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     p.extra_generation_params['Noise Schedule'] = opts.sd_noise_schedule
                     p.sd_model.alphas_cumprod = rescale_zero_terminal_snr_abar(p.sd_model.alphas_cumprod).to(shared.device)
 
+            alphas_cumprod_modifiers = p.sd_model.forge_objects.unet.model_options.get('alphas_cumprod_modifiers', [])
+            alphas_cumprod_backup = None
+
+            if len(alphas_cumprod_modifiers) > 0:
+                alphas_cumprod_backup = p.sd_model.alphas_cumprod
+                for modifier in alphas_cumprod_modifiers:
+                    p.sd_model.alphas_cumprod = modifier(p.sd_model.alphas_cumprod)
+
             samples_ddim = p.sample(conditioning=p.c, unconditional_conditioning=p.uc, seeds=p.seeds, subseeds=p.subseeds, subseed_strength=p.subseed_strength, prompts=p.prompts)
+
+            if alphas_cumprod_backup is not None:
+                p.sd_model.alphas_cumprod = alphas_cumprod_backup
 
             if p.scripts is not None:
                 ps = scripts.PostSampleArgs(samples_ddim)

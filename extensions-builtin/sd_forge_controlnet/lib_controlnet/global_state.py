@@ -106,8 +106,8 @@ def get_filtered_controlnet_names(tag, filter_version: bool = True):
     return [
         x for x in controlnet_names
         if x == 'None' or (
-            any(f.lower() in x.lower() for f in model_filename_filters) and
-            get_sd_version().is_compatible_with(StableDiffusionVersion.detect_from_model_name(x))
+            any(f.lower() in x.lower() for f in model_filename_filters)  # and
+            # get_sd_version().is_compatible_with(StableDiffusionVersion.detect_from_model_name(x))
         )
     ]
 

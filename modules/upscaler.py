@@ -9,7 +9,12 @@ from modules import modelloader, shared
 from ldm_patched.modules import model_management
 
 
-def prepare_free_memory():
+def prepare_free_memory(aggressive=False):
+    if aggressive:
+        model_management.unload_all_models()
+        print('Upscale script freed all memory.')
+        return
+    
     model_management.free_memory(memory_required=1024*1024*3, device=model_management.get_torch_device())
     print('Upscale script freed memory successfully.')
 

@@ -49,7 +49,7 @@ class UpscalerLDSR(Upscaler):
         return LDSR(model, yaml)
 
     def do_upscale(self, img, path):
-        prepare_free_memory()
+        prepare_free_memory(aggressive=True)
         try:
             ldsr = self.load_model(path)
         except Exception:

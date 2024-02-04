@@ -260,6 +260,7 @@
              * and mask on the accordion header.
              */
             updateInputImageThumbnail() {
+                if (!opts.controlnet_input_thumbnail) return;
                 if (this.tabOpen) {
                     this.removeThumbnail();
                 } else {

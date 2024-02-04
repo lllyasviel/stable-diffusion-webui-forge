@@ -200,8 +200,29 @@
                 return img ? img.src : null;
             }
             getMaskImageSrc() {
-                const img = this.maskImageGroup.querySelector('.cnet-mask-image img');
-                return img ? img.src : null;
+                function isEmptyCanvas(canvas) {
+                    if (!canvas) return true;
+                    const ctx = canvas.getContext('2d');
+                    // Get the image data
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data; // This is a Uint8ClampedArray
+                    // Check each pixel
+                    let isPureBlack = true;
+                    for (let i = 0; i < data.length; i += 4) {
+                        if (data[i] !== 0 || data[i + 1] !== 0 || data[i + 2] !== 0) { // Check RGB values
+                            isPureBlack = false;
+                            break;
+                        }
+                    }
+                    return isPureBlack;
+                }
+                const maskImg = this.maskImageGroup.querySelector('.cnet-mask-image img');
+                const handDrawnMaskCanvas = this.maskImageGroup.querySelector('.cnet-mask-image canvas[key="mask"]');
+                if (!isEmptyCanvas(handDrawnMaskCanvas)) {
+                    return handDrawnMaskCanvas.toDataURL();
+                } else {
+                    return maskImg ? maskImg.src : null;
+                }
             }
             setThumbnail(imgSrc, maskSrc) {
                 if (!imgSrc) return;

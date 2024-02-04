@@ -223,9 +223,6 @@ class ControlNetUiGroup(object):
         self.prevent_next_n_module_update = 0
         self.prevent_next_n_slider_value_update = 0
 
-        # API-only fields
-        self.advanced_weighting = gr.State(None)
-
         ControlNetUiGroup.all_ui_groups.append(self)
 
     def render(self, tabname: str, elem_id_tabname: str) -> None:

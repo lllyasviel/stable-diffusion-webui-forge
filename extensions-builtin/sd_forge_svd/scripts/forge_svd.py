@@ -3,6 +3,7 @@ import gradio as gr
 import os
 import pathlib
 
+import modules.infotext_utils as parameters_copypaste
 from modules import script_callbacks
 from modules.paths import models_path
 from modules.ui_common import ToolButton, refresh_symbol
@@ -106,6 +107,12 @@ def on_ui_tabs():
                                             visible=True, height=1024, columns=4)
 
         generate_button.click(predict, inputs=ctrls, outputs=[output_gallery, output_video])
+        PasteField = parameters_copypaste.PasteField
+        paste_fields = [
+            PasteField(width, "Size-1", api="width"),
+            PasteField(height, "Size-2", api="height"),
+        ]
+        parameters_copypaste.add_paste_fields("svd", init_img=input_image, fields=paste_fields)
     return [(svd_block, "SVD", "svd")]
 
 

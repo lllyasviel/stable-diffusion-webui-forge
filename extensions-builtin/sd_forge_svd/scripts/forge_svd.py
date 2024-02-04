@@ -69,7 +69,7 @@ def on_ui_tabs():
                                            value=svd_filenames[0] if len(svd_filenames) > 0 else None)
                     refresh_button = ToolButton(value=refresh_symbol, tooltip="Refresh")
                     refresh_button.click(
-                        fn=lambda: gr.update(choices=update_svd_filenames),
+                        fn=lambda: gr.update(choices=update_svd_filenames()),
                         inputs=[], outputs=filename)
 
                 width = gr.Slider(label='Width', minimum=16, maximum=8192, step=8, value=1024)

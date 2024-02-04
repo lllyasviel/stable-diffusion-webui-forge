@@ -1,3 +1,4 @@
+import os
 import sys
 
 
@@ -49,4 +50,24 @@ def initialize_forge():
 
     import modules_forge.patch_basic
     modules_forge.patch_basic.patch_all_basics()
+
+    from modules_forge.shared import diffusers_dir
+
+    if 'TRANSFORMERS_CACHE' not in os.environ:
+        os.environ['TRANSFORMERS_CACHE'] = diffusers_dir
+
+    if 'HF_HOME' not in os.environ:
+        os.environ['HF_HOME'] = diffusers_dir
+
+    if 'HF_DATASETS_CACHE' not in os.environ:
+        os.environ['HF_DATASETS_CACHE'] = diffusers_dir
+
+    if 'HUGGINGFACE_HUB_CACHE' not in os.environ:
+        os.environ['HUGGINGFACE_HUB_CACHE'] = diffusers_dir
+
+    if 'HUGGINGFACE_ASSETS_CACHE' not in os.environ:
+        os.environ['HUGGINGFACE_ASSETS_CACHE'] = diffusers_dir
+
+    if 'HF_HUB_CACHE' not in os.environ:
+        os.environ['HF_HUB_CACHE'] = diffusers_dir
     return

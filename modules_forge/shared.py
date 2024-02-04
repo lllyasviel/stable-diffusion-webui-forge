@@ -10,6 +10,9 @@ os.makedirs(controlnet_dir, exist_ok=True)
 preprocessor_dir = os.path.join(models_path, 'ControlNetPreprocessor')
 os.makedirs(preprocessor_dir, exist_ok=True)
 
+diffusers_dir = os.path.join(models_path, 'diffusers')
+os.makedirs(diffusers_dir, exist_ok=True)
+
 supported_preprocessors = {}
 supported_control_models = []
 

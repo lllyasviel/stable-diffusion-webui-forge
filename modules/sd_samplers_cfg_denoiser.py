@@ -158,7 +158,9 @@ class CFGDenoiser(torch.nn.Module):
         if classic_ddim_eps_estimation:
             acd = self.inner_model.inner_model.alphas_cumprod
             fake_sigmas = ((1 - acd) / acd) ** 0.5
-            real_sigma = fake_sigmas[sigma.round().long().clip(0, int(fake_sigmas.shape[0]))]
+            tid = sigma.round().long().clip(0, int(fake_sigmas.shape[0]))
+            real_sigma = fake_sigmas[tid]
+            sqrt_alpha_cumprod = torch.sqrt(acd[tid])
             real_sigma_data = 1.0
             x = x * (real_sigma ** 2.0 + real_sigma_data ** 2.0) ** 0.5
             sigma = real_sigma
@@ -172,11 +174,16 @@ class CFGDenoiser(torch.nn.Module):
 
         # If we use masks, blending between the denoised and original latent images occurs here.
         def apply_blend(current_latent):
-            blended_latent = current_latent * self.nmask + self.init_latent * self.mask
+            init_latent = self.init_latent
+
+            if classic_ddim_eps_estimation:
+                init_latent = init_latent / sqrt_alpha_cumprod
+
+            blended_latent = current_latent * self.nmask + init_latent * self.mask
 
             if self.p.scripts is not None:
                 from modules import scripts
-                mba = scripts.MaskBlendArgs(current_latent, self.nmask, self.init_latent, self.mask, blended_latent, denoiser=self, sigma=sigma)
+                mba = scripts.MaskBlendArgs(current_latent, self.nmask, init_latent, self.mask, blended_latent, denoiser=self, sigma=sigma)
                 self.p.scripts.on_mask_blend(self.p, mba)
                 blended_latent = mba.blended_latent
 

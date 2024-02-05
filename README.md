@@ -607,6 +607,16 @@ add_supported_preprocessor(PreprocessorNormalBae())
 
 ```
 
+# New features that is not available in WebUI
+
+Masked Ip-Adapter
+
+Masked ControlNet
+
+PhotoMaker
+
+Marigold Depth
+
 # About Extensions
 
 ControlNet and TiledVAE are integrated, and you should uninstall these two extensions:

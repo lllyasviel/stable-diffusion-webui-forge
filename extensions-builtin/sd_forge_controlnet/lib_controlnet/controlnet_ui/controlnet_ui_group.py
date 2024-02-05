@@ -193,7 +193,7 @@ class ControlNetUiGroup(object):
         self.batch_tab = None
         self.batch_image_dir = None
         self.merge_tab = None
-        self.merge_gallery = None
+        self.batch_input_gallery = None
         self.merge_upload_button = None
         self.merge_clear_button = None
         self.create_canvas = None
@@ -324,17 +324,15 @@ class ControlNetUiGroup(object):
                                 else None,
                             )
 
-                with gr.Tab(label="Batch") as self.batch_tab:
-                    # gr.HTML('Batch system is under maintaining now ... Please come back later ...')
+                with gr.Tab(label="Batch Folder") as self.batch_tab:
                     self.batch_image_dir = gr.Textbox(
                         label="Input Directory",
                         placeholder="Leave empty to use img2img batch controlnet input directory",
                         elem_id=f"{elem_id_tabname}_{tabname}_batch_image_dir",
                     )
 
-                with gr.Tab(label="Multiple Images") as self.merge_tab:
-                    # gr.HTML('Multi-image system is under maintaining now ... Please come back later ...')
-                    self.merge_gallery = gr.Gallery(
+                with gr.Tab(label="Batch Upload") as self.merge_tab:
+                    self.batch_input_gallery = gr.Gallery(
                         columns=[4], rows=[2], object_fit="contain", height="auto"
                     )
                     with gr.Row():
@@ -587,7 +585,7 @@ class ControlNetUiGroup(object):
             self.input_mode,
             self.use_preview_as_input,
             self.batch_image_dir,
-            self.merge_gallery,
+            self.batch_input_gallery,
             self.generated_image,
             self.mask_image,
             self.enabled,
@@ -1060,7 +1058,7 @@ class ControlNetUiGroup(object):
         self.merge_clear_button.click(
             fn=lambda: [],
             inputs=[],
-            outputs=[self.merge_gallery],
+            outputs=[self.batch_input_gallery],
         ).then(
             fn=lambda x: gr.update(value=x + 1),
             inputs=[self.update_unit_counter],
@@ -1074,8 +1072,8 @@ class ControlNetUiGroup(object):
 
         self.merge_upload_button.upload(
             upload_file,
-            inputs=[self.merge_upload_button, self.merge_gallery],
-            outputs=[self.merge_gallery],
+            inputs=[self.merge_upload_button, self.batch_input_gallery],
+            outputs=[self.batch_input_gallery],
             queue=False,
         ).then(
             fn=lambda x: gr.update(value=x + 1),

@@ -1,3 +1,25 @@
+# Stable Diffusion Web UI Forge
+
+Stable Diffusion Web UI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) to make development easier, optimize resource management, and speed up inference.
+
+The name "Forge" is inspired from "Minecraft Forge". This project is aimed at becoming SD WebUI's Forge.
+
+Compared to original WeiUI (for SDXL inference at 1024px), you can expect the below speed-ups:
+
+1. If you use common GPU like 8GB vram, you are expected to get about 30~45% speed up in inference speed (it/s), the GPU memory peak (in task manager) will drop about 700MB to 1.3GB, the maximum diffusion resolution (that will not OOM) will increase about 2x to 3x, and the maximum diffusion batch size (that will not OOM) will increase about 4x to 6x.
+
+2. If you use less powerful GPU like 6GB vram, you are expected to get about 60~75% speed up in inference speed (it/s), the GPU memory peak (in task manager) will drop about 800MB to 1.5GB, the maximum diffusion resolution (that will not OOM) will increase about 3x, and the maximum diffusion batch size (that will not OOM) will increase about 4x.
+
+3. If you use powerful GPU like 4090 with 24GB vram, you are expected to get about 3~6% speed up in inference speed (it/s), the GPU memory peak (in task manager) will drop about 1GB to 1.4GB, the maximum diffusion resolution (that will not OOM) will increase about 1.6x, and the maximum diffusion batch size (that will not OOM) will increase about 2x.
+
+4. If you use ControlNet for SDXL, the maximum ControlNet count (that will not OOM) will increase about 2x, the speed with SDXL+ControlNet will speed up about 30~45%.
+
+Another very important change that Forge brings is **Unet Patcher**. Using Unet Patcher, methods like Self-Attention Guidance, Kohya High Res Fix, FreeU, StyleAlign, Hypertile can all be implemented in about 100 lines of codes. 
+
+No need to monkey patch Unet and conflict other extensions anymore!
+
+# Below is the old Readme
+
 # This is a Private Project
 
 Currently, we are only sending invitations to people who may be interested in development of this project.

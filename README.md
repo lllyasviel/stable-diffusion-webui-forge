@@ -18,7 +18,7 @@ Another very important change that Forge brings is **Unet Patcher**. Using Unet 
 
 Thanks to Unet Patcher, many new things are possible now and supported in Forge, including SVD, Z123, masked Ip-adapter, masked controlnet, photomaker, etc.
 
-**No need to monkey patch UNet and conflict other extensions anymore!**
+**No need to monkeypatch UNet and conflict other extensions anymore!**
 
 Forge also adds a few samplers, including but not limited to DDPM, DDPM Karras, DPM++ 2M Turbo, DPM++ 2M SDE Turbo, LCM Karras, Euler A Turbo, etc. (LCM is already in original webui since 1.7.0).
 

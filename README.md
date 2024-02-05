@@ -678,3 +678,5 @@ Other extensions should work without problems, like:
 However, if newer extensions use Forge, their codes can be much shorter. 
 
 Usually if an old extension rework using Forge's unet patcher, 80% codes can be removed, especially when they need to call controlnet.
+
+Note that **animatediff** is under construction by [continue-revolution](https://github.com/continue-revolution) and coming soon.

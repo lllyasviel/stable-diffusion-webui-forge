@@ -101,87 +101,9 @@ If you really want to play with cmd flags, you can additionally control the GPU 
 
 Again, Forge do not recommend users to use any cmd flags unless you are very sure that you really need these.
 
-# Below is the old Readme
+# UNet Patcher
 
-# This is a Private Project
-
-Currently, we are only sending invitations to people who may be interested in development of this project.
-
-Please do not share codes or info from this project to public.
-
-If you see this, please join our private Discord server for discussion: https://discord.gg/rgZdjgrDTS
-
-# Stable Diffusion Web UI Forge
-
-Stable Diffusion Web UI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) to make development easier, and optimize the speed and resource consumption.
-
-The name "Forge" is inspired from "Minecraft Forge". This project will become SD WebUI's Forge.
-
-Forge will give you:
-
-1. Improved optimization. (Fastest speed and minimal memory use among all alternative software.)
-2. Patchable UNet and CLIP objects. (Developer-friendly platform.)
-
-# Improved Optimization
-
-
-
-We do not change any UI. But you will see the version of Forge here
-
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/93fdbccf-2f9b-4d45-ad81-c7c4106a357b)
-
-"f0.0.1v1.7.0" means WebUI 1.7.0 with Forge 0.0.1
-
-### Changes
-
-Forge removes all WebUI's codes related to speed and memory optimization and reworked everything. All previous cmd flags like medvram, lowvram, medvram-sdxl, precision full, no half, no half vae, attention_xxx, upcast unet, ... are all REMOVED. Adding these flags will not cause error but they will not do anything now. **We highly encourage Forge users to remove all cmd flags and let Forge to decide how to load models.**
-
-Without any cmd flag, Forge can run SDXL with 4GB vram and SD1.5 with 2GB vram.
-
-**The only one flag that you may still need** is `--always-offload-from-vram` (This flag will make things **slower**). This option will let Forge always unload models from VRAM. This can be useful is you use multiple software together and want Forge to use less VRAM and give some vram to other software, or when you are using some old extensions that will compete vram with main UI, or (very rarely) when you get OOM.
-
-If you really want to play with cmd flags, you can additionally control the GPU with:
-
-(extreme VRAM cases)
-
-    --always-gpu
-    --always-cpu
-
-(rare attention cases)
-
-    --attention-split
-    --attention-quad
-    --attention-pytorch
-    --disable-xformers
-    --disable-attention-upcast
-
-(float point type)
-
-    --all-in-fp32
-    --all-in-fp16
-    --unet-in-bf16
-    --unet-in-fp16
-    --unet-in-fp8-e4m3fn
-    --unet-in-fp8-e5m2
-    --vae-in-fp16
-    --vae-in-fp32
-    --vae-in-bf16
-    --clip-in-fp8-e4m3fn
-    --clip-in-fp8-e5m2
-    --clip-in-fp16
-    --clip-in-fp32
-
-(rare platforms)
-
-    --directml
-    --disable-ipex-hijack
-    --pytorch-deterministic
-
-Again, Forge do not recommend users to use any cmd flags unless you are very sure that you really need these.
-
-# Patchable UNet
-
-Now developing an extension is super simple. We finally have patchable UNet.
+Now developing an extension is super simple. We finally have a patchable UNet.
 
 Below is using one single file with 80 lines of codes to support FreeU:
 
@@ -410,7 +332,6 @@ Note that this management is fully automatic. This makes writing extensions supe
 
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/cdcb23ad-02dc-4e39-be74-98e927550ef6)
-
 
 Similarly, Zero123:
 
@@ -684,7 +605,6 @@ add_supported_preprocessor(PreprocessorNormalBae())
 
 ```
 
-
 # About Extensions
 
 ControlNet and TiledVAE are integrated, and you should uninstall these two extensions:
@@ -692,22 +612,15 @@ ControlNet and TiledVAE are integrated, and you should uninstall these two exten
     sd-webui-controlnet
     multidiffusion-upscaler-for-automatic1111
 
-All UI related extensions should work without problems, like:
+Other extensions should work without problems, like:
 
     canvas-zoom
-    different translations
-    etc
-
-Below extensions are tested and worked well:
-
+    translations/localizations
     Dynamic Prompts
     Adetailer
     Ultimate SD Upscale
     Reactor
 
-Below extensions will be tested soon:
+However, if newer extensions use Forge, their codes can be much shorter. 
 
-    Regional Prompter (I have not figure out how to use that UI yet.. will test later)
-
-(Tiled diffusion is integrated now and no need to install extra extensions. Also the current smart unet offload is much better than multi-diffusion and people can directly generate 4k images without using multi-diffusion, by automatically offload unet to RAM. If bigger than 4k, use Ultimate SD Upscale.)
-(But if you want to use some special features in MultiDiffusion like inversion or region prompt, probably you can still use it, but it can be very rare.)
+Usually if an old extension rework using Forge's unet patcher, 80% codes can be removed, especially when they need to call controlnet.

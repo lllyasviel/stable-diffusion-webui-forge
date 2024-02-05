@@ -611,11 +611,29 @@ add_supported_preprocessor(PreprocessorNormalBae())
 
 Masked Ip-Adapter
 
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/75432c4b-4f2a-4027-b6ad-fcf48fffad2c)
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/c8dad060-9f93-4781-a14d-255180787592)
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/2680504e-6c7a-4531-b477-06e4c7b3ef3f)
+
+
 Masked ControlNet
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/1d74e970-fbe3-40df-9c87-70c8426ec6e1)
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/0bc7bc7f-1a33-41c6-89ea-f5b5e60f6c1e)
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/10b07d97-a2b8-463c-928a-5ad9b78da25e)
 
 PhotoMaker
 
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/377699d3-e6b5-4ace-9d0f-054ac1749fc8)
+
+
 Marigold Depth
+
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/95787c05-3fe7-43cc-ba12-baf378284007)
 
 # About Extensions
 

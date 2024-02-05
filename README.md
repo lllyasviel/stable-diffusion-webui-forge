@@ -679,4 +679,4 @@ However, if newer extensions use Forge, their codes can be much shorter.
 
 Usually if an old extension rework using Forge's unet patcher, 80% codes can be removed, especially when they need to call controlnet.
 
-Note that **animatediff** is under construction by [continue-revolution](https://github.com/continue-revolution) and coming soon.
+Note that **animatediff** is under construction by [continue-revolution](https://github.com/continue-revolution) and coming soon. (continue-revolution original words: "basic features (t2v, prompt travel, inf v2v) have been proven to work well, motion lora, cn v2v still under construction and may be finished in a week, and we can mention motion brush")

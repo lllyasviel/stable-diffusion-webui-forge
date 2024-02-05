@@ -36,6 +36,8 @@ def serialize_unit(unit: external_code.ControlNetUnit) -> str:
         "use_preview_as_input",
         "generated_image",
         "mask_image",
+        "batch_input_gallery",
+        "batch_image_dir"
     )
 
     log_value = {

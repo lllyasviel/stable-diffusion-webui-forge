@@ -16,30 +16,9 @@ Compared to original WebUI (for SDXL inference at 1024px), you can expect the be
 
 Another very important change that Forge brings is **Unet Patcher**. Using Unet Patcher, methods like Self-Attention Guidance, Kohya High Res Fix, FreeU, StyleAlign, Hypertile can all be implemented in about 100 lines of codes. 
 
-No need to monkey patch Unet and conflict other extensions anymore!
+**No need to monkey patch UNet and conflict other extensions anymore!**
 
-# Below is the old Readme
-
-# This is a Private Project
-
-Currently, we are only sending invitations to people who may be interested in development of this project.
-
-Please do not share codes or info from this project to public.
-
-If you see this, please join our private Discord server for discussion: https://discord.gg/rgZdjgrDTS
-
-# Stable Diffusion Web UI Forge
-
-Stable Diffusion Web UI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) to make development easier, and optimize the speed and resource consumption.
-
-The name "Forge" is inspired from "Minecraft Forge". This project will become SD WebUI's Forge.
-
-Forge will give you:
-
-1. Improved optimization. (Fastest speed and minimal memory use among all alternative software.)
-2. Patchable UNet and CLIP objects. (Developer-friendly platform.)
-
-# Improved Optimization
+# Screenshots
 
 I tested with several devices, and this is a typical result from 8GB VRAM (3070ti laptop) with SDXL.
 
@@ -67,7 +46,38 @@ I tested with several devices, and this is a typical result from 8GB VRAM (3070t
 
 (average and peak are all 6.3GB/8GB)
 
-Also, you can see that Forge does not change WebUI results. Installing Forge is not a seed breaking change. 
+You can see that Forge does not change WebUI results. Installing Forge is not a seed breaking change. 
+
+Forge can perfectly keep WebUI unchanged even for most complicated prompts like `fantasy landscape with a [mountain:lake:0.25] and [an oak:a christmas tree:0.75][ in foreground::0.6][ in background:0.25] [shoddy:masterful:0.5]`.
+
+All your previous works still work in Forge!
+
+Also, Forge promise that we will only do our jobs. We will not add unnecessary opinioned changes to UI. You are still using 100% Automatic1111 WebUI.
+
+# Below is the old Readme
+
+# This is a Private Project
+
+Currently, we are only sending invitations to people who may be interested in development of this project.
+
+Please do not share codes or info from this project to public.
+
+If you see this, please join our private Discord server for discussion: https://discord.gg/rgZdjgrDTS
+
+# Stable Diffusion Web UI Forge
+
+Stable Diffusion Web UI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) to make development easier, and optimize the speed and resource consumption.
+
+The name "Forge" is inspired from "Minecraft Forge". This project will become SD WebUI's Forge.
+
+Forge will give you:
+
+1. Improved optimization. (Fastest speed and minimal memory use among all alternative software.)
+2. Patchable UNet and CLIP objects. (Developer-friendly platform.)
+
+# Improved Optimization
+
+
 
 We do not change any UI. But you will see the version of Forge here
 

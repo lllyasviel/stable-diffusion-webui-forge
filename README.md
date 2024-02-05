@@ -18,7 +18,7 @@ Another very important change that Forge brings is **Unet Patcher**. Using Unet 
 
 **No need to monkey patch UNet and conflict other extensions anymore!**
 
-# Screenshots
+# Screenshots of Comparison
 
 I tested with several devices, and this is a typical result from 8GB VRAM (3070ti laptop) with SDXL.
 

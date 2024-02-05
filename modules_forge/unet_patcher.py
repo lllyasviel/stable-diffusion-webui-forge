@@ -102,6 +102,10 @@ class UnetPatcher(ModelPatcher):
         self.append_model_option('conditioning_modifiers', modifier, ensure_uniqueness)
         return
 
+    def add_memory_peak_estimation_modifier(self, modifier):
+        self.model_options['memory_peak_estimation_modifier'] = modifier
+        return
+
     def add_alphas_cumprod_modifier(self, modifier, ensure_uniqueness=False):
         """
 

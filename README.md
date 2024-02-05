@@ -20,6 +20,16 @@ Thanks to Unet Patcher, many new things are possible now and supported in Forge,
 
 **No need to monkey patch UNet and conflict other extensions anymore!**
 
+# Installing Forge
+
+You can install Forge using same method as SD-WebUI. (Install Git, Python, Git Clone this repo and then run webui-user.bat).
+
+Or you can just use this one-click installation package.
+
+[>>> Click Here to Download One-Click Package<<<]()
+
+After you download, you can use `update.bat` to update and use `run.bat` to run.
+
 # Screenshots of Comparison
 
 I tested with several devices, and this is a typical result from 8GB VRAM (3070ti laptop) with SDXL.

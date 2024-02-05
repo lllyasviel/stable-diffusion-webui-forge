@@ -327,7 +327,7 @@ class ControlNetUiGroup(object):
                 with gr.Tab(label="Batch Folder") as self.batch_tab:
                     self.batch_image_dir = gr.Textbox(
                         label="Input Directory",
-                        placeholder="Leave empty to use img2img batch controlnet input directory",
+                        placeholder="Input directory path to the control images.",
                         elem_id=f"{elem_id_tabname}_{tabname}_batch_image_dir",
                     )
 

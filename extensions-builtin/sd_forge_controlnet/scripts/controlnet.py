@@ -140,12 +140,37 @@ class ControlNetForForgeOfficial(scripts.Script):
         return input_image
 
     def get_input_data(self, p, unit, preprocessor):
+        logger.info(f'ControlNet Input Mode: {unit.input_mode}')
+        resize_mode = external_code.resize_mode_from_value(unit.resize_mode)
+
+        if unit.input_mode == external_code.InputMode.MERGE:
+            image_list = []
+            for item in unit.batch_input_gallery:
+                img_path = item['name']
+                logger.info(f'Try to read image: {img_path}')
+                img = cv2.imread(img_path)
+                mask = None
+                if img is not None:
+                    image_list.append([img, mask])
+            return image_list, resize_mode
+
+        if unit.input_mode == external_code.InputMode.BATCH:
+            image_list = []
+            image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
+            for filename in os.listdir(unit.batch_image_dir):
+                if any(filename.lower().endswith(ext) for ext in image_extensions):
+                    img_path = os.path.join(unit.batch_image_dir, filename)
+                    logger.info(f'Try to read image: {img_path}')
+                    img = cv2.imread(img_path)
+                    mask = None
+                    if img is not None:
+                        image_list.append([img, mask])
+            return image_list, resize_mode
+
         a1111_i2i_image = getattr(p, "init_images", [None])[0]
         a1111_i2i_mask = getattr(p, "image_mask", None)
 
         using_a1111_data = False
-
-        resize_mode = external_code.resize_mode_from_value(unit.resize_mode)
 
         if unit.use_preview_as_input and unit.generated_image is not None:
             image = unit.generated_image
@@ -180,7 +205,7 @@ class ControlNetForForgeOfficial(scripts.Script):
             mask = cv2.resize(HWC3(mask), (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
             mask = self.try_crop_image_with_a1111_mask(p, unit, mask, resize_mode, preprocessor)
 
-        return image, mask, resize_mode
+        return [[image, mask]], resize_mode
 
     @staticmethod
     def get_target_dimensions(p: StableDiffusionProcessing) -> Tuple[int, int, int, int]:
@@ -225,7 +250,9 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         preprocessor = global_state.get_preprocessor(unit.module)
 
-        input_image, input_mask, resize_mode = self.get_input_data(p, unit, preprocessor)
+        input_list, resize_mode = self.get_input_data(p, unit, preprocessor)
+
+        input_image, input_mask = input_list[0]
         # p.extra_result_images.append(input_image)
 
         if unit.pixel_perfect:

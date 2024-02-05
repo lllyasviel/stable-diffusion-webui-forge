@@ -30,7 +30,7 @@ You can install Forge using same method as SD-WebUI. (Install Git, Python, Git C
 
 **Or you can just use this one-click installation package (with git and python included).**
 
-[>>> Click Here to Download One-Click Package<<<](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui-forge.7z)
+[>>> Click Here to Download One-Click Package<<<](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu121_torch21.7z)
 
 After you download, you uncompress, use `update.bat` to update, and use `run.bat` to run.
 

@@ -30,6 +30,9 @@ Or you can just use this one-click installation package.
 
 After you download, you can use `update.bat` to update and use `run.bat` to run.
 
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/a3ced100-211e-4e0d-8e4a-ee332bf177f5)
+
+
 # Screenshots of Comparison
 
 I tested with several devices, and this is a typical result from 8GB VRAM (3070ti laptop) with SDXL.

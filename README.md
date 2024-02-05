@@ -657,6 +657,7 @@ Marigold Depth
     DPM++ 2M Turbo
     DPM++ 2M SDE Turbo
     LCM Karras
+    Euler A Turbo
 
 # About Extensions
 

@@ -54,6 +54,53 @@ All your previous works still work in Forge!
 
 Also, Forge promise that we will only do our jobs. We will not add unnecessary opinioned changes to UI. You are still using 100% Automatic1111 WebUI.
 
+# Forge Backend
+
+Forge backend removes all WebUI's codes related to resource management and reworked everything. All previous CMD flags like `medvram, lowvram, medvram-sdxl, precision full, no half, no half vae, attention_xxx, upcast unet`, ... are all **REMOVED**. Adding these flags will not cause error but they will not do anything now. **We highly encourage Forge users to remove all cmd flags and let Forge to decide how to load models.**
+
+Without any cmd flag, Forge can run SDXL with 4GB vram and SD1.5 with 2GB vram.
+
+**The only one flag that you may still need** is `--always-offload-from-vram` (This flag will make things **slower**). This option will let Forge always unload models from VRAM. This can be useful is you use multiple software together and want Forge to use less VRAM and give some vram to other software, or when you are using some old extensions that will compete vram with Forge, or (very rarely) when you get OOM.
+
+If you really want to play with cmd flags, you can additionally control the GPU with:
+
+(extreme VRAM cases)
+
+    --always-gpu
+    --always-cpu
+
+(rare attention cases)
+
+    --attention-split
+    --attention-quad
+    --attention-pytorch
+    --disable-xformers
+    --disable-attention-upcast
+
+(float point type)
+
+    --all-in-fp32
+    --all-in-fp16
+    --unet-in-bf16
+    --unet-in-fp16
+    --unet-in-fp8-e4m3fn
+    --unet-in-fp8-e5m2
+    --vae-in-fp16
+    --vae-in-fp32
+    --vae-in-bf16
+    --clip-in-fp8-e4m3fn
+    --clip-in-fp8-e5m2
+    --clip-in-fp16
+    --clip-in-fp32
+
+(rare platforms)
+
+    --directml
+    --disable-ipex-hijack
+    --pytorch-deterministic
+
+Again, Forge do not recommend users to use any cmd flags unless you are very sure that you really need these.
+
 # Below is the old Readme
 
 # This is a Private Project

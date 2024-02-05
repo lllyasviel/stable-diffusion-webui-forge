@@ -609,6 +609,8 @@ add_supported_preprocessor(PreprocessorNormalBae())
 
 # New features (that are not available in original WebUI)
 
+Thanks to Unet Patcher, many new things are possible now and supported in Forge, including SVD, Z123, masked Ip-adapter, masked controlnet, photomaker, etc.
+
 Masked Ip-Adapter
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/75432c4b-4f2a-4027-b6ad-fcf48fffad2c)

@@ -22,7 +22,7 @@ Another very important change that Forge brings is **Unet Patcher**. Using Unet 
 
 I tested with several devices, and this is a typical result from 8GB VRAM (3070ti laptop) with SDXL.
 
-**This is WebUI:**
+**This is Original WebUI:**
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/c32baedd-500b-408f-8cfb-ed4570c883bd)
 

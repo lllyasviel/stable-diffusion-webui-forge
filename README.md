@@ -1,6 +1,6 @@
 # Stable Diffusion Web UI Forge
 
-Stable Diffusion Web UI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) to make development easier, optimize resource management, and speed up inference.
+Stable Diffusion Web UI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) and [Gradio](https://www.gradio.app/) to make development easier, optimize resource management, and speed up inference.
 
 The name "Forge" is inspired from "Minecraft Forge". This project is aimed at becoming SD WebUI's Forge.
 
@@ -19,6 +19,10 @@ Another very important change that Forge brings is **Unet Patcher**. Using Unet 
 Thanks to Unet Patcher, many new things are possible now and supported in Forge, including SVD, Z123, masked Ip-adapter, masked controlnet, photomaker, etc.
 
 **No need to monkey patch UNet and conflict other extensions anymore!**
+
+Forge also adds a few samplers, including but not limited to DDPM, DDPM Karras, DPM++ 2M Turbo, DPM++ 2M SDE Turbo, LCM Karras, Euler A Turbo, etc. (LCM is already in original webui since 1.7.0).
+
+Finally, Forge promise that we will only do our jobs. Forge will never add unnecessary opinioned changes to the user interface. You are still using 100% Automatic1111 WebUI.
 
 # Installing Forge
 
@@ -66,8 +70,6 @@ You can see that Forge does not change WebUI results. Installing Forge is not a 
 Forge can perfectly keep WebUI unchanged even for most complicated prompts like `fantasy landscape with a [mountain:lake:0.25] and [an oak:a christmas tree:0.75][ in foreground::0.6][ in background:0.25] [shoddy:masterful:0.5]`.
 
 All your previous works still work in Forge!
-
-Also, Forge promise that we will only do our jobs. We will not add unnecessary opinioned changes to UI. You are still using 100% Automatic1111 WebUI.
 
 # Forge Backend
 

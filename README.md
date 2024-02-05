@@ -26,7 +26,7 @@ Finally, Forge promise that we will only do our jobs. Forge will never add unnec
 
 # Installing Forge
 
-You can install Forge using same method as SD-WebUI. (Install Git, Python, Git Clone this repo and then run webui-user.bat).
+If you know what you are doing, you can install Forge using same method as SD-WebUI. (Install Git, Python, Git Clone the forge repo `https://github.com/lllyasviel/stable-diffusion-webui-forge.git` and then run webui-user.bat).
 
 **Or you can just use this one-click installation package (with git and python included).**
 

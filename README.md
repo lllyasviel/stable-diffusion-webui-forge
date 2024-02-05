@@ -16,6 +16,8 @@ Compared to original WebUI (for SDXL inference at 1024px), you can expect the be
 
 Another very important change that Forge brings is **Unet Patcher**. Using Unet Patcher, methods like Self-Attention Guidance, Kohya High Res Fix, FreeU, StyleAlign, Hypertile can all be implemented in about 100 lines of codes. 
 
+Thanks to Unet Patcher, many new things are possible now and supported in Forge, including SVD, Z123, masked Ip-adapter, masked controlnet, photomaker, etc.
+
 **No need to monkey patch UNet and conflict other extensions anymore!**
 
 # Screenshots of Comparison

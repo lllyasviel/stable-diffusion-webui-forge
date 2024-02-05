@@ -6,11 +6,11 @@ The name "Forge" is inspired from "Minecraft Forge". This project is aimed at be
 
 Compared to original WebUI (for SDXL inference at 1024px), you can expect the below speed-ups:
 
-1. If you use common GPU like 8GB vram, you are expected to get about **30~45% speed up** in inference speed (it/s), the GPU memory peak (in task manager) will drop about 700MB to 1.3GB, the maximum diffusion resolution (that will not OOM) will increase about 2x to 3x, and the maximum diffusion batch size (that will not OOM) will increase about 4x to 6x.
+1. If you use common GPU like 8GB vram, you can expect to get about **30~45% speed up** in inference speed (it/s), the GPU memory peak (in task manager) will drop about 700MB to 1.3GB, the maximum diffusion resolution (that will not OOM) will increase about 2x to 3x, and the maximum diffusion batch size (that will not OOM) will increase about 4x to 6x.
 
-2. If you use less powerful GPU like 6GB vram, you are expected to get about **60~75% speed up** in inference speed (it/s), the GPU memory peak (in task manager) will drop about 800MB to 1.5GB, the maximum diffusion resolution (that will not OOM) will increase about 3x, and the maximum diffusion batch size (that will not OOM) will increase about 4x.
+2. If you use less powerful GPU like 6GB vram, you can expect to get about **60~75% speed up** in inference speed (it/s), the GPU memory peak (in task manager) will drop about 800MB to 1.5GB, the maximum diffusion resolution (that will not OOM) will increase about 3x, and the maximum diffusion batch size (that will not OOM) will increase about 4x.
 
-3. If you use powerful GPU like 4090 with 24GB vram, you are expected to get about **3~6% speed up** in inference speed (it/s), the GPU memory peak (in task manager) will drop about 1GB to 1.4GB, the maximum diffusion resolution (that will not OOM) will increase about 1.6x, and the maximum diffusion batch size (that will not OOM) will increase about 2x.
+3. If you use powerful GPU like 4090 with 24GB vram, you can expect to get about **3~6% speed up** in inference speed (it/s), the GPU memory peak (in task manager) will drop about 1GB to 1.4GB, the maximum diffusion resolution (that will not OOM) will increase about 1.6x, and the maximum diffusion batch size (that will not OOM) will increase about 2x.
 
 4. If you use ControlNet for SDXL, the maximum ControlNet count (that will not OOM) will increase about 2x, the speed with SDXL+ControlNet will **speed up about 30~45%**.
 
@@ -26,9 +26,9 @@ You can install Forge using same method as SD-WebUI. (Install Git, Python, Git C
 
 **Or you can just use this one-click installation package (with git and python included).**
 
-[>>> Click Here to Download One-Click Package<<<]()
+[>>> Click Here to Download One-Click Package<<<](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui-forge.7z)
 
-After you download, you can use `update.bat` to update and use `run.bat` to run.
+After you download, you uncompress, use `update.bat` to update, and use `run.bat` to run.
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/1251ee5c-33dc-4adc-8dd3-2b43af5ad425)
 

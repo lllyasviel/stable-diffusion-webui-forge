@@ -607,7 +607,7 @@ add_supported_preprocessor(PreprocessorNormalBae())
 
 ```
 
-# New features that is not available in WebUI
+# New features (that are not available in original WebUI)
 
 Masked Ip-Adapter
 

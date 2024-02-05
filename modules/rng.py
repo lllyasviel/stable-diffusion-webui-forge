@@ -12,7 +12,7 @@ def randn(seed, shape, generator=None):
 
     if generator is not None:
         # if generator is not none, we must generate a noise with and without
-        # generator together to avoid future 'randn_like' get same noise again
+        # generator together to avoid future 'randn' get same noise again
         torch.randn(shape, device=devices.device)
 
     if shared.opts.randn_source == "NV":

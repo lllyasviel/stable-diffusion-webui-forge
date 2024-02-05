@@ -251,42 +251,60 @@ class ControlNetForForgeOfficial(scripts.Script):
         preprocessor = global_state.get_preprocessor(unit.module)
 
         input_list, resize_mode = self.get_input_data(p, unit, preprocessor)
-
+        preprocessor_outputs = []
+        preprocessor_output_is_image = False
         input_image, input_mask = input_list[0]
-        # p.extra_result_images.append(input_image)
+        preprocessor_output = None
 
-        if unit.pixel_perfect:
-            unit.processor_res = external_code.pixel_perfect_resolution(
-                input_image,
-                target_H=h,
-                target_W=w,
-                resize_mode=resize_mode,
+        for input_image, input_mask in input_list:
+            # p.extra_result_images.append(input_image)
+
+            if unit.pixel_perfect:
+                unit.processor_res = external_code.pixel_perfect_resolution(
+                    input_image,
+                    target_H=h,
+                    target_W=w,
+                    resize_mode=resize_mode,
+                )
+
+            seed = set_numpy_seed(p)
+            logger.debug(f"Use numpy seed {seed}.")
+            logger.info(f"Using preprocessor: {unit.module}")
+            logger.info(f'preprocessor resolution = {unit.processor_res}')
+
+            preprocessor_output = preprocessor(
+                input_image=input_image,
+                input_mask=input_mask,
+                resolution=unit.processor_res,
+                slider_1=unit.threshold_a,
+                slider_2=unit.threshold_b,
             )
 
-        seed = set_numpy_seed(p)
-        logger.debug(f"Use numpy seed {seed}.")
-        logger.info(f"Using preprocessor: {unit.module}")
-        logger.info(f'preprocessor resolution = {unit.processor_res}')
+            preprocessor_outputs.append(preprocessor_output)
 
-        preprocessor_output = preprocessor(
-            input_image=input_image,
-            input_mask=input_mask,
-            resolution=unit.processor_res,
-            slider_1=unit.threshold_a,
-            slider_2=unit.threshold_b,
-        )
+            preprocessor_output_is_image = judge_image_type(preprocessor_output)
 
-        preprocessor_output_is_image = judge_image_type(preprocessor_output)
+            if len(input_list) > 1 and not preprocessor_output_is_image:
+                logger.info('Batch wise input only support controlnet, control-lora, and t2i adapters!')
+                break
 
         if preprocessor_output_is_image:
-            params.control_cond = crop_and_resize_image(preprocessor_output, resize_mode, h, w)
-            p.extra_result_images.append(external_code.visualize_inpaint_mask(params.control_cond))
-            params.control_cond = numpy_to_pytorch(params.control_cond).movedim(-1, 1)
+            params.control_cond = []
+            params.control_cond_for_hr_fix = []
+
+            for preprocessor_output in preprocessor_outputs:
+                control_cond = crop_and_resize_image(preprocessor_output, resize_mode, h, w)
+                p.extra_result_images.append(external_code.visualize_inpaint_mask(control_cond))
+                params.control_cond.append(numpy_to_pytorch(control_cond).movedim(-1, 1))
+
+            params.control_cond = torch.cat(params.control_cond, dim=0)
 
             if has_high_res_fix:
-                params.control_cond_for_hr_fix = crop_and_resize_image(preprocessor_output, resize_mode, hr_y, hr_x)
-                p.extra_result_images.append(external_code.visualize_inpaint_mask(params.control_cond_for_hr_fix))
-                params.control_cond_for_hr_fix = numpy_to_pytorch(params.control_cond_for_hr_fix).movedim(-1, 1)
+                for preprocessor_output in preprocessor_outputs:
+                    control_cond_for_hr_fix = crop_and_resize_image(preprocessor_output, resize_mode, hr_y, hr_x)
+                    p.extra_result_images.append(external_code.visualize_inpaint_mask(control_cond_for_hr_fix))
+                    params.control_cond_for_hr_fix.append(numpy_to_pytorch(control_cond_for_hr_fix).movedim(-1, 1))
+                params.control_cond_for_hr_fix = torch.cat(params.control_cond_for_hr_fix, dim=0)
             else:
                 params.control_cond_for_hr_fix = params.control_cond
         else:

@@ -586,6 +586,8 @@ class ControlNetUiGroup(object):
         unit_args = (
             self.input_mode,
             self.use_preview_as_input,
+            self.batch_image_dir,
+            self.merge_gallery,
             self.generated_image,
             self.mask_image,
             self.enabled,
@@ -1054,32 +1056,32 @@ class ControlNetUiGroup(object):
                 )
 
     def register_multi_images_upload(self):
-        # """Register callbacks on merge tab multiple images upload."""
-        # self.merge_clear_button.click(
-        #     fn=lambda: [],
-        #     inputs=[],
-        #     outputs=[self.merge_gallery],
-        # ).then(
-        #     fn=lambda x: gr.update(value=x + 1),
-        #     inputs=[self.update_unit_counter],
-        #     outputs=[self.update_unit_counter],
-        # )
-        #
-        # def upload_file(files, current_files):
-        #     return {file_d["name"] for file_d in current_files} | {
-        #         file.name for file in files
-        #     }
-        #
-        # self.merge_upload_button.upload(
-        #     upload_file,
-        #     inputs=[self.merge_upload_button, self.merge_gallery],
-        #     outputs=[self.merge_gallery],
-        #     queue=False,
-        # ).then(
-        #     fn=lambda x: gr.update(value=x + 1),
-        #     inputs=[self.update_unit_counter],
-        #     outputs=[self.update_unit_counter],
-        # )
+        """Register callbacks on merge tab multiple images upload."""
+        self.merge_clear_button.click(
+            fn=lambda: [],
+            inputs=[],
+            outputs=[self.merge_gallery],
+        ).then(
+            fn=lambda x: gr.update(value=x + 1),
+            inputs=[self.update_unit_counter],
+            outputs=[self.update_unit_counter],
+        )
+
+        def upload_file(files, current_files):
+            return {file_d["name"] for file_d in current_files} | {
+                file.name for file in files
+            }
+
+        self.merge_upload_button.upload(
+            upload_file,
+            inputs=[self.merge_upload_button, self.merge_gallery],
+            outputs=[self.merge_gallery],
+            queue=False,
+        ).then(
+            fn=lambda x: gr.update(value=x + 1),
+            inputs=[self.update_unit_counter],
+            outputs=[self.update_unit_counter],
+        )
         return
 
     def register_core_callbacks(self):

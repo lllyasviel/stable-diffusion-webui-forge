@@ -150,6 +150,8 @@ InputImage = Union[Dict[str, InputImage], Tuple[InputImage, InputImage], InputIm
 class UiControlNetUnit:
     input_mode: InputMode = InputMode.SIMPLE
     use_preview_as_input: bool = False,
+    batch_image_dir: str = '',
+    merge_gallery: list = [],
     generated_image: Optional[np.ndarray] = None,
     mask_image: Optional[np.ndarray] = None,
     enabled: bool = True

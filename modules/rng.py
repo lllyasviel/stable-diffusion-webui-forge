@@ -10,6 +10,11 @@ def randn(seed, shape, generator=None):
 
     manual_seed(seed)
 
+    if generator is not None:
+        # if generator is not none, we must generate a noise with and without
+        # generator together to avoid future 'randn_like' get same noise again
+        torch.randn(shape, device=devices.device)
+
     if shared.opts.randn_source == "NV":
         return torch.asarray((generator or nv_rng).randn(shape), device=devices.device)
 

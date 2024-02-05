@@ -30,7 +30,7 @@ Or you can just use this one-click installation package.
 
 After you download, you can use `update.bat` to update and use `run.bat` to run.
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/a3ced100-211e-4e0d-8e4a-ee332bf177f5)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/1251ee5c-33dc-4adc-8dd3-2b43af5ad425)
 
 
 # Screenshots of Comparison

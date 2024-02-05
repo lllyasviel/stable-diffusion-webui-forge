@@ -3,9 +3,21 @@ import logging
 import os
 import sys
 import warnings
+import os
+
 from threading import Thread
 
 from modules.timer import startup_timer
+
+
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
 
 
 def imports():
@@ -23,14 +35,16 @@ def imports():
     import gradio  # noqa: F401
     startup_timer.record("import gradio")
 
-    from modules import paths, timer, import_hook, errors  # noqa: F401
-    startup_timer.record("setup paths")
+    with HiddenPrints():
+        from modules import paths, timer, import_hook, errors  # noqa: F401
+        startup_timer.record("setup paths")
 
-    import ldm.modules.encoders.modules  # noqa: F401
-    startup_timer.record("import ldm")
+        import ldm.modules.encoders.modules  # noqa: F401
+        import ldm.modules.diffusionmodules.model
+        startup_timer.record("import ldm")
 
-    import sgm.modules.encoders.modules  # noqa: F401
-    startup_timer.record("import sgm")
+        import sgm.modules.encoders.modules  # noqa: F401
+        startup_timer.record("import sgm")
 
     from modules import shared_init
     shared_init.initialize()

@@ -102,6 +102,10 @@ class UnetPatcher(ModelPatcher):
         self.append_model_option('conditioning_modifiers', modifier, ensure_uniqueness)
         return
 
+    def add_sampler_pre_cfg_function(self, modifier, ensure_uniqueness=False):
+        self.append_model_option('sampler_pre_cfg_function', modifier, ensure_uniqueness)
+        return
+
     def set_memory_peak_estimation_modifier(self, modifier):
         self.model_options['memory_peak_estimation_modifier'] = modifier
         return

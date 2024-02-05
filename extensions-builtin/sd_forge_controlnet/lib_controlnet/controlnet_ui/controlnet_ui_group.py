@@ -325,7 +325,7 @@ class ControlNetUiGroup(object):
                             )
 
                 with gr.Tab(label="Batch") as self.batch_tab:
-                    gr.HTML('Batch system is under maintaining now ... Please come back later ...')
+                    # gr.HTML('Batch system is under maintaining now ... Please come back later ...')
                     self.batch_image_dir = gr.Textbox(
                         label="Input Directory",
                         placeholder="Leave empty to use img2img batch controlnet input directory",
@@ -333,7 +333,7 @@ class ControlNetUiGroup(object):
                     )
 
                 with gr.Tab(label="Multiple Images") as self.merge_tab:
-                    gr.HTML('Multi-image system is under maintaining now ... Please come back later ...')
+                    # gr.HTML('Multi-image system is under maintaining now ... Please come back later ...')
                     self.merge_gallery = gr.Gallery(
                         columns=[4], rows=[2], object_fit="contain", height="auto"
                     )

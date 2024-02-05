@@ -148,7 +148,7 @@ class ControlNetForForgeOfficial(scripts.Script):
             for item in unit.batch_input_gallery:
                 img_path = item['name']
                 logger.info(f'Try to read image: {img_path}')
-                img = cv2.imread(img_path)
+                img = np.ascontiguousarray(cv2.imread(img_path)[:, :, ::-1]).copy()
                 mask = None
                 if img is not None:
                     image_list.append([img, mask])
@@ -161,7 +161,7 @@ class ControlNetForForgeOfficial(scripts.Script):
                 if any(filename.lower().endswith(ext) for ext in image_extensions):
                     img_path = os.path.join(unit.batch_image_dir, filename)
                     logger.info(f'Try to read image: {img_path}')
-                    img = cv2.imread(img_path)
+                    img = np.ascontiguousarray(cv2.imread(img_path)[:, :, ::-1]).copy()
                     mask = None
                     if img is not None:
                         image_list.append([img, mask])

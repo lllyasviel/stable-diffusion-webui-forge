@@ -650,6 +650,14 @@ Marigold Depth
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/95787c05-3fe7-43cc-ba12-baf378284007)
 
+# New Samplers (that are not in origin)
+
+    DDPM
+    DDPM Karras
+    DPM++ 2M Turbo
+    DPM++ 2M SDE Turbo
+    LCM Karras
+
 # About Extensions
 
 ControlNet and TiledVAE are integrated, and you should uninstall these two extensions:

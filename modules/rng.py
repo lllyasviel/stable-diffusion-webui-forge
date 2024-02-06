@@ -12,7 +12,7 @@ def randn(seed, shape, generator=None):
         # If generator is not none, we must use another seed to
         # avoid global torch.rand to get same noise again.
         # Note: removing this will make DDPM sampler broken.
-        manual_seed((seed + 262144) % 65536)
+        manual_seed((seed + 100000) % 65536)
     else:
         manual_seed(seed)
 

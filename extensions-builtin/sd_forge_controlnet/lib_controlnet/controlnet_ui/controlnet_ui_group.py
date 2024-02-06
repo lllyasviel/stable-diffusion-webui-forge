@@ -1095,6 +1095,10 @@ class ControlNetUiGroup(object):
             fn=lambda: [],
             inputs=[],
             outputs=[self.batch_mask_gallery],
+        ).then(
+            fn=lambda x: gr.update(value=x + 1),
+            inputs=[self.dummy_gradio_update_trigger],
+            outputs=[self.dummy_gradio_update_trigger],
         )
 
         def upload_file(files, current_files):
@@ -1117,6 +1121,10 @@ class ControlNetUiGroup(object):
             inputs=[self.mask_merge_upload_button, self.batch_mask_gallery],
             outputs=[self.batch_mask_gallery],
             queue=False,
+        ).then(
+            fn=lambda x: gr.update(value=x + 1),
+            inputs=[self.dummy_gradio_update_trigger],
+            outputs=[self.dummy_gradio_update_trigger],
         )
         return
 

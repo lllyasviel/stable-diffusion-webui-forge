@@ -151,7 +151,9 @@ class UiControlNetUnit:
     input_mode: InputMode = InputMode.SIMPLE
     use_preview_as_input: bool = False,
     batch_image_dir: str = '',
+    batch_mask_dir: str = '',
     batch_input_gallery: list = [],
+    batch_mask_gallery: list = [],
     generated_image: Optional[np.ndarray] = None,
     mask_image: Optional[np.ndarray] = None,
     enabled: bool = True

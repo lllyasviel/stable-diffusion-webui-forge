@@ -87,7 +87,7 @@ def compute_controlnet_weighting(control, cnet):
             final_weight = final_weight * sigma_weight * frame_weight
 
             if isinstance(advanced_mask_weighting, torch.Tensor):
-                control_signal = control_signal * torch.nn.functional.interpolate(advanced_mask_weighting.to(control_signal), size=(H, W), mode='bilinear')
+                control_signal = control_signal * torch.nn.functional.interpolate(advanced_mask_weighting.to(control_signal), size=(B, H, W), mode='bilinear')
 
             control[k][i] = control_signal * final_weight[:, None, None, None]
 

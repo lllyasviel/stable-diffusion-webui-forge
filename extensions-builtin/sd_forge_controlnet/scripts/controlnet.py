@@ -145,11 +145,17 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         if unit.input_mode == external_code.InputMode.MERGE:
             image_list = []
-            for item in unit.batch_input_gallery:
+            for idx, item in enumerate(unit.batch_input_gallery):
                 img_path = item['name']
                 logger.info(f'Try to read image: {img_path}')
                 img = np.ascontiguousarray(cv2.imread(img_path)[:, :, ::-1]).copy()
                 mask = None
+                if len(unit.batch_mask_gallery) > 0:
+                    if len(unit.batch_mask_gallery) >= len(unit.batch_input_gallery):
+                        mask_path = unit.batch_mask_gallery[idx]['name']
+                    else:
+                        mask_path = unit.batch_mask_gallery[0]['name']
+                    mask = np.ascontiguousarray(cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE))
                 if img is not None:
                     image_list.append([img, mask])
             return image_list, resize_mode
@@ -157,12 +163,19 @@ class ControlNetForForgeOfficial(scripts.Script):
         if unit.input_mode == external_code.InputMode.BATCH:
             image_list = []
             image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
-            for filename in os.listdir(unit.batch_image_dir):
+            for idx, filename in enumerate(os.listdir(unit.batch_image_dir)):
                 if any(filename.lower().endswith(ext) for ext in image_extensions):
                     img_path = os.path.join(unit.batch_image_dir, filename)
                     logger.info(f'Try to read image: {img_path}')
                     img = np.ascontiguousarray(cv2.imread(img_path)[:, :, ::-1]).copy()
                     mask = None
+                    if len(unit.batch_mask_dir) > 0:
+                        if len(unit.batch_mask_dir) >= len(unit.batch_image_dir):
+                            mask_path = unit.batch_mask_dir[idx]
+                        else:
+                            mask_path = unit.batch_mask_dir[0]
+                        mask_path = os.path.join(unit.batch_mask_dir, mask_path)
+                        mask = np.ascontiguousarray(cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE))
                     if img is not None:
                         image_list.append([img, mask])
             return image_list, resize_mode
@@ -252,11 +265,15 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         input_list, resize_mode = self.get_input_data(p, unit, preprocessor)
         preprocessor_outputs = []
+        control_masks = []
         preprocessor_output_is_image = False
-        input_image, input_mask = input_list[0]
         preprocessor_output = None
 
-        for input_image, input_mask in input_list:
+        def optional_tqdm(iterable, use_tqdm):
+            from tqdm import tqdm
+            return tqdm(iterable) if use_tqdm else iterable
+
+        for input_image, input_mask in optional_tqdm(input_list, len(input_list) > 1):
             # p.extra_result_images.append(input_image)
 
             if unit.pixel_perfect:
@@ -284,12 +301,15 @@ class ControlNetForForgeOfficial(scripts.Script):
 
             preprocessor_output_is_image = judge_image_type(preprocessor_output)
 
+            if input_mask is not None:
+                control_masks.append(input_mask)
+
             if len(input_list) > 1 and not preprocessor_output_is_image:
                 logger.info('Batch wise input only support controlnet, control-lora, and t2i adapters!')
                 break
 
+        alignment_indices = [i % len(preprocessor_outputs) for i in range(p.batch_size)]
         if preprocessor_output_is_image:
-            alignment_indices = [i % len(preprocessor_outputs) for i in range(p.batch_size)]
             params.control_cond = []
             params.control_cond_for_hr_fix = []
 
@@ -313,16 +333,26 @@ class ControlNetForForgeOfficial(scripts.Script):
             params.control_cond_for_hr_fix = preprocessor_output
             p.extra_result_images.append(input_image)
 
-        if input_mask is not None:
-            fill_border = preprocessor.fill_mask_with_one_when_resize_and_fill
-            params.control_mask = crop_and_resize_image(input_mask, resize_mode, h, w, fill_border)
-            p.extra_result_images.append(params.control_mask)
-            params.control_mask = numpy_to_pytorch(params.control_mask).movedim(-1, 1)[:, :1]
+        if len(control_masks) > 0:
+            params.control_mask = []
+            params.control_mask_for_hr_fix = []
 
+            for input_mask in control_masks:
+                fill_border = preprocessor.fill_mask_with_one_when_resize_and_fill
+                control_mask = crop_and_resize_image(input_mask, resize_mode, h, w, fill_border)
+                p.extra_result_images.append(params.control_mask)
+                control_mask = numpy_to_pytorch(control_mask).movedim(-1, 1)[:, :1]
+                params.control_mask.append(control_mask)
+
+                if has_high_res_fix:
+                    control_mask_for_hr_fix = crop_and_resize_image(input_mask, resize_mode, hr_y, hr_x, fill_border)
+                    p.extra_result_images.append(control_mask_for_hr_fix)
+                    control_mask_for_hr_fix = numpy_to_pytorch(control_mask_for_hr_fix).movedim(-1, 1)[:, :1]
+                    params.control_mask_for_hr_fix.append(control_mask_for_hr_fix)
+
+            params.control_mask = torch.cat(params.control_mask, dim=0)[alignment_indices].contiguous()
             if has_high_res_fix:
-                params.control_mask_for_hr_fix = crop_and_resize_image(input_mask, resize_mode, hr_y, hr_x, fill_border)
-                p.extra_result_images.append(params.control_mask_for_hr_fix)
-                params.control_mask_for_hr_fix = numpy_to_pytorch(params.control_mask_for_hr_fix).movedim(-1, 1)[:, :1]
+                params.control_mask_for_hr_fix = torch.cat(params.control_mask_for_hr_fix, dim=0)[alignment_indices].contiguous()
             else:
                 params.control_mask_for_hr_fix = params.control_mask
 

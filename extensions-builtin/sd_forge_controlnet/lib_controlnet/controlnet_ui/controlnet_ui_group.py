@@ -325,23 +325,44 @@ class ControlNetUiGroup(object):
                             )
 
                 with gr.Tab(label="Batch Folder") as self.batch_tab:
-                    self.batch_image_dir = gr.Textbox(
-                        label="Input Directory",
-                        placeholder="Input directory path to the control images.",
-                        elem_id=f"{elem_id_tabname}_{tabname}_batch_image_dir",
-                    )
+                    with gr.Row():
+                        self.batch_image_dir = gr.Textbox(
+                            label="Input Directory",
+                            placeholder="Input directory path to the control images.",
+                            elem_id=f"{elem_id_tabname}_{tabname}_batch_image_dir",
+                        )
+                        self.batch_mask_dir = gr.Textbox(
+                            label="Mask Directory",
+                            placeholder="Mask directory path to the control images.",
+                            elem_id=f"{elem_id_tabname}_{tabname}_batch_mask_dir",
+                            visible=False,
+                        )
 
                 with gr.Tab(label="Batch Upload") as self.merge_tab:
-                    self.batch_input_gallery = gr.Gallery(
-                        columns=[4], rows=[2], object_fit="contain", height="auto"
-                    )
                     with gr.Row():
-                        self.merge_upload_button = gr.UploadButton(
-                            "Upload Images",
-                            file_types=["image"],
-                            file_count="multiple",
-                        )
-                        self.merge_clear_button = gr.Button("Clear Images")
+                        with gr.Column():
+                            self.batch_input_gallery = gr.Gallery(
+                                columns=[4], rows=[2], object_fit="contain", height="auto", label="Images"
+                            )
+                            with gr.Row():
+                                self.merge_upload_button = gr.UploadButton(
+                                    "Upload Images",
+                                    file_types=["image"],
+                                    file_count="multiple",
+                                )
+                                self.merge_clear_button = gr.Button("Clear Images")
+                        with gr.Group(visible=False, elem_classes=["cnet-mask-gallery-group"]) as self.batch_mask_gallery_group:
+                            with gr.Column():
+                                self.batch_mask_gallery = gr.Gallery(
+                                    columns=[4], rows=[2], object_fit="contain", height="auto", label="Masks"
+                                )
+                                with gr.Row():
+                                    self.mask_merge_upload_button = gr.UploadButton(
+                                        "Upload Masks",
+                                        file_types=["image"],
+                                        file_count="multiple",
+                                    )
+                                    self.mask_merge_clear_button = gr.Button("Clear Masks")
 
             if self.photopea:
                 self.photopea.attach_photopea_output(self.generated_image)
@@ -585,7 +606,9 @@ class ControlNetUiGroup(object):
             self.input_mode,
             self.use_preview_as_input,
             self.batch_image_dir,
+            self.batch_mask_dir,
             self.batch_input_gallery,
+            self.batch_mask_gallery,
             self.generated_image,
             self.mask_image,
             self.enabled,
@@ -961,16 +984,19 @@ class ControlNetUiGroup(object):
         def on_checkbox_click(checked: bool, canvas_height: int, canvas_width: int):
             if not checked:
                 # Clear mask_image if unchecked.
-                return gr.update(visible=False), gr.update(value=None)
+                return gr.update(visible=False), gr.update(value=None), gr.update(value=None, visible=False), \
+                        gr.update(visible=False), gr.update(value=None)
             else:
                 # Init an empty canvas the same size as the generation target.
                 empty_canvas = np.zeros(shape=(canvas_height, canvas_width, 3), dtype=np.uint8)
-                return gr.update(visible=True), gr.update(value=empty_canvas)
+                return gr.update(visible=True), gr.update(value=empty_canvas), gr.update(visible=True), \
+                        gr.update(visible=True), gr.update()
 
         self.mask_upload.change(
             fn=on_checkbox_click,
             inputs=[self.mask_upload, self.height_slider, self.width_slider],
-            outputs=[self.mask_image_group, self.mask_image],
+            outputs=[self.mask_image_group, self.mask_image, self.batch_mask_dir,
+                     self.batch_mask_gallery_group, self.batch_mask_gallery],
             show_progress=False,
         )
 
@@ -1064,6 +1090,11 @@ class ControlNetUiGroup(object):
             inputs=[self.update_unit_counter],
             outputs=[self.update_unit_counter],
         )
+        self.mask_merge_clear_button.click(
+            fn=lambda: [],
+            inputs=[],
+            outputs=[self.batch_mask_gallery],
+        )
 
         def upload_file(files, current_files):
             return {file_d["name"] for file_d in current_files} | {
@@ -1079,6 +1110,12 @@ class ControlNetUiGroup(object):
             fn=lambda x: gr.update(value=x + 1),
             inputs=[self.update_unit_counter],
             outputs=[self.update_unit_counter],
+        )
+        self.mask_merge_upload_button.upload(
+            upload_file,
+            inputs=[self.mask_merge_upload_button, self.batch_mask_gallery],
+            outputs=[self.batch_mask_gallery],
+            queue=False,
         )
         return
 

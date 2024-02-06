@@ -76,7 +76,10 @@ Forge backend removes all WebUI's codes related to resource management and rewor
 
 Without any cmd flag, Forge can run SDXL with 4GB vram and SD1.5 with 2GB vram.
 
-**The only one flag that you may still need** is `--always-offload-from-vram` (This flag will make things **slower**). This option will let Forge always unload models from VRAM. This can be useful if you use multiple software together and want Forge to use less VRAM and give some vram to other software, or when you are using some old extensions that will compete vram with Forge, or (very rarely) when you get OOM.
+The only two flags that you may still need:
+
+1. `--always-offload-from-vram` (This flag will make things slower). This option will let Forge always unload models from VRAM. This can be useful if you use multiple software together and want Forge to use less VRAM and give some vram to other software, or when you are using some old extensions that will compete vram with Forge, or (very rarely) when you get OOM.
+2. `--always-gpu` (This flag will completely avoid model offload). If you use GPU with lots of memory like 4090 24GB, you should use this flag to probably further speed up inference by avoiding moving models repeatedly.
 
 If you really want to play with cmd flags, you can additionally control the GPU with:
 

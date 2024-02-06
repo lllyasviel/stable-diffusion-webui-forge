@@ -666,7 +666,7 @@ ControlNet and TiledVAE are integrated, and you should uninstall these two exten
     sd-webui-controlnet
     multidiffusion-upscaler-for-automatic1111
 
-Note that **animatediff** is under construction by [continue-revolution](https://github.com/continue-revolution) at [sd-forge-animatediff](https://github.com/continue-revolution/sd-forge-animatediff). (continue-revolution original words: "basic features (t2v, prompt travel, inf v2v) have been proven to work well, motion lora, cn v2v still under construction and may be finished in a week, and we can mention motion brush")
+Note that **AnimateDiff** is under construction by [continue-revolution](https://github.com/continue-revolution) at [sd-webui-animatediff forge/master branch](https://github.com/continue-revolution/sd-webui-animatediff/tree/forge/master) and [sd-forge-animatediff](https://github.com/continue-revolution/sd-forge-animatediff) (they are in sync). (continue-revolution original words: "basic features (prompt travel, inf t2v) have been proven to work well, motion lora, cn v2v still under construction and may be finished in a week, and we can mention motion brush")
 
 Other extensions should work without problems, like:
 

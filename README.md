@@ -34,8 +34,7 @@ If you know what you are doing, you can install Forge using same method as SD-We
 
 After you download, you uncompress, use `update.bat` to update, and use `run.bat` to run.
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/1251ee5c-33dc-4adc-8dd3-2b43af5ad425)
-
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/c49bd60d-82bd-4086-9859-88d472582b94)
 
 # Screenshots of Comparison
 
@@ -43,25 +42,25 @@ I tested with several devices, and this is a typical result from 8GB VRAM (3070t
 
 **This is original WebUI:**
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/c32baedd-500b-408f-8cfb-ed4570c883bd)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/16893937-9ed9-4f8e-b960-70cd5d1e288f)
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/cb6098de-f2d4-4b25-9566-df4302dda396)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/7bbc16fe-64ef-49e2-a595-d91bb658bd94)
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/5447e8b7-f3ca-4003-9961-02027c8181e8)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/de1747fd-47bc-482d-a5c6-0728dd475943)
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/f3cb57d9-ac7a-4667-8b3f-303139e38afa)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/96e5e171-2d74-41ba-9dcc-11bf68be7e16)
 
 (average about 7.4GB/8GB, peak at about 7.9GB/8GB)
 
 **This is WebUI Forge:**
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/0c45cd98-0b14-42c3-9556-28e48d4d5fa0)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/ca5e05ed-bd86-4ced-8662-f41034648e8c)
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/3a71f5d4-39e5-4ab1-81cf-8eaa790a2dc8)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/3629ee36-4a99-4d9b-b371-12efb260a283)
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/65fbb4a5-ee73-4bb9-9c5f-8a958cd9674d)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/6d13ebb7-c30d-4aa8-9242-c0b5a1af8c95)
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/76f181a1-c5fb-4323-a6cc-b6308a45587e)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/c4f723c3-6ea7-4539-980b-0708ed2a69aa)
 
 (average and peak are all 6.3GB/8GB)
 
@@ -215,11 +214,11 @@ class FreeUForForge(scripts.Script):
 
 It looks like this:
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/a7798cf2-057c-43e0-883a-5f8643af8529)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/277bac6e-5ea7-4bff-b71a-e55a60cfc03c)
 
 Similar components like HyperTile, KohyaHighResFix, SAG, can all be implemented within 100 lines of codes (see also the codes).
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/e2fc1b73-e6ee-405e-864c-c67afd92a1db)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/06472b03-b833-4816-ab47-70712ac024d3)
 
 ControlNets can finally be called by different extensions.
 
@@ -345,14 +344,13 @@ Note that although the above codes look like independent codes, they actually wi
 
 Note that this management is fully automatic. This makes writing extensions super simple.
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/ac7ed152-cd33-4645-94af-4c43bb8c3d88)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/de1a2d05-344a-44d7-bab8-9ecc0a58a8d3)
 
-
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/cdcb23ad-02dc-4e39-be74-98e927550ef6)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/14bcefcf-599f-42c3-bce9-3fd5e428dd91)
 
 Similarly, Zero123:
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/d1a4a17d-f382-442d-91f2-fc5b6c10737f)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/7685019c-7239-47fb-9cb5-2b7b33943285)
 
 ### Write a simple ControlNet:
 
@@ -528,7 +526,7 @@ if not cmd_opts.show_controlnet_example:
 
 ```
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/0a703d8b-27df-4608-8b12-aff750f20ffa)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/822fa2fc-c9f4-4f58-8669-4b6680b91063)
 
 
 ### Add a preprocessor
@@ -628,29 +626,27 @@ Thanks to Unet Patcher, many new things are possible now and supported in Forge,
 
 Masked Ip-Adapter
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/75432c4b-4f2a-4027-b6ad-fcf48fffad2c)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/d26630f9-922d-4483-8bf9-f364dca5fd50)
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/c8dad060-9f93-4781-a14d-255180787592)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/03580ef7-235c-4b03-9ca6-a27677a5a175)
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/2680504e-6c7a-4531-b477-06e4c7b3ef3f)
-
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/d9ed4a01-70d4-45b4-a6a7-2f765f158fae)
 
 Masked ControlNet
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/1d74e970-fbe3-40df-9c87-70c8426ec6e1)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/872d4785-60e4-4431-85c7-665c781dddaa)
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/0bc7bc7f-1a33-41c6-89ea-f5b5e60f6c1e)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/335a3b33-1ef8-46ff-a462-9f1b4f2c49fc)
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/10b07d97-a2b8-463c-928a-5ad9b78da25e)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/b3684a15-8895-414e-8188-487269dfcada)
 
 PhotoMaker
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/377699d3-e6b5-4ace-9d0f-054ac1749fc8)
-
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/07b0b626-05b5-473b-9d69-3657624d59be)
 
 Marigold Depth
 
-![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/95787c05-3fe7-43cc-ba12-baf378284007)
+![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/bdf54148-892d-410d-8ed9-70b4b121b6e7)
 
 # New Samplers (that are not in origin)
 

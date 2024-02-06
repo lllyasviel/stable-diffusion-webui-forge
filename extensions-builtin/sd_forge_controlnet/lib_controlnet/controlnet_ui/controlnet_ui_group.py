@@ -180,10 +180,11 @@ class ControlNetUiGroup(object):
 
         # Note: All gradio elements declared in `render` will be defined as member variable.
         # Update counter to trigger a force update of UiControlNetUnit.
-        # This is useful when a field with no event subscriber available changes.
-        # e.g. gr.Gallery, gr.State, etc.
-        self.enabled = None
+        # dummy_gradio_update_trigger is useful when a field with no event subscriber available changes.
+        # e.g. gr.Gallery, gr.State, etc. After an update to gr.State / gr.Gallery, please increment
+        # this counter to trigger a sync update of UiControlNetUnit.
         self.dummy_gradio_update_trigger = None
+        self.enabled = None
         self.upload_tab = None
         self.image = None
         self.generated_image_group = None
@@ -1142,7 +1143,7 @@ class ControlNetUiGroup(object):
             self.type_filter,
             *[
                 getattr(self, key)
-                for key in vars(external_code.ControlNetUnit()).keys()
+                for key in external_code.ControlNetUnit.infotext_fields()
             ],
         )
         if self.is_img2img:

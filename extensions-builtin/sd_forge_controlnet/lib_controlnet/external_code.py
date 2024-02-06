@@ -170,6 +170,27 @@ class UiControlNetUnit:
     pixel_perfect: bool = False
     control_mode: Union[ControlMode, int, str] = ControlMode.BALANCED
 
+    @staticmethod
+    def infotext_fields():
+        """Fields that should be included in infotext.
+        You should define a Gradio element with exact same name in ControlNetUiGroup
+        as well, so that infotext can wire the value to correct field when pasting
+        infotext.
+        """
+        return (
+            "module",
+            "model",
+            "weight",
+            "resize_mode",
+            "processor_res",
+            "threshold_a",
+            "threshold_b",
+            "guidance_start",
+            "guidance_end",
+            "pixel_perfect",
+            "control_mode",
+        )
+
 
 # Backward Compatible
 ControlNetUnit = UiControlNetUnit

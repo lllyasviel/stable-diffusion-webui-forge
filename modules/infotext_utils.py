@@ -138,6 +138,8 @@ def register_paste_params_button(binding: ParamBinding):
 
 def connect_paste_params_buttons():
     for binding in registered_param_bindings:
+        if binding.tabname not in paste_fields:
+            continue
         destination_image_component = paste_fields[binding.tabname]["init_img"]
         fields = paste_fields[binding.tabname]["fields"]
         override_settings_component = binding.override_settings_component or paste_fields[binding.tabname]["override_settings_component"]

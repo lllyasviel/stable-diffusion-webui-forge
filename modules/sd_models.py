@@ -633,6 +633,8 @@ def unload_model_weights(sd_model=None, info=None):
 
 
 def apply_token_merging(sd_model, token_merging_ratio):
+    if token_merging_ratio > 0:
+        print('Token merging is under construction now and the setting will not take effect.')
+
     # TODO: rework using new UNet patcher system
-    print('Token merging is under construction now and the setting will not take effect.')
-    pass
+    return

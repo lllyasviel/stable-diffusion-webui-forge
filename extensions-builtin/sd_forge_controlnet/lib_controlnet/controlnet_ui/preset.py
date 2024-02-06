@@ -117,7 +117,7 @@ class ControlNetPresetUI(object):
                     gr.update(visible=False),
                     *(
                         (gr.skip(),)
-                        * (len(vars(external_code.ControlNetUnit()).keys()) + 1)
+                        * (len(external_code.ControlNetUnit.infotext_fields()) + 1)
                     ),
                 )
 
@@ -140,7 +140,7 @@ class ControlNetPresetUI(object):
                     gr.update(visible=False),
                     *(
                         (gr.skip(),)
-                        * (len(vars(external_code.ControlNetUnit()).keys()) + 1)
+                        * (len(external_code.ControlNetUnit.infotext_fields()) + 1)
                     ),
                 )
 
@@ -166,7 +166,8 @@ class ControlNetPresetUI(object):
                 gr.update(value=new_control_type),
                 *[
                     gr.update(value=value) if value is not None else gr.update()
-                    for value in vars(unit).values()
+                    for field in external_code.ControlNetUnit.infotext_fields()
+                    for value in (getattr(unit, field),)
                 ],
             )
 

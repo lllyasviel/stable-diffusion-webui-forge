@@ -29,21 +29,10 @@ def parse_value(value: str) -> Union[str, float, int, bool]:
 
 
 def serialize_unit(unit: external_code.ControlNetUnit) -> str:
-    excluded_fields = (
-        "image",
-        "enabled",
-        "input_mode",
-        "use_preview_as_input",
-        "generated_image",
-        "mask_image",
-        "batch_input_gallery",
-        "batch_image_dir"
-    )
-
     log_value = {
         field_to_displaytext(field): getattr(unit, field)
-        for field in vars(external_code.ControlNetUnit()).keys()
-        if field not in excluded_fields and getattr(unit, field) != -1
+        for field in external_code.ControlNetUnit.infotext_fields()
+        if getattr(unit, field) != -1
         # Note: exclude hidden slider values.
     }
     if not all("," not in str(v) and ":" not in str(v) for v in log_value.values()):
@@ -83,12 +72,8 @@ class Infotext(object):
                      iocomponents.
         """
         unit_prefix = Infotext.unit_prefix(unit_index)
-        for field in vars(external_code.ControlNetUnit()).keys():
-            # Exclude image for infotext.
-            if field == "image":
-                continue
-
-            # Every field in ControlNetUnit should have a cooresponding
+        for field in external_code.ControlNetUnit.infotext_fields():
+            # Every field in ControlNetUnit should have a corresponding
             # IOComponent in ControlNetUiGroup.
             io_component = getattr(uigroup, field)
             component_locator = f"{unit_prefix} {field}"

@@ -151,7 +151,9 @@ class UiControlNetUnit:
     input_mode: InputMode = InputMode.SIMPLE
     use_preview_as_input: bool = False,
     batch_image_dir: str = '',
+    batch_mask_dir: str = '',
     batch_input_gallery: list = [],
+    batch_mask_gallery: list = [],
     generated_image: Optional[np.ndarray] = None,
     mask_image: Optional[np.ndarray] = None,
     enabled: bool = True
@@ -167,6 +169,27 @@ class UiControlNetUnit:
     guidance_end: float = 1.0
     pixel_perfect: bool = False
     control_mode: Union[ControlMode, int, str] = ControlMode.BALANCED
+
+    @staticmethod
+    def infotext_fields():
+        """Fields that should be included in infotext.
+        You should define a Gradio element with exact same name in ControlNetUiGroup
+        as well, so that infotext can wire the value to correct field when pasting
+        infotext.
+        """
+        return (
+            "module",
+            "model",
+            "weight",
+            "resize_mode",
+            "processor_res",
+            "threshold_a",
+            "threshold_b",
+            "guidance_start",
+            "guidance_end",
+            "pixel_perfect",
+            "control_mode",
+        )
 
 
 # Backward Compatible

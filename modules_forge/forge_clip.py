@@ -6,6 +6,7 @@ from modules.shared import opts
 class CLIP_SD_15_L(FrozenCLIPEmbedderWithCustomWords):
     def encode_with_transformers(self, tokens):
         model_management.load_model_gpu(self.forge_objects.clip.patcher)
+        self.wrapped.transformer.text_model.embeddings.to(tokens.device)
         outputs = self.wrapped.transformer(input_ids=tokens, output_hidden_states=-opts.CLIP_stop_at_last_layers)
 
         if opts.CLIP_stop_at_last_layers > 1:
@@ -31,6 +32,7 @@ class CLIP_SD_21_H(FrozenCLIPEmbedderWithCustomWords):
 
     def encode_with_transformers(self, tokens):
         model_management.load_model_gpu(self.forge_objects.clip.patcher)
+        self.wrapped.transformer.text_model.embeddings.to(tokens.device)
         outputs = self.wrapped.transformer(tokens, output_hidden_states=self.wrapped.layer == "hidden")
 
         if self.wrapped.layer == "last":
@@ -47,6 +49,7 @@ class CLIP_SD_XL_L(FrozenCLIPEmbedderWithCustomWords):
         super().__init__(wrapped, hijack)
 
     def encode_with_transformers(self, tokens):
+        self.wrapped.transformer.text_model.embeddings.to(tokens.device)
         outputs = self.wrapped.transformer(tokens, output_hidden_states=self.wrapped.layer == "hidden")
 
         if self.wrapped.layer == "last":
@@ -70,6 +73,7 @@ class CLIP_SD_XL_G(FrozenCLIPEmbedderWithCustomWords):
         self.id_pad = 0
 
     def encode_with_transformers(self, tokens):
+        self.wrapped.transformer.text_model.embeddings.to(tokens.device)
         outputs = self.wrapped.transformer(tokens, output_hidden_states=self.wrapped.layer == "hidden")
 
         if self.wrapped.layer == "last":

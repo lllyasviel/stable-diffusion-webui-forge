@@ -16,7 +16,6 @@ from ldm.util import instantiate_from_config
 
 from modules import paths, shared, modelloader, devices, script_callbacks, sd_vae, sd_disable_initialization, errors, hashes, sd_models_config, sd_unet, sd_models_xl, cache, extra_networks, processing, lowvram, sd_hijack, patches
 from modules.timer import Timer
-import tomesd
 import numpy as np
 from modules_forge import forge_loader
 import modules_forge.ops as forge_ops
@@ -634,26 +633,8 @@ def unload_model_weights(sd_model=None, info=None):
 
 
 def apply_token_merging(sd_model, token_merging_ratio):
-    """
-    Applies speed and memory optimizations from tomesd.
-    """
-
-    current_token_merging_ratio = getattr(sd_model, 'applied_token_merged_ratio', 0)
-
-    if current_token_merging_ratio == token_merging_ratio:
-        return
-
-    if current_token_merging_ratio > 0:
-        tomesd.remove_patch(sd_model)
-
     if token_merging_ratio > 0:
-        tomesd.apply_patch(
-            sd_model,
-            ratio=token_merging_ratio,
-            use_rand=False,  # can cause issues with some samplers
-            merge_attn=True,
-            merge_crossattn=False,
-            merge_mlp=False
-        )
+        print('Token merging is under construction now and the setting will not take effect.')
 
-    sd_model.applied_token_merged_ratio = token_merging_ratio
+    # TODO: rework using new UNet patcher system
+    return

@@ -183,6 +183,7 @@ class ControlNetUiGroup(object):
         # This is useful when a field with no event subscriber available changes.
         # e.g. gr.Gallery, gr.State, etc.
         self.enabled = None
+        self.update_unit_counter = None
         self.upload_tab = None
         self.image = None
         self.generated_image_group = None
@@ -250,6 +251,7 @@ class ControlNetUiGroup(object):
         Returns:
             None
         """
+        self.update_unit_counter = gr.Number(value=0, visible=False)
         self.openpose_editor = OpenposeEditor()
 
         with gr.Group(visible=not self.is_img2img) as self.image_upload_panel:
@@ -625,7 +627,7 @@ class ControlNetUiGroup(object):
         )
 
         unit = gr.State(self.default_unit)
-        for comp in unit_args:
+        for comp in unit_args + (self.update_unit_counter,):
             event_subscribers = []
             if hasattr(comp, "edit"):
                 event_subscribers.append(comp.edit)
@@ -1083,6 +1085,10 @@ class ControlNetUiGroup(object):
             fn=lambda: [],
             inputs=[],
             outputs=[self.batch_input_gallery],
+        ).then(
+            fn=lambda x: gr.update(value=x + 1),
+            inputs=[self.update_unit_counter],
+            outputs=[self.update_unit_counter],
         )
         self.mask_merge_clear_button.click(
             fn=lambda: [],
@@ -1100,6 +1106,10 @@ class ControlNetUiGroup(object):
             inputs=[self.merge_upload_button, self.batch_input_gallery],
             outputs=[self.batch_input_gallery],
             queue=False,
+        ).then(
+            fn=lambda x: gr.update(value=x + 1),
+            inputs=[self.update_unit_counter],
+            outputs=[self.update_unit_counter],
         )
         self.mask_merge_upload_button.upload(
             upload_file,

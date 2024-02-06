@@ -155,7 +155,7 @@ class ControlNetForForgeOfficial(scripts.Script):
                         mask_path = unit.batch_mask_gallery[idx]['name']
                     else:
                         mask_path = unit.batch_mask_gallery[0]['name']
-                    mask = np.ascontiguousarray(cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE))
+                    mask = np.ascontiguousarray(cv2.imread(mask_path)[:, :, ::-1]).copy()
                 if img is not None:
                     image_list.append([img, mask])
             return image_list, resize_mode
@@ -175,7 +175,7 @@ class ControlNetForForgeOfficial(scripts.Script):
                         else:
                             mask_path = unit.batch_mask_dir[0]
                         mask_path = os.path.join(unit.batch_mask_dir, mask_path)
-                        mask = np.ascontiguousarray(cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE))
+                        mask = np.ascontiguousarray(cv2.imread(mask_path)[:, :, ::-1]).copy()
                     if img is not None:
                         image_list.append([img, mask])
             return image_list, resize_mode
@@ -340,7 +340,7 @@ class ControlNetForForgeOfficial(scripts.Script):
             for input_mask in control_masks:
                 fill_border = preprocessor.fill_mask_with_one_when_resize_and_fill
                 control_mask = crop_and_resize_image(input_mask, resize_mode, h, w, fill_border)
-                p.extra_result_images.append(params.control_mask)
+                p.extra_result_images.append(control_mask)
                 control_mask = numpy_to_pytorch(control_mask).movedim(-1, 1)[:, :1]
                 params.control_mask.append(control_mask)
 

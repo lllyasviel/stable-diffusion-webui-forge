@@ -226,32 +226,56 @@ fi
 # Try using TCMalloc on Linux
 prepare_tcmalloc() {
     if [[ "${OSTYPE}" == "linux"* ]] && [[ -z "${NO_TCMALLOC}" ]] && [[ -z "${LD_PRELOAD}" ]]; then
-        # Define Tcmalloc Libs arrays
-        TCMALLOC_LIBS=("libtcmalloc(_minimal|)\.so\.\d" "libtcmalloc\.so\.\d")
+        # check glibc version
+        LIBC_LIB="$(PATH=/usr/sbin:$PATH ldconfig -p | grep -P "libc.so.6" | head -n 1)"
+        LIBC_INFO=$(echo ${LIBC_LIB} | awk '{print $NF}')
+        LIBC_VER=$(echo $(${LIBC_INFO} | awk 'NR==1 {print $NF}') | grep -oP '\d+\.\d+')
+        echo "glibc version is $LIBC_VER"
+        vernum=$(expr $LIBC_VER)
+        # Since 2.34 libpthread is integrated into libc
+        libc_v234=2.34
 
-        # Traversal array
-        for lib in "${TCMALLOC_LIBS[@]}"
-        do
-          #Determine which type of tcmalloc library the library supports
-          TCMALLOC="$(PATH=/usr/sbin:$PATH ldconfig -p | grep -P $lib | head -n 1)"
-          TC_INFO=(${TCMALLOC//=>/})
-          if [[ ! -z "${TC_INFO}" ]]; then
-              echo "Using TCMalloc: ${TC_INFO}"
-              #Determine if the library is linked to libptthread and resolve undefined symbol: ptthread_Key_Create
-              if ldd ${TC_INFO[2]} | grep -q 'libpthread'; then
-                echo "$TC_INFO is linked with libpthread,execute LD_PRELOAD=${TC_INFO}"
-                export LD_PRELOAD="${TC_INFO}"
-                break
+        if [ $(echo "$vernum < $libc_v234" | bc) -eq 1 ]; then
+            # glibc < 2.33 ptthread_Key_Create into libpthead.so
+
+            # Define Tcmalloc Libs arrays
+            TCMALLOC_LIBS=("libtcmalloc(_minimal|)\.so\.\d" "libtcmalloc\.so\.\d")
+
+            # Traversal array
+            for lib in "${TCMALLOC_LIBS[@]}"
+            do
+              #Determine which type of tcmalloc library the library supports
+              TCMALLOC="$(PATH=/usr/sbin:$PATH ldconfig -p | grep -P $lib | head -n 1)"
+              echo ${TCMALLOC}
+              TC_INFO=(${TCMALLOC//=>/})
+              if [[ ! -z "${TC_INFO}" ]]; then
+                  echo "Using TCMalloc: ${TC_INFO}"
+                  #Determine if the library is linked to libptthread and resolve undefined symbol: ptthread_Key_Create
+                  if ldd ${TC_INFO[2]} | grep -q 'libpthread'; then
+                    echo "$TC_INFO is linked with libpthread,execute LD_PRELOAD=${TC_INFO}"
+                    export LD_PRELOAD="${TC_INFO}"
+                    break
+                  else
+                    echo "$TC_INFO is not linked with libpthread will trigger undefined symbol: pthread_Key_Create error"
+                  fi
               else
-                echo "$TC_INFO is not linked with libpthreadand will trigger undefined symbol: ptthread_Key_Create error"
-              fi
-          else
-              printf "\e[1m\e[31mCannot locate TCMalloc (improves CPU memory usage)\e[0m\n"
-          fi
-        done
-
+                printf "\e[1m\e[31mCannot locate TCMalloc (improves CPU memory usage)\e[0m\n"
+			  fi
+			done
+			
+        else
+           # glibc >= 2.34 pthread_Key_Create into libc.so (ubuntu 22.04 and modern linux system)
+           TCMALLOC="$(PATH=/sbin:$PATH ldconfig -p | grep -Po "libtcmalloc(_minimal|)\.so\.\d" | head -n 1)"
+           if [[ ! -z "${TCMALLOC}" ]]; then
+               echo "Using TCMalloc: ${TCMALLOC}"
+               export LD_PRELOAD="${TCMALLOC}"
+            else
+               printf "\e[1m\e[31mCannot locate TCMalloc (improves CPU memory usage)\e[0m\n"
+            fi
+        fi
     fi
 }
+
 
 KEEP_GOING=1
 export SD_WEBUI_RESTART=tmp/restart

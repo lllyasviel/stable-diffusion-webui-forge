@@ -1,4 +1,3 @@
-from enum import Enum
 import os
 import torch
 import ldm_patched.modules.utils
@@ -7,34 +6,6 @@ import ldm_patched.controlnet
 from ldm_patched.modules.controlnet import ControlLora, ControlNet, load_t2i_adapter
 from modules_forge.controlnet import apply_controlnet_advanced
 from modules_forge.shared import add_supported_control_model
-from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessing
-
-
-class HiResFixOption(Enum):
-    BOTH = "Both"
-    LOW_RES_ONLY = "Low res only"
-    HIGH_RES_ONLY = "High res only"
-
-    @staticmethod
-    def from_value(value) -> "HiResFixOption":
-        if isinstance(value, str) and value.startswith("HiResFixOption."):
-            _, field = value.split(".")
-            return getattr(HiResFixOption, field)
-        if isinstance(value, str):
-            return HiResFixOption(value)
-        elif isinstance(value, int):
-            return [x for x in HiResFixOption][value]
-        else:
-            assert isinstance(value, HiResFixOption)
-            return value
-
-    @property
-    def low_res_enabled(self) -> bool:
-        return self in (HiResFixOption.BOTH, HiResFixOption.LOW_RES_ONLY)
-
-    @property
-    def high_res_enabled(self) -> bool:
-        return self in (HiResFixOption.BOTH, HiResFixOption.HIGH_RES_ONLY)
 
 
 class ControlModelPatcher:
@@ -52,7 +23,6 @@ class ControlModelPatcher:
         self.advanced_frame_weighting = None
         self.advanced_sigma_weighting = None
         self.advanced_mask_weighting = None
-        self.hr_option = HiResFixOption.BOTH
 
     def process_after_running_preprocessors(self, process, params, *args, **kwargs):
         return
@@ -173,13 +143,7 @@ class ControlNetPatcher(ControlModelPatcher):
     def __init__(self, model_patcher):
         super().__init__(model_patcher)
 
-    def process_before_every_sampling(self, process: StableDiffusionProcessing, cond, mask, *args, **kwargs):
-        if isinstance(process, StableDiffusionProcessingTxt2Img) and process.enable_hr:
-            if self.hr_option == HiResFixOption.LOW_RES_ONLY and process.is_hr_pass:
-                return
-            elif self.hr_option == HiResFixOption.HIGH_RES_ONLY and not process.is_hr_pass:
-                return
-
+    def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         unet = process.sd_model.forge_objects.unet
 
         unet = apply_controlnet_advanced(

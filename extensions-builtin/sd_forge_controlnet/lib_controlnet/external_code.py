@@ -4,8 +4,7 @@ from typing import List, Optional, Union, Tuple, Dict
 import numpy as np
 from modules import shared
 from lib_controlnet.logging import logger
-from lib_controlnet.enums import InputMode
-from modules_forge.supported_controlnet import HiResFixOption
+from lib_controlnet.enums import InputMode, HiResFixOption
 from modules.api import api
 
 

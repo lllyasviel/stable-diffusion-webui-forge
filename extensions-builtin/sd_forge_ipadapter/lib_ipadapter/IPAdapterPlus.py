@@ -343,18 +343,15 @@ class IPAdapter(nn.Module):
         )
         return image_proj_model
 
-    @torch.inference_mode()
     def get_image_embeds(self, clip_embed, clip_embed_zeroed):
         image_prompt_embeds = self.image_proj_model(clip_embed)
         uncond_image_prompt_embeds = self.image_proj_model(clip_embed_zeroed)
         return image_prompt_embeds, uncond_image_prompt_embeds
 
-    @torch.inference_mode()
     def get_image_embeds_faceid_plus(self, face_embed, clip_embed, s_scale, shortcut):
         embeds = self.image_proj_model(face_embed, clip_embed, scale=s_scale, shortcut=shortcut)
         return embeds
 
-    @torch.inference_mode()
     def get_image_embeds_instantid(self, prompt_image_emb):
         c = self.image_proj_model(prompt_image_emb)
         uc = self.image_proj_model(torch.zeros_like(prompt_image_emb))

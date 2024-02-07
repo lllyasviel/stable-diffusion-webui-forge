@@ -20,7 +20,7 @@ from modules.processing import StableDiffusionProcessingImg2Img, StableDiffusion
     StableDiffusionProcessing
 from lib_controlnet.infotext import Infotext
 from modules_forge.forge_util import HWC3, numpy_to_pytorch
-from modules_forge.supported_controlnet import HiResFixOption
+from lib_controlnet.enums import HiResFixOption
 
 import numpy as np
 import functools

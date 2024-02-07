@@ -245,9 +245,7 @@ def calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_options):
                 p.transformer_options = transformer_options
                 p = p.previous_controlnet
             control_cond = c.copy()  # get_control may change items in this dict, so we need to copy it
-            cn_function_wrapper = None
-            if "cn_function_wrapper" in model_options:
-                cn_function_wrapper = model_options["cn_function_wrapper"]
+            cn_function_wrapper = model_options.get("cn_function_wrapper", None)
             c['control'] = control.get_control(input_x, timestep_, control_cond, len(cond_or_uncond), cn_function_wrapper)
 
         if 'model_function_wrapper' in model_options:

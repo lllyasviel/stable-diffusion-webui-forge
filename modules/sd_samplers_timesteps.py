@@ -101,11 +101,11 @@ class CompVisSampler(sd_samplers_common.Sampler):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 
-        self.model_wrap.inner_model.alphas_cumprod = self.model_wrap.inner_model.alphas_cumprod.to(unet_patcher.load_device)
+        self.model_wrap.inner_model.alphas_cumprod = self.model_wrap.inner_model.alphas_cumprod.to(x.device)
 
         steps, t_enc = sd_samplers_common.setup_img2img_steps(p, steps)
 
-        timesteps = self.get_timesteps(p, steps).to(shared.device)
+        timesteps = self.get_timesteps(p, steps).to(x.device)
         timesteps_sched = timesteps[:t_enc]
 
         alphas_cumprod = shared.sd_model.alphas_cumprod
@@ -151,10 +151,10 @@ class CompVisSampler(sd_samplers_common.Sampler):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 
-        self.model_wrap.inner_model.alphas_cumprod = self.model_wrap.inner_model.alphas_cumprod.to(unet_patcher.load_device)
+        self.model_wrap.inner_model.alphas_cumprod = self.model_wrap.inner_model.alphas_cumprod.to(x.device)
 
         steps = steps or p.steps
-        timesteps = self.get_timesteps(p, steps).to(shared.device)
+        timesteps = self.get_timesteps(p, steps).to(x.device)
 
         extra_params_kwargs = self.initialize(p)
         parameters = inspect.signature(self.func).parameters

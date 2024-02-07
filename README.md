@@ -644,6 +644,8 @@ Masked ControlNet
 
 PhotoMaker
 
+(Note that photomaker is a special control that need you to add the trigger word "photomaker". Your prompt should be like "a photo of photomaker")
+
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/07b0b626-05b5-473b-9d69-3657624d59be)
 
 Marigold Depth

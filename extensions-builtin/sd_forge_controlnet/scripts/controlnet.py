@@ -318,7 +318,8 @@ class ControlNetForForgeOfficial(scripts.Script):
 
             for preprocessor_output in preprocessor_outputs:
                 control_cond = crop_and_resize_image(preprocessor_output, resize_mode, h, w)
-                p.extra_result_images.append(external_code.visualize_inpaint_mask(control_cond))
+                if hr_option.low_res_enabled:
+                    p.extra_result_images.append(external_code.visualize_inpaint_mask(control_cond))
                 params.control_cond.append(numpy_to_pytorch(control_cond).movedim(-1, 1))
 
             params.control_cond = torch.cat(params.control_cond, dim=0)[alignment_indices].contiguous()
@@ -326,7 +327,8 @@ class ControlNetForForgeOfficial(scripts.Script):
             if has_high_res_fix:
                 for preprocessor_output in preprocessor_outputs:
                     control_cond_for_hr_fix = crop_and_resize_image(preprocessor_output, resize_mode, hr_y, hr_x)
-                    p.extra_result_images.append(external_code.visualize_inpaint_mask(control_cond_for_hr_fix))
+                    if hr_option.high_res_enabled:
+                        p.extra_result_images.append(external_code.visualize_inpaint_mask(control_cond_for_hr_fix))
                     params.control_cond_for_hr_fix.append(numpy_to_pytorch(control_cond_for_hr_fix).movedim(-1, 1))
                 params.control_cond_for_hr_fix = torch.cat(params.control_cond_for_hr_fix, dim=0)[alignment_indices].contiguous()
             else:

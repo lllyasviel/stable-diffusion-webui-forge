@@ -16,11 +16,10 @@ from lib_controlnet.controlnet_ui.openpose_editor import OpenposeEditor
 from lib_controlnet.controlnet_ui.preset import ControlNetPresetUI
 from lib_controlnet.controlnet_ui.tool_button import ToolButton
 from lib_controlnet.controlnet_ui.photopea import Photopea
-from lib_controlnet.enums import InputMode
+from lib_controlnet.enums import InputMode, HiResFixOption
 from modules import shared
 from modules.ui_components import FormRow
 from modules_forge.forge_util import HWC3
-from modules_forge.supported_controlnet import HiResFixOption
 from lib_controlnet.external_code import UiControlNetUnit
 
 

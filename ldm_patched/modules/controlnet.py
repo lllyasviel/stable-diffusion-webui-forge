@@ -64,6 +64,10 @@ def compute_controlnet_weighting(control, cnet):
     for k, v in control.items():
         for i in range(len(v)):
             control_signal = control[k][i]
+
+            if not isinstance(control_signal, torch.Tensor):
+                continue
+            
             B, C, H, W = control_signal.shape
 
             positive_weight = 1.0

@@ -345,13 +345,15 @@ class ControlNetForForgeOfficial(scripts.Script):
             for input_mask in control_masks:
                 fill_border = preprocessor.fill_mask_with_one_when_resize_and_fill
                 control_mask = crop_and_resize_image(input_mask, resize_mode, h, w, fill_border)
-                p.extra_result_images.append(control_mask)
+                if hr_option.low_res_enabled:
+                    p.extra_result_images.append(control_mask)
                 control_mask = numpy_to_pytorch(control_mask).movedim(-1, 1)[:, :1]
                 params.control_mask.append(control_mask)
 
                 if has_high_res_fix:
                     control_mask_for_hr_fix = crop_and_resize_image(input_mask, resize_mode, hr_y, hr_x, fill_border)
-                    p.extra_result_images.append(control_mask_for_hr_fix)
+                    if hr_option.high_res_enabled:
+                        p.extra_result_images.append(control_mask_for_hr_fix)
                     control_mask_for_hr_fix = numpy_to_pytorch(control_mask_for_hr_fix).movedim(-1, 1)[:, :1]
                     params.control_mask_for_hr_fix.append(control_mask_for_hr_fix)
 

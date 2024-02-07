@@ -4,8 +4,7 @@ from typing import List, Optional, Union, Tuple, Dict
 import numpy as np
 from modules import shared
 from lib_controlnet.logging import logger
-from lib_controlnet.enums import InputMode
-
+from lib_controlnet.enums import InputMode, HiResFixOption
 from modules.api import api
 
 
@@ -156,6 +155,7 @@ class UiControlNetUnit:
     batch_mask_gallery: list = [],
     generated_image: Optional[np.ndarray] = None,
     mask_image: Optional[np.ndarray] = None,
+    hr_option: Union[HiResFixOption, int, str] = HiResFixOption.BOTH
     enabled: bool = True
     module: str = "None"
     model: str = "None"
@@ -189,6 +189,7 @@ class UiControlNetUnit:
             "guidance_end",
             "pixel_perfect",
             "control_mode",
+            "hr_option",
         )
 
 

@@ -16,7 +16,7 @@ from lib_controlnet.controlnet_ui.openpose_editor import OpenposeEditor
 from lib_controlnet.controlnet_ui.preset import ControlNetPresetUI
 from lib_controlnet.controlnet_ui.tool_button import ToolButton
 from lib_controlnet.controlnet_ui.photopea import Photopea
-from lib_controlnet.enums import InputMode
+from lib_controlnet.enums import InputMode, HiResFixOption
 from modules import shared
 from modules.ui_components import FormRow
 from modules_forge.forge_util import HWC3
@@ -46,7 +46,6 @@ class A1111Context:
     img2img_inpaint_upload_tab: Optional[gr.components.IOComponent] = None
 
     img2img_inpaint_area: Optional[gr.components.IOComponent] = None
-    # txt2img_enable_hr is only available for A1111 > 1.7.0.
     txt2img_enable_hr: Optional[gr.components.IOComponent] = None
     setting_sd_model_checkpoint: Optional[gr.components.IOComponent] = None
 
@@ -580,15 +579,15 @@ class ControlNetUiGroup(object):
             visible=not self.is_img2img,
         )
 
-        # self.hr_option = gr.Radio(
-        #     choices=[e.value for e in external_code.HiResFixOption],
-        #     value=self.default_unit.hr_option.value,
-        #     label="Hires-Fix Option",
-        #     elem_id=f"{elem_id_tabname}_{tabname}_controlnet_hr_option_radio",
-        #     elem_classes="controlnet_hr_option_radio",
-        #     visible=False,
-        # )
-        #
+        self.hr_option = gr.Radio(
+            choices=[e.value for e in HiResFixOption],
+            value=self.default_unit.hr_option.value,
+            label="Hires-Fix Option",
+            elem_id=f"{elem_id_tabname}_{tabname}_controlnet_hr_option_radio",
+            elem_classes="controlnet_hr_option_radio",
+            visible=False,
+        )
+
         # self.loopback = gr.Checkbox(
         #     label="[Batch Loopback] Automatically send generated images to this ControlNet unit in batch generation",
         #     value=self.default_unit.loopback,
@@ -612,6 +611,7 @@ class ControlNetUiGroup(object):
             self.batch_mask_gallery,
             self.generated_image,
             self.mask_image,
+            self.hr_option,
             self.enabled,
             self.module,
             self.model,
@@ -978,7 +978,12 @@ class ControlNetUiGroup(object):
         return
 
     def register_shift_hr_options(self):
-        return
+        ControlNetUiGroup.a1111_context.txt2img_enable_hr.change(
+            fn=lambda checked: gr.update(visible=checked),
+            inputs=[ControlNetUiGroup.a1111_context.txt2img_enable_hr],
+            outputs=[self.hr_option],
+            show_progress=False,
+        )
 
     def register_shift_upload_mask(self):
         """Controls whether the upload mask input should be visible."""

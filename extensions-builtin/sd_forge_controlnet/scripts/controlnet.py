@@ -202,7 +202,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         image = HWC3(image)
 
         if using_a1111_data:
-            mask = HWC3(np.asarray(a1111_i2i_mask))
+            mask = HWC3(np.asarray(a1111_i2i_mask)) if a1111_i2i_mask is not None else None
         elif unit.mask_image is not None and (unit.mask_image['image'] > 5).any():
             mask = unit.mask_image['image']
         elif unit.mask_image is not None and (unit.mask_image['mask'] > 5).any():

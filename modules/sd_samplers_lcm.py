@@ -27,7 +27,7 @@ class LCMCompVisDenoiser(DiscreteEpsDDPMDenoiser):
         start = self.sigma_to_t(self.sigma_max)
         end = self.sigma_to_t(self.sigma_min)
 
-        t = torch.linspace(start, end, n, device=shared.sd_model.forge_objects.unet.current_device)
+        t = torch.linspace(start, end, n, device=self.sigmas.device)
 
         return sampling.append_zero(self.t_to_sigma(t))
 

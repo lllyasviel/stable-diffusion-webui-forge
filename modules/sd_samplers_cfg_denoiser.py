@@ -173,7 +173,7 @@ class CFGDenoiser(torch.nn.Module):
         uncond = prompt_parser.reconstruct_cond_batch(uncond, self.step)
 
         if self.mask is not None:
-            noisy_initial_latent = self.init_latent + sigma * torch.randn_like(self.init_latent).to(self.init_latent)
+            noisy_initial_latent = self.init_latent + sigma[:, None, None, None] * torch.randn_like(self.init_latent).to(self.init_latent)
             x = x * self.nmask + noisy_initial_latent * self.mask
 
         denoiser_params = CFGDenoiserParams(x, image_cond, sigma, state.sampling_step, state.sampling_steps, cond, uncond, self)

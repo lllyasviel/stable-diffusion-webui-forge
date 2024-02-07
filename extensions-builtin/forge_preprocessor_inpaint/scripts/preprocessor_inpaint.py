@@ -56,7 +56,7 @@ class PreprocessorInpaintOnly(PreprocessorInpaint):
         unet = process.sd_model.forge_objects.unet.clone()
 
         def pre_cfg(model, c, uc, x, timestep, model_options):
-            noisy_latent = latent_image.to(x) + timestep.to(x) * torch.randn_like(latent_image).to(x)
+            noisy_latent = latent_image.to(x) + timestep[:, None, None, None].to(x) * torch.randn_like(latent_image).to(x)
             x = x * latent_mask.to(x) + noisy_latent.to(x) * (1.0 - latent_mask.to(x))
             return model, c, uc, x, timestep, model_options
 

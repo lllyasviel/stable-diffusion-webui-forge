@@ -396,7 +396,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         params.model.strength = float(unit.weight)
         params.model.start_percent = float(unit.guidance_start)
         params.model.end_percent = float(unit.guidance_end)
-        params.model.hr_option = unit.hr_option
+        params.model.hr_option = HiResFixOption.from_value(unit.hr_option)
         params.model.positive_advanced_weighting = None
         params.model.negative_advanced_weighting = None
         params.model.advanced_frame_weighting = None

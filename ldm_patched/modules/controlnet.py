@@ -543,7 +543,7 @@ class T2IAdapter(ControlBase):
             self.control_input = None
             self.cond_hint = None
             width, height = self.scale_image_to(x_noisy.shape[3] * 8, x_noisy.shape[2] * 8)
-            self.cond_hint = ldm_patched.modules.utils.common_upscale(self.cond_hint_original, width, height, 'nearest-exact', "center").float().to(self.device)
+            self.cond_hint = ldm_patched.modules.utils.common_upscale(self.cond_hint_original, width, height, 'nearest-exact', "center").float()
             if self.channels_in == 1 and self.cond_hint.shape[1] > 1:
                 self.cond_hint = torch.mean(self.cond_hint, 1, keepdim=True)
         if x_noisy.shape[0] != self.cond_hint.shape[0]:
@@ -554,7 +554,7 @@ class T2IAdapter(ControlBase):
             if cn_function_wrapper is not None:
                 self.control_input = cn_function_wrapper(self.t2i_model, "T2IAdapter", self.cond_hint.to(x_noisy.dtype))
             else:
-                self.control_input = self.t2i_model(self.cond_hint.to(x_noisy.dtype))
+                self.control_input = self.t2i_model(self.cond_hint.to(x_noisy.dtype).to(self.device))
             self.t2i_model.cpu()
 
         control_input = list(map(lambda a: None if a is None else a.clone(), self.control_input))

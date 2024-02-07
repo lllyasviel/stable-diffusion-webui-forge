@@ -256,7 +256,7 @@ class ControlNet(ControlBase):
         x_noisy = self.model_sampling_current.calculate_input(t, x_noisy)
 
         if cn_function_wrapper is not None:
-            control = cn_function_wrapper(self.control_model, "ControlNet", x=x_noisy.to(dtype), hint=self.cond_hint, timesteps=timestep.float(), context=context.to(dtype), y=y)
+            control = cn_function_wrapper(self.control_model, "ControlNet", x_noisy.to(dtype), self.cond_hint, timestep.float(), context.to(dtype), y)
         else:
             control = self.control_model(x=x_noisy.to(dtype), hint=self.cond_hint, timesteps=timestep.float(), context=context.to(dtype), y=y)
         return self.control_merge(None, control, control_prev, output_dtype)
@@ -552,7 +552,7 @@ class T2IAdapter(ControlBase):
             self.t2i_model.to(x_noisy.dtype)
             self.t2i_model.to(self.device)
             if cn_function_wrapper is not None:
-                self.control_input = cn_function_wrapper(self.t2i_model, "T2IAdapter", cond_hint=self.cond_hint.to(x_noisy.dtype))
+                self.control_input = cn_function_wrapper(self.t2i_model, "T2IAdapter", self.cond_hint.to(x_noisy.dtype))
             else:
                 self.control_input = self.t2i_model(self.cond_hint.to(x_noisy.dtype))
             self.t2i_model.cpu()

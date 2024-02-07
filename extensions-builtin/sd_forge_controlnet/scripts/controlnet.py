@@ -392,6 +392,24 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         is_hr_pass = getattr(p, 'is_hr_pass', False)
 
+        has_high_res_fix = (
+                isinstance(p, StableDiffusionProcessingTxt2Img)
+                and getattr(p, 'enable_hr', False)
+        )
+
+        if has_high_res_fix:
+            hr_option = HiResFixOption.from_value(unit.hr_option)
+        else:
+            hr_option = HiResFixOption.BOTH
+
+        if has_high_res_fix and is_hr_pass and (not hr_option.high_res_enabled):
+            logger.info(f"ControlNet Skipped High-res pass.")
+            return
+
+        if has_high_res_fix and (not is_hr_pass) and (not hr_option.low_res_enabled):
+            logger.info(f"ControlNet Skipped Low-res pass.")
+            return
+
         if is_hr_pass:
             cond = params.control_cond_for_hr_fix
             mask = params.control_mask_for_hr_fix

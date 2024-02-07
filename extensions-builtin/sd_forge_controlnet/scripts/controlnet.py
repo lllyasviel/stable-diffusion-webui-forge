@@ -20,6 +20,7 @@ from modules.processing import StableDiffusionProcessingImg2Img, StableDiffusion
     StableDiffusionProcessing
 from lib_controlnet.infotext import Infotext
 from modules_forge.forge_util import HWC3, numpy_to_pytorch
+from modules_forge.supported_controlnet import HiResFixOption
 
 import numpy as np
 import functools
@@ -310,17 +311,18 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         alignment_indices = [i % len(preprocessor_outputs) for i in range(p.batch_size)]
         if preprocessor_output_is_image:
+            hr_option = HiResFixOption.from_value(unit.hr_option)
             params.control_cond = []
             params.control_cond_for_hr_fix = []
 
             for preprocessor_output in preprocessor_outputs:
                 control_cond = crop_and_resize_image(preprocessor_output, resize_mode, h, w)
-                p.extra_result_images.append(external_code.visualize_inpaint_mask(control_cond))
+                if hr_option.low_res_enabled:
+                    p.extra_result_images.append(external_code.visualize_inpaint_mask(control_cond))
                 params.control_cond.append(numpy_to_pytorch(control_cond).movedim(-1, 1))
-
             params.control_cond = torch.cat(params.control_cond, dim=0)[alignment_indices].contiguous()
 
-            if has_high_res_fix:
+            if has_high_res_fix and hr_option.high_res_enabled:
                 for preprocessor_output in preprocessor_outputs:
                     control_cond_for_hr_fix = crop_and_resize_image(preprocessor_output, resize_mode, hr_y, hr_x)
                     p.extra_result_images.append(external_code.visualize_inpaint_mask(control_cond_for_hr_fix))
@@ -394,6 +396,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         params.model.strength = float(unit.weight)
         params.model.start_percent = float(unit.guidance_start)
         params.model.end_percent = float(unit.guidance_end)
+        params.model.hr_option = unit.hr_option
         params.model.positive_advanced_weighting = None
         params.model.negative_advanced_weighting = None
         params.model.advanced_frame_weighting = None

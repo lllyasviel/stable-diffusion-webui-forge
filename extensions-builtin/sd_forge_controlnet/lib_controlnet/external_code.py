@@ -5,7 +5,7 @@ import numpy as np
 from modules import shared
 from lib_controlnet.logging import logger
 from lib_controlnet.enums import InputMode
-
+from modules_forge.supported_controlnet import HiResFixOption
 from modules.api import api
 
 
@@ -156,6 +156,7 @@ class UiControlNetUnit:
     batch_mask_gallery: list = [],
     generated_image: Optional[np.ndarray] = None,
     mask_image: Optional[np.ndarray] = None,
+    hr_option: Union[HiResFixOption, int, str] = HiResFixOption.BOTH
     enabled: bool = True
     module: str = "None"
     model: str = "None"

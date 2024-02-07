@@ -214,7 +214,7 @@ class ControlNet(ControlBase):
         self.model_sampling_current = None
         self.manual_cast_dtype = manual_cast_dtype
 
-    def get_control(self, x_noisy, t, cond, batched_number):
+    def get_control(self, x_noisy, t, cond, batched_number, cn_function_wrapper=None):
         to = self.transformer_options
 
         for conditioning_modifier in to.get('controlnet_conditioning_modifiers', []):
@@ -222,7 +222,7 @@ class ControlNet(ControlBase):
 
         control_prev = None
         if self.previous_controlnet is not None:
-            control_prev = self.previous_controlnet.get_control(x_noisy, t, cond, batched_number)
+            control_prev = self.previous_controlnet.get_control(x_noisy, t, cond, batched_number, cn_function_wrapper)
 
         if self.timestep_range is not None:
             if t[0] > self.timestep_range[0] or t[0] < self.timestep_range[1]:
@@ -251,7 +251,10 @@ class ControlNet(ControlBase):
         timestep = self.model_sampling_current.timestep(t)
         x_noisy = self.model_sampling_current.calculate_input(t, x_noisy)
 
-        control = self.control_model(x=x_noisy.to(dtype), hint=self.cond_hint, timesteps=timestep.float(), context=context.to(dtype), y=y)
+        if cn_function_wrapper is not None:
+            control = cn_function_wrapper(self.control_model, "ControlNet", x=x_noisy.to(dtype), hint=self.cond_hint, timesteps=timestep.float(), context=context.to(dtype), y=y)
+        else:
+            control = self.control_model(x=x_noisy.to(dtype), hint=self.cond_hint, timesteps=timestep.float(), context=context.to(dtype), y=y)
         return self.control_merge(None, control, control_prev, output_dtype)
 
     def copy(self):
@@ -513,7 +516,7 @@ class T2IAdapter(ControlBase):
         height = math.ceil(height / unshuffle_amount) * unshuffle_amount
         return width, height
 
-    def get_control(self, x_noisy, t, cond, batched_number):
+    def get_control(self, x_noisy, t, cond, batched_number, cn_function_wrapper=None):
         to = self.transformer_options
 
         for conditioning_modifier in to.get('controlnet_conditioning_modifiers', []):
@@ -521,7 +524,7 @@ class T2IAdapter(ControlBase):
 
         control_prev = None
         if self.previous_controlnet is not None:
-            control_prev = self.previous_controlnet.get_control(x_noisy, t, cond, batched_number)
+            control_prev = self.previous_controlnet.get_control(x_noisy, t, cond, batched_number, cn_function_wrapper)
 
         if self.timestep_range is not None:
             if t[0] > self.timestep_range[0] or t[0] < self.timestep_range[1]:
@@ -544,7 +547,10 @@ class T2IAdapter(ControlBase):
         if self.control_input is None:
             self.t2i_model.to(x_noisy.dtype)
             self.t2i_model.to(self.device)
-            self.control_input = self.t2i_model(self.cond_hint.to(x_noisy.dtype))
+            if cn_function_wrapper is not None:
+                self.control_input = cn_function_wrapper(self.t2i_model, "T2IAdapter", cond_hint=self.cond_hint.to(x_noisy.dtype))
+            else:
+                self.control_input = self.t2i_model(self.cond_hint.to(x_noisy.dtype))
             self.t2i_model.cpu()
 
         control_input = list(map(lambda a: None if a is None else a.clone(), self.control_input))

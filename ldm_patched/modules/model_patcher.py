@@ -67,6 +67,12 @@ class ModelPatcher:
     def set_model_unet_function_wrapper(self, unet_wrapper_function):
         self.model_options["model_function_wrapper"] = unet_wrapper_function
 
+
+    def set_model_cn_function_wrapper(self, cn_wrapper_function):
+        # This only works for ControlNet, ControlLoRA, T2I-Adapter
+        # This patcher is mainly for AnimateDiff to prevent CN inference OOM
+        self.model_options["cn_function_wrapper"] = cn_wrapper_function
+
     def set_model_patch(self, patch, name):
         to = self.model_options["transformer_options"]
         if "patches" not in to:

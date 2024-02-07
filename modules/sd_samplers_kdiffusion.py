@@ -144,12 +144,12 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 
-        self.model_wrap.log_sigmas = self.model_wrap.log_sigmas.to(unet_patcher.current_device)
-        self.model_wrap.sigmas = self.model_wrap.sigmas.to(unet_patcher.current_device)
+        self.model_wrap.log_sigmas = self.model_wrap.log_sigmas.to(unet_patcher.load_device)
+        self.model_wrap.sigmas = self.model_wrap.sigmas.to(unet_patcher.load_device)
 
         steps, t_enc = sd_samplers_common.setup_img2img_steps(p, steps)
 
-        sigmas = self.get_sigmas(p, steps)
+        sigmas = self.get_sigmas(p, steps).to(shared.device)
         sigma_sched = sigmas[steps - t_enc - 1:]
 
         x = x.to(noise)
@@ -206,12 +206,12 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 
-        self.model_wrap.log_sigmas = self.model_wrap.log_sigmas.to(unet_patcher.current_device)
-        self.model_wrap.sigmas = self.model_wrap.sigmas.to(unet_patcher.current_device)
+        self.model_wrap.log_sigmas = self.model_wrap.log_sigmas.to(unet_patcher.load_device)
+        self.model_wrap.sigmas = self.model_wrap.sigmas.to(unet_patcher.load_device)
 
         steps = steps or p.steps
 
-        sigmas = self.get_sigmas(p, steps)
+        sigmas = self.get_sigmas(p, steps).to(shared.device)
 
         if opts.sgm_noise_multiplier:
             p.extra_generation_params["SGM noise multiplier"] = True

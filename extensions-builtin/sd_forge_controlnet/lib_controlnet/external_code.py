@@ -189,6 +189,7 @@ class UiControlNetUnit:
             "guidance_end",
             "pixel_perfect",
             "control_mode",
+            "hr_option",
         )
 
 

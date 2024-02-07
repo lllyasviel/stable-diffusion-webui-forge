@@ -309,7 +309,10 @@ class ControlNetForForgeOfficial(scripts.Script):
                 logger.info('Batch wise input only support controlnet, control-lora, and t2i adapters!')
                 break
 
-        hr_option = HiResFixOption.from_value(unit.hr_option)
+        if has_high_res_fix:
+            hr_option = HiResFixOption.from_value(unit.hr_option)
+        else:
+            hr_option = HiResFixOption.BOTH
 
         alignment_indices = [i % len(preprocessor_outputs) for i in range(p.batch_size)]
         if preprocessor_output_is_image:

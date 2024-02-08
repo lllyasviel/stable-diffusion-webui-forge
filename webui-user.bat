@@ -12,7 +12,7 @@ set COMMANDLINE_ARGS=
 @REM set COMMANDLINE_ARGS=%COMMANDLINE_ARGS% ^
 @REM  --ckpt-dir %A1111_HOME%/models/Stable-diffusion ^
 @REM  --hypernetwork-dir %A1111_HOME%/models/hypernetworks ^
-@REM  --embeddings-dir %A1111_HOME%/models/embeddings ^
+@REM  --embeddings-dir %A1111_HOME%/embeddings ^
 @REM  --lora-dir %A1111_HOME%/models/Lora
 
 call webui.bat

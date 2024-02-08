@@ -164,7 +164,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         if unit.input_mode == external_code.InputMode.BATCH:
             image_list = []
             image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
-            for idx, filename in enumerate(os.listdir(unit.batch_image_dir)):
+            for idx, filename in enumerate(shared.listfiles(unit.batch_image_dir)):
                 if any(filename.lower().endswith(ext) for ext in image_extensions):
                     img_path = os.path.join(unit.batch_image_dir, filename)
                     logger.info(f'Try to read image: {img_path}')

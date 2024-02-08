@@ -16,8 +16,6 @@ from modules import paths, shared, modelloader, devices, script_callbacks, sd_va
 from modules.timer import Timer
 import numpy as np
 from modules_forge import forge_loader
-import modules_forge.ops as forge_ops
-from ldm_patched.modules.ops import manual_cast
 from ldm_patched.modules import model_management as model_management
 
 

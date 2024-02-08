@@ -17,7 +17,7 @@ from lib_controlnet.controlnet_ui.preset import ControlNetPresetUI
 from lib_controlnet.controlnet_ui.tool_button import ToolButton
 from lib_controlnet.controlnet_ui.photopea import Photopea
 from lib_controlnet.enums import InputMode, HiResFixOption
-from modules import shared
+from modules import shared, script_callbacks
 from modules.ui_components import FormRow
 from modules_forge.forge_util import HWC3
 from lib_controlnet.external_code import UiControlNetUnit
@@ -47,7 +47,6 @@ class A1111Context:
 
     img2img_inpaint_area: Optional[gr.components.IOComponent] = None
     txt2img_enable_hr: Optional[gr.components.IOComponent] = None
-    setting_sd_model_checkpoint: Optional[gr.components.IOComponent] = None
 
     @property
     def img2img_inpaint_tabs(self) -> Tuple[gr.components.IOComponent]:
@@ -75,10 +74,6 @@ class A1111Context:
             "img2img_inpaint_tab": "img2img_inpaint_tab",
             "img2img_inpaint_sketch_tab": "img2img_inpaint_sketch_tab",
             "img2img_inpaint_upload_tab": "img2img_inpaint_upload_tab",
-            # SDNext does not have this field. Temporarily disable the callback on
-            # the checkpoint change until we find a way to register an event when
-            # all A1111 UI components are ready.
-            "setting_sd_model_checkpoint": "setting_sd_model_checkpoint",
         }
         return all(
             c
@@ -104,8 +99,6 @@ class A1111Context:
             "img2img_inpaint_upload_tab": "img2img_inpaint_upload_tab",
             "img2img_inpaint_full_res": "img2img_inpaint_area",
             "txt2img_hr-checkbox": "txt2img_enable_hr",
-            # setting_sd_model_checkpoint is expected to be initialized last.
-            # "setting_sd_model_checkpoint": "setting_sd_model_checkpoint",
         }
         elem_id = getattr(component, "elem_id", None)
         # Do not set component if it has already been set.
@@ -1141,7 +1134,6 @@ class ControlNetUiGroup(object):
         self.register_refresh_all_models()
         self.register_build_sliders()
         self.register_shift_preview()
-        self.register_shift_upload_mask()
         self.register_create_canvas()
         self.register_clear_preview()
         self.register_multi_images_upload()
@@ -1162,6 +1154,26 @@ class ControlNetUiGroup(object):
         if self.is_img2img:
             self.register_img2img_same_input()
 
+    def register_sd_model_changed(self):
+        def sd_version_changed(type_filter: str, current_model: str, setting_value: str, setting_name: str):
+            """When SD version changes, update model dropdown choices."""
+            if setting_name != "sd_model_checkpoint":
+                return gr.update()
+
+            filtered_model_list = global_state.get_filtered_controlnet_names(type_filter)
+            assert len(filtered_model_list) > 0
+            default_model = filtered_model_list[1] if len(filtered_model_list) > 1 else filtered_model_list[0]
+            return gr.Dropdown.update(
+                choices=filtered_model_list,
+                value=current_model if current_model in filtered_model_list else default_model
+            )
+
+        script_callbacks.on_setting_updated_subscriber(dict(
+            fn=sd_version_changed,
+            inputs=[self.type_filter, self.model],
+            outputs=[self.model],
+        ))
+
     def register_callbacks(self):
         """Register callbacks that involves A1111 context gradio components."""
         # Prevent infinite recursion.
@@ -1172,6 +1184,8 @@ class ControlNetUiGroup(object):
         self.register_send_dimensions()
         self.register_run_annotator()
         self.register_sync_batch_dir()
+        self.register_shift_upload_mask()
+        self.register_sd_model_changed()
         if self.is_img2img:
             self.register_shift_crop_input_image()
         else:

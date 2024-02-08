@@ -171,7 +171,7 @@ def update_token_counter(text, steps, *, is_positive=True):
         cond_stage_model = sd_models.model_data.sd_model.cond_stage_model
         assert cond_stage_model is not None
     except Exception:
-        return f"<span class='gr-box gr-text-input'>?/?</span>"
+        return "<span class='gr-box gr-text-input'>?/?</span>"
 
     flat_prompts = reduce(lambda list1, list2: list1+list2, prompt_schedules)
     prompts = [prompt_text for step, prompt_text in flat_prompts]

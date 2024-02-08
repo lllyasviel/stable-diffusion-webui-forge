@@ -29,8 +29,8 @@ def build_loaded(module, loader_name):
                         if os.path.exists(path):
                             os.remove(path)
                         exp += f'Forge has tried to move the corrupted file to {corrupted_backup_file} \n'
-                        exp += f'You may try again now and Forge will download models again. \n'
-            raise ValueError(exp)
+                        exp += 'You may try again now and Forge will download models again. \n'
+            raise ValueError(exp) from e
         return result
 
     setattr(module, loader_name, loader)

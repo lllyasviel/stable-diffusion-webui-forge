@@ -2,7 +2,6 @@ import time
 import torch
 import contextlib
 from ldm_patched.modules import model_management
-from ldm_patched.modules.ops import use_patched_ops
 
 
 @contextlib.contextmanager

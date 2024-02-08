@@ -38,6 +38,16 @@ Note that running `update.bat` is important, otherwise you may be using a previo
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/c49bd60d-82bd-4086-9859-88d472582b94)
 
+## Google Colab
+To use Forge in Google Colab, you can initiate it with the following command.
+
+```
+!git clone https://github.com/lllyasviel/stable-diffusion-webui-forge.git
+%cd /content/stable-diffusion-webui-forge
+
+!python launch.py --share --xformers
+```
+
 # Screenshots of Comparison
 
 I tested with several devices, and this is a typical result from 8GB VRAM (3070ti laptop) with SDXL.

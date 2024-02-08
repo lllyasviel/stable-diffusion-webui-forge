@@ -20,6 +20,7 @@ class PreprocessorInpaint(Preprocessor):
         self.tags = ['Inpaint']
         self.model_filename_filters = ['inpaint']
         self.slider_resolution = PreprocessorParameter(visible=False)
+        self.fill_mask_with_one_when_resize_and_fill = True
 
     def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         mask = mask.round()
@@ -34,7 +35,6 @@ class PreprocessorInpaintOnly(PreprocessorInpaint):
         self.image = None
         self.mask = None
         self.latent = None
-        self.fill_mask_with_one_when_resize_and_fill = True
 
     def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         mask = mask.round()

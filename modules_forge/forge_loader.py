@@ -130,7 +130,7 @@ def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_c
     return ForgeSD(model_patcher, clip, vae, clipvision)
 
 
-@torch.inference_mode()
+@torch.no_grad()
 def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     a1111_config_filename = find_checkpoint_config(state_dict, checkpoint_info)
     a1111_config = OmegaConf.load(a1111_config_filename)

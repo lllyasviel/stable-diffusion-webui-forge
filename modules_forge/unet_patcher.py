@@ -98,6 +98,13 @@ class UnetPatcher(ModelPatcher):
         to[k].append(v)
         return
 
+    def set_transformer_option(self, k, v):
+        if 'transformer_options' not in self.model_options:
+            self.model_options['transformer_options'] = {}
+
+        self.model_options['transformer_options'][k] = v
+        return
+
     def add_conditioning_modifier(self, modifier, ensure_uniqueness=False):
         self.append_model_option('conditioning_modifiers', modifier, ensure_uniqueness)
         return
@@ -148,6 +155,10 @@ class UnetPatcher(ModelPatcher):
 
     def add_controlnet_conditioning_modifier(self, modifier, ensure_uniqueness=False):
         self.append_transformer_option('controlnet_conditioning_modifiers', modifier, ensure_uniqueness)
+        return
+
+    def set_controlnet_model_function_wrapper(self, wrapper):
+        self.set_transformer_option('controlnet_model_function_wrapper', wrapper)
         return
 
     def set_model_replace_all(self, patch, target="attn1"):

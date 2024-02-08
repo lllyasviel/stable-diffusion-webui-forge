@@ -108,7 +108,10 @@ class LegacyPreprocessor(Preprocessor):
         return result
 
 
-for k, v in legacy_preprocessors.items():
-    p = LegacyPreprocessor(v)
-    p.name = k
+for name, data in legacy_preprocessors.items():
+    p = LegacyPreprocessor(data)
+    p.name = name
+    # Invert should not match any particular model.
+    if "invert" in name:
+        p.model_filename_filters = []
     add_supported_preprocessor(p)

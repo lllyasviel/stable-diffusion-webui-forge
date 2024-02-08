@@ -67,7 +67,7 @@ def compute_controlnet_weighting(control, cnet):
 
             if not isinstance(control_signal, torch.Tensor):
                 continue
-            
+
             B, C, H, W = control_signal.shape
 
             positive_weight = 1.0
@@ -255,10 +255,16 @@ class ControlNet(ControlBase):
         timestep = self.model_sampling_current.timestep(t)
         x_noisy = self.model_sampling_current.calculate_input(t, x_noisy)
 
-        if cn_function_wrapper is not None:
-            control = cn_function_wrapper(self.control_model, "ControlNet", x_noisy.to(dtype), self.cond_hint, timestep.float(), context.to(dtype), y)
+        controlnet_model_function_wrapper = to.get('controlnet_model_function_wrapper', None)
+
+        if controlnet_model_function_wrapper is not None:
+            wrapper_args = dict(x=x_noisy.to(dtype), hint=self.cond_hint, timesteps=timestep.float(),
+                                context=context.to(dtype), y=y)
+            wrapper_args['model'] = self
+            wrapper_args['inner_model'] = self.control_model
+            control = controlnet_model_function_wrapper(**wrapper_args)
         else:
-            control = self.control_model(x=x_noisy.to(dtype), hint=self.cond_hint.to(self.device), timesteps=timestep.float(), context=context.to(dtype), y=y)
+            control = self.control_model(x=x_noisy.to(dtype), hint=self.cond_hint, timesteps=timestep.float(), context=context.to(dtype), y=y)
         return self.control_merge(None, control, control_prev, output_dtype)
 
     def copy(self):

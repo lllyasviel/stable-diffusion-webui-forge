@@ -67,7 +67,7 @@ def compute_controlnet_weighting(control, cnet):
 
             if not isinstance(control_signal, torch.Tensor):
                 continue
-            
+
             B, C, H, W = control_signal.shape
 
             positive_weight = 1.0
@@ -258,7 +258,8 @@ class ControlNet(ControlBase):
         controlnet_model_function_wrapper = to.get('controlnet_model_function_wrapper', None)
 
         if controlnet_model_function_wrapper is not None:
-            wrapper_args = dict(x=x_noisy.to(dtype), hint=self.cond_hint, timesteps=timestep.float(), context=context.to(dtype), y=y)
+            wrapper_args = dict(x=x_noisy.to(dtype), hint=self.cond_hint, timesteps=timestep.float(),
+                                context=context.to(dtype), y=y)
             wrapper_args['model'] = self
             wrapper_args['inner_model'] = self.control_model
             control = controlnet_model_function_wrapper(**wrapper_args)

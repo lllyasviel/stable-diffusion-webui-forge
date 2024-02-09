@@ -1,6 +1,6 @@
 import torch.nn
 
-from modules import script_callbacks, shared
+from modules import script_callbacks, shared, devices
 
 unet_options = []
 current_unet_option = None

@@ -30,10 +30,10 @@ def initialize_forge():
     for bad in bad_list:
         if bad in sys.argv:
             print(f'Arg {bad} is removed in Forge.')
-            print('Now memory management is fully automatic and you do not need any command flags.')
-            print('Please just remove this flag.')
-            print('In extreme cases, if you want to force previous lowvram/medvram behaviors, '
-                  'please use --always-offload-from-vram')
+            print(f'Now memory management is fully automatic and you do not need any command flags.')
+            print(f'Please just remove this flag.')
+            print(f'In extreme cases, if you want to force previous lowvram/medvram behaviors, '
+                  f'please use --always-offload-from-vram')
 
     from ldm_patched.modules import args_parser
 

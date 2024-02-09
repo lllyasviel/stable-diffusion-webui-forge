@@ -1,5 +1,7 @@
 import os
 
+import torch
+
 from modules import shared
 from modules.shared import cmd_opts
 

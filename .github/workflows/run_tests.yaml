@@ -26,6 +26,17 @@ jobs:
         with:
           path: models
           key: "2023-12-30"
+      - name: Download models
+        run: |
+          declare -a urls=(
+            "https://huggingface.co/lllyasviel/fav_models/resolve/main/fav/realisticVisionV51_v51VAE.safetensors"
+          )
+          for url in "${urls[@]}"; do
+            filename="models/Stable-diffusion/${url##*/}"  # Extracts the last part of the URL
+            if [ ! -f "$filename" ]; then
+              curl -Lo "$filename" "$url"
+            fi
+          done
       - name: Install test dependencies
         run: pip install wait-for-it -r requirements-test.txt
         env:
@@ -54,6 +65,7 @@ jobs:
           --disable-opt-split-attention
           --always-cpu
           --api-server-stop
+          --ckpt=models/Stable-diffusion/realisticVisionV51_v51VAE.safetensors
           2>&1 | tee output.txt &
       - name: Run tests
         run: |

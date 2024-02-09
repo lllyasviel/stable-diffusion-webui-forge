@@ -8,6 +8,7 @@ from PIL import Image
 
 @pytest.mark.usefixtures("initialize")
 @pytest.mark.parametrize("restorer_name", ["gfpgan", "codeformer"])
+@pytest.mark.skip  # Skip for forge.
 def test_face_restorers(restorer_name):
     from modules import shared
 

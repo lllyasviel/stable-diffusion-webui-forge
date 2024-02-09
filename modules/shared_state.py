@@ -2,6 +2,7 @@ import datetime
 import logging
 import threading
 import time
+import traceback
 import torch
 
 from modules import errors, shared, devices
@@ -159,7 +160,7 @@ class State:
 
             self.current_image_sampling_step = self.sampling_step
 
-        except Exception:
+        except Exception as e:
             # traceback.print_exc()
             # print(e)
             # when switching models during genration, VAE would be on CPU, so creating an image will fail.

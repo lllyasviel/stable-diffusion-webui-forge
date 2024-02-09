@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    name: tests on CPU with empty model
+    name: tests on CPU
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     steps:
@@ -26,17 +26,6 @@ jobs:
         with:
           path: models
           key: "2023-12-30"
-      - name: Download models
-        run: |
-          declare -a urls=(
-            "https://huggingface.co/lllyasviel/fav_models/resolve/main/fav/realisticVisionV51_v51VAE.safetensors"
-          )
-          for url in "${urls[@]}"; do
-            filename="models/Stable-diffusion/${url##*/}"  # Extracts the last part of the URL
-            if [ ! -f "$filename" ]; then
-              curl -Lo "$filename" "$url"
-            fi
-          done
       - name: Install test dependencies
         run: pip install wait-for-it -r requirements-test.txt
         env:
@@ -52,6 +41,17 @@ jobs:
           PYTHONUNBUFFERED: "1"
       - name: Print installed packages
         run: pip freeze
+      - name: Download models
+        run: |
+          declare -a urls=(
+            "https://huggingface.co/lllyasviel/fav_models/resolve/main/fav/realisticVisionV51_v51VAE.safetensors"
+          )
+          for url in "${urls[@]}"; do
+            filename="models/Stable-diffusion/${url##*/}"  # Extracts the last part of the URL
+            if [ ! -f "$filename" ]; then
+              curl -Lo "$filename" "$url"
+            fi
+          done
       - name: Start test server
         run: >
           python -m coverage run
@@ -65,7 +65,7 @@ jobs:
           --disable-opt-split-attention
           --always-cpu
           --api-server-stop
-          --ckpt=models/Stable-diffusion/realisticVisionV51_v51VAE.safetensors
+          --ckpt models/Stable-diffusion/realisticVisionV51_v51VAE.safetensors
           2>&1 | tee output.txt &
       - name: Run tests
         run: |

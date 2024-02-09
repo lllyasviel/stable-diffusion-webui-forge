@@ -264,7 +264,7 @@ class ControlNet(ControlBase):
             wrapper_args['inner_model'] = self.control_model
             control = controlnet_model_function_wrapper(**wrapper_args)
         else:
-            control = self.control_model(x=x_noisy.to(dtype), hint=self.cond_hint, timesteps=timestep.float(), context=context.to(dtype), y=y)
+            control = self.control_model(x=x_noisy.to(dtype), hint=self.cond_hint.to(self.device), timesteps=timestep.float(), context=context.to(dtype), y=y)
         return self.control_merge(None, control, control_prev, output_dtype)
 
     def copy(self):
@@ -567,7 +567,7 @@ class T2IAdapter(ControlBase):
                 wrapper_args['inner_t2i_model'] = self.t2i_model
                 self.control_input = controlnet_model_function_wrapper(**wrapper_args)
             else:
-                self.control_input = self.t2i_model(self.cond_hint.to(x_noisy.dtype))
+                self.control_input = self.t2i_model(self.cond_hint.to(x_noisy))
 
             self.t2i_model.cpu()
 

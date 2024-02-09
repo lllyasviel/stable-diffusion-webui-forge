@@ -164,7 +164,10 @@ class ControlNetForForgeOfficial(scripts.Script):
         if unit.input_mode == external_code.InputMode.BATCH:
             image_list = []
             image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
-            for idx, filename in enumerate(shared.listfiles(unit.batch_image_dir)):
+            batch_image_files = shared.listfiles(unit.batch_image_dir)
+            for controlnet_batch_modifier in shared.sd_model.forge_objects.model_options.get('controlnet_batch_modifiers', []):
+                batch_image_files = controlnet_batch_modifier(batch_image_files, p)
+            for idx, filename in enumerate(batch_image_files):
                 if any(filename.lower().endswith(ext) for ext in image_extensions):
                     img_path = os.path.join(unit.batch_image_dir, filename)
                     logger.info(f'Try to read image: {img_path}')

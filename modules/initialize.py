@@ -4,8 +4,6 @@ import os
 import sys
 import warnings
 
-from threading import Thread
-
 from modules.timer import startup_timer
 
 

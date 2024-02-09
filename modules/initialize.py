@@ -149,24 +149,9 @@ def initialize_rest(*, reload_script_modules=False):
     sd_unet.list_unets()
     startup_timer.record("scripts list_unets")
 
-    def load_model():
-        """
-        Accesses shared.sd_model property to load model.
-        After it's available, if it has been loaded before this access by some extension,
-        its optimization may be None because the list of optimizaers has neet been filled
-        by that time, so we apply optimization again.
-        """
-        from modules import devices
-        devices.torch_npu_set_device()
-
-        shared.sd_model  # noqa: B018
-
-        if sd_hijack.current_optimizer is None:
-            sd_hijack.apply_optimizations()
-
-        devices.first_time_calculation()
-    if not shared.cmd_opts.skip_load_model_at_start:
-        Thread(target=load_model).start()
+    from modules_forge import main_thread
+    import modules.sd_models
+    main_thread.async_run(modules.sd_models.model_data.get_sd_model)
 
     from modules import shared_items
     shared_items.reload_hypernetworks()

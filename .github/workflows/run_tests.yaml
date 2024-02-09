@@ -52,7 +52,7 @@ jobs:
           --do-not-download-clip
           --no-half
           --disable-opt-split-attention
-          --use-cpu all
+          --always-cpu
           --api-server-stop
           2>&1 | tee output.txt &
       - name: Run tests

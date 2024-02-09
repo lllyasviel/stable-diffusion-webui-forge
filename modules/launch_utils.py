@@ -511,6 +511,11 @@ def start():
     else:
         webui.webui()
 
+    from modules_forge import main_thread
+
+    main_thread.loop()
+    return
+
 
 def dump_sysinfo():
     from modules import sysinfo

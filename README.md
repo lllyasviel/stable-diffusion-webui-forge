@@ -41,6 +41,9 @@ Note that running `update.bat` is important, otherwise you may be using a previo
 ## Google Colab
 To use Forge in Google Colab, you can initiate it with the following command.
 
+**Attention: Please be aware that running these notebooks is currently restricted on Colab's free plan.**  
+**Ensure that they are run only on a paid plan, such as Colab Pro.**
+
 ```
 !git clone https://github.com/lllyasviel/stable-diffusion-webui-forge.git
 %cd /content/stable-diffusion-webui-forge

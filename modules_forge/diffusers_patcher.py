@@ -3,7 +3,6 @@ import ldm_patched.modules.ops as ops
 
 from ldm_patched.modules.model_patcher import ModelPatcher
 from ldm_patched.modules import model_management
-from modules_forge.ops import use_patched_ops
 from transformers import modeling_utils
 
 
@@ -17,7 +16,7 @@ class DiffusersModelPatcher:
 
         self.dtype = dtype
 
-        with use_patched_ops(ops.manual_cast):
+        with ops.use_patched_ops(ops.manual_cast):
             with modeling_utils.no_init_weights():
                 self.pipeline = pipeline_class.from_pretrained(*args, **kwargs)
 

@@ -98,7 +98,7 @@ def get_filtered_preprocessor_names(tag):
     return list(get_filtered_preprocessors(tag).keys())
 
 
-def get_filtered_controlnet_names(tag, filter_version: bool = True):
+def get_filtered_controlnet_names(tag):
     filtered_preprocessors = get_filtered_preprocessors(tag)
     model_filename_filters = []
     for p in filtered_preprocessors.values():
@@ -106,8 +106,8 @@ def get_filtered_controlnet_names(tag, filter_version: bool = True):
     return [
         x for x in controlnet_names
         if x == 'None' or (
-            any(f.lower() in x.lower() for f in model_filename_filters)  # and
-            # get_sd_version().is_compatible_with(StableDiffusionVersion.detect_from_model_name(x))
+            any(f.lower() in x.lower() for f in model_filename_filters) and
+            get_sd_version().is_compatible_with(StableDiffusionVersion.detect_from_model_name(x))
         )
     ]
 
@@ -134,6 +134,8 @@ def update_controlnet_filenames():
 
 
 def get_sd_version() -> StableDiffusionVersion:
+    if not shared.sd_model:
+        return StableDiffusionVersion.UNKNOWN
     if shared.sd_model.is_sdxl:
         return StableDiffusionVersion.SDXL
     elif shared.sd_model.is_sd2:

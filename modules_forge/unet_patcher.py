@@ -1,4 +1,5 @@
 import copy
+from cv2 import add
 import torch
 
 from ldm_patched.modules.model_patcher import ModelPatcher
@@ -156,6 +157,10 @@ class UnetPatcher(ModelPatcher):
     def add_controlnet_conditioning_modifier(self, modifier, ensure_uniqueness=False):
         self.append_transformer_option('controlnet_conditioning_modifiers', modifier, ensure_uniqueness)
         return
+
+    def add_controlnet_alignment_indexes_modifier(self, modifier, ensure_uniqueness=False):
+        self.append_model_option('controlnet_alignment_indexes_modifiers', modifier, ensure_uniqueness)
+        pass
 
     def set_controlnet_model_function_wrapper(self, wrapper):
         self.set_transformer_option('controlnet_model_function_wrapper', wrapper)

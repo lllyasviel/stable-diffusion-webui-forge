@@ -71,6 +71,7 @@ def no_clip():
 
 
 def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_clipvision=False, embedding_directory=None, output_model=True):
+    sd_keys = sd.keys()
     clip = None
     clipvision = None
     vae = None
@@ -98,6 +99,7 @@ def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_c
 
     if output_model:
         inital_load_device = model_management.unet_inital_load_device(parameters, unet_dtype)
+        offload_device = model_management.unet_offload_device()
         model = model_config.get_model(sd, "model.diffusion_model.", device=inital_load_device)
         model.load_model_weights(sd, "model.diffusion_model.")
 

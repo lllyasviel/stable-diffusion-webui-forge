@@ -3,7 +3,6 @@ import logging
 import os
 import sys
 import warnings
-import os
 
 from threading import Thread
 
@@ -40,7 +39,7 @@ def imports():
         startup_timer.record("setup paths")
 
         import ldm.modules.encoders.modules  # noqa: F401
-        import ldm.modules.diffusionmodules.model
+        import ldm.modules.diffusionmodules.model  # noqa: F401
         startup_timer.record("import ldm")
 
         import sgm.modules.encoders.modules  # noqa: F401

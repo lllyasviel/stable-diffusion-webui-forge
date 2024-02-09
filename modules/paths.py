@@ -3,6 +3,7 @@ import sys
 from modules.paths_internal import models_path, script_path, data_path, extensions_dir, extensions_builtin_dir, cwd  # noqa: F401
 
 import modules.safe  # noqa: F401
+import ldm_patched.utils.path_utils as ldm_patched_path_utils
 
 
 def mute_sdxl_imports():
@@ -63,8 +64,6 @@ for d, must_exist, what, options in path_dirs:
             sys.path.append(d)
         paths[what] = d
 
-
-import ldm_patched.utils.path_utils as ldm_patched_path_utils
 
 ldm_patched_path_utils.base_path = data_path
 ldm_patched_path_utils.models_dir = models_path

@@ -6,6 +6,7 @@ import pathlib
 from modules import script_callbacks
 from modules.paths import models_path
 from modules.ui_common import ToolButton, refresh_symbol
+from modules.ui_components import ResizeHandleRow
 from modules import shared
 
 from modules_forge.forge_util import numpy_to_pytorch, pytorch_to_numpy
@@ -52,7 +53,7 @@ def predict(filename, width, height, batch_size, elevation, azimuth,
 
 def on_ui_tabs():
     with gr.Blocks() as model_block:
-        with gr.Row():
+        with ResizeHandleRow():
             with gr.Column():
                 input_image = gr.Image(label='Input Image', source='upload', type='numpy', height=400)
 

@@ -7,6 +7,7 @@ import modules.infotext_utils as parameters_copypaste
 from modules import script_callbacks
 from modules.paths import models_path
 from modules.ui_common import ToolButton, refresh_symbol
+from modules.ui_components import ResizeHandleRow 
 from modules import shared
 
 from modules_forge.forge_util import numpy_to_pytorch, pytorch_to_numpy, write_images_to_mp4
@@ -59,7 +60,7 @@ def predict(filename, width, height, video_frames, motion_bucket_id, fps, augmen
 
 def on_ui_tabs():
     with gr.Blocks() as svd_block:
-        with gr.Row():
+        with ResizeHandleRow():
             with gr.Column():
                 input_image = gr.Image(label='Input Image', source='upload', type='numpy', height=400)
 

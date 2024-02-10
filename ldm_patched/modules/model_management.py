@@ -5,7 +5,6 @@ from ldm_patched.modules.args_parser import args
 import ldm_patched.modules.utils
 import torch
 import sys
-import os
 
 class VRAMState(Enum):
     DISABLED = 0    #No vram present: no need to move models to vram
@@ -59,7 +58,7 @@ try:
 except:
     pass
 
-if args.always_cpu or os.environ.get("FORGE_CQ_TEST", ""):
+if args.always_cpu:
     cpu_state = CPUState.CPU
 
 def is_intel_xpu():

@@ -417,7 +417,7 @@ class ControlNetForForgeOfficial(scripts.Script):
             cond = params.control_cond
             mask = params.control_mask
 
-        kwargs.update(dict(unit=unit, params=params))
+        kwargs.update(dict(unit=unit, params=params, cond_original=cond.clone(), mask_original=mask.clone()))
 
         params.model.strength = float(unit.weight)
         params.model.start_percent = float(unit.guidance_start)

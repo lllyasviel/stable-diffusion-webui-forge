@@ -5,6 +5,7 @@ import numpy as np
 from modules import shared
 from lib_controlnet.logging import logger
 from lib_controlnet.enums import InputMode, HiResFixOption
+from lib_controlnet.utils import image_dict_from_any
 from modules.api import api
 
 
@@ -208,12 +209,9 @@ class UiControlNetUnit:
         unit = UiControlNetUnit(
             **{k: v for k, v in d.items() if k in vars(UiControlNetUnit)}
         )
-        if isinstance(unit.image, str):
-            img = np.array(api.decode_base64_to_image(unit.image)).astype('uint8')
-            unit.image = {
-                "image": img,
-                "mask": np.zeros_like(img),
-            }
+        
+        unit.image = image_dict_from_any(unit.image)
+
         if isinstance(unit.mask_image, str):
             unit.mask_image = np.array(api.decode_base64_to_image(unit.mask_image)).astype('uint8')
         return unit

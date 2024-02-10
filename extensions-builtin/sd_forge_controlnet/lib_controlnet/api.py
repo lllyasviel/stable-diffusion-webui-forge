@@ -33,13 +33,13 @@ def encode_np_to_base64(image):
 
 def controlnet_api(_: gr.Blocks, app: FastAPI):
     @app.get("/controlnet/model_list")
-    async def model_list(update: bool = True):
+    async def model_list():
         up_to_date_model_list = get_all_controlnet_names()
         logger.debug(up_to_date_model_list)
         return {"model_list": up_to_date_model_list}
 
     @app.get("/controlnet/module_list")
-    async def module_list(alias_names: bool = False):
+    async def module_list():
         module_list = get_all_preprocessor_names()
         logger.debug(module_list)
 

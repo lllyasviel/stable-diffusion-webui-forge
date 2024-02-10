@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional, Union, Dict, Literal, TypedDict
+from typing import List, Optional, Union, Dict, TypedDict
 import numpy as np
 from modules import shared
 from lib_controlnet.logging import logger

@@ -121,6 +121,8 @@ Again, Forge do not recommend users to use any cmd flags unless you are very sur
 
 # UNet Patcher
 
+Note that [Forge does not use any other software as backend](https://github.com/lllyasviel/stable-diffusion-webui-forge/discussions/169). The full name of the backend is `Stable Diffusion WebUI with Forge backend`, or for simplicity, the `Forge backend`. The API and python symbols are made similar to previous software only for reducing the learning cost of developers.
+
 Now developing an extension is super simple. We finally have a patchable UNet.
 
 Below is using one single file with 80 lines of codes to support FreeU:

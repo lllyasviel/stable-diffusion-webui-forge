@@ -165,7 +165,7 @@ class ControlNetUnit:
     - Add the new `ControlNetUiGroup` field to `unit_args` in
       `ControlNetUiGroup.render`. The order of parameters matters.
 
-    ## If the new field needs to appear in infotext
+    ## If the new field needs to appear in infotext, you need to
     - Add a new item in `ControlNetUnit.infotext_fields`.
     API-only fields cannot appear in infotext.
     """

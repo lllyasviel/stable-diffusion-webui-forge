@@ -246,6 +246,7 @@ def calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_options):
                 p = p.previous_controlnet
             control_cond = c.copy()  # get_control may change items in this dict, so we need to copy it
             c['control'] = control.get_control(input_x, timestep_, control_cond, len(cond_or_uncond))
+            c['control_model'] = control
 
         if 'model_function_wrapper' in model_options:
             output = model_options['model_function_wrapper'](model.apply_model, {"input": input_x, "timestep": timestep_, "c": c, "cond_or_uncond": cond_or_uncond}).chunk(batch_chunks)

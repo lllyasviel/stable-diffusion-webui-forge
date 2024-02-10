@@ -220,7 +220,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     sd_model_hash = checkpoint_info.calculate_shorthash()
     timer.record("calculate hash")
 
-    if getattr(sd_model, 'parameterization') == 'v':
+    if getattr(sd_model, 'parameterization', None) == 'v':
         sd_model.forge_objects.unet.model.model_sampling = model_sampling(sd_model.forge_objects.unet.model.model_config, ModelType.V_PREDICTION)
 
     sd_model.is_sdxl = conditioner is not None

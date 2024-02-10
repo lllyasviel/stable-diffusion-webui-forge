@@ -25,7 +25,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: models
-          key: "2023-12-30"
+          key: "2023-02-10"
       - name: Install test dependencies
         run: pip install wait-for-it -r requirements-test.txt
         env:

@@ -6,6 +6,7 @@ from PIL import Image
 from modules import devices, images, sd_vae_approx, sd_samplers, sd_vae_taesd, shared, sd_models
 from modules.shared import opts, state
 from modules_forge.forge_sampler import sampling_prepare, sampling_cleanup
+from modules import extra_networks
 import k_diffusion.sampling
 
 
@@ -182,7 +183,9 @@ def apply_refiner(cfg_denoiser, x):
     with sd_models.SkipWritingToConfig():
         sd_models.reload_model_weights(info=refiner_checkpoint_info)
 
-    devices.torch_gc()
+    if not cfg_denoiser.p.disable_extra_networks:
+        extra_networks.activate(cfg_denoiser.p, cfg_denoiser.p.extra_network_data)
+
     cfg_denoiser.p.setup_conds()
     cfg_denoiser.update_inner_model()
 

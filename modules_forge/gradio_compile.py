@@ -43,7 +43,16 @@ def gradio_compile(items, prefix):
         else:
             print('error ' + str(t))
 
-    return names
+    return ['enabled'] + names
+
+
+def print_info_text(name_list, prefix):
+    print(', '.join(name_list))
+    print('p.extra_generation_params.update(dict(')
+    for n in name_list:
+        print(prefix + '_' + n + ' = ' + n + ', ')
+    print(')')
+    return
 
 
 # from modules_forge.gradio_compile import gradio_compile
@@ -52,3 +61,4 @@ def gradio_compile(items, prefix):
 # ps += gradio_compile(KSampler.INPUT_TYPES(), prefix='sampling')
 # ps += gradio_compile(VideoLinearCFGGuidance.INPUT_TYPES(), prefix='guidance')
 # print(', '.join(ps))
+# print_info_text(ps, '123')

@@ -9,10 +9,11 @@ from modules import devices, shared, prompt_parser
 from modules import torch_utils
 
 import ldm_patched.modules.model_management as model_management
+from modules_forge.forge_clip import move_clip_to_gpu
 
 
 def get_learned_conditioning(self: sgm.models.diffusion.DiffusionEngine, batch: prompt_parser.SdConditioning | list[str]):
-    model_management.load_model_gpu(self.forge_objects.clip.patcher)
+    move_clip_to_gpu()
 
     for embedder in self.conditioner.embedders:
         embedder.ucg_rate = 0.0

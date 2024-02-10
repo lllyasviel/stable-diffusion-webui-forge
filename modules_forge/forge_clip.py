@@ -1,11 +1,21 @@
 from modules.sd_hijack_clip import FrozenCLIPEmbedderWithCustomWords
 from ldm_patched.modules import model_management
+from modules import sd_models
 from modules.shared import opts
+
+
+def move_clip_to_gpu():
+    if sd_models.model_data.sd_model is None:
+        print('Error: CLIP called before SD is loaded!')
+        return
+
+    model_management.load_model_gpu(sd_models.model_data.sd_model.forge_objects.clip.patcher)
+    return
 
 
 class CLIP_SD_15_L(FrozenCLIPEmbedderWithCustomWords):
     def encode_with_transformers(self, tokens):
-        model_management.load_model_gpu(self.forge_objects.clip.patcher)
+        move_clip_to_gpu()
         self.wrapped.transformer.text_model.embeddings.to(tokens.device)
         outputs = self.wrapped.transformer(input_ids=tokens, output_hidden_states=-opts.CLIP_stop_at_last_layers)
 
@@ -31,7 +41,7 @@ class CLIP_SD_21_H(FrozenCLIPEmbedderWithCustomWords):
         self.id_pad = 0
 
     def encode_with_transformers(self, tokens):
-        model_management.load_model_gpu(self.forge_objects.clip.patcher)
+        move_clip_to_gpu()
         self.wrapped.transformer.text_model.embeddings.to(tokens.device)
         outputs = self.wrapped.transformer(tokens, output_hidden_states=self.wrapped.layer == "hidden")
 

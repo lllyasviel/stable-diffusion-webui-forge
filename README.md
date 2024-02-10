@@ -682,3 +682,11 @@ Other extensions should work without problems, like:
 However, if newer extensions use Forge, their codes can be much shorter. 
 
 Usually if an old extension rework using Forge's unet patcher, 80% codes can be removed, especially when they need to call controlnet.
+
+# Contribution
+
+Forge uses a bot to get commits and codes from https://github.com/AUTOMATIC1111/stable-diffusion-webui/tree/dev every afternoon (if merge is automatically successful by a git bot, or by my compiler, or by my ChatGPT bot) or mid-night (if my compiler and my ChatGPT bot both failed to merge and I review it manually).
+
+All PRs that can be implemented in https://github.com/AUTOMATIC1111/stable-diffusion-webui/tree/dev should submit PRs there.
+
+Feel free to submit PRs related to the functionality of Forge here.

@@ -95,9 +95,58 @@ class ControlNetForForgeOfficial(scripts.Script):
         return tuple(controls)
 
     def get_enabled_units(self, units):
-        enabled_units = [x for x in units if x.enabled]
+        enabled_units = [
+            local_unit
+            for unit in units
+            for local_unit in (self.parse_remote_call(unit),)
+            if local_unit.enabled
+        ]
         return enabled_units
 
+    @staticmethod
+    def parse_remote_call(args: dict | external_code.ControlNetUnit) -> external_code.ControlNetUnit:
+
+        def get_element(val):
+            # When accessing via API, there are instances where the values become tuples. 
+            # In such cases, we need to convert them
+            if isinstance(val, tuple):
+                return val[0]
+            else:
+                return val
+
+        # When accessing via API, The type of "args" is dict. 
+        # We need to convert this into an "external_code.ControlNetUnit"
+        if isinstance(args, dict):
+            unit = external_code.ControlNetUnit(**args)
+        else:
+            unit = args
+
+        unit.input_mode = get_element(unit.input_mode)
+        unit.use_preview_as_input = get_element(unit.use_preview_as_input)
+        unit.batch_mask_gallery = get_element(unit.batch_mask_gallery)
+        unit.batch_image_dir = get_element(unit.batch_image_dir)
+        unit.batch_mask_dir = get_element(unit.batch_mask_dir)
+        unit.generated_image = get_element(unit.generated_image)
+        unit.mask_image = get_element(unit.mask_image)
+        unit.batch_mask_gallery = get_element(unit.batch_mask_gallery)
+        unit.batch_input_gallery = get_element(unit.batch_input_gallery)
+        unit.hr_option = get_element(unit.hr_option)
+        unit.enabled = get_element(unit.enabled)
+        unit.module = get_element(unit.module)
+        unit.model = get_element(unit.model)
+        unit.weight = get_element(unit.weight)
+        unit.image = get_element(unit.image)
+        unit.resize_mode = get_element(unit.resize_mode)
+        unit.processor_res = get_element(unit.processor_res)
+        unit.threshold_a = get_element(unit.threshold_a)
+        unit.threshold_b = get_element(unit.threshold_b)
+        unit.guidance_start = get_element(unit.guidance_start)
+        unit.guidance_end = get_element(unit.guidance_end)
+        unit.pixel_perfect = get_element(unit.pixel_perfect)
+        unit.control_mode = get_element(unit.control_mode)
+
+        return unit
+    
     @staticmethod
     def try_crop_image_with_a1111_mask(
             p: StableDiffusionProcessing,
@@ -190,16 +239,18 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         using_a1111_data = False
 
+        unit_image = image_dict_from_any(unit.image)
+
         if unit.use_preview_as_input and unit.generated_image is not None:
             image = unit.generated_image
-        elif unit.image is None:
+        elif unit_image is None:
             resize_mode = external_code.resize_mode_from_value(p.resize_mode)
             image = HWC3(np.asarray(a1111_i2i_image))
             using_a1111_data = True
-        elif (unit.image['image'] < 5).all() and (unit.image['mask'] > 5).any():
-            image = unit.image['mask']
+        elif (unit_image['image'] < 5).all() and (unit_image['mask'] > 5).any():
+            image = unit_image['mask']
         else:
-            image = unit.image['image']
+            image = unit_image['image']
 
         if not isinstance(image, np.ndarray):
             raise ValueError("controlnet is enabled but no input image is given")
@@ -212,8 +263,8 @@ class ControlNetForForgeOfficial(scripts.Script):
             mask = unit.mask_image['image']
         elif unit.mask_image is not None and (unit.mask_image['mask'] > 5).any():
             mask = unit.mask_image['mask']
-        elif unit.image is not None and (unit.image['mask'] > 5).any():
-            mask = unit.image['mask']
+        elif unit_image is not None and (unit_image['mask'] > 5).any():
+            mask = unit_image['mask']
         else:
             mask = None
 

@@ -52,6 +52,18 @@ jobs:
               curl -Lo "$filename" "$url"
             fi
           done
+      - name: Download ControlNet models
+        run: |
+          declare -a urls=(
+            "https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11p_sd15_canny.pth"
+          )
+
+          for url in "${urls[@]}"; do
+            filename="models/ControlNet/${url##*/}"  # Extracts the last part of the URL
+            if [ ! -f "$filename" ]; then
+              curl -Lo "$filename" "$url"
+            fi
+          done
       - name: Start test server
         run: >
           python -m coverage run
@@ -71,6 +83,14 @@ jobs:
         run: |
           wait-for-it --service 127.0.0.1:7860 -t 20
           python -m pytest -vv --junitxml=test/results.xml --cov . --cov-report=xml --verify-base-url test
+      - name: Run ControlNet tests
+        run: >
+          python -m pytest
+          --junitxml=test/results.xml
+          --cov ./extensions-builtin/sd_forge_controlnet
+          --cov-report=xml
+          --verify-base-url
+          ./extensions-builtin/sd_forge_controlnet/tests
       - name: Kill test server
         if: always()
         run: curl -vv -XPOST http://127.0.0.1:7860/sdapi/v1/server-stop && sleep 10

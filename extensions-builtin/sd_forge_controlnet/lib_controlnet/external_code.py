@@ -148,13 +148,15 @@ InputImage = Union[Dict[str, InputImage], Tuple[InputImage, InputImage], InputIm
 @dataclass
 class UiControlNetUnit:
     input_mode: InputMode = InputMode.SIMPLE
-    use_preview_as_input: bool = False,
-    batch_image_dir: str = '',
-    batch_mask_dir: str = '',
-    batch_input_gallery: list = [],
-    batch_mask_gallery: list = [],
-    generated_image: Optional[np.ndarray] = None,
-    mask_image: Optional[np.ndarray] = None,
+    use_preview_as_input: bool = False
+    batch_image_dir: str = ''
+    batch_mask_dir: str = ''
+    batch_input_gallery: Optional[List[str]] = None
+    batch_mask_gallery: Optional[List[str]] = None
+    generated_image: Optional[np.ndarray] = None
+    mask_image: Optional[np.ndarray] = None
+    # If hires fix is enabled in A1111, how should this ControlNet unit be applied.
+    # The value is ignored if the generation is not using hires fix.
     hr_option: Union[HiResFixOption, int, str] = HiResFixOption.BOTH
     enabled: bool = True
     module: str = "None"
@@ -169,6 +171,13 @@ class UiControlNetUnit:
     guidance_end: float = 1.0
     pixel_perfect: bool = False
     control_mode: Union[ControlMode, int, str] = ControlMode.BALANCED
+    # ====== Start of API only fields ======
+    # Whether save the detected map of this unit. Setting this option to False
+    # prevents saving the detected map or sending detected map along with
+    # generated images via API. Currently the option is only accessible in API
+    # calls.
+    save_detected_map: bool = True
+    # ====== End of API only fields ======
 
     @staticmethod
     def infotext_fields():
@@ -191,6 +200,23 @@ class UiControlNetUnit:
             "control_mode",
             "hr_option",
         )
+
+    @staticmethod
+    def from_dict(d: Dict) -> "UiControlNetUnit":
+        """Create UiControlNetUnit from dict. This is primarily used to convert
+        API json dict to UiControlNetUnit."""
+        unit = UiControlNetUnit(
+            **{k: v for k, v in d.items() if k in vars(UiControlNetUnit)}
+        )
+        if isinstance(unit.image, str):
+            img = np.array(api.decode_base64_to_image(unit.image)).astype('uint8')
+            unit.image = {
+                "image": img,
+                "mask": np.zeros_like(img),
+            }
+        if isinstance(unit.mask_image, str):
+            unit.mask_image = np.array(api.decode_base64_to_image(unit.mask_image)).astype('uint8')
+        return unit
 
 
 # Backward Compatible

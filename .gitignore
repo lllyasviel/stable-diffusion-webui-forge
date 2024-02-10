@@ -41,3 +41,4 @@ notification.mp3
 /test/test_outputs
 /test/results.xml
 coverage.xml
+**/tests/**/expectations

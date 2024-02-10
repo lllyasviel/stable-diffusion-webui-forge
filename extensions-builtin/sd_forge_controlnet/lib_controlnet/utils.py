@@ -190,44 +190,6 @@ def align_dim_latent(x: int) -> int:
     return (x // 8) * 8
 
 
-def image_dict_from_any(image) -> Optional[Dict[str, np.ndarray]]:
-    if image is None:
-        return None
-
-    if isinstance(image, (tuple, list)):
-        image = {'image': image[0], 'mask': image[1]}
-    elif not isinstance(image, dict):
-        image = {'image': image, 'mask': None}
-    else:  # type(image) is dict
-        # copy to enable modifying the dict and prevent response serialization error
-        image = dict(image)
-
-    if isinstance(image['image'], str):
-        if os.path.exists(image['image']):
-            image['image'] = np.array(Image.open(image['image'])).astype('uint8')
-        elif image['image']:
-            image['image'] = external_code.to_base64_nparray(image['image'])
-        else:
-            image['image'] = None
-
-    # If there is no image, return image with None image and None mask
-    if image['image'] is None:
-        image['mask'] = None
-        return image
-
-    if 'mask' not in image or image['mask'] is None:
-        image['mask'] = np.zeros_like(image['image'], dtype=np.uint8)
-    elif isinstance(image['mask'], str):
-        if os.path.exists(image['mask']):
-            image['mask'] = np.array(Image.open(image['mask'])).astype('uint8')
-        elif image['mask']:
-            image['mask'] = external_code.to_base64_nparray(image['mask'])
-        else:
-            image['mask'] = np.zeros_like(image['image'], dtype=np.uint8)
-
-    return image
-
-
 def prepare_mask(
     mask: Image.Image, p: processing.StableDiffusionProcessing
 ) -> Image.Image:

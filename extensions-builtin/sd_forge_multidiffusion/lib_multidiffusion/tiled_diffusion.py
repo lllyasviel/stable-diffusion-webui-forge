@@ -296,7 +296,7 @@ class AbstractDiffusion:
             # self.control_params[param_id].hint_cond = control_tile.to(devices.device)
 
     def process_controlnet(self, x_shape, x_dtype, c_in: dict, cond_or_uncond: List, bboxes, batch_size: int, batch_id: int):
-        control: ControlNet = c_in['control']
+        control: ControlNet = c_in['control_model']
         param_id = -1 # current controlnet & previous_controlnets
         tuple_key = tuple(cond_or_uncond) + tuple(x_shape)
         while control is not None:
@@ -419,9 +419,8 @@ class MultiDiffusion(AbstractDiffusion):
                 # controlnet tiling
                 # self.switch_controlnet_tensors(batch_id, N, len(bboxes))
                 if 'control' in c_in:
-                    control=c_in['control']
                     self.process_controlnet(x_tile.shape, x_tile.dtype, c_in, cond_or_uncond, bboxes, N, batch_id)
-                    c_tile['control'] = control.get_control(x_tile, ts_tile, c_tile, len(cond_or_uncond))
+                    c_tile['control'] = c_in['control_model'].get_control(x_tile, ts_tile, c_tile, len(cond_or_uncond))
 
                 # stablesr tiling
                 # self.switch_stablesr_tensors(batch_id)

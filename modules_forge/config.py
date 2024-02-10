@@ -1,1 +1,4 @@
-always_disabled_extensions = ['sd-webui-controlnet']
+always_disabled_extensions = [
+    'sd-webui-controlnet',
+    'multidiffusion-upscaler-for-automatic1111'
+]

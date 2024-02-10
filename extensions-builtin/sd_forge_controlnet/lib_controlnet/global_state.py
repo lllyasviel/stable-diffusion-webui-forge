@@ -7,7 +7,7 @@ from lib_controlnet.enums import StableDiffusionVersion
 from modules_forge.shared import controlnet_dir, supported_preprocessors
 
 
-CN_MODEL_EXTS = [".pt", ".pth", ".ckpt", ".safetensors", ".bin"]
+CN_MODEL_EXTS = [".pt", ".pth", ".ckpt", ".safetensors", ".bin", ".patch"]
 
 
 def traverse_all_files(curr_path, model_list):

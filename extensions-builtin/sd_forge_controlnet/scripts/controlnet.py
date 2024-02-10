@@ -164,17 +164,21 @@ class ControlNetForForgeOfficial(scripts.Script):
         if unit.input_mode == external_code.InputMode.BATCH:
             image_list = []
             image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
-            for idx, filename in enumerate(os.listdir(unit.batch_image_dir)):
+            batch_image_files = shared.listfiles(unit.batch_image_dir)
+            for batch_modifier in getattr(unit, 'batch_modifiers', []):
+                batch_image_files = batch_modifier(batch_image_files, p)
+            for idx, filename in enumerate(batch_image_files):
                 if any(filename.lower().endswith(ext) for ext in image_extensions):
                     img_path = os.path.join(unit.batch_image_dir, filename)
                     logger.info(f'Try to read image: {img_path}')
                     img = np.ascontiguousarray(cv2.imread(img_path)[:, :, ::-1]).copy()
                     mask = None
-                    if len(unit.batch_mask_dir) > 0:
-                        if len(unit.batch_mask_dir) >= len(unit.batch_image_dir):
-                            mask_path = unit.batch_mask_dir[idx]
+                    if unit.batch_mask_dir:
+                        batch_mask_files = shared.listfiles(unit.batch_mask_dir)
+                        if len(batch_mask_files) >= len(batch_image_files):
+                            mask_path = batch_mask_files[idx]
                         else:
-                            mask_path = unit.batch_mask_dir[0]
+                            mask_path = batch_mask_files[0]
                         mask_path = os.path.join(unit.batch_mask_dir, mask_path)
                         mask = np.ascontiguousarray(cv2.imread(mask_path)[:, :, ::-1]).copy()
                     if img is not None:

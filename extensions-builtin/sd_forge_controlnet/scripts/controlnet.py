@@ -433,8 +433,8 @@ class ControlNetForForgeOfficial(scripts.Script):
         kwargs.update(dict(
             unit=unit,
             params=params,
-            cond_original=cond.clone() if cond is not None else None,
-            mask_original=mask.clone() if mask is not None else None
+            cond_original=cond.clone() if isinstance(cond, torch.Tensor) else cond,
+            mask_original=mask.clone() if isinstance(mask, torch.Tensor) else mask,
         ))
 
         params.model.strength = float(unit.weight)

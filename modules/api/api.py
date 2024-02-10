@@ -2,11 +2,13 @@ import base64
 import io
 import os
 import time
+import itertools
 import datetime
 import uvicorn
 import ipaddress
 import requests
 import gradio as gr
+import numpy as np
 from threading import Lock
 from io import BytesIO
 from fastapi import APIRouter, Depends, FastAPI, Request, Response
@@ -103,6 +105,8 @@ def encode_pil_to_base64(image):
     with io.BytesIO() as output_bytes:
         if isinstance(image, str):
             return image
+        if isinstance(image, np.ndarray):
+            image = Image.fromarray(image)
         if opts.samples_format.lower() == 'png':
             use_metadata = False
             metadata = PngImagePlugin.PngInfo()
@@ -480,7 +484,11 @@ class Api:
                     shared.state.end()
                     shared.total_tqdm.clear()
 
-        b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
+        b64images = [
+            encode_pil_to_base64(image)
+            for image in itertools.chain(processed.images, processed.extra_images)
+            if send_images
+        ]
 
         return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
 
@@ -547,7 +555,11 @@ class Api:
                     shared.state.end()
                     shared.total_tqdm.clear()
 
-        b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
+        b64images = [
+            encode_pil_to_base64(image)
+            for image in itertools.chain(processed.images, processed.extra_images)
+            if send_images
+        ]
 
         if not img2imgreq.include_init_images:
             img2imgreq.init_images = None

@@ -850,7 +850,6 @@ class ControlNetUiGroup(object):
                 slider_1=pthr_a,
                 slider_2=pthr_b,
                 input_mask=mask,
-                low_vram=shared.opts.data.get("controlnet_clip_detector_on_cpu", False),
                 json_pose_callback=json_acceptor.accept
                 if is_openpose(module)
                 else None,

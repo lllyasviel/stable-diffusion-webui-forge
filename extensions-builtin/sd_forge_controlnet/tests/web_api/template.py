@@ -2,14 +2,26 @@ import io
 import os
 import cv2
 import base64
+import functools
 from typing import Dict, Any, List, Union, Literal, Optional
 from pathlib import Path
 import datetime
 from enum import Enum
 import numpy as np
+import pytest
 
 import requests
 from PIL import Image
+
+
+def disable_in_cq(func):
+    """Skips the decorated test func in CQ run."""
+    @functools.wraps(func)
+    def wrapped_func(*args, **kwargs):
+        if APITestTemplate.is_cq_run:
+            pytest.skip()
+        return func(*args, **kwargs)
+    return wrapped_func
 
 
 PayloadOverrideType = Dict[str, Any]
@@ -19,6 +31,17 @@ test_result_dir = Path(__file__).parent / "results" / f"test_result_{timestamp}"
 test_expectation_dir = Path(__file__).parent / "expectations"
 os.makedirs(test_expectation_dir, exist_ok=True)
 resource_dir = Path(__file__).parents[1] / "images"
+
+
+def get_dest_dir():
+    if APITestTemplate.is_set_expectation_run:
+        return test_expectation_dir
+    else:
+        return test_result_dir
+
+
+def save_base64(base64img: str, dest: Path):
+    Image.open(io.BytesIO(base64.b64decode(base64img.split(",", 1)[0]))).save(dest)
 
 
 def read_image(img_path: Path) -> str:
@@ -45,6 +68,8 @@ def read_image_dir(img_dir: Path, suffixes=('.png', '.jpg', '.jpeg', '.webp')) -
 girl_img = read_image(resource_dir / "1girl.png")
 mask_img = read_image(resource_dir / "mask.png")
 mask_small_img = read_image(resource_dir / "mask_small.png")
+portrait_imgs = read_image_dir(resource_dir / "portrait")
+realistic_girl_face_img = portrait_imgs[0]
 
 
 general_negative_prompt = """
@@ -74,7 +99,7 @@ is_full_coverage = os.environ.get("CONTROLNET_TEST_FULL_COVERAGE", None) is not 
 
 class APITestTemplate:
     is_set_expectation_run = os.environ.get("CONTROLNET_SET_EXP", "True") == "True"
-    is_cq_run = bool(os.environ.get("FORGE_CQ_TEST", ""))
+    is_cq_run = os.environ.get("FORGE_CQ_TEST", "False") == "True"
     BASE_URL = "http://localhost:7860/"
 
     def __init__(
@@ -152,17 +177,11 @@ class APITestTemplate:
             print(response.keys())
             return False
 
-        dest_dir = (
-            test_expectation_dir
-            if APITestTemplate.is_set_expectation_run
-            else test_result_dir
-        )
+        dest_dir = get_dest_dir()
         results = response["images"][:1] if result_only else response["images"]
         for i, base64image in enumerate(results):
             img_file_name = f"{self.name}_{i}.png"
-            Image.open(io.BytesIO(base64.b64decode(base64image.split(",", 1)[0]))).save(
-                dest_dir / img_file_name
-            )
+            save_base64(base64image, dest_dir / img_file_name)
 
             if not APITestTemplate.is_set_expectation_run:
                 try:

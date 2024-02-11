@@ -3,6 +3,9 @@ import pytest
 from .template import (
     APITestTemplate,
     girl_img,
+    mask_img,
+    disable_in_cq,
+    get_model,
 )
 
 
@@ -83,3 +86,18 @@ def test_save_map(gen_type, save_map):
         unit_overrides={"save_detected_map": save_map},
         input_image=girl_img,
     ).exec(expected_output_num=2 if save_map else 1)
+
+
+@disable_in_cq
+def test_txt2img_inpaint():
+    assert APITestTemplate(
+        "txt2img_inpaint",
+        "txt2img",
+        payload_overrides={},
+        unit_overrides={
+            "image": girl_img,
+            "mask_image": mask_img,
+            "model": get_model("sd15_inpaint"),
+            "module": "inpaint_only",
+        },
+    ).exec()

@@ -162,7 +162,7 @@ class CFGDenoiser(torch.nn.Module):
             fake_sigmas = ((1 - acd) / acd) ** 0.5
             real_sigma = fake_sigmas[sigma.round().long().clip(0, int(fake_sigmas.shape[0]))]
             real_sigma_data = 1.0
-            x = x * (real_sigma ** 2.0 + real_sigma_data ** 2.0) ** 0.5
+            x = x * (((real_sigma ** 2.0 + real_sigma_data ** 2.0) ** 0.5)[:, None, None, None])
             sigma = real_sigma
 
         if sd_samplers_common.apply_refiner(self, x):
@@ -195,7 +195,7 @@ class CFGDenoiser(torch.nn.Module):
         self.step += 1
 
         if self.classic_ddim_eps_estimation:
-            eps = (x - denoised) / sigma
+            eps = (x - denoised) / sigma[:, None, None, None]
             return eps
 
         return denoised.to(device=original_x_device, dtype=original_x_dtype)

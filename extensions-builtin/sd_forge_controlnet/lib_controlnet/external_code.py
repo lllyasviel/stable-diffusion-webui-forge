@@ -263,8 +263,18 @@ class ControlNetUnit:
             }
         if isinstance(unit.mask_image, str):
             mask = np.array(api.decode_base64_to_image(unit.mask_image)).astype('uint8')
-            unit.image["mask"] = mask
-            unit.mask_image = None
+            if unit.image is not None:
+                # Attach mask on image if ControlNet has input image.
+                assert isinstance(unit.image, dict)
+                unit.image["mask"] = mask
+                unit.mask_image = None
+            else:
+                # Otherwise, wire to standalone mask.
+                # This happens in img2img when using A1111 img2img input.
+                unit.mask_image = {
+                    "image": mask,
+                    "mask": np.zeros_like(mask),
+                }
         return unit
 
 

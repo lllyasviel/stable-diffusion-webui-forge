@@ -89,6 +89,37 @@ def test_save_map(gen_type, save_map):
 
 
 @disable_in_cq
+def test_masked_controlnet_txt2img():
+    assert APITestTemplate(
+        f"test_masked_controlnet_txt2img",
+        "txt2img",
+        payload_overrides={},
+        unit_overrides={
+            "image": girl_img,
+            "mask_image": mask_img,
+        },
+    ).exec()
+
+
+@disable_in_cq
+def test_masked_controlnet_img2img():
+    assert APITestTemplate(
+        f"test_masked_controlnet_img2img",
+        "img2img",
+        payload_overrides={
+            "init_images": [girl_img],
+        },
+        # Note: Currently you must give ControlNet unit input image to specify
+        # mask.
+        # TODO: Fix this for img2img.
+        unit_overrides={
+            "image": girl_img,
+            "mask_image": mask_img,
+        },
+    ).exec()
+
+
+@disable_in_cq
 def test_txt2img_inpaint():
     assert APITestTemplate(
         "txt2img_inpaint",

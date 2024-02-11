@@ -258,7 +258,7 @@ default_unit = {
     "threshold_a": 64,
     "threshold_b": 64,
     "weight": 1,
-    "module": "None",
+    "module": "canny",
     "model": get_model("sd15_canny"),
 }
 

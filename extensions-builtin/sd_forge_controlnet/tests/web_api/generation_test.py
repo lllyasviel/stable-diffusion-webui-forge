@@ -97,7 +97,44 @@ def test_txt2img_inpaint():
         unit_overrides={
             "image": girl_img,
             "mask_image": mask_img,
-            "model": get_model("sd15_inpaint"),
+            "model": get_model("v11p_sd15_inpaint"),
             "module": "inpaint_only",
+        },
+    ).exec()
+
+
+@disable_in_cq
+def test_img2img_inpaint():
+    assert APITestTemplate(
+        "img2img_inpaint",
+        "img2img",
+        payload_overrides={
+            "init_images": [girl_img],
+            "mask": mask_img,
+        },
+        unit_overrides={
+            "model": get_model("v11p_sd15_inpaint"),
+            "module": "inpaint_only",
+        },
+    ).exec()
+
+
+# Currently failing.
+# TODO Fix lama outpaint.
+@disable_in_cq
+def test_lama_outpaint():
+    assert APITestTemplate(
+        "txt2img_lama_outpaint",
+        "txt2img",
+        payload_overrides={
+            "width": 768,
+            "height": 768,
+        },
+        # Outpaint should not need a mask.
+        unit_overrides={
+            "image": girl_img,
+            "model": get_model("v11p_sd15_inpaint"),
+            "module": "inpaint_only+lama",
+            "resize_mode": "Resize and Fill",  # OUTER_FIT
         },
     ).exec()

@@ -252,7 +252,6 @@ default_unit = {
     "enabled": True,
     "guidance_end": 1,
     "guidance_start": 0,
-    "low_vram": False,
     "pixel_perfect": True,
     "processor_res": 512,
     "resize_mode": 1,

@@ -3,6 +3,9 @@ import pytest
 from .template import (
     APITestTemplate,
     girl_img,
+    mask_img,
+    disable_in_cq,
+    get_model,
 )
 
 
@@ -83,3 +86,86 @@ def test_save_map(gen_type, save_map):
         unit_overrides={"save_detected_map": save_map},
         input_image=girl_img,
     ).exec(expected_output_num=2 if save_map else 1)
+
+
+@disable_in_cq
+def test_masked_controlnet_txt2img():
+    assert APITestTemplate(
+        f"test_masked_controlnet_txt2img",
+        "txt2img",
+        payload_overrides={},
+        unit_overrides={
+            "image": girl_img,
+            "mask_image": mask_img,
+        },
+    ).exec()
+
+
+@disable_in_cq
+def test_masked_controlnet_img2img():
+    assert APITestTemplate(
+        f"test_masked_controlnet_img2img",
+        "img2img",
+        payload_overrides={
+            "init_images": [girl_img],
+        },
+        # Note: Currently you must give ControlNet unit input image to specify
+        # mask.
+        # TODO: Fix this for img2img.
+        unit_overrides={
+            "image": girl_img,
+            "mask_image": mask_img,
+        },
+    ).exec()
+
+
+@disable_in_cq
+def test_txt2img_inpaint():
+    assert APITestTemplate(
+        "txt2img_inpaint",
+        "txt2img",
+        payload_overrides={},
+        unit_overrides={
+            "image": girl_img,
+            "mask_image": mask_img,
+            "model": get_model("v11p_sd15_inpaint"),
+            "module": "inpaint_only",
+        },
+    ).exec()
+
+
+@disable_in_cq
+def test_img2img_inpaint():
+    assert APITestTemplate(
+        "img2img_inpaint",
+        "img2img",
+        payload_overrides={
+            "init_images": [girl_img],
+            "mask": mask_img,
+        },
+        unit_overrides={
+            "model": get_model("v11p_sd15_inpaint"),
+            "module": "inpaint_only",
+        },
+    ).exec()
+
+
+# Currently failing.
+# TODO Fix lama outpaint.
+@disable_in_cq
+def test_lama_outpaint():
+    assert APITestTemplate(
+        "txt2img_lama_outpaint",
+        "txt2img",
+        payload_overrides={
+            "width": 768,
+            "height": 768,
+        },
+        # Outpaint should not need a mask.
+        unit_overrides={
+            "image": girl_img,
+            "model": get_model("v11p_sd15_inpaint"),
+            "module": "inpaint_only+lama",
+            "resize_mode": "Resize and Fill",  # OUTER_FIT
+        },
+    ).exec()

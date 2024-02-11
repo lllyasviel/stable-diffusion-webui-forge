@@ -252,14 +252,13 @@ default_unit = {
     "enabled": True,
     "guidance_end": 1,
     "guidance_start": 0,
-    "low_vram": False,
     "pixel_perfect": True,
     "processor_res": 512,
     "resize_mode": 1,
     "threshold_a": 64,
     "threshold_b": 64,
     "weight": 1,
-    "module": "None",
+    "module": "canny",
     "model": get_model("sd15_canny"),
 }
 

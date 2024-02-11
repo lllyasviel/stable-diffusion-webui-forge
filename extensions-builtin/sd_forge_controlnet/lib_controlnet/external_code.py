@@ -188,8 +188,8 @@ class ControlNetUnit:
     # ====== End of UI only fields ======
 
     # Following fields are used in both the API and the UI.
-    # Holds the mask image as a NumPy array; defaults to None.
-    mask_image: Optional[np.ndarray] = None
+    # Holds the mask image; defaults to None.
+    mask_image: Optional[GradioImageMaskPair] = None
     # Specifies how this unit should be applied in each pass of high-resolution fix.
     # Ignored if high-resolution fix is not enabled.
     hr_option: Union[HiResFixOption, int, str] = HiResFixOption.BOTH
@@ -262,7 +262,19 @@ class ControlNetUnit:
                 "mask": np.zeros_like(img),
             }
         if isinstance(unit.mask_image, str):
-            unit.mask_image = np.array(api.decode_base64_to_image(unit.mask_image)).astype('uint8')
+            mask = np.array(api.decode_base64_to_image(unit.mask_image)).astype('uint8')
+            if unit.image is not None:
+                # Attach mask on image if ControlNet has input image.
+                assert isinstance(unit.image, dict)
+                unit.image["mask"] = mask
+                unit.mask_image = None
+            else:
+                # Otherwise, wire to standalone mask.
+                # This happens in img2img when using A1111 img2img input.
+                unit.mask_image = {
+                    "image": mask,
+                    "mask": np.zeros_like(mask),
+                }
         return unit
 
 

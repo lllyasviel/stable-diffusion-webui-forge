@@ -12,17 +12,21 @@ from .global_state import (
     get_all_controlnet_names,
     get_preprocessor,
 )
+from .utils import judge_image_type
 from .logging import logger
 
 
 def encode_to_base64(image):
     if isinstance(image, str):
         return image
+    elif not judge_image_type(image):
+        return "Detect result is not image"
     elif isinstance(image, Image.Image):
         return api.encode_pil_to_base64(image)
     elif isinstance(image, np.ndarray):
         return encode_np_to_base64(image)
     else:
+        logger.warn("Unable to encode image.")
         return ""
 
 
@@ -88,18 +92,18 @@ def controlnet_api(_: gr.Blocks, app: FastAPI):
             results.append(
                 processor_module(
                     img,
-                    res=controlnet_processor_res,
-                    thr_a=controlnet_threshold_a,
-                    thr_b=controlnet_threshold_b,
+                    resolution=controlnet_processor_res,
+                    slider_1=controlnet_threshold_a,
+                    slider_2=controlnet_threshold_b,
                     json_pose_callback=json_acceptor.accept,
-                )[0]
+                )
             )
 
             if "openpose" in controlnet_module:
                 assert json_acceptor.value is not None
                 poses.append(json_acceptor.value)
 
-        results64 = list(map(encode_to_base64, results))
+        results64 = [encode_to_base64(img) for img in results]
         res = {"images": results64, "info": "Success"}
         if poses:
             res["poses"] = poses

@@ -525,7 +525,7 @@ def configure_forge_reference_checkout(a1111_home: Path):
     for ref in refs:
         target_path = a1111_home / ref.relative_path
         if not target_path.exists():
-            print(f"Path {target_path} does not exist. Skipping setting {ref.arg_name}")
+            print(f"Path {target_path} does not exist. Skip setting {ref.arg_name}")
             continue
 
         if ref.arg_name in sys.argv:

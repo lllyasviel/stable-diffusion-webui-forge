@@ -45,14 +45,7 @@ def apply_unet(option=None):
     current_unet_option = new_option
     if current_unet_option is None:
         current_unet = None
-
-        if not shared.sd_model.lowvram:
-            shared.sd_model.model.diffusion_model.to(devices.device)
-
         return
-
-    shared.sd_model.model.diffusion_model.to(devices.cpu)
-    devices.torch_gc()
 
     current_unet = current_unet_option.create_unet()
     current_unet.option = current_unet_option

@@ -30,7 +30,12 @@ class TimestepBlock(nn.Module):
 
 #This is needed because accelerate makes a copy of transformer_options which breaks "transformer_index"
 def forward_timestep_embed(ts, x, emb, context=None, transformer_options={}, output_shape=None, time_context=None, num_video_frames=None, image_only_indicator=None):
-    for layer in ts:
+    block_inner_modifiers = transformer_options.get("block_inner_modifiers", [])
+
+    for layer_index, layer in enumerate(ts):
+        for modifier in block_inner_modifiers:
+            x = modifier(x, 'before', layer, layer_index, ts, transformer_options)
+
         if isinstance(layer, VideoResBlock):
             x = layer(x, emb, num_video_frames, image_only_indicator)
         elif isinstance(layer, TimestepBlock):
@@ -47,6 +52,9 @@ def forward_timestep_embed(ts, x, emb, context=None, transformer_options={}, out
             x = layer(x, output_shape=output_shape)
         else:
             x = layer(x)
+
+        for modifier in block_inner_modifiers:
+            x = modifier(x, 'after', layer, layer_index, ts, transformer_options)
     return x
 
 class TimestepEmbedSequential(nn.Sequential, TimestepBlock):

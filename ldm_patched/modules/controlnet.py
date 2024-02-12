@@ -64,6 +64,10 @@ def compute_controlnet_weighting(control, cnet):
     for k, v in control.items():
         for i in range(len(v)):
             control_signal = control[k][i]
+
+            if not isinstance(control_signal, torch.Tensor):
+                continue
+
             B, C, H, W = control_signal.shape
 
             positive_weight = 1.0
@@ -87,6 +91,10 @@ def compute_controlnet_weighting(control, cnet):
             final_weight = final_weight * sigma_weight * frame_weight
 
             if isinstance(advanced_mask_weighting, torch.Tensor):
+                if advanced_mask_weighting.shape[0] != 1:
+                    k_ = int(control_signal.shape[0] // advanced_mask_weighting.shape[0])
+                    if control_signal.shape[0] == k_ * advanced_mask_weighting.shape[0]:
+                        advanced_mask_weighting = advanced_mask_weighting.repeat(k_, 1, 1, 1)
                 control_signal = control_signal * torch.nn.functional.interpolate(advanced_mask_weighting.to(control_signal), size=(H, W), mode='bilinear')
 
             control[k][i] = control_signal * final_weight[:, None, None, None]
@@ -236,7 +244,7 @@ class ControlNet(ControlBase):
             if self.cond_hint is not None:
                 del self.cond_hint
             self.cond_hint = None
-            self.cond_hint = ldm_patched.modules.utils.common_upscale(self.cond_hint_original, x_noisy.shape[3] * 8, x_noisy.shape[2] * 8, 'nearest-exact', "center").to(dtype).to(self.device)
+            self.cond_hint = ldm_patched.modules.utils.common_upscale(self.cond_hint_original, x_noisy.shape[3] * 8, x_noisy.shape[2] * 8, 'nearest-exact', "center").to(dtype)
         if x_noisy.shape[0] != self.cond_hint.shape[0]:
             self.cond_hint = broadcast_image_to(self.cond_hint, x_noisy.shape[0], batched_number)
 
@@ -247,7 +255,16 @@ class ControlNet(ControlBase):
         timestep = self.model_sampling_current.timestep(t)
         x_noisy = self.model_sampling_current.calculate_input(t, x_noisy)
 
-        control = self.control_model(x=x_noisy.to(dtype), hint=self.cond_hint, timesteps=timestep.float(), context=context.to(dtype), y=y)
+        controlnet_model_function_wrapper = to.get('controlnet_model_function_wrapper', None)
+
+        if controlnet_model_function_wrapper is not None:
+            wrapper_args = dict(x=x_noisy.to(dtype), hint=self.cond_hint, timesteps=timestep.float(),
+                                context=context.to(dtype), y=y)
+            wrapper_args['model'] = self
+            wrapper_args['inner_model'] = self.control_model
+            control = controlnet_model_function_wrapper(**wrapper_args)
+        else:
+            control = self.control_model(x=x_noisy.to(dtype), hint=self.cond_hint.to(self.device), timesteps=timestep.float(), context=context.to(dtype), y=y)
         return self.control_merge(None, control, control_prev, output_dtype)
 
     def copy(self):
@@ -532,7 +549,7 @@ class T2IAdapter(ControlBase):
             self.control_input = None
             self.cond_hint = None
             width, height = self.scale_image_to(x_noisy.shape[3] * 8, x_noisy.shape[2] * 8)
-            self.cond_hint = ldm_patched.modules.utils.common_upscale(self.cond_hint_original, width, height, 'nearest-exact', "center").float().to(self.device)
+            self.cond_hint = ldm_patched.modules.utils.common_upscale(self.cond_hint_original, width, height, 'nearest-exact', "center").float()
             if self.channels_in == 1 and self.cond_hint.shape[1] > 1:
                 self.cond_hint = torch.mean(self.cond_hint, 1, keepdim=True)
         if x_noisy.shape[0] != self.cond_hint.shape[0]:
@@ -540,7 +557,18 @@ class T2IAdapter(ControlBase):
         if self.control_input is None:
             self.t2i_model.to(x_noisy.dtype)
             self.t2i_model.to(self.device)
-            self.control_input = self.t2i_model(self.cond_hint.to(x_noisy.dtype))
+
+            controlnet_model_function_wrapper = to.get('controlnet_model_function_wrapper', None)
+
+            if controlnet_model_function_wrapper is not None:
+                wrapper_args = dict(hint=self.cond_hint.to(x_noisy.dtype))
+                wrapper_args['model'] = self
+                wrapper_args['inner_model'] = self.t2i_model
+                wrapper_args['inner_t2i_model'] = self.t2i_model
+                self.control_input = controlnet_model_function_wrapper(**wrapper_args)
+            else:
+                self.control_input = self.t2i_model(self.cond_hint.to(x_noisy))
+
             self.t2i_model.cpu()
 
         control_input = list(map(lambda a: None if a is None else a.clone(), self.control_input))

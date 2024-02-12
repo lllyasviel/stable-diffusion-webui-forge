@@ -186,6 +186,14 @@ class Script:
         """
         pass
 
+    def process_before_every_sampling(self, p, *args, **kwargs):
+        """
+        Similar to process(), called before every sampling.
+        If you use high-res fix, this will be called two times.
+        """
+
+        pass
+
     def process_batch(self, p, *args, **kwargs):
         """
         Same as process(), but called for every batch.
@@ -504,7 +512,13 @@ def load_scripts():
 
     scripts_list = list_scripts("scripts", ".py") + list_scripts("modules/processing_scripts", ".py", include_extensions=False)
 
+    for s in scripts_list:
+        if s.basedir not in sys.path:
+            sys.path = [s.basedir] + sys.path
+
     syspath = sys.path
+
+    # print(f'Current System Paths = {syspath}')
 
     def register_scripts_from_module(module):
         for script_class in module.__dict__.values():
@@ -808,6 +822,14 @@ class ScriptRunner:
                 script.process_batch(p, *script_args, **kwargs)
             except Exception:
                 errors.report(f"Error running process_batch: {script.filename}", exc_info=True)
+
+    def process_before_every_sampling(self, p, **kwargs):
+        for script in self.alwayson_scripts:
+            try:
+                script_args = p.script_args[script.args_from:script.args_to]
+                script.process_before_every_sampling(p, *script_args, **kwargs)
+            except Exception:
+                errors.report(f"Error running process_before_every_sampling: {script.filename}", exc_info=True)
 
     def postprocess(self, p, processed):
         for script in self.alwayson_scripts:

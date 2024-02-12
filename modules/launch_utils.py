@@ -10,6 +10,8 @@ import importlib.metadata
 import platform
 import json
 from functools import lru_cache
+from typing import NamedTuple
+from pathlib import Path
 
 from modules import cmd_args, errors
 from modules.paths_internal import script_path, extensions_dir, extensions_builtin_dir
@@ -501,6 +503,37 @@ def configure_for_tests():
         sys.argv.append("--disable-nan-check")
 
     os.environ['COMMANDLINE_ARGS'] = ""
+
+
+def configure_forge_reference_checkout(a1111_home: Path):
+    """Set model paths based on an existing A1111 checkout."""
+    class ModelRef(NamedTuple):
+        arg_name: str
+        relative_path: str
+
+    refs = [
+        ModelRef(arg_name="--ckpt-dir", relative_path="models/Stable-diffusion"),
+        ModelRef(arg_name="--vae-dir", relative_path="models/VAE"),
+        ModelRef(arg_name="--hypernetwork-dir", relative_path="models/hypernetworks"),
+        ModelRef(arg_name="--embeddings-dir", relative_path="models/embeddings"),
+        ModelRef(arg_name="--lora-dir", relative_path="models/lora"),
+        # Ref A1111 need to have sd-webui-controlnet installed.
+        ModelRef(arg_name="--controlnet-dir", relative_path="models/ControlNet"),
+        ModelRef(arg_name="--controlnet-preprocessor-models-dir", relative_path="extensions/sd-webui-controlnet/annotator/downloads"),
+    ]
+
+    for ref in refs:
+        target_path = a1111_home / ref.relative_path
+        if not target_path.exists():
+            print(f"Path {target_path} does not exist. Skip setting {ref.arg_name}")
+            continue
+
+        if ref.arg_name in sys.argv:
+            # Do not override existing dir setting.
+            continue
+
+        sys.argv.append(ref.arg_name)
+        sys.argv.append(str(target_path))
 
 
 def start():

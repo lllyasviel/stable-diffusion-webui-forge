@@ -2,12 +2,18 @@ import os
 import ldm_patched.modules.utils
 
 from modules.paths_internal import models_path
+from modules.shared import cmd_opts
 
-
-controlnet_dir = os.path.join(models_path, 'ControlNet')
+if cmd_opts.controlnet_dir:
+    controlnet_dir = str(cmd_opts.controlnet_dir)
+else:
+    controlnet_dir = os.path.join(models_path, 'ControlNet')
 os.makedirs(controlnet_dir, exist_ok=True)
 
-preprocessor_dir = os.path.join(models_path, 'ControlNetPreprocessor')
+if cmd_opts.controlnet_preprocessor_models_dir:
+    preprocessor_dir = str(cmd_opts.controlnet_preprocessor_models_dir)
+else:
+    preprocessor_dir = os.path.join(models_path, 'ControlNetPreprocessor')
 os.makedirs(preprocessor_dir, exist_ok=True)
 
 diffusers_dir = os.path.join(models_path, 'diffusers')

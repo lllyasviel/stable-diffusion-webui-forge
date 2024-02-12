@@ -76,6 +76,7 @@ def apply_leres(input_image, thr_a, thr_b, boost=False):
     with torch.no_grad():
 
         if boost:
+            pix2pixmodel.netG.to(devices.get_device_for("controlnet"))
             depth = estimateboost(input_image, model, 0, pix2pixmodel, max(width, height))
         else:
             depth = estimateleres(input_image, model, width, height)

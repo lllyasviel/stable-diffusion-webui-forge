@@ -7,13 +7,17 @@ import torch
 import modules.scripts as scripts
 from modules import shared, script_callbacks, masking, images
 from modules.ui_components import InputAccordion
-from modules.api.api import decode_base64_to_image
 import gradio as gr
 
 from lib_controlnet import global_state, external_code
-from lib_controlnet.external_code import ControlNetUnit
-from lib_controlnet.utils import align_dim_latent, set_numpy_seed, crop_and_resize_image, \
-    prepare_mask, judge_image_type
+from lib_controlnet.external_code import ControlNetUnit, ResizeMode
+from lib_controlnet.utils import (
+    align_dim_latent,
+    set_numpy_seed,
+    crop_and_resize_image,
+    prepare_mask,
+    judge_image_type,
+)
 from lib_controlnet.controlnet_ui.controlnet_ui_group import ControlNetUiGroup
 from lib_controlnet.controlnet_ui.photopea import Photopea
 from lib_controlnet.logging import logger
@@ -111,7 +115,7 @@ class ControlNetForForgeOfficial(scripts.Script):
             p: StableDiffusionProcessing,
             unit: ControlNetUnit,
             input_image: np.ndarray,
-            resize_mode: external_code.ResizeMode,
+            resize_mode: ResizeMode,
             preprocessor
     ) -> np.ndarray:
         a1111_mask_image: Optional[Image.Image] = getattr(p, "image_mask", None)
@@ -140,7 +144,7 @@ class ControlNetForForgeOfficial(scripts.Script):
 
             input_image = [x.crop(crop_region) for x in input_image]
             input_image = [
-                images.resize_image(external_code.ResizeMode.OUTER_FIT.int_value(), x, p.width, p.height)
+                images.resize_image(ResizeMode.OUTER_FIT.int_value(), x, p.width, p.height)
                 for x in input_image
             ]
 
@@ -287,6 +291,22 @@ class ControlNetForForgeOfficial(scripts.Script):
             return tqdm(iterable) if use_tqdm else iterable
 
         for input_image, input_mask in optional_tqdm(input_list, len(input_list) > 1):
+            # Outpaint fix for ControlNet inpaint.
+            # Outpaint should have the expanded outpaint area masked.
+            if resize_mode == ResizeMode.OUTER_FIT and "Inpaint" in preprocessor.tags:
+                if input_mask is None:
+                    input_mask = np.zeros_like(input_image)
+                input_mask = crop_and_resize_image(
+                    input_mask,
+                    external_code.ResizeMode.OUTER_FIT, h, w,
+                    fill_border_with_255=True,
+                )
+                input_image = crop_and_resize_image(
+                    input_image,
+                    external_code.ResizeMode.OUTER_FIT, h, w,
+                    fill_border_with_255=False,
+                )
+
             if unit.pixel_perfect:
                 unit.processor_res = external_code.pixel_perfect_resolution(
                     input_image,

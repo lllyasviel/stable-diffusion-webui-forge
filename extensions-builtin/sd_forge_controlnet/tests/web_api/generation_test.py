@@ -150,8 +150,6 @@ def test_img2img_inpaint():
     ).exec()
 
 
-# Currently failing.
-# TODO Fix lama outpaint.
 @disable_in_cq
 def test_lama_outpaint():
     assert APITestTemplate(
@@ -168,4 +166,20 @@ def test_lama_outpaint():
             "module": "inpaint_only+lama",
             "resize_mode": "Resize and Fill",  # OUTER_FIT
         },
-    ).exec()
+    ).exec(result_only=False)
+    assert APITestTemplate(
+        "img2img_lama_outpaint",
+        "img2img",
+        payload_overrides={
+            "init_images": [girl_img],
+            "width": 768,
+            "height": 768,
+            "resize_mode": 2,  # OUTER_FIT
+            "denoising_strength": 0.1,
+        },
+        # Outpaint should not need a mask.
+        unit_overrides={
+            "model": get_model("v11p_sd15_inpaint"),
+            "module": "inpaint_only+lama",
+        },
+    ).exec(result_only=False)

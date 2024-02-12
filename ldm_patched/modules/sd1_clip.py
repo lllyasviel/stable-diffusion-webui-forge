@@ -1,5 +1,7 @@
-# Taken from https://github.com/comfyanonymous/ComfyUI
-# This file is only for reference, and not used in the backend or runtime.
+# Implementation of CLIPTextModel transformer
+
+# using https://github.com/comfyanonymous/ComfyUI/blob/master/comfy/sd1_clip.py as reference
+# written by Forge
 
 
 import os

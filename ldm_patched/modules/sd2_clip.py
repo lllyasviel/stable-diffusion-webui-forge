@@ -1,3 +1,7 @@
+# Taken from https://github.com/comfyanonymous/ComfyUI
+# This file is only for reference, and not used in the backend or runtime.
+
+
 from ldm_patched.modules import sd1_clip
 import torch
 import os

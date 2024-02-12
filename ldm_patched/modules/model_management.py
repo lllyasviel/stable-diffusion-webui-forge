@@ -1,3 +1,7 @@
+# 1st edit by https://github.com/comfyanonymous/ComfyUI
+# 2nd edit by Forge Official
+
+
 import time
 import psutil
 from enum import Enum

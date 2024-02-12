@@ -1,3 +1,6 @@
+# Taken from https://github.com/comfyanonymous/ComfyUI
+
+
 import torch
 from . import model_base
 from . import utils

@@ -1,3 +1,10 @@
+# 1st edit by https://github.com/Stability-AI/generative-models
+# 2nd edit by https://github.com/comfyanonymous/ComfyUI
+# 3rd edit by Forge
+
+# This file is not used in image diffusion backend. (but used in SVD.)
+
+
 import functools
 from typing import Callable, Iterable, Union
 

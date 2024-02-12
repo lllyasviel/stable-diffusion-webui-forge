@@ -1,3 +1,6 @@
+# Taken from https://github.com/comfyanonymous/ComfyUI
+
+
 import re
 import torch
 

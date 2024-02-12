@@ -1,3 +1,7 @@
+# 1st edit by https://github.com/comfyanonymous/ComfyUI
+# 2nd edit by Forge Official
+
+
 import torch
 import numpy as np
 from ldm_patched.ldm.modules.diffusionmodules.util import make_beta_schedule

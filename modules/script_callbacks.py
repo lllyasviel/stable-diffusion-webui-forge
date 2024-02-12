@@ -1,3 +1,4 @@
+import dataclasses
 import inspect
 import os
 from collections import namedtuple
@@ -106,6 +107,15 @@ class ImageGridLoopParams:
         self.rows = rows
 
 
+@dataclasses.dataclass
+class BeforeTokenCounterParams:
+    prompt: str
+    steps: int
+    styles: list
+
+    is_positive: bool = True
+
+
 ScriptCallback = namedtuple("ScriptCallback", ["script", "callback"])
 callback_map = dict(
     callbacks_app_started=[],
@@ -128,6 +138,7 @@ callback_map = dict(
     callbacks_on_reload=[],
     callbacks_list_optimizers=[],
     callbacks_list_unets=[],
+    callbacks_before_token_counter=[],
 )
 event_subscriber_map = dict(
     callbacks_setting_updated=[],
@@ -310,6 +321,14 @@ def list_unets_callback():
             report_exception(c, 'list_unets')
 
     return res
+
+
+def before_token_counter_callback(params: BeforeTokenCounterParams):
+    for c in callback_map['callbacks_before_token_counter']:
+        try:
+            c.callback(params)
+        except Exception:
+            report_exception(c, 'before_token_counter')
 
 
 def setting_updated_event_subscriber_chain(handler, component, setting_name: str):
@@ -505,6 +524,13 @@ def on_list_unets(callback):
     add_callback(callback_map['callbacks_list_unets'], callback)
 
 
+def on_before_token_counter(callback):
+    """register a function to be called when UI is counting tokens for a prompt.
+    The function will be called with one argument of type BeforeTokenCounterParams, and should modify its fields if necessary."""
+
+    add_callback(callback_map['callbacks_before_token_counter'], callback)
+
+
 def on_setting_updated_subscriber(subscriber_params):
     """register a function to be called after settings update. `subscriber_params`
     should contain necessary fields to register an gradio event handler. Necessary
@@ -513,3 +539,4 @@ def on_setting_updated_subscriber(subscriber_params):
     sure to handle these extra params when defining the callback function.
     """
     event_subscriber_map['callbacks_setting_updated'].append(subscriber_params)
+

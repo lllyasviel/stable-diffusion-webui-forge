@@ -158,6 +158,8 @@ def test_lama_outpaint():
         payload_overrides={
             "width": 768,
             "height": 768,
+            "steps": 20,
+            "sampler": "DPM++ 2M Karras",
         },
         # Outpaint should not need a mask.
         unit_overrides={
@@ -167,19 +169,25 @@ def test_lama_outpaint():
             "resize_mode": "Resize and Fill",  # OUTER_FIT
         },
     ).exec(result_only=False)
+
+
+@disable_in_cq
+def test_lama_outpaint_with_mask():
+    """The union of outpaint area and mask area should be used as new mask."""
     assert APITestTemplate(
-        "img2img_lama_outpaint",
-        "img2img",
+        "txt2img_lama_outpaint_with_mask",
+        "txt2img",
         payload_overrides={
-            "init_images": [girl_img],
             "width": 768,
             "height": 768,
-            "resize_mode": 2,  # OUTER_FIT
-            "denoising_strength": 0.1,
+            "steps": 20,
+            "sampler": "DPM++ 2M Karras",
         },
-        # Outpaint should not need a mask.
         unit_overrides={
+            "image": girl_img,
+            "mask_image": mask_img,
             "model": get_model("v11p_sd15_inpaint"),
             "module": "inpaint_only+lama",
+            "resize_mode": "Resize and Fill",  # OUTER_FIT
         },
     ).exec(result_only=False)

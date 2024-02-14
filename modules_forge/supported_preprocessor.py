@@ -32,6 +32,7 @@ class Preprocessor:
         self.sorting_priority = 0  # higher goes to top in the list
         self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = True
         self.fill_mask_with_one_when_resize_and_fill = False
+        self.use_soft_projection_in_hr_fix = False
 
     def setup_model_patcher(self, model, load_device=None, offload_device=None, dtype=torch.float32, **kwargs):
         if load_device is None:
@@ -86,6 +87,7 @@ class PreprocessorCanny(Preprocessor):
         self.slider_1 = PreprocessorParameter(minimum=0, maximum=256, step=1, value=100, label='Low Threshold', visible=True)
         self.slider_2 = PreprocessorParameter(minimum=0, maximum=256, step=1, value=200, label='High Threshold', visible=True)
         self.sorting_priority = 100
+        self.use_soft_projection_in_hr_fix = True
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
         input_image, remove_pad = resize_image_with_pad(input_image, resolution)

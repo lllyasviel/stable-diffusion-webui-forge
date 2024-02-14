@@ -467,8 +467,11 @@ class ControlNetForForgeOfficial(scripts.Script):
             params.model.positive_advanced_weighting = soft_weighting.copy()
             params.model.negative_advanced_weighting = zero_weighting.copy()
 
-        # high-ref fix pass always use softer injections
-        if is_hr_pass or unit.control_mode == external_code.ControlMode.PROMPT.value:
+        if unit.control_mode == external_code.ControlMode.PROMPT.value:
+            params.model.positive_advanced_weighting = soft_weighting.copy()
+            params.model.negative_advanced_weighting = soft_weighting.copy()
+
+        if is_hr_pass and params.preprocessor.use_soft_projection_in_hr_fix:
             params.model.positive_advanced_weighting = soft_weighting.copy()
             params.model.negative_advanced_weighting = soft_weighting.copy()
 

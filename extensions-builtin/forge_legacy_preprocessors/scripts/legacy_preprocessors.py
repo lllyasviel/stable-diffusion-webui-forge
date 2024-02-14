@@ -59,6 +59,9 @@ class LegacyPreprocessor(Preprocessor):
             'instant-iD': ['instant_id', 'instantid'],
         }
 
+        if legacy_dict.get('use_soft_projection_in_hr_fix', False):
+            self.use_soft_projection_in_hr_fix = True
+
         self.model_filename_filters = []
         for tag in self.tags:
             tag_lower = tag.lower()

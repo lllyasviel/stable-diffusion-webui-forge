@@ -615,7 +615,8 @@ legacy_preprocessors = {
         "priority": 100,
         "tags": [
             "MLSD"
-        ]
+        ],
+        "use_soft_projection_in_hr_fix": True
     },
     # "normal_bae": {
     #     "label": "normal_bae",

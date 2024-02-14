@@ -44,7 +44,11 @@ class PreprocessorTileColorFix(PreprocessorTile):
 
         unet = process.sd_model.forge_objects.unet.clone()
         sigma_data = process.sd_model.forge_objects.unet.model.model_sampling.sigma_data
-        k = int(self.variation)
+
+        if getattr(process, 'is_hr_pass', False):
+            k = int(self.variation * 2)
+        else:
+            k = int(self.variation)
 
         def block_proc(h, flag, transformer_options):
             location, block_id = transformer_options['block']

@@ -21,6 +21,7 @@ class PreprocessorInpaint(Preprocessor):
         self.model_filename_filters = ['inpaint']
         self.slider_resolution = PreprocessorParameter(visible=False)
         self.fill_mask_with_one_when_resize_and_fill = True
+        self.expand_mask_when_resize_and_fill = True
 
     def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         mask = mask.round()

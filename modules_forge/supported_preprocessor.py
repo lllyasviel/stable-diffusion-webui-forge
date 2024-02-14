@@ -33,6 +33,7 @@ class Preprocessor:
         self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = True
         self.fill_mask_with_one_when_resize_and_fill = False
         self.use_soft_projection_in_hr_fix = False
+        self.expand_mask_when_resize_and_fill = False
 
     def setup_model_patcher(self, model, load_device=None, offload_device=None, dtype=torch.float32, **kwargs):
         if load_device is None:

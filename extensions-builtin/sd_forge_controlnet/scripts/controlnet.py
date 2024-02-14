@@ -148,12 +148,12 @@ class ControlNetForForgeOfficial(scripts.Script):
             input_image = np.stack(input_image, axis=2)
         return input_image
 
-    def get_input_data(self, p, unit, preprocessor):
+    def get_input_data(self, p, unit, preprocessor, h, w):
         logger.info(f'ControlNet Input Mode: {unit.input_mode}')
+        image_list = []
         resize_mode = external_code.resize_mode_from_value(unit.resize_mode)
 
         if unit.input_mode == external_code.InputMode.MERGE:
-            image_list = []
             for idx, item in enumerate(unit.batch_input_gallery):
                 img_path = item['name']
                 logger.info(f'Try to read image: {img_path}')
@@ -167,9 +167,7 @@ class ControlNetForForgeOfficial(scripts.Script):
                     mask = np.ascontiguousarray(cv2.imread(mask_path)[:, :, ::-1]).copy()
                 if img is not None:
                     image_list.append([img, mask])
-            return image_list, resize_mode
-
-        if unit.input_mode == external_code.InputMode.BATCH:
+        elif unit.input_mode == external_code.InputMode.BATCH:
             image_list = []
             image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
             batch_image_files = shared.listfiles(unit.batch_image_dir)
@@ -191,47 +189,66 @@ class ControlNetForForgeOfficial(scripts.Script):
                         mask = np.ascontiguousarray(cv2.imread(mask_path)[:, :, ::-1]).copy()
                     if img is not None:
                         image_list.append([img, mask])
-            return image_list, resize_mode
-
-        a1111_i2i_image = getattr(p, "init_images", [None])[0]
-        a1111_i2i_mask = getattr(p, "image_mask", None)
-
-        using_a1111_data = False
-
-        if unit.use_preview_as_input and unit.generated_image is not None:
-            image = unit.generated_image
-        elif unit.image is None:
-            resize_mode = external_code.resize_mode_from_value(p.resize_mode)
-            image = HWC3(np.asarray(a1111_i2i_image))
-            using_a1111_data = True
-        elif (unit.image['image'] < 5).all() and (unit.image['mask'] > 5).any():
-            image = unit.image['mask']
         else:
-            image = unit.image['image']
+            a1111_i2i_image = getattr(p, "init_images", [None])[0]
+            a1111_i2i_mask = getattr(p, "image_mask", None)
 
-        if not isinstance(image, np.ndarray):
-            raise ValueError("controlnet is enabled but no input image is given")
+            using_a1111_data = False
 
-        image = HWC3(image)
+            if unit.use_preview_as_input and unit.generated_image is not None:
+                image = unit.generated_image
+            elif unit.image is None:
+                resize_mode = external_code.resize_mode_from_value(p.resize_mode)
+                image = HWC3(np.asarray(a1111_i2i_image))
+                using_a1111_data = True
+            elif (unit.image['image'] < 5).all() and (unit.image['mask'] > 5).any():
+                image = unit.image['mask']
+            else:
+                image = unit.image['image']
 
-        if using_a1111_data:
-            mask = HWC3(np.asarray(a1111_i2i_mask)) if a1111_i2i_mask is not None else None
-        elif unit.mask_image is not None and (unit.mask_image['image'] > 5).any():
-            mask = unit.mask_image['image']
-        elif unit.mask_image is not None and (unit.mask_image['mask'] > 5).any():
-            mask = unit.mask_image['mask']
-        elif unit.image is not None and (unit.image['mask'] > 5).any():
-            mask = unit.image['mask']
-        else:
-            mask = None
+            if not isinstance(image, np.ndarray):
+                raise ValueError("controlnet is enabled but no input image is given")
 
-        image = self.try_crop_image_with_a1111_mask(p, unit, image, resize_mode, preprocessor)
+            image = HWC3(image)
 
-        if mask is not None:
-            mask = cv2.resize(HWC3(mask), (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
-            mask = self.try_crop_image_with_a1111_mask(p, unit, mask, resize_mode, preprocessor)
+            if using_a1111_data:
+                mask = HWC3(np.asarray(a1111_i2i_mask)) if a1111_i2i_mask is not None else None
+            elif unit.mask_image is not None and (unit.mask_image['image'] > 5).any():
+                mask = unit.mask_image['image']
+            elif unit.mask_image is not None and (unit.mask_image['mask'] > 5).any():
+                mask = unit.mask_image['mask']
+            elif unit.image is not None and (unit.image['mask'] > 5).any():
+                mask = unit.image['mask']
+            else:
+                mask = None
 
-        return [[image, mask]], resize_mode
+            image = self.try_crop_image_with_a1111_mask(p, unit, image, resize_mode, preprocessor)
+
+            if mask is not None:
+                mask = cv2.resize(HWC3(mask), (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
+                mask = self.try_crop_image_with_a1111_mask(p, unit, mask, resize_mode, preprocessor)
+
+            image_list = [[image, mask]]
+
+        if resize_mode == external_code.ResizeMode.OUTER_FIT and preprocessor.expand_mask_when_resize_and_fill:
+            new_image_list = []
+            for input_image, input_mask in image_list:
+                if input_mask is None:
+                    input_mask = np.zeros_like(input_image)
+                input_mask = crop_and_resize_image(
+                    input_mask,
+                    external_code.ResizeMode.OUTER_FIT, h, w,
+                    fill_border_with_255=True,
+                )
+                input_image = crop_and_resize_image(
+                    input_image,
+                    external_code.ResizeMode.OUTER_FIT, h, w,
+                    fill_border_with_255=False,
+                )
+                new_image_list.append((input_image, input_mask))
+            image_list = new_image_list
+
+        return image_list, resize_mode
 
     @staticmethod
     def get_target_dimensions(p: StableDiffusionProcessing) -> Tuple[int, int, int, int]:
@@ -276,7 +293,7 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         preprocessor = global_state.get_preprocessor(unit.module)
 
-        input_list, resize_mode = self.get_input_data(p, unit, preprocessor)
+        input_list, resize_mode = self.get_input_data(p, unit, preprocessor, h, w)
         preprocessor_outputs = []
         control_masks = []
         preprocessor_output_is_image = False

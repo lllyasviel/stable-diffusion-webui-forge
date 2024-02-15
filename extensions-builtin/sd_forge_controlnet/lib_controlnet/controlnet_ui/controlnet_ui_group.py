@@ -1090,7 +1090,7 @@ class ControlNetUiGroup(object):
     def register_multi_images_upload(self):
         """Register callbacks on merge tab multiple images upload."""
         trigger_dict = dict(
-            fn=lambda n: n + 1,
+            fn=lambda n: gr.update(value=n + 1),
             inputs=[self.dummy_gradio_update_trigger],
             outputs=[self.dummy_gradio_update_trigger],
         )

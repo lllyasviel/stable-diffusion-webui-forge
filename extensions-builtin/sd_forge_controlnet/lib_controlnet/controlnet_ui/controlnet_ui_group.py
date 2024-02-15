@@ -189,6 +189,8 @@ class ControlNetUiGroup(object):
         self.batch_upload_tab = None
         self.batch_input_gallery = None
         self.batch_mask_gallery = None
+        self.multi_inputs_upload_tab = None
+        self.multi_inputs_input_gallery = None
         self.create_canvas = None
         self.canvas_width = None
         self.canvas_height = None
@@ -338,6 +340,10 @@ class ControlNetUiGroup(object):
                             visible=False,
                             elem_classes=["cnet-mask-gallery-group"]
                         )
+
+                with gr.Tab(label="Multi-Inputs") as self.multi_inputs_upload_tab:
+                    with gr.Row():
+                        self.multi_inputs_gallery = MultiInputsGallery()
 
             if self.photopea:
                 self.photopea.attach_photopea_output(self.generated_image)
@@ -584,6 +590,7 @@ class ControlNetUiGroup(object):
             self.batch_mask_dir,
             self.batch_input_gallery.input_gallery,
             self.batch_mask_gallery.input_gallery,
+            self.multi_inputs_gallery.input_gallery,
             self.generated_image,
             self.mask_image,
             self.hr_option,
@@ -1089,6 +1096,7 @@ class ControlNetUiGroup(object):
         )
         self.batch_input_gallery.register_callbacks(change_trigger=trigger_dict)
         self.batch_mask_gallery.register_callbacks(change_trigger=trigger_dict)
+        self.multi_inputs_gallery.register_callbacks(change_trigger=trigger_dict)
 
     def register_core_callbacks(self):
         """Register core callbacks that only involves gradio components defined
@@ -1179,6 +1187,7 @@ class ControlNetUiGroup(object):
                 (ui_group.upload_tab, simple_fn),
                 (ui_group.batch_tab, batch_fn),
                 (ui_group.batch_upload_tab, batch_fn),
+                (ui_group.multi_inputs_upload_tab, merge_fn),
             ):
                 # Sync input_mode.
                 input_tab.select(

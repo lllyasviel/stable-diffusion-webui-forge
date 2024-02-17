@@ -10,6 +10,8 @@ def sdp(q, k, v, transformer_options):
 
 
 class StyleAlignForForge(scripts.Script):
+    sorting_priority = 17
+
     def title(self):
         return "StyleAlign Integrated"
 

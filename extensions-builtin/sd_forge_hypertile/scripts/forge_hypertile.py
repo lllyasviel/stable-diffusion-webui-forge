@@ -8,6 +8,8 @@ opHyperTile = HyperTile()
 
 
 class HyperTileForForge(scripts.Script):
+    sorting_priority = 13
+
     def title(self):
         return "HyperTile Integrated"
 

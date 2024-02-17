@@ -7,6 +7,8 @@ opModelSamplerLatentMegaModifier = ModelSamplerLatentMegaModifier().mega_modify
 
 
 class LatentModifierForForge(scripts.Script):
+    sorting_priority = 15
+
     def title(self):
         return "LatentModifier Integrated"
 

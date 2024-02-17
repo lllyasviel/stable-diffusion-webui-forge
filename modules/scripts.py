@@ -94,6 +94,9 @@ class Script:
     controls = None
     """A list of controls retured by the ui()."""
 
+    sorting_priority = 0
+    """Larger number will appear downwards in the UI."""
+
     def title(self):
         """this function should return the title of the script. This is what will be displayed in the dropdown menu."""
 
@@ -694,6 +697,8 @@ class ScriptRunner:
     def setup_ui_for_section(self, section, scriptlist=None):
         if scriptlist is None:
             scriptlist = self.alwayson_scripts
+
+        scriptlist = sorted(scriptlist, key=lambda x: x.sorting_priority)
 
         for script in scriptlist:
             if script.alwayson and script.section != section:

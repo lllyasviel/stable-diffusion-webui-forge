@@ -43,6 +43,8 @@ opFreeU_V2 = FreeU_V2()
 
 
 class FreeUForForge(scripts.Script):
+    sorting_priority = 12
+
     def title(self):
         return "FreeU Integrated"
 

@@ -8,6 +8,8 @@ opPatchModelAddDownscale = PatchModelAddDownscale()
 
 
 class KohyaHRFixForForge(scripts.Script):
+    sorting_priority = 14
+
     def title(self):
         return "Kohya HRFix Integrated"
 

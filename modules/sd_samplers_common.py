@@ -5,6 +5,8 @@ import torch
 from PIL import Image
 from modules import devices, images, sd_vae_approx, sd_samplers, sd_vae_taesd, shared, sd_models
 from modules.shared import opts, state
+from modules_forge.forge_sampler import sampling_prepare, sampling_cleanup
+from modules import extra_networks
 import k_diffusion.sampling
 
 
@@ -39,9 +41,7 @@ def samples_to_images_tensor(sample, approximation=None, model=None):
 
     if approximation is None or (shared.state.interrupted and opts.live_preview_fast_interrupt):
         approximation = approximation_indexes.get(opts.show_progress_type, 0)
-
-        from modules import lowvram
-        if approximation == 0 and lowvram.is_enabled(shared.sd_model) and not shared.opts.live_preview_allow_lowvram_full:
+        if approximation == 0:
             approximation = 1
 
     if approximation == 2:
@@ -54,8 +54,7 @@ def samples_to_images_tensor(sample, approximation=None, model=None):
     else:
         if model is None:
             model = shared.sd_model
-        with devices.without_autocast(): # fixes an issue with unstable VAEs that are flaky even in fp32
-            x_sample = model.decode_first_stage(sample.to(model.first_stage_model.dtype))
+        x_sample = model.decode_first_stage(sample)
 
     return x_sample
 
@@ -71,7 +70,6 @@ def single_sample_to_image(sample, approximation=None):
 
 
 def decode_first_stage(model, x):
-    x = x.to(devices.dtype_vae)
     approx_index = approximation_indexes.get(opts.sd_vae_decode_method, 0)
     return samples_to_images_tensor(x, approx_index, model)
 
@@ -95,7 +93,6 @@ def images_tensor_to_samples(image, approximation=None, model=None):
     else:
         if model is None:
             model = shared.sd_model
-        model.first_stage_model.to(devices.dtype_vae)
 
         image = image.to(shared.device, dtype=devices.dtype_vae)
         image = image * 2 - 1
@@ -155,7 +152,7 @@ def replace_torchsde_browinan():
 replace_torchsde_browinan()
 
 
-def apply_refiner(cfg_denoiser):
+def apply_refiner(cfg_denoiser, x):
     completed_ratio = cfg_denoiser.step / cfg_denoiser.total_steps
     refiner_switch_at = cfg_denoiser.p.refiner_switch_at
     refiner_checkpoint_info = cfg_denoiser.p.refiner_checkpoint_info
@@ -181,13 +178,18 @@ def apply_refiner(cfg_denoiser):
     cfg_denoiser.p.extra_generation_params['Refiner'] = refiner_checkpoint_info.short_title
     cfg_denoiser.p.extra_generation_params['Refiner switch at'] = refiner_switch_at
 
+    sampling_cleanup(sd_models.model_data.get_sd_model().forge_objects.unet)
+
     with sd_models.SkipWritingToConfig():
         sd_models.reload_model_weights(info=refiner_checkpoint_info)
 
-    devices.torch_gc()
+    if not cfg_denoiser.p.disable_extra_networks:
+        extra_networks.activate(cfg_denoiser.p, cfg_denoiser.p.extra_network_data)
+
     cfg_denoiser.p.setup_conds()
     cfg_denoiser.update_inner_model()
 
+    sampling_prepare(sd_models.model_data.get_sd_model().forge_objects.unet, x=x)
     return True
 
 

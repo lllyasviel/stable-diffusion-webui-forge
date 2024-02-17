@@ -1,3 +1,5 @@
+# Taken from https://github.com/comfyanonymous/ComfyUI
+
 import os
 
 import ldm_patched.modules.sd

@@ -1,3 +1,7 @@
+# Taken from https://github.com/comfyanonymous/ComfyUI
+# This file is only for reference, and not used in the backend or runtime.
+
+
 import torch
 from ldm_patched.ldm.modules.attention import optimized_attention_for_device
 

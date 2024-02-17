@@ -1,3 +1,7 @@
+# Taken from https://github.com/comfyanonymous/ComfyUI
+# This file is only for reference, and not used in the backend or runtime.
+
+
 from ..diffusionmodules.upscaling import ImageConcatWithNoiseAugmentation
 from ..diffusionmodules.openaimodel import Timestep
 import torch

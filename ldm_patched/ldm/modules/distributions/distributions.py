@@ -1,3 +1,7 @@
+# 1st edit by https://github.com/CompVis/latent-diffusion
+# 2nd edit by https://github.com/Stability-AI/stablediffusion
+
+
 import torch
 import numpy as np
 

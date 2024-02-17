@@ -8,8 +8,13 @@ import sgm.modules.diffusionmodules.discretizer
 from modules import devices, shared, prompt_parser
 from modules import torch_utils
 
+import ldm_patched.modules.model_management as model_management
+from modules_forge.forge_clip import move_clip_to_gpu
+
 
 def get_learned_conditioning(self: sgm.models.diffusion.DiffusionEngine, batch: prompt_parser.SdConditioning | list[str]):
+    move_clip_to_gpu()
+
     for embedder in self.conditioner.embedders:
         embedder.ucg_rate = 0.0
 
@@ -18,7 +23,7 @@ def get_learned_conditioning(self: sgm.models.diffusion.DiffusionEngine, batch: 
     is_negative_prompt = getattr(batch, 'is_negative_prompt', False)
     aesthetic_score = shared.opts.sdxl_refiner_low_aesthetic_score if is_negative_prompt else shared.opts.sdxl_refiner_high_aesthetic_score
 
-    devices_args = dict(device=devices.device, dtype=devices.dtype)
+    devices_args = dict(device=self.forge_objects.clip.patcher.current_device, dtype=model_management.text_encoder_dtype())
 
     sdxl_conds = {
         "txt": batch,
@@ -34,14 +39,11 @@ def get_learned_conditioning(self: sgm.models.diffusion.DiffusionEngine, batch: 
     return c
 
 
-def apply_model(self: sgm.models.diffusion.DiffusionEngine, x, t, cond):
-    sd = self.model.state_dict()
-    diffusion_model_input = sd.get('diffusion_model.input_blocks.0.0.weight', None)
-    if diffusion_model_input is not None:
-        if diffusion_model_input.shape[1] == 9:
-            x = torch.cat([x] + cond['c_concat'], dim=1)
+def apply_model(self: sgm.models.diffusion.DiffusionEngine, x, t, cond, *args, **kwargs):
+    if self.model.diffusion_model.in_channels == 9:
+        x = torch.cat([x] + cond['c_concat'], dim=1)
 
-    return self.model(x, t, cond)
+    return self.model(x, t, cond, *args, **kwargs)
 
 
 def get_first_stage_encoding(self, x):  # SDXL's encode_first_stage does everything so get_first_stage_encoding is just there for compatibility

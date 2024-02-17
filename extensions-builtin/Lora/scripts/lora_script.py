@@ -21,7 +21,6 @@ def before_ui():
 
     networks.extra_network_lora = extra_networks_lora.ExtraNetworkLora()
     extra_networks.register_extra_network(networks.extra_network_lora)
-    extra_networks.register_extra_network_alias(networks.extra_network_lora, "lyco")
 
 
 networks.originals = lora_patches.LoraPatches()

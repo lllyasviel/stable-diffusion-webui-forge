@@ -6,13 +6,21 @@ import time
 from modules import timer
 from modules import initialize_util
 from modules import initialize
+from threading import Thread
+from modules_forge.initialization import initialize_forge
+from modules_forge import main_thread
+
 
 startup_timer = timer.startup_timer
 startup_timer.record("launcher")
 
+initialize_forge()
+
 initialize.imports()
 
 initialize.check_versions()
+
+initialize.initialize()
 
 
 def create_api(app):
@@ -23,11 +31,9 @@ def create_api(app):
     return api
 
 
-def api_only():
+def api_only_worker():
     from fastapi import FastAPI
     from modules.shared_cmd_options import cmd_opts
-
-    initialize.initialize()
 
     app = FastAPI()
     initialize_util.setup_middleware(app)
@@ -45,11 +51,10 @@ def api_only():
     )
 
 
-def webui():
+def webui_worker():
     from modules.shared_cmd_options import cmd_opts
 
     launch_api = cmd_opts.api
-    initialize.initialize()
 
     from modules import shared, ui_tempdir, script_callbacks, ui, progress, ui_extra_networks
 
@@ -153,6 +158,14 @@ def webui():
         initialize.initialize_rest(reload_script_modules=True)
 
 
+def api_only():
+    Thread(target=api_only_worker, daemon=True).start()
+
+
+def webui():
+    Thread(target=webui_worker, daemon=True).start()
+
+
 if __name__ == "__main__":
     from modules.shared_cmd_options import cmd_opts
 
@@ -160,3 +173,5 @@ if __name__ == "__main__":
         api_only()
     else:
         webui()
+
+    main_thread.loop()

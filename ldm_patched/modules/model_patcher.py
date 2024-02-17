@@ -1,9 +1,17 @@
+# 1st edit by https://github.com/comfyanonymous/ComfyUI
+# 2nd edit by Forge Official
+
+
 import torch
 import copy
 import inspect
 
 import ldm_patched.modules.utils
 import ldm_patched.modules.model_management
+
+
+extra_weight_calculators = {}
+
 
 class ModelPatcher:
     def __init__(self, model, load_device, offload_device, size=0, current_device=None, weight_inplace_update=False):
@@ -329,6 +337,8 @@ class ModelPatcher:
                 b2 = ldm_patched.modules.model_management.cast_to_device(v[3].flatten(start_dim=1), weight.device, torch.float32)
 
                 weight += ((torch.mm(b2, b1) + torch.mm(torch.mm(weight.flatten(start_dim=1), a2), a1)) * alpha).reshape(weight.shape).type(weight.dtype)
+            elif patch_type in extra_weight_calculators:
+                weight = extra_weight_calculators[patch_type](weight, alpha, v)
             else:
                 print("patch type not recognized", patch_type, key)
 

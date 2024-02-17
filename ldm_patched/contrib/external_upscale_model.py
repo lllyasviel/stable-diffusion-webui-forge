@@ -1,4 +1,6 @@
-# https://github.com/comfyanonymous/ComfyUI/blob/master/nodes.py 
+# Taken from https://github.com/comfyanonymous/ComfyUI
+# This file is only for reference, and not used in the backend or runtime.
+
 
 import os
 from ldm_patched.pfn import model_loading

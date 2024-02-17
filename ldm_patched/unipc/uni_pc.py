@@ -1,3 +1,6 @@
+# Taken from https://github.com/comfyanonymous/ComfyUI
+# This file is only for reference, and not used in the backend or runtime.
+
 #code taken from: https://github.com/wl-zhao/UniPC and modified
 
 import torch

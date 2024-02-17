@@ -1,3 +1,8 @@
+# 1st edit by https://github.com/CompVis/latent-diffusion
+# 2nd edit by https://github.com/Stability-AI/stablediffusion
+# 3rd edit by https://github.com/Stability-AI/generative-models
+
+
 # adopted from
 # https://github.com/openai/improved-diffusion/blob/main/improved_diffusion/gaussian_diffusion.py
 # and

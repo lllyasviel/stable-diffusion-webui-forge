@@ -2,7 +2,7 @@ import os
 
 from modules import modelloader, errors
 from modules.shared import cmd_opts, opts
-from modules.upscaler import Upscaler, UpscalerData
+from modules.upscaler import Upscaler, UpscalerData, prepare_free_memory
 from modules.upscaler_utils import upscale_with_model
 
 
@@ -23,6 +23,7 @@ class UpscalerDAT(Upscaler):
                 self.scalers.append(model)
 
     def do_upscale(self, img, path):
+        prepare_free_memory()
         try:
             info = self.load_model(path)
         except Exception:

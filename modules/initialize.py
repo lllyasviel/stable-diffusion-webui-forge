@@ -3,9 +3,21 @@ import logging
 import os
 import sys
 import warnings
+import os
+
 from threading import Thread
 
 from modules.timer import startup_timer
+
+
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
 
 
 def imports():
@@ -23,14 +35,16 @@ def imports():
     import gradio  # noqa: F401
     startup_timer.record("import gradio")
 
-    from modules import paths, timer, import_hook, errors  # noqa: F401
-    startup_timer.record("setup paths")
+    with HiddenPrints():
+        from modules import paths, timer, import_hook, errors  # noqa: F401
+        startup_timer.record("setup paths")
 
-    import ldm.modules.encoders.modules  # noqa: F401
-    startup_timer.record("import ldm")
+        import ldm.modules.encoders.modules  # noqa: F401
+        import ldm.modules.diffusionmodules.model
+        startup_timer.record("import ldm")
 
-    import sgm.modules.encoders.modules  # noqa: F401
-    startup_timer.record("import sgm")
+        import sgm.modules.encoders.modules  # noqa: F401
+        startup_timer.record("import sgm")
 
     from modules import shared_init
     shared_init.initialize()
@@ -135,24 +149,9 @@ def initialize_rest(*, reload_script_modules=False):
     sd_unet.list_unets()
     startup_timer.record("scripts list_unets")
 
-    def load_model():
-        """
-        Accesses shared.sd_model property to load model.
-        After it's available, if it has been loaded before this access by some extension,
-        its optimization may be None because the list of optimizaers has neet been filled
-        by that time, so we apply optimization again.
-        """
-        from modules import devices
-        devices.torch_npu_set_device()
-
-        shared.sd_model  # noqa: B018
-
-        if sd_hijack.current_optimizer is None:
-            sd_hijack.apply_optimizations()
-
-        devices.first_time_calculation()
-    if not shared.cmd_opts.skip_load_model_at_start:
-        Thread(target=load_model).start()
+    from modules_forge import main_thread
+    import modules.sd_models
+    main_thread.async_run(modules.sd_models.model_data.get_sd_model)
 
     from modules import shared_items
     shared_items.reload_hypernetworks()

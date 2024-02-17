@@ -140,6 +140,9 @@ callback_map = dict(
     callbacks_list_unets=[],
     callbacks_before_token_counter=[],
 )
+event_subscriber_map = dict(
+    callbacks_setting_updated=[],
+)
 
 
 def clear_callbacks():
@@ -328,6 +331,23 @@ def before_token_counter_callback(params: BeforeTokenCounterParams):
             report_exception(c, 'before_token_counter')
 
 
+def setting_updated_event_subscriber_chain(handler, component, setting_name: str):
+    """
+    Arguments:
+        - handler: The returned handler from calling an event subscriber.
+        - component: The component that is updated. The component should provide
+                     the value of setting after update.
+        - setting_name: The name of the setting.
+    """
+    for param in event_subscriber_map['callbacks_setting_updated']:
+        handler = handler.then(
+            fn=lambda *args: param["fn"](*args, setting_name),
+            inputs=param["inputs"] + [component],
+            outputs=param["outputs"],
+            show_progress=False,
+        )
+
+
 def add_callback(callbacks, fun):
     stack = [x for x in inspect.stack() if x.filename != __file__]
     filename = stack[0].filename if stack else 'unknown file'
@@ -509,3 +529,14 @@ def on_before_token_counter(callback):
     The function will be called with one argument of type BeforeTokenCounterParams, and should modify its fields if necessary."""
 
     add_callback(callback_map['callbacks_before_token_counter'], callback)
+
+
+def on_setting_updated_subscriber(subscriber_params):
+    """register a function to be called after settings update. `subscriber_params`
+    should contain necessary fields to register an gradio event handler. Necessary
+    fields are ["fn", "outputs", "inputs"].
+    Setting name and setting value after update will be append to inputs. So be
+    sure to handle these extra params when defining the callback function.
+    """
+    event_subscriber_map['callbacks_setting_updated'].append(subscriber_params)
+

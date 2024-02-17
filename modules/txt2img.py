@@ -9,6 +9,7 @@ import modules.shared as shared
 from modules.ui import plaintext_to_html
 from PIL import Image
 import gradio as gr
+from modules_forge import main_thread
 
 
 def txt2img_create_processing(id_task: str, request: gr.Request, prompt: str, negative_prompt: str, prompt_styles, steps: int, sampler_name: str, n_iter: int, batch_size: int, cfg_scale: float, height: int, width: int, enable_hr: bool, denoising_strength: float, hr_scale: float, hr_upscaler: str, hr_second_pass_steps: int, hr_resize_x: int, hr_resize_y: int, hr_checkpoint_name: str, hr_sampler_name: str, hr_prompt: str, hr_negative_prompt, override_settings_texts, *args, force_enable_hr=False):
@@ -56,7 +57,7 @@ def txt2img_create_processing(id_task: str, request: gr.Request, prompt: str, ne
     return p
 
 
-def txt2img_upscale(id_task: str, request: gr.Request, gallery, gallery_index, generation_info, *args):
+def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery_index, generation_info, *args):
     assert len(gallery) > 0, 'No image to upscale'
     assert 0 <= gallery_index < len(gallery), f'Bad image index: {gallery_index}'
 
@@ -100,7 +101,7 @@ def txt2img_upscale(id_task: str, request: gr.Request, gallery, gallery_index, g
     return new_gallery, json.dumps(geninfo), plaintext_to_html(processed.info), plaintext_to_html(processed.comments, classname="comments")
 
 
-def txt2img(id_task: str, request: gr.Request, *args):
+def txt2img_function(id_task: str, request: gr.Request, *args):
     p = txt2img_create_processing(id_task, request, *args)
 
     with closing(p):
@@ -118,4 +119,12 @@ def txt2img(id_task: str, request: gr.Request, *args):
     if opts.do_not_show_images:
         processed.images = []
 
-    return processed.images, generation_info_js, plaintext_to_html(processed.info), plaintext_to_html(processed.comments, classname="comments")
+    return processed.images + processed.extra_images, generation_info_js, plaintext_to_html(processed.info), plaintext_to_html(processed.comments, classname="comments")
+
+
+def txt2img_upscale(id_task: str, request: gr.Request, gallery, gallery_index, generation_info, *args):
+    return main_thread.run_and_wait_result(txt2img_upscale_function, id_task, request, gallery, gallery_index, generation_info, *args)
+
+
+def txt2img(id_task: str, request: gr.Request, *args):
+    return main_thread.run_and_wait_result(txt2img_function, id_task, request, *args)

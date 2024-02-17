@@ -1,4 +1,6 @@
-# https://github.com/comfyanonymous/ComfyUI/blob/master/nodes.py 
+# Taken from https://github.com/comfyanonymous/ComfyUI
+# This file is only for reference, and not used in the backend or runtime.
+
 
 import ldm_patched.modules.utils
 import ldm_patched.utils.path_utils

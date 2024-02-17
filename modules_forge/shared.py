@@ -1,8 +1,27 @@
 import os
 import ldm_patched.modules.utils
+import argparse
 
 from modules.paths_internal import models_path
-from modules.shared import cmd_opts
+from pathlib import Path
+
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument(
+    "--controlnet-dir",
+    type=Path,
+    help="Path to directory with ControlNet models",
+    default=None,
+)
+parser.add_argument(
+    "--controlnet-preprocessor-models-dir",
+    type=Path,
+    help="Path to directory with annotator model directories",
+    default=None,
+)
+
+cmd_opts = parser.parse_known_args()[0]
 
 if cmd_opts.controlnet_dir:
     controlnet_dir = str(cmd_opts.controlnet_dir)

@@ -4,6 +4,7 @@ from .template import (
     APITestTemplate,
     girl_img,
     mask_img,
+    portrait_imgs,
     disable_in_cq,
     get_model,
 )
@@ -172,19 +173,26 @@ def test_lama_outpaint():
 
 
 @disable_in_cq
-def test_lama_outpaint():
+def test_instant_id_sdxl():
+    assert len(portrait_imgs) > 0
     assert APITestTemplate(
-        "txt2img_instant_id",
+        "instant_id_sdxl",
         "txt2img",
         payload_overrides={
-            "width": 768,
-            "height": 768,
+            "width": 1000,
+            "height": 1000,
+            "prompt": "1girl, red background",
         },
-        # Outpaint should not need a mask.
-        unit_overrides={
-            "image": girl_img,
-            "model": get_model("v11p_sd15_inpaint"),
-            "module": "inpaint_only+lama",
-            "resize_mode": "Resize and Fill",  # OUTER_FIT
-        },
+        unit_overrides=[
+            dict(
+                image=portrait_imgs[0],
+                model=get_model("ip-adapter_instant_id_sdxl"),
+                module="InsightFace (InstantID)",
+            ),
+            dict(
+                image=portrait_imgs[1],
+                model=get_model("control_instant_id_sdxl"),
+                module="instant_id_face_keypoints",
+            ),
+        ],
     ).exec()

@@ -169,3 +169,22 @@ def test_lama_outpaint():
             "resize_mode": "Resize and Fill",  # OUTER_FIT
         },
     ).exec()
+
+
+@disable_in_cq
+def test_lama_outpaint():
+    assert APITestTemplate(
+        "txt2img_instant_id",
+        "txt2img",
+        payload_overrides={
+            "width": 768,
+            "height": 768,
+        },
+        # Outpaint should not need a mask.
+        unit_overrides={
+            "image": girl_img,
+            "model": get_model("v11p_sd15_inpaint"),
+            "module": "inpaint_only+lama",
+            "resize_mode": "Resize and Fill",  # OUTER_FIT
+        },
+    ).exec()

@@ -196,3 +196,34 @@ def test_instant_id_sdxl():
             ),
         ],
     ).exec()
+
+
+@disable_in_cq
+def test_instant_id_sdxl_multiple_units():
+    assert len(portrait_imgs) > 0
+    assert APITestTemplate(
+        "instant_id_sdxl_multiple_units",
+        "txt2img",
+        payload_overrides={
+            "width": 1000,
+            "height": 1000,
+            "prompt": "1girl, red background",
+        },
+        unit_overrides=[
+            dict(
+                image=portrait_imgs[0],
+                model=get_model("ip-adapter_instant_id_sdxl"),
+                module="InsightFace (InstantID)",
+            ),
+            dict(
+                image=portrait_imgs[1],
+                model=get_model("control_instant_id_sdxl"),
+                module="instant_id_face_keypoints",
+            ),
+            dict(
+                image=portrait_imgs[1],
+                model=get_model("diffusers_xl_canny"),
+                module="canny",
+            ),
+        ],
+    ).exec()

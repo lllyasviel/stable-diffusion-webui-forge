@@ -21,6 +21,7 @@ import torchvision.transforms as TT
 
 from lib_ipadapter.resampler import PerceiverAttention, FeedForward, Resampler
 from modules import shared
+
 from lib_controlnet.logging import logger
 
 # set the models directory backward compatible
@@ -281,7 +282,10 @@ class IPAdapter(nn.Module):
             instance = cls(ipadapter_model, cross_attention_dim, output_cross_attention_dim,
                            clip_embeddings_dim, clip_extra_context_tokens,
                            is_sdxl, is_plus, is_full, is_faceid, is_instant_id)
-            cls._cache[model_filename] = instance
+            
+            if ldm_patched.modules.model_management.enable_ipadapter_layer_cache():
+                cls._cache[model_filename] = instance
+            
             return instance
     
     def __init__(self, ipadapter_model, cross_attention_dim=1024, output_cross_attention_dim=1024,

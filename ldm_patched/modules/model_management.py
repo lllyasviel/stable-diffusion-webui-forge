@@ -444,6 +444,9 @@ def load_models_gpu(models, memory_required=0):
         if vram_set_state == VRAMState.NO_VRAM:
             lowvram_model_memory = 64 * 1024 * 1024
 
+        # TODO: New offload system seems to have unpredicted risk to OOM on some 2GB devices
+        # maybe lowvram_model_memory *= 1.5 later if user reports that
+        
         cur_loaded_model = loaded_model.model_load(lowvram_model_memory)
         current_loaded_models.insert(0, loaded_model)
 

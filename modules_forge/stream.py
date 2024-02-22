@@ -40,12 +40,6 @@ def get_new_stream():
     return None
 
 
-def synchronize_current_stream():
-    global current_stream
-    if current_stream is not None:
-        current_stream.synchronize()
-
-
 if shared.opts.use_non_streamlined_lowvram:
     current_stream = None
     mover_stream = None

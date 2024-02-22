@@ -71,6 +71,22 @@ def main_thread_worker(weight, bias, signal):
     return
 
 
+def cleanup_cache():
+    global gc
+
+    if stream.current_stream is not None:
+        with stream.stream_context()(stream.current_stream):
+            for k, (w, b, s) in gc.items():
+                stream.current_stream.wait_event(s)
+        stream.current_stream.synchronize()
+
+    gc.clear()
+
+    if stream.mover_stream is not None:
+        stream.mover_stream.synchronize()
+    return
+
+
 class disable_weight_init:
     class Linear(torch.nn.Linear):
         ldm_patched_cast_weights = False

@@ -2,7 +2,7 @@ import torch
 from ldm_patched.modules.conds import CONDRegular, CONDCrossAttn
 from ldm_patched.modules.samplers import sampling_function
 from ldm_patched.modules import model_management
-from modules_forge.stream import synchronize_current_stream
+from ldm_patched.modules.ops import cleanup_cache
 
 
 def cond_from_a1111_to_patched_ldm(cond):
@@ -114,5 +114,5 @@ def sampling_prepare(unet, x):
 def sampling_cleanup(unet):
     for cnet in unet.list_controlnets():
         cnet.cleanup()
-    synchronize_current_stream()
+    cleanup_cache()
     return

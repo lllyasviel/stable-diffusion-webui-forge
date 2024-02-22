@@ -317,6 +317,8 @@ class LoadedModel:
                     if mem_counter + module_mem < lowvram_model_memory:
                         m.to(self.device)
                         mem_counter += module_mem
+                    else:
+                        m._apply(lambda x: x.pin_memory())
                 elif hasattr(m, "weight"): #only modules with ldm_patched_cast_weights can be set to lowvram mode
                     m.to(self.device)
                     mem_counter += module_size(m)

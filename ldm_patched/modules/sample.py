@@ -1,3 +1,7 @@
+# 1st edit by https://github.com/comfyanonymous/ComfyUI
+# 2nd edit by Forge Official
+
+
 import torch
 import ldm_patched.modules.model_management
 import ldm_patched.modules.samplers

@@ -1,3 +1,7 @@
+# Taken from https://github.com/comfyanonymous/ComfyUI
+# This file is only for reference, and not used in the backend or runtime.
+
+
 import torch
 import math
 import struct
@@ -413,6 +417,8 @@ def tiled_scale(samples, function, tile_x=64, tile_y=64, overlap = 8, upscale_am
         out_div = torch.zeros((s.shape[0], out_channels, round(s.shape[2] * upscale_amount), round(s.shape[3] * upscale_amount)), device=output_device)
         for y in range(0, s.shape[2], tile_y - overlap):
             for x in range(0, s.shape[3], tile_x - overlap):
+                x = max(0, min(s.shape[-1] - overlap, x))
+                y = max(0, min(s.shape[-2] - overlap, y))
                 s_in = s[:,:,y:y+tile_y,x:x+tile_x]
 
                 ps = function(s_in).to(output_device)

@@ -2,6 +2,8 @@ import datetime
 import logging
 import threading
 import time
+import traceback
+import torch
 
 from modules import errors, shared, devices
 from typing import Optional
@@ -134,6 +136,7 @@ class State:
 
         devices.torch_gc()
 
+    @torch.inference_mode()
     def set_current_image(self):
         """if enough sampling steps have been made after the last call to this, sets self.current_image from self.current_latent, and modifies self.id_live_preview accordingly"""
         if not shared.parallel_processing_allowed:
@@ -142,6 +145,7 @@ class State:
         if self.sampling_step - self.current_image_sampling_step >= shared.opts.show_progress_every_n_steps and shared.opts.live_previews_enable and shared.opts.show_progress_every_n_steps != -1:
             self.do_set_current_image()
 
+    @torch.inference_mode()
     def do_set_current_image(self):
         if self.current_latent is None:
             return
@@ -156,11 +160,14 @@ class State:
 
             self.current_image_sampling_step = self.sampling_step
 
-        except Exception:
+        except Exception as e:
+            # traceback.print_exc()
+            # print(e)
             # when switching models during genration, VAE would be on CPU, so creating an image will fail.
             # we silently ignore this error
             errors.record_exception()
 
+    @torch.inference_mode()
     def assign_current_image(self, image):
         self.current_image = image
         self.id_live_preview += 1

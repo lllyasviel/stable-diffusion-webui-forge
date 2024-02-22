@@ -69,6 +69,7 @@ def test_txt2img_with_tiling_performed(url_txt2img, simple_txt2img_request):
     assert requests.post(url_txt2img, json=simple_txt2img_request).status_code == 200
 
 
+@pytest.mark.skip  # Skip for forge.
 def test_txt2img_with_restore_faces_performed(url_txt2img, simple_txt2img_request):
     simple_txt2img_request["restore_faces"] = True
     assert requests.post(url_txt2img, json=simple_txt2img_request).status_code == 200

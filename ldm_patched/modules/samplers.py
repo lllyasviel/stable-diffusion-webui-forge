@@ -1,3 +1,7 @@
+# 1st edit by https://github.com/comfyanonymous/ComfyUI
+# 2nd edit by Forge Official
+
+
 from ldm_patched.k_diffusion import sampling as k_diffusion_sampling
 from ldm_patched.unipc import uni_pc
 import torch
@@ -246,6 +250,7 @@ def calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_options):
                 p = p.previous_controlnet
             control_cond = c.copy()  # get_control may change items in this dict, so we need to copy it
             c['control'] = control.get_control(input_x, timestep_, control_cond, len(cond_or_uncond))
+            c['control_model'] = control
 
         if 'model_function_wrapper' in model_options:
             output = model_options['model_function_wrapper'](model.apply_model, {"input": input_x, "timestep": timestep_, "c": c, "cond_or_uncond": cond_or_uncond}).chunk(batch_chunks)
@@ -271,16 +276,24 @@ def calc_cond_uncond_batch(model, cond, uncond, x_in, timestep, model_options):
 #The main sampling function shared by all the samplers
 #Returns denoised
 def sampling_function(model, x, timestep, uncond, cond, cond_scale, model_options={}, seed=None):
+        edit_strength = sum((item['strength'] if 'strength' in item else 1) for item in cond)
+
         if math.isclose(cond_scale, 1.0) and model_options.get("disable_cfg1_optimization", False) == False:
             uncond_ = None
         else:
             uncond_ = uncond
 
+        for fn in model_options.get("sampler_pre_cfg_function", []):
+            model, cond, uncond_, x, timestep, model_options = fn(model, cond, uncond_, x, timestep, model_options)
+
         cond_pred, uncond_pred = calc_cond_uncond_batch(model, cond, uncond_, x, timestep, model_options)
+
         if "sampler_cfg_function" in model_options:
             args = {"cond": x - cond_pred, "uncond": x - uncond_pred, "cond_scale": cond_scale, "timestep": timestep, "input": x, "sigma": timestep,
                     "cond_denoised": cond_pred, "uncond_denoised": uncond_pred, "model": model, "model_options": model_options}
             cfg_result = x - model_options["sampler_cfg_function"](args)
+        elif not math.isclose(edit_strength, 1.0):
+            cfg_result = uncond_pred + (cond_pred - uncond_pred) * cond_scale * edit_strength
         else:
             cfg_result = uncond_pred + (cond_pred - uncond_pred) * cond_scale
 

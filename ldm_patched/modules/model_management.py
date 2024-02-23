@@ -322,7 +322,7 @@ class LoadedModel:
                 elif hasattr(m, "weight"):
                     m.to(self.device)
                     mem_counter += module_size(m)
-                    print("[Memory Management]: Loaded module regularly. (Async Load Disabled.)", m)
+                    print("[Memory Management] Async Loader Disabled.", m)
 
             self.model_accelerated = True
 

@@ -282,8 +282,9 @@ def module_size(module, exclude_device=None):
     return module_mem
 
 class LoadedModel:
-    def __init__(self, model):
+    def __init__(self, model, memory_required):
         self.model = model
+        self.memory_required = memory_required
         self.model_accelerated = False
         self.device = model.load_device
 
@@ -359,7 +360,7 @@ class LoadedModel:
             self.model.model_patches_to(self.model.offload_device)
 
     def __eq__(self, other):
-        return self.model is other.model
+        return self.model is other.model and self.memory_required == other.memory_required
 
 def minimum_inference_memory():
     return (1024 * 1024 * 1024)
@@ -407,7 +408,7 @@ def load_models_gpu(models, memory_required=0):
     models_to_load = []
     models_already_loaded = []
     for x in models:
-        loaded_model = LoadedModel(x)
+        loaded_model = LoadedModel(x, memory_required=memory_required)
 
         if loaded_model in current_loaded_models:
             index = current_loaded_models.index(loaded_model)

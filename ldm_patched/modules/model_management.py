@@ -307,7 +307,8 @@ class LoadedModel:
             raise e
 
         if lowvram_model_memory > 0:
-            print("[Memory Management] Async Loader Preserved Memory (MB) = ", lowvram_model_memory / (1024 * 1024))
+            print("[Memory Management] Async Loader Preserved Memory (always in GPU) (MB) = ", lowvram_model_memory / (1024 * 1024))
+            real_async_memory = 0
             mem_counter = 0
             for m in self.real_model.modules():
                 if hasattr(m, "ldm_patched_cast_weights"):
@@ -318,11 +319,13 @@ class LoadedModel:
                         m.to(self.device)
                         mem_counter += module_mem
                     else:
+                        real_async_memory += module_mem
                         m._apply(lambda x: x.pin_memory())
                 elif hasattr(m, "weight"):
                     m.to(self.device)
                     mem_counter += module_size(m)
                     print("[Memory Management] Async Loader Disabled.", m)
+            print("[Memory Management] Memory in Async Stream (MB) = ", real_async_memory / (1024 * 1024))
 
             self.model_accelerated = True
 

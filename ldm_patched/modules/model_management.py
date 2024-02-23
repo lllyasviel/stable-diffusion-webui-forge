@@ -427,7 +427,9 @@ def load_models_gpu(models, memory_required=0):
                 free_memory(extra_mem, d, models_already_loaded)
 
         moving_time = time.perf_counter() - execution_start_time
-        print(f'Moving model(s) skipped. Cleanup has taken {moving_time:.2f} seconds')
+        if moving_time > 0.01:
+            print(f'Memory cleanup has taken {moving_time:.2f} seconds')
+
         return
 
     print(f"Begin to load {len(models_to_load)} model{'s' if len(models_to_load) > 1 else ''}")

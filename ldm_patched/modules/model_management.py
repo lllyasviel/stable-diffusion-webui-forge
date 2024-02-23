@@ -324,7 +324,9 @@ class LoadedModel:
                         real_kept_memory += module_mem
                     else:
                         real_async_memory += module_mem
-                        m._apply(lambda x: x.pin_memory())
+                        m.to(self.model.offload_device)
+                        if is_device_cpu(self.model.offload_device):
+                            m._apply(lambda x: x.pin_memory())
                 elif hasattr(m, "weight"):
                     m.to(self.device)
                     mem_counter += module_size(m)
@@ -339,7 +341,7 @@ class LoadedModel:
 
         return self.real_model
 
-    def model_unload(self):
+    def model_unload(self, avoid_model_moving=False):
         if self.model_accelerated:
             for m in self.real_model.modules():
                 if hasattr(m, "prev_ldm_patched_cast_weights"):
@@ -348,8 +350,11 @@ class LoadedModel:
 
             self.model_accelerated = False
 
-        self.model.unpatch_model(self.model.offload_device)
-        self.model.model_patches_to(self.model.offload_device)
+        if avoid_model_moving:
+            self.model.unpatch_model()
+        else:
+            self.model.unpatch_model(self.model.offload_device)
+            self.model.model_patches_to(self.model.offload_device)
 
     def __eq__(self, other):
         return self.model is other.model
@@ -364,8 +369,8 @@ def unload_model_clones(model):
             to_unload = [i] + to_unload
 
     for i in to_unload:
-        print("unload clone", i)
-        current_loaded_models.pop(i).model_unload()
+        print("Reuse loaded model", i)
+        current_loaded_models.pop(i).model_unload(avoid_model_moving=True)
 
 def free_memory(memory_required, device, keep_loaded=[]):
     unloaded_model = False

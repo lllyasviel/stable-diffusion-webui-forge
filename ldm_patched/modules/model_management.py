@@ -291,9 +291,11 @@ class LoadedModel:
         else:
             return self.model_memory()
 
-    def model_load(self, async_kept_memory=0):
+    def model_load(self, async_kept_memory=-1):
         patch_model_to = None
-        if async_kept_memory == 0:
+        disable_async_load = async_kept_memory < 0
+
+        if disable_async_load:
             patch_model_to = self.device
 
         self.model.model_patches_to(self.device)
@@ -306,7 +308,7 @@ class LoadedModel:
             self.model_unload()
             raise e
 
-        if async_kept_memory > 0:
+        if not disable_async_load:
             print("[Memory Management] Requested Async Preserved Memory (MB) = ", async_kept_memory / (1024 * 1024))
             real_async_memory = 0
             real_kept_memory = 0
@@ -456,12 +458,12 @@ def load_models_gpu(models, memory_required=0):
                 vram_set_state = VRAMState.LOW_VRAM
                 async_overhead_memory = 1024 * 1024 * 1024
                 async_kept_memory = current_free_mem - extra_mem - async_overhead_memory
-                async_kept_memory = int(max(64 * (1024 * 1024), async_kept_memory))
+                async_kept_memory = int(max(0, async_kept_memory))
             else:
-                async_kept_memory = 0
+                async_kept_memory = -1
 
         if vram_set_state == VRAMState.NO_VRAM:
-            async_kept_memory = 64 * 1024 * 1024
+            async_kept_memory = 0
         
         cur_loaded_model = loaded_model.model_load(async_kept_memory)
         current_loaded_models.insert(0, loaded_model)

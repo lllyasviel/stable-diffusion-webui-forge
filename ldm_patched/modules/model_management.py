@@ -291,9 +291,9 @@ class LoadedModel:
         else:
             return self.model_memory()
 
-    def model_load(self, lowvram_model_memory=0):
+    def model_load(self, async_kept_memory=0):
         patch_model_to = None
-        if lowvram_model_memory == 0:
+        if async_kept_memory == 0:
             patch_model_to = self.device
 
         self.model.model_patches_to(self.device)
@@ -306,18 +306,20 @@ class LoadedModel:
             self.model_unload()
             raise e
 
-        if lowvram_model_memory > 0:
-            print("[Memory Management] Async Loader Preserved Memory (always in GPU) (MB) = ", lowvram_model_memory / (1024 * 1024))
+        if async_kept_memory > 0:
+            print("[Memory Management] Requested Async Preserved Memory (MB) = ", async_kept_memory / (1024 * 1024))
             real_async_memory = 0
+            real_kept_memory = 0
             mem_counter = 0
             for m in self.real_model.modules():
                 if hasattr(m, "ldm_patched_cast_weights"):
                     m.prev_ldm_patched_cast_weights = m.ldm_patched_cast_weights
                     m.ldm_patched_cast_weights = True
                     module_mem = module_size(m)
-                    if mem_counter + module_mem < lowvram_model_memory:
+                    if mem_counter + module_mem < async_kept_memory:
                         m.to(self.device)
                         mem_counter += module_mem
+                        real_kept_memory += module_mem
                     else:
                         real_async_memory += module_mem
                         m._apply(lambda x: x.pin_memory())
@@ -325,7 +327,8 @@ class LoadedModel:
                     m.to(self.device)
                     mem_counter += module_size(m)
                     print("[Memory Management] Async Loader Disabled.", m)
-            print("[Memory Management] Memory in Async Stream (MB) = ", real_async_memory / (1024 * 1024))
+            print("[Async Memory Management] Memory Loaded to Async Stream (MB) = ", real_async_memory / (1024 * 1024))
+            print("[Async Memory Management] Memory Loaded to GPU (MB) = ", real_kept_memory / (1024 * 1024))
 
             self.model_accelerated = True
 

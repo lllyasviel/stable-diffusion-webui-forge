@@ -268,11 +268,16 @@ print("VAE dtype:", VAE_DTYPE)
 
 current_loaded_models = []
 
-def module_size(module):
+def module_size(module, exclude_device=None):
     module_mem = 0
     sd = module.state_dict()
     for k in sd:
         t = sd[k]
+
+        if exclude_device is not None:
+            if t.device == exclude_device:
+                continue
+
         module_mem += t.nelement() * t.element_size()
     return module_mem
 
@@ -286,10 +291,7 @@ class LoadedModel:
         return self.model.model_size()
 
     def model_memory_required(self, device):
-        if device == self.model.current_device:
-            return 0
-        else:
-            return self.model_memory()
+        return module_size(self.model.model, exclude_device=device)
 
     def model_load(self, async_kept_memory=-1):
         patch_model_to = None

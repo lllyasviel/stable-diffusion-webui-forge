@@ -371,8 +371,9 @@ def unload_model_clones(model):
         if model.is_clone(current_loaded_models[i].model):
             to_unload = [i] + to_unload
 
+    print(f"Reuse {len(to_unload)} loaded models")
+
     for i in to_unload:
-        print("Reuse loaded model", i)
         current_loaded_models.pop(i).model_unload(avoid_model_moving=True)
 
 def free_memory(memory_required, device, keep_loaded=[]):

@@ -442,7 +442,7 @@ def load_models_gpu(models, memory_required=0):
         else:
             vram_set_state = vram_state
 
-        async_kept_memory = 0
+        async_kept_memory = -1
 
         if lowvram_available and (vram_set_state == VRAMState.LOW_VRAM or vram_set_state == VRAMState.NORMAL_VRAM):
             model_size = loaded_model.model_memory_required(torch_dev)
@@ -459,8 +459,6 @@ def load_models_gpu(models, memory_required=0):
                 async_overhead_memory = 1024 * 1024 * 1024
                 async_kept_memory = current_free_mem - extra_mem - async_overhead_memory
                 async_kept_memory = int(max(0, async_kept_memory))
-            else:
-                async_kept_memory = -1
 
         if vram_set_state == VRAMState.NO_VRAM:
             async_kept_memory = 0

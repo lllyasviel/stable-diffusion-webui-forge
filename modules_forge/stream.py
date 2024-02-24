@@ -19,25 +19,41 @@ def stream_context():
 def get_current_stream():
     try:
         if torch.cuda.is_available():
-            return torch.cuda.current_stream(torch.device(torch.cuda.current_device()))
+            device = torch.device(torch.cuda.current_device())
+            stream = torch.cuda.current_stream(device)
+            with torch.cuda.stream(stream):
+                torch.zeros((1, 1)).to(device, torch.float32)
+            stream.synchronize()
+            return stream
         if model_management.is_intel_xpu():
-            return torch.xpu.current_stream(torch.device("xpu"))
+            device = torch.device("xpu")
+            stream = torch.xpu.current_stream(device)
+            with torch.xpu.stream(stream):
+                torch.zeros((1, 1)).to(device, torch.float32)
+            stream.synchronize()
+            return stream
     except:
-        pass
-    print('Stream is not used.')
-    return None
+        return None
 
 
 def get_new_stream():
     try:
         if torch.cuda.is_available():
-            return torch.cuda.Stream(torch.device(torch.cuda.current_device()))
+            device = torch.device(torch.cuda.current_device())
+            stream = torch.cuda.Stream(device)
+            with torch.cuda.stream(stream):
+                torch.zeros((1, 1)).to(device, torch.float32)
+            stream.synchronize()
+            return stream
         if model_management.is_intel_xpu():
-            return torch.xpu.Stream(torch.device("xpu"))
+            device = torch.device("xpu")
+            stream = torch.xpu.Stream(device)
+            with torch.xpu.stream(stream):
+                torch.zeros((1, 1)).to(device, torch.float32)
+            stream.synchronize()
+            return stream
     except:
-        pass
-    print('Stream is not used.')
-    return None
+        return None
 
 
 if shared.opts.use_non_streamlined_lowvram:
@@ -48,3 +64,6 @@ else:
     current_stream = get_current_stream()
     mover_stream = get_new_stream()
     using_stream = current_stream is not None and mover_stream is not None
+
+if not using_stream:
+    print('Stream is not used.')

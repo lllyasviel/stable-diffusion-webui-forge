@@ -10,7 +10,7 @@ from modules_forge import stream
 
 
 # https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855/files
-gc = {}
+stash = {}
 
 
 @contextlib.contextmanager
@@ -59,22 +59,22 @@ def main_thread_worker(weight, bias, signal):
         stream.current_stream.wait_event(signal)
         yield
         finished_signal = stream.current_stream.record_event()
-        gc[id(finished_signal)] = (weight, bias, finished_signal)
+        stash[id(finished_signal)] = (weight, bias, finished_signal)
 
     garbage = []
-    for k, (w, b, s) in gc.items():
+    for k, (w, b, s) in stash.items():
         if s.query():
             garbage.append(k)
 
     for k in garbage:
-        del gc[k]
+        del stash[k]
     return
 
 
 def cleanup_cache():
     stream.mover_stream.synchronize()
     stream.current_stream.synchronize()
-    gc.clear()
+    stash.clear()
     return
 
 

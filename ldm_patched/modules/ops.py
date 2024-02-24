@@ -31,21 +31,20 @@ def use_patched_ops(operations):
 
 
 def cast_bias_weight(s, input):
-    context = contextlib.nullcontext
-    signal = None
-
+    weight, bias, signal = None, None, None
+    non_blocking = ldm_patched.modules.model_management.device_supports_non_blocking(input.device)
+    
     if stream.using_stream:
-        context = stream.stream_context()
-
-    with context(stream.mover_stream):
-        bias = None
-        non_blocking = ldm_patched.modules.model_management.device_supports_non_blocking(input.device)
+        with stream.stream_context()(stream.mover_stream):
+            if s.bias is not None:
+                bias = s.bias.to(device=input.device, dtype=input.dtype, non_blocking=non_blocking)
+            weight = s.weight.to(device=input.device, dtype=input.dtype, non_blocking=non_blocking)
+            signal = stream.mover_stream.record_event()
+    else:
         if s.bias is not None:
             bias = s.bias.to(device=input.device, dtype=input.dtype, non_blocking=non_blocking)
         weight = s.weight.to(device=input.device, dtype=input.dtype, non_blocking=non_blocking)
 
-        if stream.using_stream:
-            signal = stream.mover_stream.record_event()
     return weight, bias, signal
 
 

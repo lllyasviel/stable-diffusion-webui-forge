@@ -266,9 +266,17 @@ def get_torch_device_name(device):
         return "CUDA {}: {}".format(device, torch.cuda.get_device_name(device))
 
 try:
-    print("Device:", get_torch_device_name(get_torch_device()))
+    torch_device_name = get_torch_device_name(get_torch_device())
+    print("Device:", torch_device_name)
 except:
+    torch_device_name = ''
     print("Could not pick default device.")
+
+if 'rtx' in torch_device_name.lower():
+    if not args.pin_shared_memory:
+        print('Hint: your device supports --pin-shared-memory for potential speed improvements.')
+    if not args.cuda_malloc:
+        print('Hint: your device supports --cuda-malloc for potential speed improvements.')
 
 print("VAE dtype:", VAE_DTYPE)
 

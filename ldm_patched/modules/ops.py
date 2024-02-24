@@ -33,7 +33,7 @@ def use_patched_ops(operations):
 def cast_bias_weight(s, input):
     weight, bias, signal = None, None, None
     non_blocking = ldm_patched.modules.model_management.device_supports_non_blocking(input.device)
-    
+
     if stream.using_stream:
         with stream.stream_context()(stream.mover_stream):
             if s.bias is not None:

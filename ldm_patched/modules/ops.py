@@ -9,6 +9,10 @@ import contextlib
 from modules_forge import stream
 
 
+# https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855/files
+gc = {}
+
+
 @contextlib.contextmanager
 def use_patched_ops(operations):
     op_names = ['Linear', 'Conv2d', 'Conv3d', 'GroupNorm', 'LayerNorm']
@@ -54,10 +58,23 @@ def main_thread_worker(weight, bias, signal):
     with stream.stream_context()(stream.current_stream):
         stream.current_stream.wait_event(signal)
         yield
-        if isinstance(weight, torch.Tensor):
-            weight.record_stream(stream.current_stream)
-        if isinstance(bias, torch.Tensor):
-            bias.record_stream(stream.current_stream)
+        finished_signal = stream.current_stream.record_event()
+        gc[id(finished_signal)] = (weight, bias, finished_signal)
+
+    garbage = []
+    for k, (w, b, s) in gc.items():
+        if s.query():
+            garbage.append(k)
+
+    for k in garbage:
+        del gc[k]
+    return
+
+
+def cleanup_cache():
+    stream.mover_stream.synchronize()
+    stream.current_stream.synchronize()
+    gc.clear()
     return
 
 

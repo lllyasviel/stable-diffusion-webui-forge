@@ -72,6 +72,9 @@ def main_thread_worker(weight, bias, signal):
 
 
 def cleanup_cache():
+    if not stream.using_stream:
+        return
+
     stream.mover_stream.synchronize()
     stream.current_stream.synchronize()
     stash.clear()

@@ -328,7 +328,6 @@ class LoadedModel:
         if not disable_async_load:
             print("[Memory Management] Requested Async Preserved Memory (MB) = ", async_kept_memory / (1024 * 1024))
             real_async_memory = 0
-            real_kept_memory = 0
             mem_counter = 0
             for m in self.real_model.modules():
                 if hasattr(m, "ldm_patched_cast_weights"):
@@ -338,7 +337,6 @@ class LoadedModel:
                     if mem_counter + module_mem < async_kept_memory:
                         m.to(self.device)
                         mem_counter += module_mem
-                        real_kept_memory += module_mem
                     else:
                         real_async_memory += module_mem
                         m.to(self.model.offload_device)
@@ -349,7 +347,7 @@ class LoadedModel:
                     mem_counter += module_size(m)
                     print("[Memory Management] Async Loader Disabled for ", m)
             print("[Async Memory Management] Parameters Loaded to Async Stream (MB) = ", real_async_memory / (1024 * 1024))
-            print("[Async Memory Management] Parameters Loaded to GPU (MB) = ", real_kept_memory / (1024 * 1024))
+            print("[Async Memory Management] Parameters Loaded to GPU (MB) = ", mem_counter / (1024 * 1024))
 
             self.model_accelerated = True
 

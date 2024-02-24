@@ -481,8 +481,7 @@ def load_models_gpu(models, memory_required=0):
 
             if estimated_remaining_memory < 0:
                 vram_set_state = VRAMState.LOW_VRAM
-                async_overhead_memory = 1024 * 1024 * 1024
-                async_kept_memory = current_free_mem - extra_mem - async_overhead_memory
+                async_kept_memory = (current_free_mem - minimal_inference_memory) / 1.3
                 async_kept_memory = int(max(0, async_kept_memory))
 
         if vram_set_state == VRAMState.NO_VRAM:

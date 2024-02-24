@@ -328,8 +328,8 @@ class LoadedModel:
                     else:
                         real_async_memory += module_mem
                         m.to(self.model.offload_device)
-                        if is_device_cpu(self.model.offload_device):
-                            m._apply(lambda x: x.pin_memory())
+                        # if is_device_cpu(self.model.offload_device):
+                        #     m._apply(lambda x: x.pin_memory())
                 elif hasattr(m, "weight"):
                     m.to(self.device)
                     mem_counter += module_size(m)

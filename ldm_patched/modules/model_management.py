@@ -277,6 +277,8 @@ if 'rtx' in torch_device_name.lower():
         print('Hint: your device supports --pin-shared-memory for potential speed improvements.')
     if not args.cuda_malloc:
         print('Hint: your device supports --cuda-malloc for potential speed improvements.')
+    if not args.cuda_stream:
+        print('Hint: your device supports --cuda-stream for potential speed improvements.')
 
 print("VAE dtype:", VAE_DTYPE)
 
@@ -372,7 +374,7 @@ class LoadedModel:
             self.model.model_patches_to(self.model.offload_device)
 
     def __eq__(self, other):
-        return self.model is other.model and self.memory_required == other.memory_required
+        return self.model is other.model  # and self.memory_required == other.memory_required
 
 def minimum_inference_memory():
     return (1024 * 1024 * 1024)

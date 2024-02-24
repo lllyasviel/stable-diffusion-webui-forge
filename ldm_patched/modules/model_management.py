@@ -444,7 +444,7 @@ def load_models_gpu(models, memory_required=0):
                 free_memory(extra_mem, d, models_already_loaded)
 
         moving_time = time.perf_counter() - execution_start_time
-        if moving_time > 0.01:
+        if moving_time > 0.1:
             print(f'Memory cleanup has taken {moving_time:.2f} seconds')
 
         return

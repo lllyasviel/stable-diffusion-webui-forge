@@ -215,9 +215,9 @@ class BaseModel(torch.nn.Module):
         dtype_size = ldm_patched.modules.model_management.dtype_size(dtype)
 
         if ldm_patched.modules.model_management.xformers_enabled() or ldm_patched.modules.model_management.pytorch_attention_flash_attention():
-            scaler = 1.25
+            scaler = 1.28
         else:
-            scaler = 1.75
+            scaler = 1.65
             if ldm_patched.ldm.modules.attention._ATTN_PRECISION == "fp32":
                 dtype_size = 4
 

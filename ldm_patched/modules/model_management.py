@@ -244,6 +244,12 @@ ALWAYS_VRAM_OFFLOAD = args.always_offload_from_vram
 if ALWAYS_VRAM_OFFLOAD:
     print("Always offload VRAM")
 
+PIN_SHARED_MEMORY = args.pin_shared_memory
+
+if PIN_SHARED_MEMORY:
+    print("Always pin shared GPU memory")
+
+
 def get_torch_device_name(device):
     if hasattr(device, 'type'):
         if device.type == "cuda":
@@ -328,8 +334,8 @@ class LoadedModel:
                     else:
                         real_async_memory += module_mem
                         m.to(self.model.offload_device)
-                        # if is_device_cpu(self.model.offload_device):
-                        #     m._apply(lambda x: x.pin_memory())
+                        if PIN_SHARED_MEMORY and is_device_cpu(self.model.offload_device):
+                            m._apply(lambda x: x.pin_memory())
                 elif hasattr(m, "weight"):
                     m.to(self.device)
                     mem_counter += module_size(m)

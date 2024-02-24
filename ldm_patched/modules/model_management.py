@@ -487,7 +487,7 @@ def load_models_gpu(models, memory_required=0):
         if vram_set_state == VRAMState.NO_VRAM:
             async_kept_memory = 0
         
-        cur_loaded_model = loaded_model.model_load(async_kept_memory)
+        loaded_model.model_load(async_kept_memory)
         current_loaded_models.insert(0, loaded_model)
 
     moving_time = time.perf_counter() - execution_start_time

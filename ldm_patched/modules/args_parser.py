@@ -116,6 +116,7 @@ parser.add_argument("--disable-server-info", action="store_true")
 parser.add_argument("--multi-user", action="store_true")
 
 parser.add_argument("--cuda-malloc", action="store_true")
+parser.add_argument("--cuda-stream", action="store_true")
 parser.add_argument("--pin-shared-memory", action="store_true")
 
 if ldm_patched.modules.options.args_parsing:

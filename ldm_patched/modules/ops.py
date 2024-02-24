@@ -74,8 +74,8 @@ def cleanup_cache():
     if not stream.using_stream:
         return
 
-    stream.mover_stream.synchronize()
     stream.current_stream.synchronize()
+    stream.mover_stream.synchronize()
     stash.clear()
     return
 

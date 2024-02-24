@@ -59,6 +59,9 @@ def initialize_forge():
     import modules_forge.patch_basic
     modules_forge.patch_basic.patch_all_basics()
 
+    from modules_forge import stream
+    print('CUDA Stream Activated: ', stream.using_stream)
+
     from modules_forge.shared import diffusers_dir
 
     if 'TRANSFORMERS_CACHE' not in os.environ:

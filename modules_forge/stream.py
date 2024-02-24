@@ -2,7 +2,7 @@
 
 import torch
 
-from modules import shared
+from ldm_patched.modules import args_parser
 from ldm_patched.modules import model_management
 
 
@@ -56,14 +56,12 @@ def get_new_stream():
         return None
 
 
-if shared.opts.use_non_streamlined_lowvram:
-    current_stream = None
-    mover_stream = None
-    using_stream = False
-else:
+current_stream = None
+mover_stream = None
+using_stream = False
+
+if args_parser.args.cuda_stream:
     current_stream = get_current_stream()
     mover_stream = get_new_stream()
     using_stream = current_stream is not None and mover_stream is not None
 
-if not using_stream:
-    print('Stream is not used.')

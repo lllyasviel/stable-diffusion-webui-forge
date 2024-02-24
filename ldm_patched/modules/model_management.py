@@ -6,6 +6,7 @@ import time
 import psutil
 from enum import Enum
 from ldm_patched.modules.args_parser import args
+from modules_forge import stream
 import ldm_patched.modules.utils
 import torch
 import sys
@@ -328,7 +329,8 @@ class LoadedModel:
             raise e
 
         if not disable_async_load:
-            print("[Memory Management] Requested Async Preserved Memory (MB) = ", async_kept_memory / (1024 * 1024))
+            flag = 'ASYNC' if stream.using_stream else 'SYNC'
+            print(f"[Memory Management] Requested {flag} Preserved Memory (MB) = ", async_kept_memory / (1024 * 1024))
             real_async_memory = 0
             mem_counter = 0
             for m in self.real_model.modules():
@@ -347,9 +349,9 @@ class LoadedModel:
                 elif hasattr(m, "weight"):
                     m.to(self.device)
                     mem_counter += module_size(m)
-                    print("[Memory Management] Async Loader Disabled for ", m)
-            print("[Async Memory Management] Parameters Loaded to Async Stream (MB) = ", real_async_memory / (1024 * 1024))
-            print("[Async Memory Management] Parameters Loaded to GPU (MB) = ", mem_counter / (1024 * 1024))
+                    print(f"[Memory Management] {flag} Loader Disabled for ", m)
+            print(f"[{flag} Memory Management] Parameters Loaded to {flag} Stream (MB) = ", real_async_memory / (1024 * 1024))
+            print(f"[{flag} Memory Management] Parameters Loaded to GPU (MB) = ", mem_counter / (1024 * 1024))
 
             self.model_accelerated = True
 

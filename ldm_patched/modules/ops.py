@@ -49,7 +49,7 @@ def cast_bias_weight(s, input):
 
 
 @contextlib.contextmanager
-def main_thread_worker(weight, bias, signal):
+def main_stream_worker(weight, bias, signal):
     if not stream.using_stream or signal is None:
         yield
         return
@@ -88,7 +88,7 @@ class disable_weight_init:
 
         def forward_ldm_patched_cast_weights(self, input):
             weight, bias, signal = cast_bias_weight(self, input)
-            with main_thread_worker(weight, bias, signal):
+            with main_stream_worker(weight, bias, signal):
                 return torch.nn.functional.linear(input, weight, bias)
 
         def forward(self, *args, **kwargs):
@@ -104,7 +104,7 @@ class disable_weight_init:
 
         def forward_ldm_patched_cast_weights(self, input):
             weight, bias, signal = cast_bias_weight(self, input)
-            with main_thread_worker(weight, bias, signal):
+            with main_stream_worker(weight, bias, signal):
                 return self._conv_forward(input, weight, bias)
 
         def forward(self, *args, **kwargs):
@@ -120,7 +120,7 @@ class disable_weight_init:
 
         def forward_ldm_patched_cast_weights(self, input):
             weight, bias, signal = cast_bias_weight(self, input)
-            with main_thread_worker(weight, bias, signal):
+            with main_stream_worker(weight, bias, signal):
                 return self._conv_forward(input, weight, bias)
 
         def forward(self, *args, **kwargs):
@@ -136,7 +136,7 @@ class disable_weight_init:
 
         def forward_ldm_patched_cast_weights(self, input):
             weight, bias, signal = cast_bias_weight(self, input)
-            with main_thread_worker(weight, bias, signal):
+            with main_stream_worker(weight, bias, signal):
                 return torch.nn.functional.group_norm(input, self.num_groups, weight, bias, self.eps)
 
         def forward(self, *args, **kwargs):
@@ -153,7 +153,7 @@ class disable_weight_init:
 
         def forward_ldm_patched_cast_weights(self, input):
             weight, bias, signal = cast_bias_weight(self, input)
-            with main_thread_worker(weight, bias, signal):
+            with main_stream_worker(weight, bias, signal):
                 return torch.nn.functional.layer_norm(input, self.normalized_shape, weight, bias, self.eps)
 
         def forward(self, *args, **kwargs):

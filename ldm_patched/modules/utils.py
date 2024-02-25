@@ -1,5 +1,5 @@
-# Taken from https://github.com/comfyanonymous/ComfyUI
-# This file is only for reference, and not used in the backend or runtime.
+# 1st edit https://github.com/comfyanonymous/ComfyUI
+# 2nd edit by Forge
 
 
 import torch
@@ -9,6 +9,7 @@ import ldm_patched.modules.checkpoint_pickle
 import safetensors.torch
 import numpy as np
 from PIL import Image
+from tqdm import tqdm
 
 def load_torch_file(ckpt, safe_load=False, device=None):
     if device is None:
@@ -448,20 +449,25 @@ def set_progress_bar_global_hook(function):
     PROGRESS_BAR_HOOK = function
 
 class ProgressBar:
-    def __init__(self, total):
+    def __init__(self, total, title=None):
         global PROGRESS_BAR_HOOK
         self.total = total
         self.current = 0
         self.hook = PROGRESS_BAR_HOOK
+        self.tqdm = tqdm(total=total, desc=title)
 
     def update_absolute(self, value, total=None, preview=None):
         if total is not None:
             self.total = total
         if value > self.total:
             value = self.total
+        inc = value - self.current
+        self.tqdm.update(inc)
         self.current = value
         if self.hook is not None:
             self.hook(self.current, self.total, preview)
+        if self.current >= self.total:
+            self.tqdm.close()
 
     def update(self, value):
         self.update_absolute(self.current + value)

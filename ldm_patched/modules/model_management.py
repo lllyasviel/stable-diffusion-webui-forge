@@ -204,6 +204,9 @@ elif args.vae_in_fp32:
     VAE_DTYPE = torch.float32
 
 
+VAE_ALWAYS_TILED = False
+
+
 if ENABLE_PYTORCH_ATTENTION:
     torch.backends.cuda.enable_math_sdp(True)
     torch.backends.cuda.enable_flash_sdp(True)

@@ -74,7 +74,7 @@ def load_lora_for_models(model, clip, lora, strength_model, strength_clip, filen
         print(f'[LORA] Loading {filename} for {model_flag} with unmatched keys {list(lora_unmatch.keys())}')
 
     new_model = model.clone() if model is not None else None
-    new_clip = clip.clone() if model is not None else None
+    new_clip = clip.clone() if clip is not None else None
 
     if new_model is not None and len(lora_unet) > 0:
         loaded_keys = new_model.add_patches(lora_unet, strength_model)

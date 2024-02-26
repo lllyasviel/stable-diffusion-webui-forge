@@ -21,6 +21,27 @@ def prepare_free_memory(aggressive=False):
     return
 
 
+def apply_circular_forge(model, tiling_enabled=False):
+    if model.tiling_enabled == tiling_enabled:
+        return
+
+    print(f'Tiling: {tiling_enabled}')
+    model.tiling_enabled = tiling_enabled
+
+    def flatten(el):
+        flattened = [flatten(children) for children in el.children()]
+        res = [el]
+        for c in flattened:
+            res += c
+        return res
+
+    layers = flatten(model)
+
+    for layer in [layer for layer in layers if 'Conv' in type(layer).__name__]:
+        layer.padding_mode = 'circular' if tiling_enabled else 'zeros'
+    return
+
+
 def HWC3(x):
     assert x.dtype == np.uint8
     if x.ndim == 2:

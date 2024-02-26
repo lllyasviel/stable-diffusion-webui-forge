@@ -34,6 +34,7 @@ from ldm.models.diffusion.ddpm import LatentDepth2ImageDiffusion
 from einops import repeat, rearrange
 from blendmodes.blend import blendLayers, BlendType
 from modules.sd_models import apply_token_merging
+from modules_forge.forge_util import apply_circular_forge
 
 
 # some of those options should not be changed at all because they would break the model, so I removed them from options.
@@ -791,7 +792,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     p.sd_vae_name = sd_vae.get_loaded_vae_name()
     p.sd_vae_hash = sd_vae.get_loaded_vae_hash()
 
-    modules.sd_hijack.model_hijack.apply_circular(p.tiling)
+    apply_circular_forge(p.sd_model, p.tiling)
     modules.sd_hijack.model_hijack.clear_comments()
 
     p.setup_prompts()

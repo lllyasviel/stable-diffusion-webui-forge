@@ -41,8 +41,6 @@ def samples_to_images_tensor(sample, approximation=None, model=None):
 
     if approximation is None or (shared.state.interrupted and opts.live_preview_fast_interrupt):
         approximation = approximation_indexes.get(opts.show_progress_type, 0)
-        if approximation == 0:
-            approximation = 1
 
     if approximation == 2:
         x_sample = sd_vae_approx.cheap_approximation(sample)

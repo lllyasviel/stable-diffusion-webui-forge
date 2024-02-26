@@ -10,6 +10,7 @@ import numpy as np
 import torch
 
 from modules import devices, errors, face_restoration, shared
+from modules_forge.forge_util import prepare_free_memory
 
 if TYPE_CHECKING:
     from facexlib.utils.face_restoration_helper import FaceRestoreHelper
@@ -153,6 +154,7 @@ class CommonFaceRestoration(face_restoration.FaceRestoration):
             return np_image
 
         try:
+            prepare_free_memory()
             self.send_model_to(self.get_device())
             return restore_with_face_helper(np_image, self.face_helper, restore_face)
         finally:

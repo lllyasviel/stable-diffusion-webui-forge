@@ -9,6 +9,18 @@ import cv2
 from ldm_patched.modules import model_management
 
 
+def prepare_free_memory(aggressive=False):
+    if aggressive:
+        model_management.unload_all_models()
+        print('Cleanup all memory.')
+        return
+
+    model_management.free_memory(memory_required=model_management.minimum_inference_memory(),
+                                 device=model_management.get_torch_device())
+    print('Cleanup minimal inference memory.')
+    return
+
+
 def HWC3(x):
     assert x.dtype == np.uint8
     if x.ndim == 2:

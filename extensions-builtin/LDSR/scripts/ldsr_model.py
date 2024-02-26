@@ -1,7 +1,8 @@
 import os
 
 from modules.modelloader import load_file_from_url
-from modules.upscaler import Upscaler, UpscalerData, prepare_free_memory
+from modules.upscaler import Upscaler, UpscalerData
+from modules_forge.forge_util import prepare_free_memory
 from ldsr_model_arch import LDSR
 from modules import shared, script_callbacks, errors
 import sd_hijack_autoencoder  # noqa: F401

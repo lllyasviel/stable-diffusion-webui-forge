@@ -397,9 +397,10 @@ def unload_model_clones(model):
         current_loaded_models.pop(i).model_unload(avoid_model_moving=True)
 
 def free_memory(memory_required, device, keep_loaded=[]):
+    offload_everything = ALWAYS_VRAM_OFFLOAD or vram_state == VRAMState.NO_VRAM
     unloaded_model = False
     for i in range(len(current_loaded_models) -1, -1, -1):
-        if not ALWAYS_VRAM_OFFLOAD:
+        if not offload_everything:
             if get_free_memory(device) > memory_required:
                 break
         shift_model = current_loaded_models[i]

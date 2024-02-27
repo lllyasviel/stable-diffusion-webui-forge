@@ -146,7 +146,7 @@ def make_axis_on_xyz_grid():
             partial(set_value, field="freeu_s1"),
         ),
         xyz_grid.AxisOption(
-            "FreeU S2 (<=1, SD1: 0.2, SDXL: 0.2)",
+            "FreeU S2",
             float,
             partial(set_value, field="freeu_s2"),
         ),

@@ -135,7 +135,7 @@ def make_axis_on_xyz_grid():
             choices=lambda: ["True", "False"]
         ),
         xyz_grid.AxisOption(
-            "FreeU B1 (1-1.2, SD1: 1.5, SDXL: 1.3)",
+            "FreeU B1",
             float,
             partial(set_value, field="freeu_b1"),
         ),

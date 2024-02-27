@@ -89,10 +89,6 @@ class FreeUForForge(scripts.Script):
         if not freeu_enabled:
             return
 
-        print(
-            f"[FreeU] b1:{freeu_b1}, b2:{freeu_b2}, s1:{freeu_s1}, s2:{freeu_s2}"
-        )
-
         unet = p.sd_model.forge_objects.unet
 
         # unet = set_freeu_v2_patch(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)

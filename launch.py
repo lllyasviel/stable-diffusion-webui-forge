@@ -1,40 +1,40 @@
-from modules import launch_utils
+from modules import codemaster
 
-args = launch_utils.args
-python = launch_utils.python
-git = launch_utils.git
-index_url = launch_utils.index_url
-dir_repos = launch_utils.dir_repos
+args = codemaster.args
+python = codemaster.python
+git = codemaster.git
+index_url = codemaster.index_url
+dir_repos = codemaster.dir_repos
 
-commit_hash = launch_utils.commit_hash
-git_tag = launch_utils.git_tag
+commit_hash = codemaster.commit_hash
+git_tag = codemaster.git_tag
 
-run = launch_utils.run
-is_installed = launch_utils.is_installed
-repo_dir = launch_utils.repo_dir
+run = codemaster.run
+is_installed = codemaster.is_installed
+repo_dir = codemaster.repo_dir
 
-run_pip = launch_utils.run_pip
-check_run_python = launch_utils.check_run_python
-git_clone = launch_utils.git_clone
-git_pull_recursive = launch_utils.git_pull_recursive
-list_extensions = launch_utils.list_extensions
-run_extension_installer = launch_utils.run_extension_installer
-prepare_environment = launch_utils.prepare_environment
-configure_for_tests = launch_utils.configure_for_tests
-start = launch_utils.start
+run_pip = codemaster.run_pip
+check_run_python = codemaster.check_run_python
+git_clone = codemaster.git_clone
+git_pull_recursive = codemaster.git_pull_recursive
+list_extensions = codemaster.list_extensions
+run_extension_installer = codemaster.run_extension_installer
+prepare_environment = codemaster.prepare_environment
+configure_for_tests = codemaster.configure_for_tests
+start = codemaster.start
 
 
 def main():
     if args.dump_sysinfo:
-        filename = launch_utils.dump_sysinfo()
+        filename = codemaster.dump_sysinfo()
 
         print(f"Sysinfo saved as {filename}. Exiting...")
 
         exit(0)
 
-    launch_utils.startup_timer.record("initial startup")
+    codemaster.startup_timer.record("initial startup")
 
-    with launch_utils.startup_timer.subcategory("prepare environment"):
+    with codemaster.startup_timer.subcategory("prepare environment"):
         if not args.skip_prepare_environment:
             prepare_environment()
 
@@ -42,10 +42,11 @@ def main():
         configure_for_tests()
 
     if args.forge_ref_a1111_home:
-        launch_utils.configure_forge_reference_checkout(args.forge_ref_a1111_home)
+        codemaster.configure_forge_reference_checkout(args.forge_ref_a1111_home)
 
     start()
 
 
 if __name__ == "__main__":
     main()
+

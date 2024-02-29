@@ -155,7 +155,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         image_list = []
         resize_mode = external_code.resize_mode_from_value(unit.resize_mode)
 
-        if unit.input_mode == external_code.InputMode.MERGE:
+        if unit.input_mode == external_code.InputMode.MERGE.value:
             for idx, item in enumerate(unit.batch_input_gallery):
                 img_path = item['name']
                 logger.info(f'Try to read image: {img_path}')
@@ -169,7 +169,7 @@ class ControlNetForForgeOfficial(scripts.Script):
                     mask = np.ascontiguousarray(cv2.imread(mask_path)[:, :, ::-1]).copy()
                 if img is not None:
                     image_list.append([img, mask])
-        elif unit.input_mode == external_code.InputMode.BATCH:
+        elif unit.input_mode == external_code.InputMode.BATCH.value:
             image_list = []
             image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
             batch_image_files = shared.listfiles(unit.batch_image_dir)

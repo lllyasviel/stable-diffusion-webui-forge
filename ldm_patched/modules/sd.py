@@ -163,7 +163,10 @@ class CLIP:
         return self.patcher.get_key_patches()
 
 class VAE:
-    def __init__(self, sd=None, device=None, config=None, dtype=None):
+    def __init__(self, sd=None, device=None, config=None, dtype=None, no_init=False):
+        if no_init:
+            return
+
         if 'decoder.up_blocks.0.resnets.0.norm1.weight' in sd.keys(): #diffusers format
             sd = diffusers_convert.convert_vae_state_dict(sd)
 
@@ -214,6 +217,19 @@ class VAE:
         self.output_device = model_management.intermediate_device()
 
         self.patcher = ldm_patched.modules.model_patcher.ModelPatcher(self.first_stage_model, load_device=self.device, offload_device=offload_device)
+
+    def clone(self):
+        n = VAE(no_init=True)
+        n.patcher = self.patcher.clone()
+        n.memory_used_encode = self.memory_used_encode
+        n.memory_used_decode = self.memory_used_decode
+        n.downscale_ratio = self.downscale_ratio
+        n.latent_channels = self.latent_channels
+        n.first_stage_model = self.first_stage_model
+        n.device = self.device
+        n.vae_dtype = self.vae_dtype
+        n.output_device = self.output_device
+        return n
 
     def decode_tiled_(self, samples, tile_x=64, tile_y=64, overlap = 16):
         steps = samples.shape[0] * ldm_patched.modules.utils.get_tiled_scale_steps(samples.shape[3], samples.shape[2], tile_x, tile_y, overlap)

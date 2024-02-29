@@ -250,6 +250,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     sd_model.decode_first_stage = patched_decode_first_stage
     sd_model.encode_first_stage = patched_encode_first_stage
     sd_model.clip = sd_model.cond_stage_model
+    sd_model.tiling_enabled = False
     timer.record("forge finalize")
 
     sd_model.current_lora_hash = str([])

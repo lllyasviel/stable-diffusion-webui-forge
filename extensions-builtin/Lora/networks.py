@@ -27,7 +27,10 @@ def assign_network_names_to_compvis_modules(sd_model):
 
 
 def load_network(name, network_on_disk):
-    pass
+    net = network.Network(name, network_on_disk)
+    net.mtime = os.path.getmtime(network_on_disk.filename)
+
+    return net
 
 
 def purge_networks_from_memory():
@@ -41,10 +44,22 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     if current_sd is None:
         return
 
+    loaded_networks.clear()
+
     networks_on_disk = [available_networks.get(name, None) if name.lower() in forbidden_network_aliases else available_network_aliases.get(name, None) for name in names]
     if any(x is None for x in networks_on_disk):
         list_available_networks()
         networks_on_disk = [available_networks.get(name, None) if name.lower() in forbidden_network_aliases else available_network_aliases.get(name, None) for name in names]
+
+    for i, (network_on_disk, name) in enumerate(zip(networks_on_disk, names)):
+        try:
+            net = load_network(name, network_on_disk)
+        except Exception as e:
+            errors.display(e, f"loading network {network_on_disk.filename}")
+            continue
+        net.mentioned_name = name
+        network_on_disk.read_hash()
+        loaded_networks.append(net)
 
     compiled_lora_targets = []
     for a, b, c in zip(networks_on_disk, unet_multipliers, te_multipliers):
@@ -62,7 +77,8 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     for filename, strength_model, strength_clip in compiled_lora_targets:
         lora_sd = load_lora_state_dict(filename)
         current_sd.forge_objects.unet, current_sd.forge_objects.clip = load_lora_for_models(
-            current_sd.forge_objects.unet, current_sd.forge_objects.clip, lora_sd, strength_model, strength_clip)
+            current_sd.forge_objects.unet, current_sd.forge_objects.clip, lora_sd, strength_model, strength_clip,
+            filename=filename)
 
     current_sd.forge_objects_after_applying_lora = current_sd.forge_objects.shallow_copy()
     return

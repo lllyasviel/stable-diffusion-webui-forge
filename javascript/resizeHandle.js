@@ -1,6 +1,5 @@
 (function() {
     const GRADIO_MIN_WIDTH = 320;
-    const GRID_TEMPLATE_COLUMNS = '1fr 16px 1fr';
     const PAD = 16;
     const DEBOUNCE_TIME = 100;
 
@@ -23,21 +22,17 @@
     function displayResizeHandle(parent) {
         if (window.innerWidth < GRADIO_MIN_WIDTH * 2 + PAD * 4) {
             parent.style.display = 'flex';
-            if (R.handle != null) {
-                R.handle.style.opacity = '0';
-            }
+            parent.resizeHandle.style.display = "none";
             return false;
         } else {
             parent.style.display = 'grid';
-            if (R.handle != null) {
-                R.handle.style.opacity = '100';
-            }
+            parent.resizeHandle.style.display = "block";
             return true;
         }
     }
 
     function afterResize(parent) {
-        if (displayResizeHandle(parent) && parent.style.gridTemplateColumns != GRID_TEMPLATE_COLUMNS) {
+        if (displayResizeHandle(parent) && parent.style.gridTemplateColumns != parent.style.originalGridTemplateColumns) {
             const oldParentWidth = R.parentWidth;
             const newParentWidth = parent.offsetWidth;
             const widthL = parseInt(parent.style.gridTemplateColumns.split(' ')[0]);
@@ -59,63 +54,94 @@
 
         parent.style.display = 'grid';
         parent.style.gap = '0';
-        parent.style.gridTemplateColumns = GRID_TEMPLATE_COLUMNS;
+        const gridTemplateColumns = `${parent.children[0].style.flexGrow}fr ${PAD}px ${parent.children[1].style.flexGrow}fr`;
+        parent.style.gridTemplateColumns = gridTemplateColumns;
+        parent.style.originalGridTemplateColumns = gridTemplateColumns;
 
         const resizeHandle = document.createElement('div');
         resizeHandle.classList.add('resize-handle');
         parent.insertBefore(resizeHandle, rightCol);
+        parent.resizeHandle = resizeHandle;
 
-        resizeHandle.addEventListener('mousedown', (evt) => {
-            if (evt.button !== 0) return;
+        ['mousedown', 'touchstart'].forEach((eventType) => {
+            resizeHandle.addEventListener(eventType, (evt) => {
+                if (eventType.startsWith('mouse')) {
+                    if (evt.button !== 0) return;
+                } else {
+                    if (evt.changedTouches.length !== 1) return;
+                }
 
-            evt.preventDefault();
-            evt.stopPropagation();
+                evt.preventDefault();
+                evt.stopPropagation();
 
-            document.body.classList.add('resizing');
+                document.body.classList.add('resizing');
 
-            R.tracking = true;
-            R.parent = parent;
-            R.parentWidth = parent.offsetWidth;
-            R.handle = resizeHandle;
-            R.leftCol = leftCol;
-            R.leftColStartWidth = leftCol.offsetWidth;
-            R.screenX = evt.screenX;
+                R.tracking = true;
+                R.parent = parent;
+                R.parentWidth = parent.offsetWidth;
+                R.leftCol = leftCol;
+                R.leftColStartWidth = leftCol.offsetWidth;
+                if (eventType.startsWith('mouse')) {
+                    R.screenX = evt.screenX;
+                } else {
+                    R.screenX = evt.changedTouches[0].screenX;
+                }
+            });
         });
 
         resizeHandle.addEventListener('dblclick', (evt) => {
             evt.preventDefault();
             evt.stopPropagation();
 
-            parent.style.gridTemplateColumns = GRID_TEMPLATE_COLUMNS;
+            parent.style.gridTemplateColumns = parent.style.originalGridTemplateColumns;
         });
 
         afterResize(parent);
     }
 
-    window.addEventListener('mousemove', (evt) => {
-        if (evt.button !== 0) return;
+    ['mousemove', 'touchmove'].forEach((eventType) => {
+        window.addEventListener(eventType, (evt) => {
+            if (eventType.startsWith('mouse')) {
+                if (evt.button !== 0) return;
+            } else {
+                if (evt.changedTouches.length !== 1) return;
+            }
 
-        if (R.tracking) {
-            evt.preventDefault();
-            evt.stopPropagation();
+            if (R.tracking) {
+                if (eventType.startsWith('mouse')) {
+                    evt.preventDefault();
+                }
+                evt.stopPropagation();
 
-            const delta = R.screenX - evt.screenX;
-            const leftColWidth = Math.max(Math.min(R.leftColStartWidth - delta, R.parent.offsetWidth - GRADIO_MIN_WIDTH - PAD), GRADIO_MIN_WIDTH);
-            setLeftColGridTemplate(R.parent, leftColWidth);
-        }
+                let delta = 0;
+                if (eventType.startsWith('mouse')) {
+                    delta = R.screenX - evt.screenX;
+                } else {
+                    delta = R.screenX - evt.changedTouches[0].screenX;
+                }
+                const leftColWidth = Math.max(Math.min(R.leftColStartWidth - delta, R.parent.offsetWidth - GRADIO_MIN_WIDTH - PAD), GRADIO_MIN_WIDTH);
+                setLeftColGridTemplate(R.parent, leftColWidth);
+            }
+        });
     });
 
-    window.addEventListener('mouseup', (evt) => {
-        if (evt.button !== 0) return;
+    ['mouseup', 'touchend'].forEach((eventType) => {
+        window.addEventListener(eventType, (evt) => {
+            if (eventType.startsWith('mouse')) {
+                if (evt.button !== 0) return;
+            } else {
+                if (evt.changedTouches.length !== 1) return;
+            }
 
-        if (R.tracking) {
-            evt.preventDefault();
-            evt.stopPropagation();
+            if (R.tracking) {
+                evt.preventDefault();
+                evt.stopPropagation();
 
-            R.tracking = false;
+                R.tracking = false;
 
-            document.body.classList.remove('resizing');
-        }
+                document.body.classList.remove('resizing');
+            }
+        });
     });
 
 

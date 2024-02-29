@@ -49,9 +49,6 @@ parser.add_argument("--cache-path", type=str, default=None)
 parser.add_argument("--in-browser", action="store_true")
 parser.add_argument("--disable-in-browser", action="store_true")
 parser.add_argument("--gpu-device-id", type=int, default=None, metavar="DEVICE_ID")
-cm_group = parser.add_mutually_exclusive_group()
-cm_group.add_argument("--async-cuda-allocation", action="store_true")
-cm_group.add_argument("--disable-async-cuda-allocation", action="store_true")
 
 parser.add_argument("--disable-attention-upcast", action="store_true")
 
@@ -117,6 +114,10 @@ parser.add_argument("--is-windows-embedded-python", action="store_true")
 parser.add_argument("--disable-server-info", action="store_true")
 
 parser.add_argument("--multi-user", action="store_true")
+
+parser.add_argument("--cuda-malloc", action="store_true")
+parser.add_argument("--cuda-stream", action="store_true")
+parser.add_argument("--pin-shared-memory", action="store_true")
 
 if ldm_patched.modules.options.args_parsing:
     args = parser.parse_args([])

@@ -10,7 +10,7 @@ from modules_forge import stream
 
 
 # https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855/files
-gc = {}
+stash = {}
 
 
 @contextlib.contextmanager
@@ -31,26 +31,25 @@ def use_patched_ops(operations):
 
 
 def cast_bias_weight(s, input):
-    context = contextlib.nullcontext
-    signal = None
+    weight, bias, signal = None, None, None
+    non_blocking = ldm_patched.modules.model_management.device_supports_non_blocking(input.device)
 
     if stream.using_stream:
-        context = stream.stream_context()
-
-    with context(stream.mover_stream):
-        bias = None
-        non_blocking = ldm_patched.modules.model_management.device_supports_non_blocking(input.device)
+        with stream.stream_context()(stream.mover_stream):
+            if s.bias is not None:
+                bias = s.bias.to(device=input.device, dtype=input.dtype, non_blocking=non_blocking)
+            weight = s.weight.to(device=input.device, dtype=input.dtype, non_blocking=non_blocking)
+            signal = stream.mover_stream.record_event()
+    else:
         if s.bias is not None:
             bias = s.bias.to(device=input.device, dtype=input.dtype, non_blocking=non_blocking)
         weight = s.weight.to(device=input.device, dtype=input.dtype, non_blocking=non_blocking)
 
-        if stream.using_stream:
-            signal = stream.mover_stream.record_event()
     return weight, bias, signal
 
 
 @contextlib.contextmanager
-def main_thread_worker(weight, bias, signal):
+def main_stream_worker(weight, bias, signal):
     if not stream.using_stream or signal is None:
         yield
         return
@@ -59,40 +58,25 @@ def main_thread_worker(weight, bias, signal):
         stream.current_stream.wait_event(signal)
         yield
         finished_signal = stream.current_stream.record_event()
-        size = weight.element_size() * weight.nelement()
-        if bias is not None:
-            size += bias.element_size() * bias.nelement()
-        gc[id(finished_signal)] = (weight, bias, finished_signal, size)
-
-    overhead = sum([l for k, (w, b, s, l) in gc.items()])
-
-    if overhead > 512 * 1024 * 1024:
-        stream.mover_stream.synchronize()
-        stream.current_stream.synchronize()
+        stash[id(finished_signal)] = (weight, bias, finished_signal)
 
     garbage = []
-    for k, (w, b, s, l) in gc.items():
+    for k, (w, b, s) in stash.items():
         if s.query():
             garbage.append(k)
 
     for k in garbage:
-        del gc[k]
+        del stash[k]
     return
 
 
 def cleanup_cache():
-    global gc
+    if not stream.using_stream:
+        return
 
-    if stream.current_stream is not None:
-        with stream.stream_context()(stream.current_stream):
-            for k, (w, b, s, l) in gc.items():
-                stream.current_stream.wait_event(s)
-        stream.current_stream.synchronize()
-
-    gc.clear()
-
-    if stream.mover_stream is not None:
-        stream.mover_stream.synchronize()
+    stream.current_stream.synchronize()
+    stream.mover_stream.synchronize()
+    stash.clear()
     return
 
 
@@ -104,7 +88,7 @@ class disable_weight_init:
 
         def forward_ldm_patched_cast_weights(self, input):
             weight, bias, signal = cast_bias_weight(self, input)
-            with main_thread_worker(weight, bias, signal):
+            with main_stream_worker(weight, bias, signal):
                 return torch.nn.functional.linear(input, weight, bias)
 
         def forward(self, *args, **kwargs):
@@ -120,7 +104,7 @@ class disable_weight_init:
 
         def forward_ldm_patched_cast_weights(self, input):
             weight, bias, signal = cast_bias_weight(self, input)
-            with main_thread_worker(weight, bias, signal):
+            with main_stream_worker(weight, bias, signal):
                 return self._conv_forward(input, weight, bias)
 
         def forward(self, *args, **kwargs):
@@ -136,7 +120,7 @@ class disable_weight_init:
 
         def forward_ldm_patched_cast_weights(self, input):
             weight, bias, signal = cast_bias_weight(self, input)
-            with main_thread_worker(weight, bias, signal):
+            with main_stream_worker(weight, bias, signal):
                 return self._conv_forward(input, weight, bias)
 
         def forward(self, *args, **kwargs):
@@ -152,7 +136,7 @@ class disable_weight_init:
 
         def forward_ldm_patched_cast_weights(self, input):
             weight, bias, signal = cast_bias_weight(self, input)
-            with main_thread_worker(weight, bias, signal):
+            with main_stream_worker(weight, bias, signal):
                 return torch.nn.functional.group_norm(input, self.num_groups, weight, bias, self.eps)
 
         def forward(self, *args, **kwargs):
@@ -169,7 +153,7 @@ class disable_weight_init:
 
         def forward_ldm_patched_cast_weights(self, input):
             weight, bias, signal = cast_bias_weight(self, input)
-            with main_thread_worker(weight, bias, signal):
+            with main_stream_worker(weight, bias, signal):
                 return torch.nn.functional.layer_norm(input, self.normalized_shape, weight, bias, self.eps)
 
         def forward(self, *args, **kwargs):

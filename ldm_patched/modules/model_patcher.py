@@ -250,7 +250,7 @@ class ModelPatcher:
                     if w1.shape != weight.shape:
                         if w1.ndim == weight.ndim == 4:
                             new_shape = [max(n, m) for n, m in zip(weight.shape, w1.shape)]
-                            print(f'Merged with conv channel changed to {new_shape}')
+                            print(f'Merged with {key} channel changed to {new_shape}')
                             new_diff = alpha * ldm_patched.modules.model_management.cast_to_device(w1, weight.device, weight.dtype)
                             new_weight = torch.zeros(size=new_shape).to(weight)
                             new_weight[:weight.shape[0], :weight.shape[1], :weight.shape[2], :weight.shape[3]] = weight

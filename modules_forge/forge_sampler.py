@@ -56,6 +56,7 @@ def cond_from_a1111_to_patched_ldm_weighted(cond, weights):
 def forge_sample(self, denoiser_params, cond_scale, cond_composition):
     model = self.inner_model.inner_model.forge_objects.unet.model
     control = self.inner_model.inner_model.forge_objects.unet.controlnet_linked_list
+    extra_concat_condition = self.inner_model.inner_model.forge_objects.unet.extra_concat_condition
     x = denoiser_params.x
     timestep = denoiser_params.sigma
     uncond = cond_from_a1111_to_patched_ldm(denoiser_params.text_uncond)
@@ -63,7 +64,11 @@ def forge_sample(self, denoiser_params, cond_scale, cond_composition):
     model_options = self.inner_model.inner_model.forge_objects.unet.model_options
     seed = self.p.seeds[0]
 
-    image_cond_in = denoiser_params.image_cond
+    if extra_concat_condition is not None:
+        image_cond_in = extra_concat_condition
+    else:
+        image_cond_in = denoiser_params.image_cond
+
     if isinstance(image_cond_in, torch.Tensor):
         if image_cond_in.shape[0] == x.shape[0] \
                 and image_cond_in.shape[2] == x.shape[2] \

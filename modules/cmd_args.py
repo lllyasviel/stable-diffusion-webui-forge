@@ -124,3 +124,23 @@ parser.add_argument("--disable-extra-extensions", action='store_true', help="pre
 parser.add_argument("--skip-load-model-at-start", action='store_true', help="if load a model at web start, only take effect when --nowebui")
 parser.add_argument("--unix-filenames-sanitization", action='store_true', help="allow any symbols except '/' in filenames. May conflict with your browser and file system")
 parser.add_argument("--filenames-max-length", type=int, default=128, help='maximal length of filenames of saved images. If you override it, it can conflict with your file system')
+
+# Arguments added by forge.
+parser.add_argument(
+    '--forge-ref-a1111-home',
+    type=Path,
+    help="Look for models in an existing A1111 checkout's path",
+    default=None
+)
+parser.add_argument(
+    "--controlnet-dir",
+    type=Path,
+    help="Path to directory with ControlNet models",
+    default=None,
+)
+parser.add_argument(
+    "--controlnet-preprocessor-models-dir",
+    type=Path,
+    help="Path to directory with annotator model directories",
+    default=None,
+)

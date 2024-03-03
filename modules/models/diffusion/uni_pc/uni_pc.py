@@ -445,7 +445,7 @@ class UniPC:
             s = torch.quantile(torch.abs(x0).reshape((x0.shape[0], -1)), p, dim=1)
             s = expand_dims(torch.maximum(s, self.max_val * torch.ones_like(s).to(s.device)), dims)
             x0 = torch.clamp(x0, -s, s) / s
-        return x0
+        return x0.to(x)
 
     def model_fn(self, x, t):
         """

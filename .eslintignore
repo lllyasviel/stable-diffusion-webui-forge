@@ -1,4 +1,5 @@
 extensions
 extensions-disabled
+extensions-builtin/sd_forge_controlnet
 repositories
 venv

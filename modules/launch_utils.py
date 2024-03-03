@@ -10,11 +10,16 @@ import importlib.metadata
 import platform
 import json
 from functools import lru_cache
+from typing import NamedTuple
+from pathlib import Path
 
 from modules import cmd_args, errors
-from modules.paths_internal import script_path, extensions_dir
+from modules.paths_internal import script_path, extensions_dir, extensions_builtin_dir
 from modules.timer import startup_timer
 from modules import logging_config
+from modules_forge import forge_version
+from modules_forge.config import always_disabled_extensions
+
 
 args, _ = cmd_args.parser.parse_known_args()
 logging_config.setup_logging(args.loglevel)
@@ -70,7 +75,7 @@ def commit_hash():
 
 
 @lru_cache()
-def git_tag():
+def git_tag_a1111():
     try:
         return subprocess.check_output([git, "-C", script_path, "describe", "--tags"], shell=False, encoding='utf8').strip()
     except Exception:
@@ -83,6 +88,10 @@ def git_tag():
                 return line
         except Exception:
             return "<none>"
+
+
+def git_tag():
+    return 'f' + forge_version.version + '-' + git_tag_a1111()
 
 
 def run(command, desc=None, errdesc=None, custom_env=None, live: bool = default_command_live) -> str:
@@ -252,13 +261,34 @@ def list_extensions(settings_file):
         errors.report(f'\nCould not load settings\nThe config file "{settings_file}" is likely corrupted\nIt has been moved to the "tmp/config.json"\nReverting config to default\n\n''', exc_info=True)
         os.replace(settings_file, os.path.join(script_path, "tmp", "config.json"))
 
-    disabled_extensions = set(settings.get('disabled_extensions', []))
+    disabled_extensions = set(settings.get('disabled_extensions', []) + always_disabled_extensions)
     disable_all_extensions = settings.get('disable_all_extensions', 'none')
 
     if disable_all_extensions != 'none' or args.disable_extra_extensions or args.disable_all_extensions or not os.path.isdir(extensions_dir):
         return []
 
     return [x for x in os.listdir(extensions_dir) if x not in disabled_extensions]
+
+
+def list_extensions_builtin(settings_file):
+    settings = {}
+
+    try:
+        with open(settings_file, "r", encoding="utf8") as file:
+            settings = json.load(file)
+    except FileNotFoundError:
+        pass
+    except Exception:
+        errors.report(f'\nCould not load settings\nThe config file "{settings_file}" is likely corrupted\nIt has been moved to the "tmp/config.json"\nReverting config to default\n\n''', exc_info=True)
+        os.replace(settings_file, os.path.join(script_path, "tmp", "config.json"))
+
+    disabled_extensions = set(settings.get('disabled_extensions', []))
+    disable_all_extensions = settings.get('disable_all_extensions', 'none')
+
+    if disable_all_extensions != 'none' or args.disable_extra_extensions or args.disable_all_extensions or not os.path.isdir(extensions_builtin_dir):
+        return []
+
+    return [x for x in os.listdir(extensions_builtin_dir) if x not in disabled_extensions]
 
 
 def run_extensions_installers(settings_file):
@@ -274,6 +304,21 @@ def run_extensions_installers(settings_file):
             if os.path.isdir(path):
                 run_extension_installer(path)
                 startup_timer.record(dirname_extension)
+
+    if not os.path.isdir(extensions_builtin_dir):
+        return
+
+    with startup_timer.subcategory("run extensions_builtin installers"):
+        for dirname_extension in list_extensions_builtin(settings_file):
+            logging.debug(f"Installing {dirname_extension}")
+
+            path = os.path.join(extensions_builtin_dir, dirname_extension)
+
+            if os.path.isdir(path):
+                run_extension_installer(path)
+                startup_timer.record(dirname_extension)
+
+    return
 
 
 re_requirement = re.compile(r"\s*([-_a-zA-Z0-9]+)\s*(?:==\s*([-+_.a-zA-Z0-9]+))?\s*")
@@ -460,6 +505,37 @@ def configure_for_tests():
     os.environ['COMMANDLINE_ARGS'] = ""
 
 
+def configure_forge_reference_checkout(a1111_home: Path):
+    """Set model paths based on an existing A1111 checkout."""
+    class ModelRef(NamedTuple):
+        arg_name: str
+        relative_path: str
+
+    refs = [
+        ModelRef(arg_name="--ckpt-dir", relative_path="models/Stable-diffusion"),
+        ModelRef(arg_name="--vae-dir", relative_path="models/VAE"),
+        ModelRef(arg_name="--hypernetwork-dir", relative_path="models/hypernetworks"),
+        ModelRef(arg_name="--embeddings-dir", relative_path="embeddings"),
+        ModelRef(arg_name="--lora-dir", relative_path="models/lora"),
+        # Ref A1111 need to have sd-webui-controlnet installed.
+        ModelRef(arg_name="--controlnet-dir", relative_path="models/ControlNet"),
+        ModelRef(arg_name="--controlnet-preprocessor-models-dir", relative_path="extensions/sd-webui-controlnet/annotator/downloads"),
+    ]
+
+    for ref in refs:
+        target_path = a1111_home / ref.relative_path
+        if not target_path.exists():
+            print(f"Path {target_path} does not exist. Skip setting {ref.arg_name}")
+            continue
+
+        if ref.arg_name in sys.argv:
+            # Do not override existing dir setting.
+            continue
+
+        sys.argv.append(ref.arg_name)
+        sys.argv.append(str(target_path))
+
+
 def start():
     print(f"Launching {'API server' if '--nowebui' in sys.argv else 'Web UI'} with arguments: {' '.join(sys.argv[1:])}")
     import webui
@@ -467,6 +543,11 @@ def start():
         webui.api_only()
     else:
         webui.webui()
+
+    from modules_forge import main_thread
+
+    main_thread.loop()
+    return
 
 
 def dump_sysinfo():

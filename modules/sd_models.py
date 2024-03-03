@@ -10,14 +10,21 @@ from omegaconf import OmegaConf, ListConfig
 from os import mkdir
 from urllib import request
 import ldm.modules.midas as midas
+import gc
 
 from ldm.util import instantiate_from_config
 
 from modules import paths, shared, modelloader, devices, script_callbacks, sd_vae, sd_disable_initialization, errors, hashes, sd_models_config, sd_unet, sd_models_xl, cache, extra_networks, processing, lowvram, sd_hijack, patches
 from modules.timer import Timer
 from modules.shared import opts
-import tomesd
+
 import numpy as np
+from modules_forge import forge_loader
+import modules_forge.ops as forge_ops
+from ldm_patched.modules.ops import manual_cast
+from ldm_patched.modules import model_management as model_management
+import ldm_patched.modules.model_patcher
+
 
 model_dir = "Stable-diffusion"
 model_path = os.path.abspath(os.path.join(paths.models_path, model_dir))
@@ -151,9 +158,9 @@ def list_models():
     if shared.cmd_opts.no_download_sd_model or cmd_ckpt != shared.sd_model_file or os.path.exists(cmd_ckpt):
         model_url = None
     else:
-        model_url = "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors"
+        model_url = "https://huggingface.co/lllyasviel/fav_models/resolve/main/fav/realisticVisionV51_v51VAE.safetensors"
 
-    model_list = modelloader.load_models(model_path=model_path, model_url=model_url, command_path=shared.cmd_opts.ckpt_dir, ext_filter=[".ckpt", ".safetensors"], download_name="v1-5-pruned-emaonly.safetensors", ext_blacklist=[".vae.ckpt", ".vae.safetensors"])
+    model_list = modelloader.load_models(model_path=model_path, model_url=model_url, command_path=shared.cmd_opts.ckpt_dir, ext_filter=[".ckpt", ".safetensors"], download_name="realisticVisionV51_v51VAE.safetensors", ext_blacklist=[".vae.ckpt", ".vae.safetensors"])
 
     if os.path.exists(cmd_ckpt):
         checkpoint_info = CheckpointInfo(cmd_ckpt)
@@ -367,25 +374,11 @@ def load_model_weights(model, checkpoint_info: CheckpointInfo, state_dict, timer
     sd_model_hash = checkpoint_info.calculate_shorthash()
     timer.record("calculate hash")
 
-    if devices.fp8:
-        # prevent model to load state dict in fp8
-        model.half()
-
     if not SkipWritingToConfig.skip:
         shared.opts.data["sd_model_checkpoint"] = checkpoint_info.title
 
     if state_dict is None:
         state_dict = get_checkpoint_state_dict(checkpoint_info, timer)
-
-    model.is_sdxl = hasattr(model, 'conditioner')
-    model.is_sd2 = not model.is_sdxl and hasattr(model.cond_stage_model, 'model')
-    model.is_sd1 = not model.is_sdxl and not model.is_sd2
-    model.is_ssd = model.is_sdxl and 'model.diffusion_model.middle_block.1.transformer_blocks.0.attn1.to_q.weight' not in state_dict.keys()
-    if model.is_sdxl:
-        sd_models_xl.extend_sdxl(model)
-
-    if model.is_ssd:
-        sd_hijack.model_hijack.convert_sdxl_to_ssd(model)
 
     if shared.opts.sd_checkpoint_cache > 0:
         # cache newly loaded model
@@ -395,67 +388,6 @@ def load_model_weights(model, checkpoint_info: CheckpointInfo, state_dict, timer
     timer.record("apply weights to model")
 
     del state_dict
-
-    if shared.cmd_opts.opt_channelslast:
-        model.to(memory_format=torch.channels_last)
-        timer.record("apply channels_last")
-
-    if shared.cmd_opts.no_half:
-        model.float()
-        model.alphas_cumprod_original = model.alphas_cumprod
-        devices.dtype_unet = torch.float32
-        timer.record("apply float()")
-    else:
-        vae = model.first_stage_model
-        depth_model = getattr(model, 'depth_model', None)
-
-        # with --no-half-vae, remove VAE from model when doing half() to prevent its weights from being converted to float16
-        if shared.cmd_opts.no_half_vae:
-            model.first_stage_model = None
-        # with --upcast-sampling, don't convert the depth model weights to float16
-        if shared.cmd_opts.upcast_sampling and depth_model:
-            model.depth_model = None
-
-        alphas_cumprod = model.alphas_cumprod
-        model.alphas_cumprod = None
-        model.half()
-        model.alphas_cumprod = alphas_cumprod
-        model.alphas_cumprod_original = alphas_cumprod
-        model.first_stage_model = vae
-        if depth_model:
-            model.depth_model = depth_model
-
-        devices.dtype_unet = torch.float16
-        timer.record("apply half()")
-
-    apply_alpha_schedule_override(model)
-
-    for module in model.modules():
-        if hasattr(module, 'fp16_weight'):
-            del module.fp16_weight
-        if hasattr(module, 'fp16_bias'):
-            del module.fp16_bias
-
-    if check_fp8(model):
-        devices.fp8 = True
-        first_stage = model.first_stage_model
-        model.first_stage_model = None
-        for module in model.modules():
-            if isinstance(module, (torch.nn.Conv2d, torch.nn.Linear)):
-                if shared.opts.cache_fp16_weight:
-                    module.fp16_weight = module.weight.data.clone().cpu().half()
-                    if module.bias is not None:
-                        module.fp16_bias = module.bias.data.clone().cpu().half()
-                module.to(torch.float8_e4m3fn)
-        model.first_stage_model = first_stage
-        timer.record("apply fp8")
-    else:
-        devices.fp8 = False
-
-    devices.unet_needs_upcast = shared.cmd_opts.upcast_sampling and devices.dtype == torch.float16 and devices.dtype_unet == torch.float16
-
-    model.first_stage_model.to(devices.dtype_vae)
-    timer.record("apply dtype to VAE")
 
     # clean up cache if limit is reached
     while len(checkpoints_loaded) > shared.opts.sd_checkpoint_cache:
@@ -635,14 +567,6 @@ class SdModelData:
             sd_vae.loaded_vae_file = getattr(v, "loaded_vae_file", None)
             sd_vae.checkpoint_info = v.sd_checkpoint_info
 
-        try:
-            self.loaded_sd_models.remove(v)
-        except ValueError:
-            pass
-
-        if v is not None:
-            self.loaded_sd_models.insert(0, v)
-
 
 model_data = SdModelData()
 
@@ -660,31 +584,19 @@ def get_empty_cond(sd_model):
 
 
 def send_model_to_cpu(m):
-    if m.lowvram:
-        lowvram.send_everything_to_cpu()
-    else:
-        m.to(devices.cpu)
-
-    devices.torch_gc()
+    pass
 
 
 def model_target_device(m):
-    if lowvram.is_needed(m):
-        return devices.cpu
-    else:
-        return devices.device
+    return devices.device
 
 
 def send_model_to_device(m):
-    lowvram.apply(m)
-
-    if not m.lowvram:
-        m.to(shared.device)
+    pass
 
 
 def send_model_to_trash(m):
-    m.to(device="meta")
-    devices.torch_gc()
+    pass
 
 
 def load_model(checkpoint_info=None, already_loaded_state_dict=None):
@@ -694,9 +606,14 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     timer = Timer()
 
     if model_data.sd_model:
-        send_model_to_trash(model_data.sd_model)
+        if model_data.sd_model.filename == checkpoint_info.filename:
+            return model_data.sd_model
+
         model_data.sd_model = None
-        devices.torch_gc()
+        model_data.loaded_sd_models = []
+        model_management.unload_all_models()
+        model_management.soft_empty_cache()
+        gc.collect()
 
     timer.record("unload existing model")
 
@@ -705,58 +622,27 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     else:
         state_dict = get_checkpoint_state_dict(checkpoint_info, timer)
 
-    checkpoint_config = sd_models_config.find_checkpoint_config(state_dict, checkpoint_info)
-    clip_is_included_into_sd = any(x for x in [sd1_clip_weight, sd2_clip_weight, sdxl_clip_weight, sdxl_refiner_clip_weight] if x in state_dict)
+    if shared.opts.sd_checkpoint_cache > 0:
+        # cache newly loaded model
+        checkpoints_loaded[checkpoint_info] = state_dict.copy()
 
-    timer.record("find config")
+    sd_model = forge_loader.load_model_for_a1111(timer=timer, checkpoint_info=checkpoint_info, state_dict=state_dict)
+    sd_model.filename = checkpoint_info.filename
 
-    sd_config = OmegaConf.load(checkpoint_config)
-    repair_config(sd_config)
+    del state_dict
 
-    timer.record("load config")
+    # clean up cache if limit is reached
+    while len(checkpoints_loaded) > shared.opts.sd_checkpoint_cache:
+        checkpoints_loaded.popitem(last=False)
 
-    print(f"Creating model from config: {checkpoint_config}")
+    shared.opts.data["sd_checkpoint_hash"] = checkpoint_info.sha256
 
-    sd_model = None
-    try:
-        with sd_disable_initialization.DisableInitialization(disable_clip=clip_is_included_into_sd or shared.cmd_opts.do_not_download_clip):
-            with sd_disable_initialization.InitializeOnMeta():
-                sd_model = instantiate_from_config(sd_config.model)
+    sd_vae.delete_base_vae()
+    sd_vae.clear_loaded_vae()
+    vae_file, vae_source = sd_vae.resolve_vae(checkpoint_info.filename).tuple()
+    sd_vae.load_vae(sd_model, vae_file, vae_source)
+    timer.record("load VAE")
 
-    except Exception as e:
-        errors.display(e, "creating model quickly", full_traceback=True)
-
-    if sd_model is None:
-        print('Failed to create model quickly; will retry using slow method.', file=sys.stderr)
-
-        with sd_disable_initialization.InitializeOnMeta():
-            sd_model = instantiate_from_config(sd_config.model)
-
-    sd_model.used_config = checkpoint_config
-
-    timer.record("create model")
-
-    if shared.cmd_opts.no_half:
-        weight_dtype_conversion = None
-    else:
-        weight_dtype_conversion = {
-            'first_stage_model': None,
-            'alphas_cumprod': None,
-            '': torch.float16,
-        }
-
-    with sd_disable_initialization.LoadStateDictOnMeta(state_dict, device=model_target_device(sd_model), weight_dtype_conversion=weight_dtype_conversion):
-        load_model_weights(sd_model, checkpoint_info, state_dict, timer)
-    timer.record("load weights from state dict")
-
-    send_model_to_device(sd_model)
-    timer.record("move model to device")
-
-    sd_hijack.model_hijack.hijack(sd_model)
-
-    timer.record("hijack")
-
-    sd_model.eval()
     model_data.set_sd_model(sd_model)
     model_data.was_loaded_at_least_once = True
 
@@ -768,7 +654,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
 
     timer.record("scripts callbacks")
 
-    with devices.autocast(), torch.no_grad():
+    with torch.no_grad():
         sd_model.cond_stage_model_empty_prompt = get_empty_cond(sd_model)
 
     timer.record("calculate empty prompt")
@@ -779,156 +665,28 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
 
 
 def reuse_model_from_already_loaded(sd_model, checkpoint_info, timer):
-    """
-    Checks if the desired checkpoint from checkpoint_info is not already loaded in model_data.loaded_sd_models.
-    If it is loaded, returns that (moving it to GPU if necessary, and moving the currently loadded model to CPU if necessary).
-    If not, returns the model that can be used to load weights from checkpoint_info's file.
-    If no such model exists, returns None.
-    Additionaly deletes loaded models that are over the limit set in settings (sd_checkpoints_limit).
-    """
-
-    already_loaded = None
-    for i in reversed(range(len(model_data.loaded_sd_models))):
-        loaded_model = model_data.loaded_sd_models[i]
-        if loaded_model.sd_checkpoint_info.filename == checkpoint_info.filename:
-            already_loaded = loaded_model
-            continue
-
-        if len(model_data.loaded_sd_models) > shared.opts.sd_checkpoints_limit > 0:
-            print(f"Unloading model {len(model_data.loaded_sd_models)} over the limit of {shared.opts.sd_checkpoints_limit}: {loaded_model.sd_checkpoint_info.title}")
-            model_data.loaded_sd_models.pop()
-            send_model_to_trash(loaded_model)
-            timer.record("send model to trash")
-
-        if shared.opts.sd_checkpoints_keep_in_cpu:
-            send_model_to_cpu(sd_model)
-            timer.record("send model to cpu")
-
-    if already_loaded is not None:
-        send_model_to_device(already_loaded)
-        timer.record("send model to device")
-
-        model_data.set_sd_model(already_loaded, already_loaded=True)
-
-        if not SkipWritingToConfig.skip:
-            shared.opts.data["sd_model_checkpoint"] = already_loaded.sd_checkpoint_info.title
-            shared.opts.data["sd_checkpoint_hash"] = already_loaded.sd_checkpoint_info.sha256
-
-        print(f"Using already loaded model {already_loaded.sd_checkpoint_info.title}: done in {timer.summary()}")
-        sd_vae.reload_vae_weights(already_loaded)
-        return model_data.sd_model
-    elif shared.opts.sd_checkpoints_limit > 1 and len(model_data.loaded_sd_models) < shared.opts.sd_checkpoints_limit:
-        print(f"Loading model {checkpoint_info.title} ({len(model_data.loaded_sd_models) + 1} out of {shared.opts.sd_checkpoints_limit})")
-
-        model_data.sd_model = None
-        load_model(checkpoint_info)
-        return model_data.sd_model
-    elif len(model_data.loaded_sd_models) > 0:
-        sd_model = model_data.loaded_sd_models.pop()
-        model_data.sd_model = sd_model
-
-        sd_vae.base_vae = getattr(sd_model, "base_vae", None)
-        sd_vae.loaded_vae_file = getattr(sd_model, "loaded_vae_file", None)
-        sd_vae.checkpoint_info = sd_model.sd_checkpoint_info
-
-        print(f"Reusing loaded model {sd_model.sd_checkpoint_info.title} to load {checkpoint_info.title}")
-        return sd_model
-    else:
-        return None
+    pass
 
 
 def reload_model_weights(sd_model=None, info=None, forced_reload=False):
-    checkpoint_info = info or select_checkpoint()
-
-    timer = Timer()
-
-    if not sd_model:
-        sd_model = model_data.sd_model
-
-    if sd_model is None:  # previous model load failed
-        current_checkpoint_info = None
-    else:
-        current_checkpoint_info = sd_model.sd_checkpoint_info
-        if check_fp8(sd_model) != devices.fp8:
-            # load from state dict again to prevent extra numerical errors
-            forced_reload = True
-        elif sd_model.sd_model_checkpoint == checkpoint_info.filename and not forced_reload:
-            return sd_model
-
-    sd_model = reuse_model_from_already_loaded(sd_model, checkpoint_info, timer)
-    if not forced_reload and sd_model is not None and sd_model.sd_checkpoint_info.filename == checkpoint_info.filename:
-        return sd_model
-
-    if sd_model is not None:
-        sd_unet.apply_unet("None")
-        send_model_to_cpu(sd_model)
-        sd_hijack.model_hijack.undo_hijack(sd_model)
-
-    state_dict = get_checkpoint_state_dict(checkpoint_info, timer)
-
-    checkpoint_config = sd_models_config.find_checkpoint_config(state_dict, checkpoint_info)
-
-    timer.record("find config")
-
-    if sd_model is None or checkpoint_config != sd_model.used_config:
-        if sd_model is not None:
-            send_model_to_trash(sd_model)
-
-        load_model(checkpoint_info, already_loaded_state_dict=state_dict)
-        return model_data.sd_model
-
-    try:
-        load_model_weights(sd_model, checkpoint_info, state_dict, timer)
-    except Exception:
-        print("Failed to load checkpoint, restoring previous")
-        load_model_weights(sd_model, current_checkpoint_info, None, timer)
-        raise
-    finally:
-        sd_hijack.model_hijack.hijack(sd_model)
-        timer.record("hijack")
-
-        if not sd_model.lowvram:
-            sd_model.to(devices.device)
-            timer.record("move model to device")
-
-        script_callbacks.model_loaded_callback(sd_model)
-        timer.record("script callbacks")
-
-    print(f"Weights loaded in {timer.summary()}.")
-
-    model_data.set_sd_model(sd_model)
-    sd_unet.apply_unet()
-
-    return sd_model
+    return load_model(info)
 
 
 def unload_model_weights(sd_model=None, info=None):
-    send_model_to_cpu(sd_model or shared.sd_model)
-
     return sd_model
 
 
 def apply_token_merging(sd_model, token_merging_ratio):
-    """
-    Applies speed and memory optimizations from tomesd.
-    """
-
-    current_token_merging_ratio = getattr(sd_model, 'applied_token_merged_ratio', 0)
-
-    if current_token_merging_ratio == token_merging_ratio:
+    if token_merging_ratio <= 0:
         return
 
-    if current_token_merging_ratio > 0:
-        tomesd.remove_patch(sd_model)
+    print(f'token_merging_ratio = {token_merging_ratio}')
 
-    if token_merging_ratio > 0:
-        tomesd.apply_patch(
-            sd_model,
-            ratio=token_merging_ratio,
-            use_rand=False,  # can cause issues with some samplers
-            merge_attn=True,
-            merge_crossattn=False,
-            merge_mlp=False
-        )
+    from ldm_patched.contrib.external_tomesd import TomePatcher
 
-    sd_model.applied_token_merged_ratio = token_merging_ratio
+    sd_model.forge_objects.unet = TomePatcher().patch(
+        model=sd_model.forge_objects.unet,
+        ratio=token_merging_ratio
+    )
+
+    return

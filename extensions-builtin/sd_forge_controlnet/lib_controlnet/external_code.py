@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional, Union, Dict, TypedDict
+from typing import List, Optional, Union, Dict, TypedDict, Any
 import numpy as np
 from modules import shared
 from lib_controlnet.logging import logger
@@ -297,3 +297,16 @@ def get_max_models_num():
 
     max_models_num = shared.opts.data.get("control_net_unit_count", 3)
     return max_models_num
+
+
+
+def to_processing_unit(unit: Union[Dict[str, Any], ControlNetUnit]) -> ControlNetUnit:
+    """
+    Convert different types to processing unit.
+    Backward Compatible
+    """
+
+    if isinstance(unit, dict):
+        unit = ControlNetUnit.from_dict(unit)
+
+    return unit

@@ -49,9 +49,11 @@ class PreprocessorNormalDsine(Preprocessor):
         fov = slider_1
         iterations = slider_2
 
-        input_image, remove_pad = resize_image_with_pad(input_image, resolution)
         orig_H, orig_W = input_image.shape[:2]
+        print(orig_H, orig_W)
         l, r, t, b = get_pad(orig_H, orig_W)
+        print(l)
+        input_image, remove_pad = resize_image_with_pad(input_image, resolution)
 
         self.load_model(iterations)
 

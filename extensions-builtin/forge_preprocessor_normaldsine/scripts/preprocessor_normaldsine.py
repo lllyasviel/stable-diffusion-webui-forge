@@ -23,7 +23,7 @@ class PreprocessorNormalDsine(Preprocessor):
         self.slider_resolution = PreprocessorParameter(
             label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
         self.slider_1 = PreprocessorParameter(label='fov', value=60.0, minimum=0.0, maximum=365.0, step=1.0, visible=True)
-        self.slider_2 = PreprocessorParameter(label='iterations', value=5, minimum=1, maximum=20, step=1, visible=True)
+        #self.slider_2 = PreprocessorParameter(label='iterations', value=5, minimum=1, maximum=20, step=1, visible=True)
         self.fov = 60.0
         self.iterations = 5
         self.show_control_mode = True
@@ -52,9 +52,9 @@ class PreprocessorNormalDsine(Preprocessor):
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
         fov = slider_1
-        iterations = slider_2
+        #iterations = slider_2
 
-        self.model_patcher.num_iter = iterations
+        #self.model_patcher.num_iter = iterations
         orig_H, orig_W = input_image.shape[:2]
         l, r, t, b = pad_input(orig_H, orig_W)
         input_image, remove_pad = resize_image_with_pad(input_image, resolution)

@@ -917,7 +917,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 alphas_cumprod_backup = p.sd_model.alphas_cumprod
                 for modifier in alphas_cumprod_modifiers:
                     p.sd_model.alphas_cumprod = modifier(p.sd_model.alphas_cumprod)
-                    p.sd_model.forge_objects.unet.model.model_sampling.set_sigmas(((1 - p.sd_model.alphas_cumprod) / p.sd_model.alphas_cumprod) ** 0.5)
+                p.sd_model.forge_objects.unet.model.model_sampling.set_sigmas(((1 - p.sd_model.alphas_cumprod) / p.sd_model.alphas_cumprod) ** 0.5)
 
             samples_ddim = p.sample(conditioning=p.c, unconditional_conditioning=p.uc, seeds=p.seeds, subseeds=p.subseeds, subseed_strength=p.subseed_strength, prompts=p.prompts)
 

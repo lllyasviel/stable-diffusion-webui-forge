@@ -38,13 +38,7 @@ class PreprocessorNormalDsine(Preprocessor):
             "https://huggingface.co/bdsqlsz/qinglong_controlnet-lllite/resolve/main/Annotators/dsine.pt",
             model_dir=preprocessor_dir)
 
-        args = types.SimpleNamespace()
-        args.mode = 'client'
-        args.architecture = 'BN'
-        args.pretrained = 'dsine'
-        args.sampling_ratio = 0.4
-        args.importance_ratio = 0.7
-        model = DSINE(args)
+        model = DSINE()
         model = load_checkpoint(model_path, model)
         self.norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 

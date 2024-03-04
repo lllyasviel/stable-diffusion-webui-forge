@@ -67,6 +67,23 @@ def pad_input(orig_H, orig_W):
         b = (new_H - orig_H) - t
     return l, r, t, b
 
+def get_pad(orig_H, orig_W):
+    if orig_W % 64 == 0:
+        l = 0
+        r = 0
+    else:
+        new_W = 64 * ((orig_W // 64) + 1)
+        l = (new_W - orig_W) // 2
+        r = (new_W - orig_W) - l
+
+    if orig_H % 64 == 0:
+        t = 0
+        b = 0
+    else:
+        new_H = 64 * ((orig_H // 64) + 1)
+        t = (new_H - orig_H) // 2
+        b = (new_H - orig_H) - t
+    return l, r, t, b
 
 def get_intrins_from_fov(new_fov, H, W, device):
     # NOTE: top-left pixel should be (0,0)

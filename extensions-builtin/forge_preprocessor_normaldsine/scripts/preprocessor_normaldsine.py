@@ -10,7 +10,7 @@ import numpy as np
 from einops import rearrange
 from annotator.normaldsine.models.dsine import DSINE
 from annotator.normaldsine import load_checkpoint
-from annotator.normaldsine.utils.utils import get_intrins_from_fov, pad_input
+from annotator.normaldsine.utils.utils import get_intrins_from_fov, get_pad
 from torchvision import transforms
 
 
@@ -50,7 +50,7 @@ class PreprocessorNormalDsine(Preprocessor):
 
         #self.model_patcher.num_iter = iterations
         orig_H, orig_W = input_image.shape[:2]
-        l, r, t, b = pad_input(orig_H, orig_W)
+        l, r, t, b = get_pad(orig_H, orig_W)
         input_image, remove_pad = resize_image_with_pad(input_image, resolution)
         self.load_model()
 

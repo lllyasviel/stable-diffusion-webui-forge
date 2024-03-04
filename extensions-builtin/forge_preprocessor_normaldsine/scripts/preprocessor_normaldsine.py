@@ -50,9 +50,9 @@ class PreprocessorNormalDsine(Preprocessor):
 
         self.model_patcher = self.setup_model_patcher(model)
 
-    def __call__(self, input_image, resolution, fov=60.0, iterations=5, **kwargs):
-        self.fov = int(kwargs['unit'].threshold_a)
-        self.iterations = int(kwargs['unit'].threshold_b)
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+        fov = slider_1
+        iterations = slider_2
 
         self.model_patcher.model.num_iter = iterations
         orig_H, orig_W = input_image.shape[:2]

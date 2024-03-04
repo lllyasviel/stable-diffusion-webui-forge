@@ -23,14 +23,14 @@ class PreprocessorNormalDsine(Preprocessor):
         self.slider_resolution = PreprocessorParameter(
             label='Resolution', minimum=128, maximum=2048, value=512, step=8, visible=True)
         self.slider_1 = PreprocessorParameter(label='fov', value=60.0, minimum=0.0, maximum=365.0, step=1.0, visible=True)
-        #self.slider_2 = PreprocessorParameter(label='iterations', value=5, minimum=1, maximum=20, step=1, visible=True)
+        self.slider_2 = PreprocessorParameter(label='iterations', value=5, minimum=1, maximum=20, step=1, visible=True)
         self.fov = 60.0
         self.iterations = 5
         self.show_control_mode = True
         self.do_not_need_model = False
         self.sorting_priority = 40  # higher goes to top in the list
 
-    def load_model(self):
+    def load_model(self, iterations=5):
         if self.model_patcher is not None:
             return
 
@@ -40,19 +40,20 @@ class PreprocessorNormalDsine(Preprocessor):
 
         model = DSINE()
         model = load_checkpoint(model_path, model)
+        model.num_iter = iterations
         self.norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
         self.model_patcher = self.setup_model_patcher(model)
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
         fov = slider_1
-        #iterations = slider_2
+        iterations = slider_2
 
-        #self.model_patcher.num_iter = iterations
+        input_image, remove_pad = resize_image_with_pad(input_image, resolution)
         orig_H, orig_W = input_image.shape[:2]
         l, r, t, b = get_pad(orig_H, orig_W)
-        input_image, remove_pad = resize_image_with_pad(input_image, resolution)
-        self.load_model()
+
+        self.load_model(iterations)
 
         self.move_all_model_patchers_to_gpu()
 

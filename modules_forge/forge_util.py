@@ -154,3 +154,21 @@ def lazy_memory_management(model):
     required_memory = model_management.module_size(model) + model_management.minimum_inference_memory()
     model_management.free_memory(required_memory, device=model_management.get_torch_device())
     return
+
+def get_pad(orig_H, orig_W):
+    if orig_W % 64 == 0:
+        l = 0
+        r = 0
+    else:
+        new_W = 64 * ((orig_W // 64) + 1)
+        l = (new_W - orig_W) // 2
+        r = (new_W - orig_W) - l
+
+    if orig_H % 64 == 0:
+        t = 0
+        b = 0
+    else:
+        new_H = 64 * ((orig_H // 64) + 1)
+        t = (new_H - orig_H) // 2
+        b = (new_H - orig_H) - t
+    return l, r, t, b

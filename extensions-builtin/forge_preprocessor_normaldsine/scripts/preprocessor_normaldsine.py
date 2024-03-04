@@ -54,7 +54,7 @@ class PreprocessorNormalDsine(Preprocessor):
         fov = slider_1
         iterations = slider_2
 
-        self.model_patcher.model.num_iter = iterations
+        self.model_patcher.num_iter = iterations
         orig_H, orig_W = input_image.shape[:2]
         l, r, t, b = pad_input(orig_H, orig_W)
         input_image, remove_pad = resize_image_with_pad(input_image, resolution)

@@ -82,7 +82,7 @@ class ModelSamplingDiscrete(torch.nn.Module):
         w = (low - log_sigma) / (low - high)
         w = w.clamp(0, 1)
         t = (1 - w) * low_idx + w * high_idx
-        return t.view(sigma.shape)
+        return t.view(sigma.shape).to(sigma.device)
 
     def sigma(self, timestep):
         t = torch.clamp(timestep.float().to(self.log_sigmas.device), min=0, max=(len(self.sigmas) - 1))

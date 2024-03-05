@@ -50,9 +50,7 @@ class PreprocessorNormalDsine(Preprocessor):
         iterations = slider_2
 
         orig_H, orig_W = input_image.shape[:2]
-        print(orig_H, orig_W)
         l, r, t, b = get_pad(orig_H, orig_W)
-        print(l)
         input_image, remove_pad = resize_image_with_pad(input_image, resolution)
 
         self.load_model(iterations)
@@ -68,7 +66,7 @@ class PreprocessorNormalDsine(Preprocessor):
             image_normal = rearrange(image_normal, 'h w c -> 1 c h w')
             image_normal = self.norm(image_normal)
             
-            intrins = get_intrins_from_fov(new_fov=fov, H=orig_H, W=orig_W, device=torch.device('cpu')).unsqueeze(0)
+            intrins = get_intrins_from_fov(new_fov=fov, H=orig_H, W=orig_W, device='cpu').unsqueeze(0)
             intrins[:, 0, 2] += l
             intrins[:, 1, 2] += t
 

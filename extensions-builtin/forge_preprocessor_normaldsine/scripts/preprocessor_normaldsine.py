@@ -62,8 +62,6 @@ class PreprocessorNormalDsine(Preprocessor):
 
         self.load_model(iterations)
 
-        self.move_all_model_patchers_to_gpu()
-
         assert input_image.ndim == 3
         image_normal = input_image
 
@@ -77,7 +75,7 @@ class PreprocessorNormalDsine(Preprocessor):
             intrins[:, 0, 2] += l
             intrins[:, 1, 2] += t
 
-            normal = self.model(image_normal)
+            normal = self.model(image_normal, intrins)
             normal = normal[-1][0]
             normal = ((normal + 1) * 0.5).clip(0, 1)
 

@@ -2,8 +2,8 @@ from modules_forge.supported_preprocessor import Preprocessor, PreprocessorParam
 from modules_forge.shared import preprocessor_dir, add_supported_preprocessor
 from modules_forge.forge_util import resize_image_with_pad
 from modules.modelloader import load_file_from_url
+from ldm_patched.modules import model_management
 
-import types
 import torch
 import numpy as np
 
@@ -17,6 +17,7 @@ from torchvision import transforms
 class PreprocessorNormalDsine(Preprocessor):
     def __init__(self):
         super().__init__()
+        self.device = model_management.get_torch_device()
         self.name = 'normaldsine'
         self.tags = ['NormalMap']
         self.model_filename_filters = ['normal']
@@ -66,7 +67,7 @@ class PreprocessorNormalDsine(Preprocessor):
             image_normal = rearrange(image_normal, 'h w c -> 1 c h w')
             image_normal = self.norm(image_normal)
             
-            intrins = get_intrins_from_fov(new_fov=fov, H=orig_H, W=orig_W, device='cpu').unsqueeze(0)
+            intrins = get_intrins_from_fov(new_fov=fov, H=orig_H, W=orig_W, device=self.device).unsqueeze(0)
             intrins[:, 0, 2] += l
             intrins[:, 1, 2] += t
 

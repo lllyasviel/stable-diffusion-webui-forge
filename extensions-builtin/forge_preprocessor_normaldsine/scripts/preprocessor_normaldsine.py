@@ -17,7 +17,6 @@ class PreprocessorNormalDsine(Preprocessor):
     def __init__(self):
         super().__init__()
         self.device = model_management.get_torch_device()
-        self.model = None
         self.name = 'normaldsine'
         self.tags = ['NormalMap']
         self.model_filename_filters = ['normal']
@@ -31,7 +30,7 @@ class PreprocessorNormalDsine(Preprocessor):
         self.do_not_need_model = False
         self.sorting_priority = 40  # higher goes to top in the list
 
-    def load_model(self, iterations=5):
+    def load_model(self):
         if self.model is not None:
             return
 
@@ -41,7 +40,6 @@ class PreprocessorNormalDsine(Preprocessor):
 
         model = DSINE()
         model = load_checkpoint(model_path, model)
-        model.num_iter = iterations
         self.norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         model.eval()
         self.model = model
@@ -60,7 +58,8 @@ class PreprocessorNormalDsine(Preprocessor):
         l, r, t, b = get_pad(orig_H, orig_W)
         input_image, remove_pad = resize_image_with_pad(input_image, resolution)
 
-        self.load_model(iterations)
+        self.load_model()
+        self.model.num_iter = iterations
 
         assert input_image.ndim == 3
         image_normal = input_image

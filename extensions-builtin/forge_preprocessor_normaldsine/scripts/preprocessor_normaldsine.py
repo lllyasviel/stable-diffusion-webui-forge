@@ -9,8 +9,7 @@ import numpy as np
 
 from einops import rearrange
 from annotator.normaldsine.models.dsine import DSINE
-from annotator.normaldsine import load_checkpoint
-from annotator.normaldsine.utils.utils import get_intrins_from_fov, get_pad
+from annotator.normaldsine.utils.utils import load_checkpoint, get_intrins_from_fov, get_pad
 from torchvision import transforms
 
 
@@ -18,6 +17,7 @@ class PreprocessorNormalDsine(Preprocessor):
     def __init__(self):
         super().__init__()
         self.device = model_management.get_torch_device()
+        self.model = None
         self.name = 'normaldsine'
         self.tags = ['NormalMap']
         self.model_filename_filters = ['normal']
@@ -32,7 +32,7 @@ class PreprocessorNormalDsine(Preprocessor):
         self.sorting_priority = 40  # higher goes to top in the list
 
     def load_model(self, iterations=5):
-        if self.model_patcher is not None:
+        if self.model is not None:
             return
 
         model_path = load_file_from_url(
@@ -43,8 +43,14 @@ class PreprocessorNormalDsine(Preprocessor):
         model = load_checkpoint(model_path, model)
         model.num_iter = iterations
         self.norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-
-        self.model_patcher = self.setup_model_patcher(model)
+        model.eval()
+        self.model = model
+        
+    def to(self, device):
+        self.model.to(device)
+        self.model.pixel_coords = self.model.pixel_coords.to(device)
+        self.device = device
+        return self
 
     def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
         fov = slider_1
@@ -62,7 +68,7 @@ class PreprocessorNormalDsine(Preprocessor):
         image_normal = input_image
 
         with torch.no_grad():
-            image_normal = self.send_tensor_to_model_device(torch.from_numpy(image_normal))
+            image_normal = torch.from_numpy(input_image).float().to(self.device)
             image_normal = image_normal / 255.0
             image_normal = rearrange(image_normal, 'h w c -> 1 c h w')
             image_normal = self.norm(image_normal)
@@ -71,7 +77,7 @@ class PreprocessorNormalDsine(Preprocessor):
             intrins[:, 0, 2] += l
             intrins[:, 1, 2] += t
 
-            normal = self.model_patcher.model(image_normal)
+            normal = self.model(image_normal)
             normal = normal[-1][0]
             normal = ((normal + 1) * 0.5).clip(0, 1)
 

@@ -12,6 +12,7 @@ class UnetPatcher(ModelPatcher):
         self.controlnet_linked_list = None
         self.extra_preserved_memory_during_sampling = 0
         self.extra_model_patchers_during_sampling = []
+        self.extra_concat_condition = None
 
     def clone(self):
         n = UnetPatcher(self.model, self.load_device, self.offload_device, self.size, self.current_device,
@@ -27,6 +28,7 @@ class UnetPatcher(ModelPatcher):
         n.controlnet_linked_list = self.controlnet_linked_list
         n.extra_preserved_memory_during_sampling = self.extra_preserved_memory_during_sampling
         n.extra_model_patchers_during_sampling = self.extra_model_patchers_during_sampling.copy()
+        n.extra_concat_condition = self.extra_concat_condition
         return n
 
     def add_extra_preserved_memory_during_sampling(self, memory_in_bytes: int):
@@ -176,3 +178,21 @@ class UnetPatcher(ModelPatcher):
             device=noise.device,
             prompt_type=prompt_type
         )
+
+    def load_frozen_patcher(self, state_dict, strength):
+        patch_dict = {}
+        for k, w in state_dict.items():
+            model_key, patch_type, weight_index = k.split('::')
+            if model_key not in patch_dict:
+                patch_dict[model_key] = {}
+            if patch_type not in patch_dict[model_key]:
+                patch_dict[model_key][patch_type] = [None] * 16
+            patch_dict[model_key][patch_type][int(weight_index)] = w
+
+        patch_flat = {}
+        for model_key, v in patch_dict.items():
+            for patch_type, weight_list in v.items():
+                patch_flat[model_key] = (patch_type, weight_list)
+
+        self.add_patches(patches=patch_flat, strength_patch=float(strength), strength_model=1.0)
+        return

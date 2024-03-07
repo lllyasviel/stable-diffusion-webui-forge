@@ -163,7 +163,10 @@ class CLIP:
         return self.patcher.get_key_patches()
 
 class VAE:
-    def __init__(self, sd=None, device=None, config=None, dtype=None):
+    def __init__(self, sd=None, device=None, config=None, dtype=None, no_init=False):
+        if no_init:
+            return
+
         if 'decoder.up_blocks.0.resnets.0.norm1.weight' in sd.keys(): #diffusers format
             sd = diffusers_convert.convert_vae_state_dict(sd)
 
@@ -215,6 +218,19 @@ class VAE:
 
         self.patcher = ldm_patched.modules.model_patcher.ModelPatcher(self.first_stage_model, load_device=self.device, offload_device=offload_device)
 
+    def clone(self):
+        n = VAE(no_init=True)
+        n.patcher = self.patcher.clone()
+        n.memory_used_encode = self.memory_used_encode
+        n.memory_used_decode = self.memory_used_decode
+        n.downscale_ratio = self.downscale_ratio
+        n.latent_channels = self.latent_channels
+        n.first_stage_model = self.first_stage_model
+        n.device = self.device
+        n.vae_dtype = self.vae_dtype
+        n.output_device = self.output_device
+        return n
+
     def decode_tiled_(self, samples, tile_x=64, tile_y=64, overlap = 16):
         steps = samples.shape[0] * ldm_patched.modules.utils.get_tiled_scale_steps(samples.shape[3], samples.shape[2], tile_x, tile_y, overlap)
         steps += samples.shape[0] * ldm_patched.modules.utils.get_tiled_scale_steps(samples.shape[3], samples.shape[2], tile_x // 2, tile_y * 2, overlap)
@@ -242,7 +258,7 @@ class VAE:
         samples /= 3.0
         return samples
 
-    def decode(self, samples_in):
+    def decode_inner(self, samples_in):
         if model_management.VAE_ALWAYS_TILED:
             return self.decode_tiled(samples_in).to(self.output_device)
 
@@ -264,12 +280,19 @@ class VAE:
         pixel_samples = pixel_samples.to(self.output_device).movedim(1,-1)
         return pixel_samples
 
+    def decode(self, samples_in):
+        wrapper = self.patcher.model_options.get('model_vae_decode_wrapper', None)
+        if wrapper is None:
+            return self.decode_inner(samples_in)
+        else:
+            return wrapper(self.decode_inner, samples_in)
+
     def decode_tiled(self, samples, tile_x=64, tile_y=64, overlap = 16):
         model_management.load_model_gpu(self.patcher)
         output = self.decode_tiled_(samples, tile_x, tile_y, overlap)
         return output.movedim(1,-1)
 
-    def encode(self, pixel_samples):
+    def encode_inner(self, pixel_samples):
         if model_management.VAE_ALWAYS_TILED:
             return self.encode_tiled(pixel_samples)
 
@@ -290,6 +313,13 @@ class VAE:
             samples = self.encode_tiled_(pixel_samples)
 
         return samples
+
+    def encode(self, pixel_samples):
+        wrapper = self.patcher.model_options.get('model_vae_encode_wrapper', None)
+        if wrapper is None:
+            return self.encode_inner(pixel_samples)
+        else:
+            return wrapper(self.encode_inner, pixel_samples)
 
     def encode_tiled(self, pixel_samples, tile_x=512, tile_y=512, overlap = 64):
         model_management.load_model_gpu(self.patcher)

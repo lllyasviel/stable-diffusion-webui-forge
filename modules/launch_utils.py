@@ -516,7 +516,7 @@ def configure_forge_reference_checkout(a1111_home: Path):
         ModelRef(arg_name="--vae-dir", relative_path="models/VAE"),
         ModelRef(arg_name="--hypernetwork-dir", relative_path="models/hypernetworks"),
         ModelRef(arg_name="--embeddings-dir", relative_path="embeddings"),
-        ModelRef(arg_name="--lora-dir", relative_path="models/lora"),
+        ModelRef(arg_name="--lora-dir", relative_path="models/Lora"),
         # Ref A1111 need to have sd-webui-controlnet installed.
         ModelRef(arg_name="--controlnet-dir", relative_path="models/ControlNet"),
         ModelRef(arg_name="--controlnet-preprocessor-models-dir", relative_path="extensions/sd-webui-controlnet/annotator/downloads"),

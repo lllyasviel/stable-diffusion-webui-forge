@@ -183,6 +183,8 @@ class ControlNetUnit:
     batch_input_gallery: Optional[List[str]] = None
     # Optional list of gallery masks for batch processing; defaults to None.
     batch_mask_gallery: Optional[List[str]] = None
+    # Optional list of gallery images for multi-inputs; defaults to None.
+    multi_inputs_gallery: Optional[List[str]] = None
     # Holds the preview image as a NumPy array; defaults to None.
     generated_image: Optional[np.ndarray] = None
     # ====== End of UI only fields ======

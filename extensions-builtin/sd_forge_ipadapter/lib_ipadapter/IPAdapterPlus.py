@@ -7,6 +7,7 @@ import math
 
 import ldm_patched.modules.utils
 import ldm_patched.modules.model_management
+from ldm_patched.modules.controlnet import ControlNet
 from ldm_patched.modules.clip_vision import clip_preprocess
 from ldm_patched.ldm.modules.attention import optimized_attention
 from ldm_patched.utils import path_utils as folder_paths
@@ -732,7 +733,7 @@ class IPAdapterApply:
             is_faceid=self.is_faceid,
             is_instant_id=self.is_instant_id
         )
-        
+
         self.ipadapter.to(self.device, dtype=self.dtype)
 
         if self.is_instant_id:
@@ -749,13 +750,27 @@ class IPAdapterApply:
         work_model = model.clone()
 
         if self.is_instant_id:
-            def modifier(cnet, x_noisy, t, cond, batched_number):
+            def instant_id_modifier(cnet: ControlNet, x_noisy, t, cond, batched_number):
+                """Overwrites crossattn inputs to InstantID ControlNet with ipadapter image embeds.
+
+                TODO: There can be multiple pairs of InstantID (ipadapter/controlnet) to control
+                rendering of multiple faces on canvas. We need to find a way to pair them. Currently,
+                the modifier is unconditionally applied to all instant id ControlNet units.
+                """
+                if (
+                    not isinstance(cnet, ControlNet) or
+                    # model_file_name is None for Control LoRA.
+                    cnet.control_model.model_file_name is None or
+                    "instant_id" not in cnet.control_model.model_file_name.lower()
+                ):
+                    return x_noisy, t, cond, batched_number
+
                 cond_mark = cond['transformer_options']['cond_mark'][:, None, None].to(cond['c_crossattn'])  # cond is 0
                 c_crossattn = image_prompt_embeds * (1.0 - cond_mark) + uncond_image_prompt_embeds * cond_mark
                 cond['c_crossattn'] = c_crossattn
                 return x_noisy, t, cond, batched_number
 
-            work_model.add_controlnet_conditioning_modifier(modifier)
+            work_model.add_controlnet_conditioning_modifier(instant_id_modifier)
 
         if attn_mask is not None:
             attn_mask = attn_mask.to(self.device)

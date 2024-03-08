@@ -1,6 +1,12 @@
 import gradio as gr
 
-from modules import scripts
+import sys
+import traceback
+
+from typing import Any
+from functools import partial
+
+from modules import script_callbacks, scripts
 from ldm_patched.contrib.external_freelunch import FreeU_V2
 
 
@@ -68,6 +74,18 @@ class FreeUForForge(scripts.Script):
 
         freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2 = script_args
 
+        xyz = getattr(p, "_freeu_xyz", {})
+        if "freeu_enabled" in xyz:
+            freeu_enabled = xyz["freeu_enabled"] == "True"
+        if "freeu_b1" in xyz:
+            freeu_b1 = xyz["freeu_b1"]
+        if "freeu_b2" in xyz:
+            freeu_b2 = xyz["freeu_b2"]
+        if "freeu_s1" in xyz:
+            freeu_s1 = xyz["freeu_s1"]
+        if "freeu_s2" in xyz:
+            freeu_s2 = xyz["freeu_s2"]
+
         if not freeu_enabled:
             return
 
@@ -89,3 +107,62 @@ class FreeUForForge(scripts.Script):
         ))
 
         return
+
+def set_value(p, x: Any, xs: Any, *, field: str):
+    if not hasattr(p, "_freeu_xyz"):
+        p._freeu_xyz = {}
+    p._freeu_xyz[field] = x
+
+def make_axis_on_xyz_grid():
+    xyz_grid = None
+    for script in scripts.scripts_data:
+        if script.script_class.__module__ == "xyz_grid.py":
+            xyz_grid = script.module
+            break
+
+    if xyz_grid is None:
+        return
+
+    axis = [
+        xyz_grid.AxisOption(
+            "FreeU Enabled",
+            str,
+            partial(set_value, field="freeu_enabled"),
+            choices=lambda: ["True", "False"]
+        ),
+        xyz_grid.AxisOption(
+            "FreeU B1",
+            float,
+            partial(set_value, field="freeu_b1"),
+        ),
+        xyz_grid.AxisOption(
+            "FreeU B2",
+            float,
+            partial(set_value, field="freeu_b2"),
+        ),
+        xyz_grid.AxisOption(
+            "FreeU S1",
+            float,
+            partial(set_value, field="freeu_s1"),
+        ),
+        xyz_grid.AxisOption(
+            "FreeU S2",
+            float,
+            partial(set_value, field="freeu_s2"),
+        ),
+    ]
+
+    if not any(x.label.startswith("FreeU") for x in xyz_grid.axis_options):
+        xyz_grid.axis_options.extend(axis)
+
+def on_before_ui():
+    try:
+        make_axis_on_xyz_grid()
+    except Exception:
+        error = traceback.format_exc()
+        print(
+            f"[-] FreeU Integrated: xyz_grid error:\n{error}",
+            file=sys.stderr,
+        )
+
+script_callbacks.on_before_ui(on_before_ui)

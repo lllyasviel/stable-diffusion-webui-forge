@@ -633,10 +633,10 @@ class DecodedSamples(list):
 
 def decode_latent_batch(model, batch, target_device=None, check_for_nans=False):
     samples = DecodedSamples()
+    samples_pytorch = decode_first_stage(model, batch).to(target_device)
 
-    for i in range(batch.shape[0]):
-        sample = decode_first_stage(model, batch[i:i + 1])[0]
-        samples.append(sample.to(target_device))
+    for x in samples_pytorch:
+        samples.append(x)
 
     return samples
 
@@ -917,11 +917,13 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 alphas_cumprod_backup = p.sd_model.alphas_cumprod
                 for modifier in alphas_cumprod_modifiers:
                     p.sd_model.alphas_cumprod = modifier(p.sd_model.alphas_cumprod)
+                p.sd_model.forge_objects.unet.model.model_sampling.set_sigmas(((1 - p.sd_model.alphas_cumprod) / p.sd_model.alphas_cumprod) ** 0.5)
 
             samples_ddim = p.sample(conditioning=p.c, unconditional_conditioning=p.uc, seeds=p.seeds, subseeds=p.subseeds, subseed_strength=p.subseed_strength, prompts=p.prompts)
 
             if alphas_cumprod_backup is not None:
                 p.sd_model.alphas_cumprod = alphas_cumprod_backup
+                p.sd_model.forge_objects.unet.model.model_sampling.set_sigmas(((1 - p.sd_model.alphas_cumprod) / p.sd_model.alphas_cumprod) ** 0.5)
 
             if p.scripts is not None:
                 ps = scripts.PostSampleArgs(samples_ddim)

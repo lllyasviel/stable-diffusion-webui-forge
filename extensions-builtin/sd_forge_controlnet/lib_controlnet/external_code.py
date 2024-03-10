@@ -255,8 +255,8 @@ class ControlNetUnit:
         unit = ControlNetUnit(
             **{k: v for k, v in d.items() if k in vars(ControlNetUnit)}
         )
-        if isinstance(unit.image, str):
-            img = np.array(api.decode_base64_to_image(unit.image)).astype('uint8')
+        if isinstance(unit.image['image'], str):
+            img = np.array(api.decode_base64_to_image(unit.image['image'])).astype('uint8')
             unit.image = {
                 "image": img,
                 "mask": np.zeros_like(img),

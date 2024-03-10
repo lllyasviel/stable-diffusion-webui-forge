@@ -261,8 +261,8 @@ class ControlNetUnit:
                 "image": img,
                 "mask": np.zeros_like(img),
             }
-        if isinstance(unit.mask_image, str):
-            mask = np.array(api.decode_base64_to_image(unit.mask_image)).astype('uint8')
+        if isinstance(unit.mask_image['image'], str):
+            mask = np.array(api.decode_base64_to_image(unit.mask_image['image'])).astype('uint8')
             if unit.image is not None:
                 # Attach mask on image if ControlNet has input image.
                 assert isinstance(unit.image, dict)

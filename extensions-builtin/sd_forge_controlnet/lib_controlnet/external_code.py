@@ -255,13 +255,13 @@ class ControlNetUnit:
         unit = ControlNetUnit(
             **{k: v for k, v in d.items() if k in vars(ControlNetUnit)}
         )
-        if isinstance(unit.image['image'], str):
+        if unit.image is not None and isinstance(unit.image['image'], str):
             img = np.array(api.decode_base64_to_image(unit.image['image'])).astype('uint8')
             unit.image = {
                 "image": img,
                 "mask": np.zeros_like(img),
             }
-        if isinstance(unit.mask_image['image'], str):
+        if unit.mask_image is not None and isinstance(unit.mask_image['image'], str):
             mask = np.array(api.decode_base64_to_image(unit.mask_image['image'])).astype('uint8')
             if unit.image is not None:
                 # Attach mask on image if ControlNet has input image.

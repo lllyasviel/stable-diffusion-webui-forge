@@ -119,6 +119,9 @@ parser.add_argument("--cuda-malloc", action="store_true")
 parser.add_argument("--cuda-stream", action="store_true")
 parser.add_argument("--pin-shared-memory", action="store_true")
 
+parser.add_argument("--pytorch_compile", action="store_true")
+parser.add_argument("--pytorch_compiler_backend", action="store_true")
+
 if ldm_patched.modules.options.args_parsing:
     args = parser.parse_args([])
 else:

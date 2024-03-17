@@ -40,20 +40,22 @@ def model_sampling(model_config, model_type):
 
 
 class BaseModel(torch.nn.Module):
-    def __init__(self, model_config, model_type=ModelType.EPS, device=None):
+    def __init__(self, model_config, model_type=ModelType.EPS, device=None, accelerator=None):
         super().__init__()
 
         unet_config = model_config.unet_config
         self.latent_format = model_config.latent_format
         self.model_config = model_config
         self.manual_cast_dtype = model_config.manual_cast_dtype
+        self.compiled = False
 
         if not unet_config.get("disable_unet_model_creation", False):
             if self.manual_cast_dtype is not None:
                 operations = ldm_patched.modules.ops.manual_cast
             else:
                 operations = ldm_patched.modules.ops.disable_weight_init
-            self.diffusion_model = UNetModel(**unet_config, device=device, operations=operations)
+        self.accelerator = accelerator
+        self.diffusion_model = UNetModel(**unet_config, device=device, operations=operations)
         self.model_type = model_type
         self.model_sampling = model_sampling(model_config, model_type)
 
@@ -175,6 +177,18 @@ class BaseModel(torch.nn.Module):
         if len(u) > 0:
             print("unet unexpected:", u)
         del to_load
+
+        if self.accelerator and not self.compiled:
+            try: 
+                import torch._dynamo as dynamo
+                dynamo.config.suppress_errors = True
+                dynamo.config.verbose = True
+                torch.backends.cudnn.benchmark = True
+                self.diffusion_model = torch.compile(self.diffusion_model, mode="default", fullgraph=False, options={"triton.cudagraphs": True})
+                self.compiled = True
+                print("Model compiled set")
+            except Exception as err:
+                print(f"Model compile not supported: {err}")
         return self
 
     def process_latent_in(self, latent):
@@ -295,8 +309,8 @@ class SDXLRefiner(BaseModel):
         return torch.cat((clip_pooled.to(flat.device), flat), dim=1)
 
 class SDXL(BaseModel):
-    def __init__(self, model_config, model_type=ModelType.EPS, device=None):
-        super().__init__(model_config, model_type, device=device)
+    def __init__(self, model_config, model_type=ModelType.EPS, device=None, accelerator=None):
+        super().__init__(model_config, model_type, device=device, accelerator=accelerator)
         self.embedder = Timestep(256)
         self.noise_augmentor = CLIPEmbeddingNoiseAugmentation(**{"noise_schedule_config": {"timesteps": 1000, "beta_schedule": "squaredcos_cap_v2"}, "timestep_dim": 1280})
 

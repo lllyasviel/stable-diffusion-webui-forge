@@ -71,7 +71,7 @@ def no_clip():
     return
 
 
-def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_clipvision=False, embedding_directory=None, output_model=True):
+def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_clipvision=False, embedding_directory=None, output_model=True, accelerator=None):
     sd_keys = sd.keys()
     clip = None
     clipvision = None
@@ -99,9 +99,13 @@ def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_c
             clipvision = ldm_patched.modules.clip_vision.load_clipvision_from_sd(sd, model_config.clip_vision_prefix, True)
 
     if output_model:
-        inital_load_device = model_management.unet_inital_load_device(parameters, unet_dtype)
-        offload_device = model_management.unet_offload_device()
-        model = model_config.get_model(sd, "model.diffusion_model.", device=inital_load_device)
+        inital_load_device = None
+        if accelerator:
+            inital_load_device = accelerator.device
+        else:
+            inital_load_device = model_management.unet_inital_load_device(parameters, unet_dtype)
+            offload_device = model_management.unet_offload_device()
+        model = model_config.get_model(sd, "model.diffusion_model.", device=inital_load_device, accelerator=accelerator)
         model.load_model_weights(sd, "model.diffusion_model.")
 
     if output_vae:
@@ -132,7 +136,7 @@ def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_c
 
 
 @torch.no_grad()
-def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
+def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None, accelerator=None):
     a1111_config_filename = find_checkpoint_config(state_dict, checkpoint_info)
     a1111_config = OmegaConf.load(a1111_config_filename)
     timer.record("forge solving config")
@@ -157,7 +161,8 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         output_clip=True,
         output_clipvision=True,
         embedding_directory=cmd_opts.embeddings_dir,
-        output_model=True
+        output_model=True,
+        accelerator=accelerator
     )
     sd_model.forge_objects = forge_objects
     sd_model.forge_objects_original = forge_objects.shallow_copy()

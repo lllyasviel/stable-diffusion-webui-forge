@@ -147,7 +147,7 @@ class SDXLRefiner(supported_models_base.BASE):
         state_dict_g = diffusers_convert.convert_text_enc_state_dict_v20(state_dict, "clip_g")
         if "clip_g.transformer.text_model.embeddings.position_ids" in state_dict_g:
             state_dict_g.pop("clip_g.transformer.text_model.embeddings.position_ids")
-        replace_prefix["clip_g"] = "conditioner.embedders.0.model"
+        replace_prefix["clip_g"] = "conditioner.embedders.0.model
         state_dict_g = utils.state_dict_prefix_replace(state_dict_g, replace_prefix)
         return state_dict_g
 
@@ -172,8 +172,8 @@ class SDXL(supported_models_base.BASE):
         else:
             return model_base.ModelType.EPS
 
-    def get_model(self, state_dict, prefix="", device=None):
-        out = model_base.SDXL(self, model_type=self.model_type(state_dict, prefix), device=device)
+    def get_model(self, state_dict, prefix="", device=None, accelerator=None):
+        out = model_base.SDXL(self, model_type=self.model_type(state_dict, prefix), device=device, accelerator=accelerator)
         if self.inpaint_model():
             out.set_inpaint()
         return out

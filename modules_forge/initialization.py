@@ -1,5 +1,6 @@
 import os
 import sys
+from accelerate import Accelerator
 
 
 MONITOR_MODEL_MOVING = False
@@ -41,11 +42,22 @@ def initialize_forge():
 
     if args_parser.args.gpu_device_id is not None:
         os.environ['CUDA_VISIBLE_DEVICES'] = str(args_parser.args.gpu_device_id)
-        print("Set device to:", args_parser.args.gpu_device_id)
+        print('Set device to:', args_parser.args.gpu_device_id)
 
     if args_parser.args.cuda_malloc:
         from modules_forge.cuda_malloc import try_cuda_malloc
         try_cuda_malloc()
+    
+    if args_parser.args.pytorch_compile:
+        print('Using torch compile...')
+        os.environ['pytorch_compile'] = "True"
+        dynamo_backend = 'inductor'
+        if args_parser.args.pytorch_compiler_backend:
+            dynamo_options = ['eager', 'aot_eager', 'inductor', 'aot_ts_nvfuser', 'nvprims_nvfuser', 'cudagraphs', 'ofi', 'fx2trt', 'onnxrt']
+            dynamo_backend = str(args_parser.args.dynamo_backend) if str(args_parser.args.dynamo_backend) in dynamo_options else dynamo_backend
+        print(f'Using pytorch compiler backend: {dynamo_backend}')
+        os.environ['pytoch_compiler_backend'] = dynamo_backend
+
 
     import ldm_patched.modules.model_management as model_management
     import torch

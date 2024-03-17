@@ -1,8 +1,10 @@
 import collections
 import os.path
+import os
 import sys
 import threading
 
+from accelerate import Accelerator
 import torch
 import re
 import safetensors.torch
@@ -554,6 +556,20 @@ def send_model_to_device(m):
 def send_model_to_trash(m):
     pass
 
+accelerator = None
+
+def load_accelerator():
+    import torch._dynamo as dynamo
+    torch._dynamo.config.verbose = True
+    torch.backends.cudnn.benchmark = True
+    dynamo_backend = os.environ.get('pytoch_compiler_backend', None)
+    print('Creating Accelerator...')
+    accelerator = Accelerator(
+        dynamo_backend=dynamo_backend
+    )
+    print(f'Accelerator device: {accelerator.device}')
+    return accelerator
+
 
 def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     from modules import sd_hijack
@@ -582,7 +598,11 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
         # cache newly loaded model
         checkpoints_loaded[checkpoint_info] = state_dict.copy()
 
-    sd_model = forge_loader.load_model_for_a1111(timer=timer, checkpoint_info=checkpoint_info, state_dict=state_dict)
+    accelerator = None
+    if os.environ.get("pytorch_compile", None):
+        accelerator = load_accelerator()
+    sd_model = forge_loader.load_model_for_a1111(timer=timer, checkpoint_info=checkpoint_info, state_dict=state_dict, accelerator=accelerator)
+
     sd_model.filename = checkpoint_info.filename
 
     del state_dict

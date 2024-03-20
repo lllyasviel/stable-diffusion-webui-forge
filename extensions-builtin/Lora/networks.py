@@ -140,16 +140,22 @@ def network_MultiheadAttention_load_state_dict(self, *args, **kwargs):
     pass
 
 
+files_cache = ""
 def list_available_networks():
+
+    os.makedirs(shared.cmd_opts.lora_dir, exist_ok=True)
+    candidates = list(shared.walk_files(shared.cmd_opts.lora_dir, allowed_extensions=[".pt", ".ckpt", ".safetensors"]))
+
+    if str(candidates) == files_cache:
+        return # has not changed
+    files_cache = str(candidates)
+
     available_networks.clear()
     available_network_aliases.clear()
     forbidden_network_aliases.clear()
     available_network_hash_lookup.clear()
     forbidden_network_aliases.update({"none": 1, "Addams": 1})
 
-    os.makedirs(shared.cmd_opts.lora_dir, exist_ok=True)
-
-    candidates = list(shared.walk_files(shared.cmd_opts.lora_dir, allowed_extensions=[".pt", ".ckpt", ".safetensors"]))
     for filename in candidates:
         if os.path.isdir(filename):
             continue

@@ -943,7 +943,7 @@ class UNetModel(nn.Module):
             h = self.id_predictor(h)
         elif "groupnorm_wrapper" in transformer_options:
             out_norm, out_rest = self.out[0], self.out[1:]
-            h = transformer_options["groupnorm_wrapper"](h, out_norm, transformer_options)
+            h = transformer_options["groupnorm_wrapper"](out_norm, h, transformer_options)
             h = out_rest(h)
         else:
             h = self.out(h)

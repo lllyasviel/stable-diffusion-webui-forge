@@ -168,6 +168,39 @@ legacy_preprocessors = {
             "Depth"
         ]
     },
+    "depth_fm": {
+        "label": "depth_fm",
+        "call_function": functools.partial(depth_fm, colored=False),
+        "unload_function": unload_depth_fm,
+        "managed_model": "model_depth_fm",
+        "model_free": False,
+        "no_control_mode": False,
+        "resolution": {
+            "label": "Resolution",
+            "value": 512,
+            "minimum": 64,
+            "maximum": 2048
+        },
+        "slider_1": {
+            "label": "Num Steps",
+            "minimum": 1,
+            "maximum": 30,
+            "value": 2,
+            "step": 1
+        },
+        "slider_2": {
+            "label": "Ensemble Size",
+            "minimum": 1,
+            "maximum": 9,
+            "value": 1,
+            "step": 1
+        },
+        "slider_3": None,
+        "priority": 0,
+        "tags": [
+            "Depth"
+        ]
+    },
     "depth_hand_refiner": {
         "label": "depth_hand_refiner",
         "call_function": g_hand_refiner_model.run_model,

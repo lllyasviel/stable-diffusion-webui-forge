@@ -148,4 +148,11 @@ try_install_from_wheel(
         "https://github.com/huchenlei/Depth-Anything/releases/download/v1.0.0/depth_anything-2024.1.22.0-py2.py3-none-any.whl",
     ),
 )
+try_install_from_wheel(
+    "depth_fm",
+    wheel_url=os.environ.get(
+        "DEPTH_FM_WHEEL",
+        "https://github.com/sdbds/depth-fm/releases/download/1.0.2/depth_fm-2024.3.23-py3-none-any.whl",
+    ),
+)
 try_remove_legacy_submodule()

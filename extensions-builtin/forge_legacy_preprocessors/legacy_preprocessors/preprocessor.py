@@ -205,6 +205,25 @@ def unload_depth_anything():
     if model_depth_anything is not None:
         model_depth_anything.unload_model()
 
+model_depth_fm = None
+
+
+def depth_fm(img, res:int = 512, thr_a: int = 2, thr_b: int = 4, colored:bool = True, **kwargs):
+    thr_v, thr_d = thr_a, thr_b
+    img, remove_pad = resize_image_with_pad(img, res)
+    global model_depth_fm
+    if model_depth_fm is None:
+        with Extra(torch_handler):
+            from annotator.depth_fm import DepthFMDetector
+            device = devices.get_device_for("controlnet")
+            model_depth_fm = DepthFMDetector(device)
+    return remove_pad(model_depth_fm(img, thr_v, thr_d, colored=colored)), True
+
+
+def unload_depth_fm():
+    if model_depth_fm is not None:
+        model_depth_fm.unload_model()
+
 
 model_midas = None
 

@@ -49,9 +49,11 @@ class DepthFMDetector:
         def predict_depth(model, image, num_steps, ensemble_Size):
             return model.predict_depth(image, num_steps, ensemble_Size)
         depth = predict_depth(self.model, image,self.num_steps,self.ensemble_Size)
+        depth -= torch.min(depth)
+        depth /= torch.max(depth)
         depth = depth * 255.0
         depth = depth.squeeze(0).squeeze(0).cpu().numpy()
-        depth = 255 - depth.astype(np.uint8)
+        depth = 255 - depth.clip(0, 255).astype(np.uint8)
         if colored:
             return cv2.applyColorMap(depth, cv2.COLORMAP_INFERNO)[:, :, ::-1]
         else:

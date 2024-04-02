@@ -40,7 +40,7 @@ class PreprocessorReference(Preprocessor):
         self.slider_resolution = PreprocessorParameter(visible=False)
         self.slider_1 = PreprocessorParameter(label='Style Fidelity', value=0.5, minimum=0.0, maximum=1.0, step=0.01, visible=True)
         self.show_control_mode = False
-        self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
+        self.crop_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
         self.do_not_need_model = True
 
         self.is_recording_style = False

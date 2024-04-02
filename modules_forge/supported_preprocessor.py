@@ -30,7 +30,7 @@ class Preprocessor:
         self.show_control_mode = True
         self.do_not_need_model = False
         self.sorting_priority = 0  # higher goes to top in the list
-        self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = True
+        self.crop_image_with_a1111_mask_when_in_img2img_inpaint_tab = True
         self.fill_mask_with_one_when_resize_and_fill = False
         self.use_soft_projection_in_hr_fix = False
         self.expand_mask_when_resize_and_fill = False
@@ -109,7 +109,7 @@ class PreprocessorClipVision(Preprocessor):
         self.url = url
         self.filename = filename
         self.slider_resolution = PreprocessorParameter(visible=False)
-        self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
+        self.crop_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
         self.show_control_mode = False
         self.sorting_priority = 1
         self.clipvision = None

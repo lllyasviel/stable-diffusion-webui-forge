@@ -123,7 +123,7 @@ class ControlNetForForgeOfficial(scripts.Script):
                 a1111_mask_image is not None
         )
         if (
-                preprocessor.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab
+                preprocessor.crop_image_with_a1111_mask_when_in_img2img_inpaint_tab
                 and is_only_masked_inpaint
         ):
             logger.info("Crop input image based on A1111 mask.")

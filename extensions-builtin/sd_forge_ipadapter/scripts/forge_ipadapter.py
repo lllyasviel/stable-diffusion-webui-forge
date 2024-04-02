@@ -61,7 +61,7 @@ class PreprocessorInsightFaceForInstantID(Preprocessor):
         self.model_filename_filters = ['Instant-ID', 'Instant_ID']
         self.sorting_priority = 20
         self.slider_resolution = PreprocessorParameter(visible=False)
-        self.corp_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
+        self.crop_image_with_a1111_mask_when_in_img2img_inpaint_tab = False
         self.show_control_mode = False
         self.sorting_priority = 10
         self.cached_insightface = None

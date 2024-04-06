@@ -112,6 +112,12 @@ add_supported_preprocessor(PreprocessorClipVisionForIPAdapter(
     filename='CLIP-ViT-bigG.safetensors'
 ))
 
+add_supported_preprocessor(PreprocessorClipVisionWithForInstantStyle(
+    name='InstantStyle',
+    url='https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors',
+    filename='CLIP-ViT-bigG.safetensors'
+))
+
 add_supported_preprocessor(PreprocessorClipVisionWithInsightFaceForIPAdapter(
     name='InsightFace+CLIP-H (IPAdapter)',
     url='https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors',
@@ -120,10 +126,6 @@ add_supported_preprocessor(PreprocessorClipVisionWithInsightFaceForIPAdapter(
 
 add_supported_preprocessor(PreprocessorInsightFaceForInstantID(
     name='InsightFace (InstantID)',
-))
-
-add_supported_preprocessor(PreprocessorClipVisionWithForInstantStyle(
-    name='InstantStyle',
 ))
 
 class IPAdapterPatcher(ControlModelPatcher):

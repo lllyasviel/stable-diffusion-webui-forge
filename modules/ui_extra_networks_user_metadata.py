@@ -68,14 +68,14 @@ class UserMetadataEditor:
 
         self.button_cancel.click(fn=None, _js="closePopup")
 
-    def get_card_html(self, name):
+    def get_card_html(self, name, force=False):
         item = self.page.items.get(name, {})
 
         preview_url = item.get("preview", None)
 
-        if not preview_url:
+        if not preview_url or force:
             filename, _ = os.path.splitext(item["filename"])
-            preview_url = self.page.find_preview(filename)
+            preview_url = self.page.find_preview(filename, force)
             item["preview"] = preview_url
 
         if preview_url:
@@ -186,12 +186,12 @@ class UserMetadataEditor:
 
         images.save_image_with_geninfo(image, geninfo, item["local_preview"])
 
-        return self.get_card_html(name), ''
+        return self.get_card_html(name, True), ''
 
     def setup_ui(self, gallery):
         self.button_replace_preview.click(
             fn=self.save_preview,
-            _js="function(x, y, z){return [selected_gallery_index(), y, z]}",
+            _js="function(x, y, z){ return [selected_gallery_index(false), y, z];}",
             inputs=[self.edit_name_input, gallery, self.edit_name_input],
             outputs=[self.html_preview, self.html_status]
         ).then(

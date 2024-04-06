@@ -128,15 +128,13 @@ def get_single_card(page: str = "", tabname: str = "", name: str = ""):
     page = next(iter([x for x in extra_pages if x.name == page]), None)
 
     try:
-        item = page.create_item(name, enable_filter=False)
+        item = page.create_item(name, enable_filter=False, force=True)
         page.items[name] = item
     except Exception as e:
         errors.display(e, "creating item for extra network")
         item = page.items.get(name)
-
     page.read_user_metadata(item, use_cache=False)
     item_html = page.create_item_html(tabname, item, shared.html("extra-networks-card.html"))
-
     return JSONResponse({"html": item_html})
 
 
@@ -183,9 +181,9 @@ class ExtraNetworksPage:
 
         item["user_metadata"] = metadata
 
-    def link_preview(self, filename):
+    def link_preview(self, filename, force=False):
         quoted_filename = urllib.parse.quote(filename.replace('\\', '/'))
-        mtime, _ = self.lister.mctime(filename)
+        mtime, _ = self.lister.mctime(filename, force)
         return f"./sd_extra_networks/thumb?filename={quoted_filename}&mtime={mtime}"
 
     def search_terms_from_path(self, filename, possible_directories=None):
@@ -571,7 +569,7 @@ class ExtraNetworksPage:
             "path": str(pth).lower(),
         }
 
-    def find_preview(self, path):
+    def find_preview(self, path, force=False):
         """
         Find a preview PNG for a given path (without extension) and call link_preview on it.
         """
@@ -580,7 +578,7 @@ class ExtraNetworksPage:
 
         for file in potential_files:
             if self.lister.exists(file):
-                return self.link_preview(file)
+                return self.link_preview(file, force)
 
         return None
 

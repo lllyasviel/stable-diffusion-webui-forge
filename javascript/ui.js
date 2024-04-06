@@ -7,23 +7,23 @@ function set_theme(theme) {
     }
 }
 
-function all_gallery_buttons() {
+function all_gallery_buttons(onlyVisible = true) {
     var allGalleryButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small');
     var visibleGalleryButtons = [];
     allGalleryButtons.forEach(function(elem) {
-        if (elem.parentElement.offsetParent) {
+        if (elem.parentElement.offsetParent || !onlyVisible) {
             visibleGalleryButtons.push(elem);
         }
     });
     return visibleGalleryButtons;
 }
 
-function selected_gallery_button() {
-    return all_gallery_buttons().find(elem => elem.classList.contains('selected')) ?? null;
+function selected_gallery_button(onlyVisible = true) {
+    return all_gallery_buttons(onlyVisible).find(elem => elem.classList.contains('selected')) ?? null;
 }
 
-function selected_gallery_index() {
-    return all_gallery_buttons().findIndex(elem => elem.classList.contains('selected'));
+function selected_gallery_index(onlyVisible = true) {
+    return all_gallery_buttons(onlyVisible).findIndex(elem => elem.classList.contains('selected'));
 }
 
 function extract_image_from_gallery(gallery) {

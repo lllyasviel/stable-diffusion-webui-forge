@@ -88,28 +88,28 @@ class MassFileLister:
     def __init__(self):
         self.cached_dirs = {}
 
-    def find(self, path):
+    def find(self, path, force=False):
         """
-        Find the metadata for a file at the given path.
+        Find the metadata for a file at the given path. When force is True, the file will be stat'd even if it is already in the cache.
 
         Returns:
             tuple or None: A tuple of (name, mtime, ctime) if the file exists, or None if it does not.
         """
 
         dirname, filename = os.path.split(path)
-
         cached_dir = self.cached_dirs.get(dirname)
         if cached_dir is None:
             cached_dir = MassFileListerCachedDir(dirname)
             self.cached_dirs[dirname] = cached_dir
 
-        stats = cached_dir.files_cased.get(filename)
-        if stats is not None:
-            return stats
+        if not force:
+            stats = cached_dir.files_cased.get(filename)
+            if stats is not None:
+                return stats
 
-        stats = cached_dir.files.get(filename.lower())
-        if stats is None:
-            return None
+            stats = cached_dir.files.get(filename.lower())
+            if stats is not None:
+                return stats
 
         try:
             os_stats = os.stat(path, follow_symlinks=False)
@@ -122,7 +122,7 @@ class MassFileLister:
 
         return self.find(path) is not None
 
-    def mctime(self, path):
+    def mctime(self, path, force=True):
         """
         Get the modification and creation times for a file at the given path.
 
@@ -130,7 +130,7 @@ class MassFileLister:
             tuple: A tuple of (mtime, ctime) if the file exists, or (0, 0) if it does not.
         """
 
-        stats = self.find(path)
+        stats = self.find(path, force)
         return (0, 0) if stats is None else stats[1:3]
 
     def reset(self):

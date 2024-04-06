@@ -15,7 +15,7 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
     def refresh(self):
         networks.list_available_networks()
 
-    def create_item(self, name, index=None, enable_filter=True):
+    def create_item(self, name, index=None, enable_filter=True, force=False):
         lora_on_disk = networks.available_networks.get(name)
         if lora_on_disk is None:
             return
@@ -31,7 +31,7 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
             "name": name,
             "filename": lora_on_disk.filename,
             "shorthash": lora_on_disk.shorthash,
-            "preview": self.find_preview(path),
+            "preview": self.find_preview(path, force),
             "description": self.find_description(path),
             "search_terms": search_terms,
             "local_preview": f"{path}.{shared.opts.samples_format}",

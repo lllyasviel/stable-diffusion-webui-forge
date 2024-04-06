@@ -164,11 +164,9 @@ def set_model_patch_replace(model, patch_kwargs, key):
     if "attn2" not in to["patches_replace"]:
         to["patches_replace"]["attn2"] = {}
     if key not in to["patches_replace"]["attn2"]:
-        print('setting new CrossAttentionPatch for: ', key)
         patch = CrossAttentionPatch(**patch_kwargs)
         to["patches_replace"]["attn2"][key] = patch
     else:
-        print('updating CrossAttentionPatch for: ', key)
         to["patches_replace"]["attn2"][key].set_new_condition(**patch_kwargs)
 
 def image_add_noise(image, noise):

@@ -52,6 +52,21 @@ class PreprocessorClipVisionWithInsightFaceForIPAdapter(PreprocessorClipVisionFo
         )
         return cond
 
+class PreprocessorClipVisionWithForInstantStyle(PreprocessorClipVisionForIPAdapter):
+    def __init__(self, name, url, filename):
+        super().__init__(name, url, filename)
+
+    def __call__(self, input_image, resolution, slider_1=None, slider_2=None, slider_3=None, **kwargs):
+        cond = dict(
+            clip_vision=self.load_clipvision(),
+            image=numpy_to_pytorch(input_image),
+            weight_type="original",
+            noise=0.0,
+            embeds=None,
+            unfold_batch=False,
+            instant_style=True,
+        )
+        return cond
 
 class PreprocessorInsightFaceForInstantID(Preprocessor):
     def __init__(self, name):
@@ -107,6 +122,9 @@ add_supported_preprocessor(PreprocessorInsightFaceForInstantID(
     name='InsightFace (InstantID)',
 ))
 
+add_supported_preprocessor(PreprocessorClipVisionWithForInstantStyle(
+    name='InstantStyle',
+))
 
 class IPAdapterPatcher(ControlModelPatcher):
     @staticmethod

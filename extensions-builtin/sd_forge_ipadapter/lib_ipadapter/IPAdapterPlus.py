@@ -164,9 +164,11 @@ def set_model_patch_replace(model, patch_kwargs, key):
     if "attn2" not in to["patches_replace"]:
         to["patches_replace"]["attn2"] = {}
     if key not in to["patches_replace"]["attn2"]:
+        print('setting new CrossAttentionPatch for: ', key)
         patch = CrossAttentionPatch(**patch_kwargs)
         to["patches_replace"]["attn2"][key] = patch
     else:
+        print('updating CrossAttentionPatch for: ', key)
         to["patches_replace"]["attn2"][key].set_new_condition(**patch_kwargs)
 
 def image_add_noise(image, noise):
@@ -262,7 +264,7 @@ class IPAdapter(nn.Module):
     def __init__(self, ipadapter_model, cross_attention_dim=1024, output_cross_attention_dim=1024,
                  clip_embeddings_dim=1024, clip_extra_context_tokens=4,
                  is_sdxl=False, is_plus=False, is_full=False,
-                 is_faceid=False, is_instant_id=False):
+                 is_faceid=False, is_instant_id=False, is_instant_style=False):
         super().__init__()
 
         self.clip_embeddings_dim = clip_embeddings_dim
@@ -614,7 +616,7 @@ class IPAdapterApply:
 
     def apply_ipadapter(self, ipadapter, model, weight, clip_vision=None, image=None, weight_type="original",
                         noise=None, embeds=None, attn_mask=None, start_at=0.0, end_at=1.0, unfold_batch=False,
-                        insightface=None, faceid_v2=False, weight_v2=False, instant_id=False):
+                        insightface=None, faceid_v2=False, weight_v2=False, instant_id=False, instant_style=False):
 
         self.dtype = torch.float16 if ldm_patched.modules.model_management.should_use_fp16() else torch.float32
         self.device = ldm_patched.modules.model_management.get_torch_device()
@@ -624,6 +626,7 @@ class IPAdapterApply:
         self.is_faceid = self.is_portrait or "0.to_q_lora.down.weight" in ipadapter["ip_adapter"]
         self.is_plus = (self.is_full or "latents" in ipadapter["image_proj"] or "perceiver_resampler.proj_in.weight" in ipadapter["image_proj"])
         self.is_instant_id = instant_id
+        self.is_instant_style = instant_style
 
         if self.is_faceid and not insightface:
             raise Exception('InsightFace must be provided for FaceID models.')
@@ -785,18 +788,22 @@ class IPAdapterApply:
                 patch_kwargs["number"] += 1
             set_model_patch_replace(work_model, patch_kwargs, ("middle", 0))
         else:
-            for id in [4,5,7,8]: # id of input_blocks that have cross attention
-                block_indices = range(2) if id in [4, 5] else range(10) # transformer_depth
-                for index in block_indices:
-                    set_model_patch_replace(work_model, patch_kwargs, ("input", id, index))
+            if not self.is_instant_style:
+                for id in [4,5,7,8]: # id of input_blocks that have cross attention
+                    block_indices = range(2) if id in [4, 5] else range(10) # transformer_depth
+                    for index in block_indices:
+                        set_model_patch_replace(work_model, patch_kwargs, ("input", id, index))
+                        patch_kwargs["number"] += 1
+                for id in range(6): # id of output_blocks that have cross attention
+                    block_indices = range(2) if id in [3, 4, 5] else range(10) # transformer_depth
+                    for index in block_indices:
+                        set_model_patch_replace(work_model, patch_kwargs, ("output", id, index))
+                        patch_kwargs["number"] += 1
+                for index in range(10):
+                    set_model_patch_replace(work_model, patch_kwargs, ("middle", 0, index))
                     patch_kwargs["number"] += 1
-            for id in range(6): # id of output_blocks that have cross attention
-                block_indices = range(2) if id in [3, 4, 5] else range(10) # transformer_depth
-                for index in block_indices:
-                    set_model_patch_replace(work_model, patch_kwargs, ("output", id, index))
-                    patch_kwargs["number"] += 1
-            for index in range(10):
-                set_model_patch_replace(work_model, patch_kwargs, ("middle", 0, index))
+            else: # InstantStyle
+                set_model_patch_replace(work_model, patch_kwargs, ("output", 0, 1)) # target_blocks=["up_blocks.0.attentions.1"]
                 patch_kwargs["number"] += 1
 
         return (work_model, )

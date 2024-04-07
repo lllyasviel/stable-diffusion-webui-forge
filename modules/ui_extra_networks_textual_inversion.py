@@ -12,7 +12,7 @@ class ExtraNetworksPageTextualInversion(ui_extra_networks.ExtraNetworksPage):
     def refresh(self):
         sd_hijack.model_hijack.embedding_db.load_textual_inversion_embeddings(force_reload=True)
 
-    def create_item(self, name, index=None, enable_filter=True):
+    def create_item(self, name, index=None, enable_filter=True, force=False):
         embedding = sd_hijack.model_hijack.embedding_db.word_embeddings.get(name)
         if embedding is None:
             return
@@ -26,7 +26,7 @@ class ExtraNetworksPageTextualInversion(ui_extra_networks.ExtraNetworksPage):
             "filename": embedding.filename,
             "shorthash": embedding.shorthash,
             "preview": self.find_preview(path),
-            "description": self.find_description(path),
+            "description": self.find_description(path, force),
             "search_terms": search_terms,
             "prompt": quote_js(embedding.name),
             "local_preview": f"{path}.preview.{shared.opts.samples_format}",

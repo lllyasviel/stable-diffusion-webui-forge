@@ -12,7 +12,7 @@ class ExtraNetworksPageHypernetworks(ui_extra_networks.ExtraNetworksPage):
     def refresh(self):
         shared.reload_hypernetworks()
 
-    def create_item(self, name, index=None, enable_filter=True):
+    def create_item(self, name, index=None, enable_filter=True, force=False):
         full_path = shared.hypernetworks.get(name)
         if full_path is None:
             return
@@ -27,7 +27,7 @@ class ExtraNetworksPageHypernetworks(ui_extra_networks.ExtraNetworksPage):
             "name": name,
             "filename": full_path,
             "shorthash": shorthash,
-            "preview": self.find_preview(path),
+            "preview": self.find_preview(path, force),
             "description": self.find_description(path),
             "search_terms": search_terms,
             "prompt": quote_js(f"<hypernet:{name}:") + " + opts.extra_networks_default_multiplier + " + quote_js(">"),

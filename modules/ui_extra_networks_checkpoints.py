@@ -14,7 +14,7 @@ class ExtraNetworksPageCheckpoints(ui_extra_networks.ExtraNetworksPage):
     def refresh(self):
         shared.refresh_checkpoints()
 
-    def create_item(self, name, index=None, enable_filter=True):
+    def create_item(self, name, index=None, enable_filter=True, force=False):
         checkpoint: sd_models.CheckpointInfo = sd_models.checkpoint_aliases.get(name)
         if checkpoint is None:
             return
@@ -27,7 +27,7 @@ class ExtraNetworksPageCheckpoints(ui_extra_networks.ExtraNetworksPage):
             "name": checkpoint.name_for_extra,
             "filename": checkpoint.filename,
             "shorthash": checkpoint.shorthash,
-            "preview": self.find_preview(path),
+            "preview": self.find_preview(path, force),
             "description": self.find_description(path),
             "search_terms": search_terms,
             "onclick": html.escape(f"return selectCheckpoint({ui_extra_networks.quote_js(name)})"),

@@ -547,7 +547,7 @@ class ExtraNetworksPage:
             }
         )
 
-    def create_item(self, name, index=None):
+    def create_item(self, name, index=None, force=False):
         raise NotImplementedError()
 
     def list_items(self):

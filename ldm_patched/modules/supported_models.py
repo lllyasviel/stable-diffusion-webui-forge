@@ -169,6 +169,8 @@ class SDXL(supported_models_base.BASE):
     def model_type(self, state_dict, prefix=""):
         if "v_pred" in state_dict:
             return model_base.ModelType.V_PREDICTION
+        elif "edm_vpred.sigma_max" in state_dict:
+            return model_base.ModelType.V_PREDICTION_EDM
         else:
             return model_base.ModelType.EPS
 

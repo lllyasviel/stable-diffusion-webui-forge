@@ -170,6 +170,9 @@ class SDXL(supported_models_base.BASE):
         if "v_pred" in state_dict:
             return model_base.ModelType.V_PREDICTION
         elif "edm_vpred.sigma_max" in state_dict:
+            self.sampling_settings["sigma_max"] = float(state_dict["edm_vpred.sigma_max"].item())
+            if "edm_vpred.sigma_min" in state_dict:
+                self.sampling_settings["sigma_min"] = float(state_dict["edm_vpred.sigma_min"].item())
             return model_base.ModelType.V_PREDICTION_EDM
         else:
             return model_base.ModelType.EPS

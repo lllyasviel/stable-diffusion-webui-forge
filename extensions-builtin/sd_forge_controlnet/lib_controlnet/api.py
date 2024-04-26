@@ -11,6 +11,8 @@ from .global_state import (
     get_all_preprocessor_names,
     get_all_controlnet_names,
     get_preprocessor,
+    get_all_preprocessor_tags,
+    select_control_type,
 )
 from .utils import judge_image_type
 from .logging import logger
@@ -51,6 +53,30 @@ def controlnet_api(_: gr.Blocks, app: FastAPI):
             "module_list": module_list,
             # TODO: Add back module detail.
             # "module_detail": external_code.get_modules_detail(alias_names),
+        }
+
+    @app.get("/controlnet/control_types")
+    async def control_types():
+        def format_control_type(
+            filtered_preprocessor_list,
+            filtered_model_list,
+            default_option,
+            default_model,
+        ):
+            control_dict = {
+                    "module_list": filtered_preprocessor_list,
+                    "model_list": filtered_model_list,
+                    "default_option": default_option,
+                    "default_model": default_model,
+                }
+
+            return control_dict
+
+        return {
+            "control_types": {
+                control_type: format_control_type(*select_control_type(control_type))
+                for control_type in get_all_preprocessor_tags()
+            }
         }
 
     @app.post("/controlnet/detect")

@@ -6,6 +6,7 @@ from modules import shared, sd_models
 from lib_controlnet.enums import StableDiffusionVersion
 from modules_forge.shared import controlnet_dir, supported_preprocessors
 
+from typing import Dict, Tuple, List
 
 CN_MODEL_EXTS = [".pt", ".pth", ".ckpt", ".safetensors", ".bin", ".patch"]
 
@@ -56,6 +57,10 @@ controlnet_names = ['None']
 def get_preprocessor(name):
     return supported_preprocessors.get(name, None)
 
+def get_default_preprocessor(tag):
+    ps = get_filtered_preprocessor_names(tag)
+    assert len(ps) > 0
+    return ps[0] if len(ps) == 1 else ps[1]
 
 def get_sorted_preprocessors():
     preprocessors = [p for k, p in supported_preprocessors.items() if k != 'None']
@@ -144,3 +149,44 @@ def get_sd_version() -> StableDiffusionVersion:
         return StableDiffusionVersion.SD1x
     else:
         return StableDiffusionVersion.UNKNOWN
+
+
+def select_control_type(
+    control_type: str,
+    sd_version: StableDiffusionVersion = StableDiffusionVersion.UNKNOWN,
+) -> Tuple[List[str], List[str], str, str]:
+    global controlnet_names
+
+    pattern = control_type.lower()
+    all_models = list(controlnet_names)
+
+    if pattern == "all":
+        preprocessors = get_sorted_preprocessors().values()
+        return [
+            [p.name for p in preprocessors],
+            all_models,
+            'none',  # default option
+            "None"   # default model
+        ]
+
+    filtered_model_list = get_filtered_controlnet_names(control_type)
+
+    if pattern == "none":
+        filtered_model_list.append("None")
+
+    assert len(filtered_model_list) > 0, "'None' model should always be available."
+    if len(filtered_model_list) == 1:
+        default_model = "None"
+    else:
+        default_model = filtered_model_list[1]
+        for x in filtered_model_list:
+            if "11" in x.split("[")[0]:
+                default_model = x
+                break
+
+    return (
+        get_filtered_preprocessor_names(control_type),
+        filtered_model_list,
+        get_default_preprocessor(control_type),
+        default_model
+    )

@@ -107,9 +107,11 @@ class ModelSamplingContinuousEDM(torch.nn.Module):
 
         sigma_min = sampling_settings.get("sigma_min", 0.002)
         sigma_max = sampling_settings.get("sigma_max", 120.0)
-        self.set_sigma_range(sigma_min, sigma_max)
+        sigma_data = sampling_settings.get("sigma_data", 1.0)
+        self.set_sigma_range(sigma_min, sigma_max, sigma_data)
 
-    def set_sigma_range(self, sigma_min, sigma_max):
+    def set_sigma_range(self, sigma_min, sigma_max, sigma_data):
+        self.sigma_data = sigma_data
         sigmas = torch.linspace(math.log(sigma_min), math.log(sigma_max), 1000).exp()
 
         self.register_buffer('sigmas', sigmas) #for compatibility with some schedulers

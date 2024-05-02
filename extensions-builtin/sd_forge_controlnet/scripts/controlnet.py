@@ -166,7 +166,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         image_list = []
         resize_mode = external_code.resize_mode_from_value(unit.resize_mode)
 
-        if unit.input_mode == external_code.InputMode.MERGE:
+        if unit.input_mode == InputMode.MERGE:
             for idx, item in enumerate(unit.batch_input_gallery):
                 img_path = item['name']
                 logger.info(f'Try to read image: {img_path}')
@@ -180,7 +180,7 @@ class ControlNetForForgeOfficial(scripts.Script):
                     mask = np.ascontiguousarray(cv2.imread(mask_path)[:, :, ::-1]).copy()
                 if img is not None:
                     image_list.append([img, mask])
-        elif unit.input_mode == external_code.InputMode.BATCH:
+        elif unit.input_mode == InputMode.BATCH:
             image_list = []
             image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
             batch_image_files = shared.listfiles(unit.batch_image_dir)
@@ -350,7 +350,7 @@ class ControlNetForForgeOfficial(scripts.Script):
                 break
 
         if has_high_res_fix:
-            hr_option = HiResFixOption.from_value(unit.hr_option)
+            hr_option = unit.hr_option
         else:
             hr_option = HiResFixOption.BOTH
 
@@ -441,7 +441,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         )
 
         if has_high_res_fix:
-            hr_option = HiResFixOption.from_value(unit.hr_option)
+            hr_option = unit.hr_option
         else:
             hr_option = HiResFixOption.BOTH
 

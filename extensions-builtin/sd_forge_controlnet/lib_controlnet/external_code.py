@@ -194,7 +194,7 @@ class ControlNetUnit:
     mask_image: Optional[GradioImageMaskPair] = None
     # Specifies how this unit should be applied in each pass of high-resolution fix.
     # Ignored if high-resolution fix is not enabled.
-    hr_option: Union[HiResFixOption, int, str] = HiResFixOption.BOTH
+    hr_option: HiResFixOption = HiResFixOption.BOTH
     # Indicates whether the unit is enabled; defaults to True.
     enabled: bool = True
     # Name of the module being used; defaults to "None".
@@ -206,7 +206,7 @@ class ControlNetUnit:
     # Optional image for input; defaults to None.
     image: Optional[GradioImageMaskPair] = None
     # Specifies the mode of image resizing; defaults to inner fit.
-    resize_mode: Union[ResizeMode, int, str] = ResizeMode.INNER_FIT
+    resize_mode: ResizeMode = ResizeMode.INNER_FIT
     # Resolution for processing by the unit; defaults to -1 (unspecified).
     processor_res: int = -1
     # Threshold A for processing; defaults to -1 (unspecified).
@@ -220,7 +220,7 @@ class ControlNetUnit:
     # Enables pixel-perfect processing; defaults to False.
     pixel_perfect: bool = False
     # Control mode for the unit; defaults to balanced.
-    control_mode: Union[ControlMode, int, str] = ControlMode.BALANCED
+    control_mode: ControlMode = ControlMode.BALANCED
 
     # Following fields should only be used in the API.
     # ====== Start of API only fields ======
@@ -277,6 +277,11 @@ class ControlNetUnit:
                     "image": mask,
                     "mask": np.zeros_like(mask),
                 }
+        # Convert strings to enums.
+        unit.input_mode = InputMode(unit.input_mode)
+        unit.hr_option = HiResFixOption(unit.hr_option)
+        unit.resize_mode = ResizeMode(unit.resize_mode)
+        unit.control_mode = ControlMode(unit.control_mode)
         return unit
 
 

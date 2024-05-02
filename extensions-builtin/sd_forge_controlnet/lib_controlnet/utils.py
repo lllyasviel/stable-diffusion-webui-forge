@@ -1,7 +1,10 @@
 from typing import Optional
+from copy import copy
 from modules import processing
+from modules.api import api
 
 from lib_controlnet import external_code
+from lib_controlnet.external_code import InputMode, ControlNetUnit
 
 from modules_forge.forge_util import HWC3
 
@@ -361,3 +364,22 @@ def crop_and_resize_image(detected_map, resize_mode, h, w, fill_border_with_255=
 
 def judge_image_type(img):
     return isinstance(img, np.ndarray) and img.ndim == 3 and int(img.shape[2]) in [3, 4]
+
+
+def try_unfold_unit(unit: ControlNetUnit) -> List[ControlNetUnit]:
+    """Unfolds an multi-inputs unit into multiple units with one input."""
+    if unit.input_mode != InputMode.MERGE:
+        return [unit]
+
+    def extract_unit(gallery_item: dict) -> ControlNetUnit:
+        r_unit = copy(unit)
+        img = np.array(api.decode_base64_to_image(read_image(gallery_item["name"]))).astype('uint8')
+        r_unit.image = {
+            "image": img,
+            "mask": np.zeros_like(img),
+        }
+        r_unit.input_mode = InputMode.SIMPLE
+        r_unit.weight = unit.weight / len(unit.multi_inputs_gallery)
+        return r_unit
+
+    return [extract_unit(item) for item in unit.multi_inputs_gallery]

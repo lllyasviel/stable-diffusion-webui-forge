@@ -11,6 +11,7 @@ from lib_controlnet import (
     global_state,
     external_code,
 )
+from lib_controlnet.external_code import ControlNetUnit
 from lib_controlnet.logging import logger
 from lib_controlnet.controlnet_ui.openpose_editor import OpenposeEditor
 from lib_controlnet.controlnet_ui.preset import ControlNetPresetUI
@@ -21,7 +22,6 @@ from lib_controlnet.enums import InputMode, HiResFixOption
 from modules import shared, script_callbacks
 from modules.ui_components import FormRow
 from modules_forge.forge_util import HWC3
-from lib_controlnet.external_code import UiControlNetUnit
 
 
 @dataclass
@@ -172,10 +172,10 @@ class ControlNetUiGroup(object):
         self.webcam_mirrored = False
 
         # Note: All gradio elements declared in `render` will be defined as member variable.
-        # Update counter to trigger a force update of UiControlNetUnit.
+        # Update counter to trigger a force update of ControlNetUnit.
         # dummy_gradio_update_trigger is useful when a field with no event subscriber available changes.
         # e.g. gr.Gallery, gr.State, etc. After an update to gr.State / gr.Gallery, please increment
-        # this counter to trigger a sync update of UiControlNetUnit.
+        # this counter to trigger a sync update of ControlNetUnit.
         self.dummy_gradio_update_trigger = None
         self.enabled = None
         self.upload_tab = None
@@ -610,6 +610,12 @@ class ControlNetUiGroup(object):
         )
 
         unit = gr.State(self.default_unit)
+        def create_unit(*args):
+            return ControlNetUnit.from_dict({
+                k: v
+                for k, v in zip(vars(ControlNetUnit()).keys(), args)
+            })
+
         for comp in unit_args + (self.dummy_gradio_update_trigger,):
             event_subscribers = []
             if hasattr(comp, "edit"):
@@ -626,7 +632,7 @@ class ControlNetUiGroup(object):
 
             for event_subscriber in event_subscribers:
                 event_subscriber(
-                    fn=UiControlNetUnit, inputs=list(unit_args), outputs=unit
+                    fn=create_unit, inputs=list(unit_args), outputs=unit
                 )
 
         (
@@ -634,7 +640,7 @@ class ControlNetUiGroup(object):
             if self.is_img2img
             else ControlNetUiGroup.a1111_context.txt2img_submit_button
         ).click(
-            fn=UiControlNetUnit,
+            fn=create_unit,
             inputs=list(unit_args),
             outputs=unit,
             queue=False,

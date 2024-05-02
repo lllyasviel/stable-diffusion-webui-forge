@@ -164,7 +164,7 @@ class ControlNetForForgeOfficial(scripts.Script):
     def get_input_data(self, p, unit, preprocessor, h, w):
         logger.info(f'ControlNet Input Mode: {unit.input_mode}')
         image_list = []
-        resize_mode = external_code.resize_mode_from_value(unit.resize_mode)
+        resize_mode = unit.resize_mode
 
         if unit.input_mode == InputMode.MERGE:
             for idx, item in enumerate(unit.batch_input_gallery):

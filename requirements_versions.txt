@@ -30,3 +30,4 @@ transformers==4.30.2
 httpx==0.24.1
 basicsr==1.4.2
 diffusers==0.25.0
+pydantic==1.10.15

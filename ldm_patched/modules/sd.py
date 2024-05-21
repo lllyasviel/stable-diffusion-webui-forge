@@ -257,10 +257,14 @@ class VAE:
         samples += ldm_patched.modules.utils.tiled_scale(pixel_samples, encode_fn, tile_x // 2, tile_y * 2, overlap, upscale_amount = (1/self.downscale_ratio), out_channels=self.latent_channels, output_device=self.output_device, pbar=pbar)
         samples /= 3.0
         return samples
-
+    
     def decode_inner(self, samples_in):
         if model_management.VAE_ALWAYS_TILED:
-            return self.decode_tiled(samples_in).to(self.output_device)
+            return self.decode_tiled(
+                                    samples_in,
+                                    tile_x = model_management.VAE_DECODE_TILE_SIZE_X,
+                                    tile_y = model_management.VAE_DECODE_TILE_SIZE_Y
+                                    ).to(self.output_device)
 
         try:
             memory_used = self.memory_used_decode(samples_in.shape, self.vae_dtype)
@@ -294,7 +298,11 @@ class VAE:
 
     def encode_inner(self, pixel_samples):
         if model_management.VAE_ALWAYS_TILED:
-            return self.encode_tiled(pixel_samples)
+            return self.encode_tiled(
+                                    pixel_samples, 
+                                    tile_x = model_management.VAE_ENCODE_TILE_SIZE_X,
+                                    tile_y = model_management.VAE_ENCODE_TILE_SIZE_Y
+                                    )
 
         pixel_samples = pixel_samples.movedim(-1,1)
         try:

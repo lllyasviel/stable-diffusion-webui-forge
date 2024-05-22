@@ -11,7 +11,7 @@ from modules.api.api import decode_base64_to_image
 import gradio as gr
 
 from lib_controlnet import global_state, external_code
-from lib_controlnet.external_code import ControlNetUnit
+from lib_controlnet.external_code import ControlNetUnit, InputMode
 from lib_controlnet.utils import (
     align_dim_latent,
     set_numpy_seed,

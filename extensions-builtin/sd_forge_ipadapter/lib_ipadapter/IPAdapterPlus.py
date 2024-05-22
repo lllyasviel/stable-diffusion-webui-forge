@@ -403,7 +403,7 @@ class CrossAttentionPatch:
         batch_prompt = b // len(cond_or_uncond)
         out = optimized_attention(q, k, v, extra_options["n_heads"])
         _, _, lh, lw = extra_options["original_shape"]
-        
+
         for weight, cond, uncond, ipadapter, mask, weight_type, sigma_start, sigma_end, unfold_batch in zip(self.weights, self.conds, self.unconds, self.ipadapters, self.masks, self.weight_type, self.sigma_start, self.sigma_end, self.unfold_batch):
             if sigma > sigma_start or sigma < sigma_end:
                 continue
@@ -466,8 +466,18 @@ class CrossAttentionPatch:
                     ip_v = ip_v_offset + ip_v_mean * W
 
             out_ip = optimized_attention(q, ip_k.to(org_dtype), ip_v.to(org_dtype), extra_options["n_heads"])
-            if weight_type.startswith("original"):
-                out_ip = out_ip * weight
+
+            if weight_type == "original":
+                assert isinstance(weight, (float, int))
+                weight = weight
+            elif weight_type == "advanced":
+                assert isinstance(weight, list)
+                transformer_index: int = extra_options["transformer_index"]
+                assert transformer_index < len(weight)
+                weight = weight[transformer_index]
+            else:
+                weight = 1.0
+            out_ip = out_ip * weight
 
             if mask is not None:
                 # TODO: needs checking

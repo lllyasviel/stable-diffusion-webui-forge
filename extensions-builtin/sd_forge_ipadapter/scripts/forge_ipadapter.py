@@ -143,11 +143,17 @@ class IPAdapterPatcher(ControlModelPatcher):
 
     def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         unet = process.sd_model.forge_objects.unet
+        if self.positive_advanced_weighting is None:
+            weight = self.strength
+            cond["weight_type"] = "original"
+        else:
+            weight = self.positive_advanced_weighting
+            cond["weight_type"] = "advanced"
 
         unet = opIPAdapterApply(
             ipadapter=self.ip_adapter,
             model=unet,
-            weight=self.strength,
+            weight=weight,
             start_at=self.start_percent,
             end_at=self.end_percent,
             faceid_v2=self.faceid_v2,

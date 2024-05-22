@@ -59,6 +59,7 @@ class ControlNetCachedParameters:
         self.control_cond_for_hr_fix = None
         self.control_mask = None
         self.control_mask_for_hr_fix = None
+        self.advanced_weighting = None
 
 
 class ControlNetForForgeOfficial(scripts.Script):
@@ -504,6 +505,11 @@ class ControlNetForForgeOfficial(scripts.Script):
         if is_hr_pass and params.preprocessor.use_soft_projection_in_hr_fix:
             params.model.positive_advanced_weighting = soft_weighting.copy()
             params.model.negative_advanced_weighting = soft_weighting.copy()
+
+        if unit.advanced_weighting is not None:
+            if params.model.positive_advanced_weighting is None:
+                logger.warn("advanced_weighting overwrite control_mode")
+            params.model.positive_advanced_weighting = unit.advanced_weighting
 
         cond, mask = params.preprocessor.process_before_every_sampling(p, cond, mask, *args, **kwargs)
 

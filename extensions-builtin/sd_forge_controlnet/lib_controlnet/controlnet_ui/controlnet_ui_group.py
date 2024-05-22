@@ -227,6 +227,7 @@ class ControlNetUiGroup(object):
         self.hr_option = None
         self.batch_image_dir_state = None
         self.output_dir_state = None
+        self.advanced_weighting = gr.State(None)
 
         # Internal states for UI state pasting.
         self.prevent_next_n_module_update = 0
@@ -607,6 +608,7 @@ class ControlNetUiGroup(object):
             self.guidance_end,
             self.pixel_perfect,
             self.control_mode,
+            self.advanced_weighting,
         )
 
         unit = gr.State(self.default_unit)

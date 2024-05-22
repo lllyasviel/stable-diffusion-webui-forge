@@ -60,6 +60,9 @@ class NeverOOMForForge(scripts.Script):
 
         if vae_enabled:
             print('NeverOOM Enabled for VAE (always tiled)')
+            print('With tile sizes')
+            print(f'Encode:\t x:{encoder_tile_size}\t y:{encoder_tile_size}')
+            print(f'Decode:\t x:{decoder_tile_size}\t y:{decoder_tile_size}')
 
         model_management.VAE_ALWAYS_TILED = vae_enabled
         model_management.VAE_ENCODE_TILE_SIZE_X = model_management.VAE_ENCODE_TILE_SIZE_Y = encoder_tile_size

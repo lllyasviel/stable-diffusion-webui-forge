@@ -6,6 +6,7 @@ import math
 
 from scipy import integrate
 import torch
+import numpy as np
 from torch import nn
 import torchsde
 from tqdm.auto import trange, tqdm
@@ -37,6 +38,35 @@ def get_sigmas_polyexponential(n, sigma_min, sigma_max, rho=1., device='cpu'):
     ramp = torch.linspace(1, 0, n, device=device) ** rho
     sigmas = torch.exp(ramp * (math.log(sigma_max) - math.log(sigma_min)) + math.log(sigma_min))
     return append_zero(sigmas)
+
+# align your steps
+def get_sigmas_ays(n, sigma_min, sigma_max, is_sdxl=False, device='cpu'):
+    # https://research.nvidia.com/labs/toronto-ai/AlignYourSteps/howto.html
+    def loglinear_interp(t_steps, num_steps):
+        """
+        Performs log-linear interpolation of a given array of decreasing numbers.
+        """
+        xs = torch.linspace(0, 1, len(t_steps))
+        ys = torch.log(torch.tensor(t_steps[::-1]))
+
+        new_xs = torch.linspace(0, 1, num_steps)
+        new_ys = np.interp(new_xs, xs, ys)
+
+        interped_ys = torch.exp(torch.tensor(new_ys)).numpy()[::-1].copy()
+        return interped_ys
+
+    if is_sdxl:
+        sigmas = [14.615, 6.315, 3.771, 2.181, 1.342, 0.862, 0.555, 0.380, 0.234, 0.113, 0.029]
+    else:
+        # Default to SD 1.5 sigmas.
+        sigmas = [14.615, 6.475, 3.861, 2.697, 1.886, 1.396, 0.963, 0.652, 0.399, 0.152, 0.029]
+
+    if n != len(sigmas):
+        sigmas = np.append(loglinear_interp(sigmas, n), [0.0])
+    else:
+        sigmas.append(0.0)
+
+    return torch.FloatTensor(sigmas).to(device)
 
 
 def get_sigmas_vp(n, beta_d=19.9, beta_min=0.1, eps_s=1e-3, device='cpu'):

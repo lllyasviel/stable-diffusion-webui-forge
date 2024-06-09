@@ -4,6 +4,8 @@ import torch
 import contextlib
 import os
 import math
+import time
+from cachetools import LRUCache
 
 import ldm_patched.modules.utils
 import ldm_patched.modules.model_management
@@ -16,7 +18,11 @@ from PIL import Image
 import torch.nn.functional as F
 import torchvision.transforms as TT
 
+
 from lib_ipadapter.resampler import PerceiverAttention, FeedForward, Resampler
+from modules import shared
+
+from lib_controlnet.logging import logger
 
 # set the models directory backward compatible
 GLOBAL_MODELS_DIR = os.path.join(folder_paths.models_dir, "ipadapter")
@@ -259,6 +265,29 @@ def NPToTensor(image):
     return out
 
 class IPAdapter(nn.Module):
+
+    _cache = LRUCache(maxsize=shared.opts.data.get("control_net_ipadapter_cache_size", 5))
+
+    # Factory method that caches off of the model filename
+    @classmethod
+    def create(cls, model_filename, ipadapter_model, cross_attention_dim=1024, output_cross_attention_dim=1024,
+               clip_embeddings_dim=1024, clip_extra_context_tokens=4,
+               is_sdxl=False, is_plus=False, is_full=False,
+               is_faceid=False, is_instant_id=False):
+        if model_filename in cls._cache:
+            logger.info(f"IPAdapter: Using cached layers for {model_filename}.")
+            return cls._cache[model_filename]
+        else:
+            logger.info(f"IPAdapter: Creating new layer instance for {model_filename}.")
+            instance = cls(ipadapter_model, cross_attention_dim, output_cross_attention_dim,
+                           clip_embeddings_dim, clip_extra_context_tokens,
+                           is_sdxl, is_plus, is_full, is_faceid, is_instant_id)
+            
+            if ldm_patched.modules.model_management.enable_ipadapter_layer_cache():
+                cls._cache[model_filename] = instance
+            
+            return instance
+    
     def __init__(self, ipadapter_model, cross_attention_dim=1024, output_cross_attention_dim=1024,
                  clip_embeddings_dim=1024, clip_extra_context_tokens=4,
                  is_sdxl=False, is_plus=False, is_full=False,
@@ -612,9 +641,10 @@ class IPAdapterApply:
     FUNCTION = "apply_ipadapter"
     CATEGORY = "ipadapter"
 
-    def apply_ipadapter(self, ipadapter, model, weight, clip_vision=None, image=None, weight_type="original",
+    def apply_ipadapter(self, ipadapter, model_filename, model, weight, clip_vision=None, image=None, weight_type="original",
                         noise=None, embeds=None, attn_mask=None, start_at=0.0, end_at=1.0, unfold_batch=False,
                         insightface=None, faceid_v2=False, weight_v2=False, instant_id=False):
+        apply_ipadapter_start = time.perf_counter()
 
         self.dtype = torch.float16 if ldm_patched.modules.model_management.should_use_fp16() else torch.float32
         self.device = ldm_patched.modules.model_management.get_torch_device()
@@ -720,7 +750,8 @@ class IPAdapterApply:
 
         clip_embeddings_dim = clip_embed.shape[-1]
 
-        self.ipadapter = IPAdapter(
+        self.ipadapter = IPAdapter.create(
+            model_filename,            
             ipadapter,
             cross_attention_dim=cross_attention_dim,
             output_cross_attention_dim=output_cross_attention_dim,
@@ -799,6 +830,8 @@ class IPAdapterApply:
                 set_model_patch_replace(work_model, patch_kwargs, ("middle", 0, index))
                 patch_kwargs["number"] += 1
 
+        apply_ipadapter_time = time.perf_counter() - apply_ipadapter_start
+        logger.debug(f"IPAdapter apply_ipadapter time: {apply_ipadapter_time:.2f}s")
         return (work_model, )
 
 class IPAdapterApplyFaceID(IPAdapterApply):

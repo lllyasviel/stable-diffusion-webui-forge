@@ -125,18 +125,20 @@ class IPAdapterPatcher(ControlModelPatcher):
         if "ip_adapter" not in model.keys() or len(model["ip_adapter"]) == 0:
             return None
 
-        o = IPAdapterPatcher(model)
-
         model_filename = Path(ckpt_path).name.lower()
+
+        o = IPAdapterPatcher(model, model_filename)
+
         if 'v2' in model_filename:
             o.faceid_v2 = True
             o.weight_v2 = True
 
         return o
 
-    def __init__(self, state_dict):
+    def __init__(self, state_dict, model_filename):
         super().__init__()
         self.ip_adapter = state_dict
+        self.model_filename = model_filename
         self.faceid_v2 = False
         self.weight_v2 = False
         return
@@ -146,6 +148,7 @@ class IPAdapterPatcher(ControlModelPatcher):
 
         unet = opIPAdapterApply(
             ipadapter=self.ip_adapter,
+            model_filename=self.model_filename,
             model=unet,
             weight=self.strength,
             start_at=self.start_percent,

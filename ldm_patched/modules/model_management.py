@@ -419,6 +419,9 @@ def free_memory(memory_required, device, keep_loaded=[]):
             if mem_free_torch > mem_free_total * 0.25:
                 soft_empty_cache()
 
+def enable_ipadapter_layer_cache():
+    return vram_state == VRAMState.HIGH_VRAM
+
 def load_models_gpu(models, memory_required=0):
     global vram_state
 

@@ -1,28 +1,10 @@
 # Stable Diffusion WebUI Forge
 
-Stable Diffusion WebUI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) (based on [Gradio](https://www.gradio.app/)) to make development easier, optimize resource management, and speed up inference.
+Stable Diffusion WebUI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) (based on [Gradio](https://www.gradio.app/)) to make development easier, optimize resource management, speed up inference, and study experimental features.
 
 The name "Forge" is inspired from "Minecraft Forge". This project is aimed at becoming SD WebUI's Forge.
 
-Compared to original WebUI (for SDXL inference at 1024px), you can expect the below speed-ups:
-
-1. If you use common GPU like 8GB vram, you can expect to get about **30~45% speed up** in inference speed (it/s), the GPU memory peak (in task manager) will drop about 700MB to 1.3GB, the maximum diffusion resolution (that will not OOM) will increase about 2x to 3x, and the maximum diffusion batch size (that will not OOM) will increase about 4x to 6x.
-
-2. If you use less powerful GPU like 6GB vram, you can expect to get about **60~75% speed up** in inference speed (it/s), the GPU memory peak (in task manager) will drop about 800MB to 1.5GB, the maximum diffusion resolution (that will not OOM) will increase about 3x, and the maximum diffusion batch size (that will not OOM) will increase about 4x.
-
-3. If you use powerful GPU like 4090 with 24GB vram, you can expect to get about **3~6% speed up** in inference speed (it/s), the GPU memory peak (in task manager) will drop about 1GB to 1.4GB, the maximum diffusion resolution (that will not OOM) will increase about 1.6x, and the maximum diffusion batch size (that will not OOM) will increase about 2x.
-
-4. If you use ControlNet for SDXL, the maximum ControlNet count (that will not OOM) will increase about 2x, the speed with SDXL+ControlNet will **speed up about 30~45%**.
-
-Another very important change that Forge brings is **Unet Patcher**. Using Unet Patcher, methods like Self-Attention Guidance, Kohya High Res Fix, FreeU, StyleAlign, Hypertile can all be implemented in about 100 lines of codes. 
-
-Thanks to Unet Patcher, many new things are possible now and supported in Forge, including SVD, Z123, masked Ip-adapter, masked controlnet, photomaker, etc.
-
-**No need to monkeypatch UNet and conflict other extensions anymore!**
-
-Forge also adds a few samplers, including but not limited to DDPM, DDPM Karras, DPM++ 2M Turbo, DPM++ 2M SDE Turbo, LCM Karras, Euler A Turbo, etc. (LCM is already in original webui since 1.7.0).
-
-Finally, Forge promise that we will only do our jobs. Forge will never add unnecessary opinioned changes to the user interface. You are still using 100% Automatic1111 WebUI.
+This repo will undergo major change very recently. See also the [Announcement](https://github.com/lllyasviel/stable-diffusion-webui-forge/discussions/801).
 
 # Installing Forge
 

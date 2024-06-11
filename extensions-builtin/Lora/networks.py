@@ -45,6 +45,7 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
         return
 
     loaded_networks.clear()
+    network_reset_cached_weight()
 
     networks_on_disk = [available_networks.get(name, None) if name.lower() in forbidden_network_aliases else available_network_aliases.get(name, None) for name in names]
     if any(x is None for x in networks_on_disk):
@@ -97,7 +98,9 @@ def network_forward(org_module, input, original_forward):
 
 
 def network_reset_cached_weight(self: Union[torch.nn.Conv2d, torch.nn.Linear]):
-    pass
+    self.network_current_names = ()
+    self.network_weights_backup = None
+    self.network_bias_backup = None
 
 
 def network_Linear_forward(self, input):

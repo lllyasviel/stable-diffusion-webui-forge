@@ -40,12 +40,12 @@ def purge_networks_from_memory():
 def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=None):
     global lora_state_dict_cache
 
+    sd_models.loaded_sd_models = []
     current_sd = sd_models.model_data.get_sd_model()
     if current_sd is None:
         return
 
     loaded_networks.clear()
-    network_reset_cached_weight()
 
     networks_on_disk = [available_networks.get(name, None) if name.lower() in forbidden_network_aliases else available_network_aliases.get(name, None) for name in names]
     if any(x is None for x in networks_on_disk):

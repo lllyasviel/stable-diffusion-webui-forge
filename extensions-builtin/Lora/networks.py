@@ -40,7 +40,7 @@ def purge_networks_from_memory():
 def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=None):
     global lora_state_dict_cache
 
-    sd_models.loaded_sd_models = []
+    sd_models.model_data.sd_model = None
     current_sd = sd_models.model_data.get_sd_model()
     if current_sd is None:
         return

@@ -97,7 +97,9 @@ def network_forward(org_module, input, original_forward):
 
 
 def network_reset_cached_weight(self: Union[torch.nn.Conv2d, torch.nn.Linear]):
-    pass
+    self.network_current_names = ()
+    self.network_weights_backup = None
+    self.network_bias_backup = None
 
 
 def network_Linear_forward(self, input):

@@ -7,6 +7,8 @@ opDynamicThresholdingNode = DynamicThresholdingNode().patch
 
 
 class DynamicThresholdingForForge(scripts.Script):
+    sorting_priority = 11
+
     def title(self):
         return "DynamicThresholding (CFG-Fix) Integrated"
 

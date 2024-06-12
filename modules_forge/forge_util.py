@@ -9,6 +9,39 @@ import cv2
 from ldm_patched.modules import model_management
 
 
+def prepare_free_memory(aggressive=False):
+    if aggressive:
+        model_management.unload_all_models()
+        print('Cleanup all memory.')
+        return
+
+    model_management.free_memory(memory_required=model_management.minimum_inference_memory(),
+                                 device=model_management.get_torch_device())
+    print('Cleanup minimal inference memory.')
+    return
+
+
+def apply_circular_forge(model, tiling_enabled=False):
+    if model.tiling_enabled == tiling_enabled:
+        return
+
+    print(f'Tiling: {tiling_enabled}')
+    model.tiling_enabled = tiling_enabled
+
+    def flatten(el):
+        flattened = [flatten(children) for children in el.children()]
+        res = [el]
+        for c in flattened:
+            res += c
+        return res
+
+    layers = flatten(model)
+
+    for layer in [layer for layer in layers if 'Conv' in type(layer).__name__]:
+        layer.padding_mode = 'circular' if tiling_enabled else 'zeros'
+    return
+
+
 def HWC3(x):
     assert x.dtype == np.uint8
     if x.ndim == 2:

@@ -324,8 +324,6 @@ onAfterUiUpdate(function() {
     });
 
     json_elem.parentElement.style.display = "none";
-
-    setupTokenCounters();
 });
 
 onOptionsChanged(function() {

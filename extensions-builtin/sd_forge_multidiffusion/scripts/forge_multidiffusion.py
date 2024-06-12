@@ -8,6 +8,8 @@ opTiledDiffusion = TiledDiffusion().apply
 
 
 class MultiDiffusionForForge(scripts.Script):
+    sorting_priority = 16
+
     def title(self):
         return "MultiDiffusion Integrated"
 

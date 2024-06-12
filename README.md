@@ -1,28 +1,10 @@
 # Stable Diffusion WebUI Forge
 
-Stable Diffusion WebUI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) (based on [Gradio](https://www.gradio.app/)) to make development easier, optimize resource management, and speed up inference.
+Stable Diffusion WebUI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) (based on [Gradio](https://www.gradio.app/)) to make development easier, optimize resource management, speed up inference, and study experimental features.
 
 The name "Forge" is inspired from "Minecraft Forge". This project is aimed at becoming SD WebUI's Forge.
 
-Compared to original WebUI (for SDXL inference at 1024px), you can expect the below speed-ups:
-
-1. If you use common GPU like 8GB vram, you can expect to get about **30~45% speed up** in inference speed (it/s), the GPU memory peak (in task manager) will drop about 700MB to 1.3GB, the maximum diffusion resolution (that will not OOM) will increase about 2x to 3x, and the maximum diffusion batch size (that will not OOM) will increase about 4x to 6x.
-
-2. If you use less powerful GPU like 6GB vram, you can expect to get about **60~75% speed up** in inference speed (it/s), the GPU memory peak (in task manager) will drop about 800MB to 1.5GB, the maximum diffusion resolution (that will not OOM) will increase about 3x, and the maximum diffusion batch size (that will not OOM) will increase about 4x.
-
-3. If you use powerful GPU like 4090 with 24GB vram, you can expect to get about **3~6% speed up** in inference speed (it/s), the GPU memory peak (in task manager) will drop about 1GB to 1.4GB, the maximum diffusion resolution (that will not OOM) will increase about 1.6x, and the maximum diffusion batch size (that will not OOM) will increase about 2x.
-
-4. If you use ControlNet for SDXL, the maximum ControlNet count (that will not OOM) will increase about 2x, the speed with SDXL+ControlNet will **speed up about 30~45%**.
-
-Another very important change that Forge brings is **Unet Patcher**. Using Unet Patcher, methods like Self-Attention Guidance, Kohya High Res Fix, FreeU, StyleAlign, Hypertile can all be implemented in about 100 lines of codes. 
-
-Thanks to Unet Patcher, many new things are possible now and supported in Forge, including SVD, Z123, masked Ip-adapter, masked controlnet, photomaker, etc.
-
-**No need to monkeypatch UNet and conflict other extensions anymore!**
-
-Forge also adds a few samplers, including but not limited to DDPM, DDPM Karras, DPM++ 2M Turbo, DPM++ 2M SDE Turbo, LCM Karras, Euler A Turbo, etc. (LCM is already in original webui since 1.7.0).
-
-Finally, Forge promise that we will only do our jobs. Forge will never add unnecessary opinioned changes to the user interface. You are still using 100% Automatic1111 WebUI.
+This repo will undergo major change very recently. See also the [Announcement](https://github.com/lllyasviel/stable-diffusion-webui-forge/discussions/801).
 
 # Installing Forge
 
@@ -80,7 +62,15 @@ Forge backend removes all WebUI's codes related to resource management and rewor
 
 Without any cmd flag, Forge can run SDXL with 4GB vram and SD1.5 with 2GB vram.
 
-**The only one flag that you may still need** is `--always-offload-from-vram` (This flag will make things **slower**). This option will let Forge always unload models from VRAM. This can be useful if you use multiple software together and want Forge to use less VRAM and give some vram to other software, or when you are using some old extensions that will compete vram with Forge, or (very rarely) when you get OOM.
+**Some flags that you may still pay attention to:** 
+
+1. `--always-offload-from-vram` (This flag will make things **slower** but less risky). This option will let Forge always unload models from VRAM. This can be useful if you use multiple software together and want Forge to use less VRAM and give some VRAM to other software, or when you are using some old extensions that will compete vram with Forge, or (very rarely) when you get OOM.
+
+2. `--cuda-malloc` (This flag will make things **faster** but more risky). This will ask pytorch to use *cudaMallocAsync* for tensor malloc. On some profilers I can observe performance gain at millisecond level, but the real speed up on most my devices are often unnoticed (about or less than 0.1 second per image). This cannot be set as default because many users reported issues that the async malloc will crash the program. Users need to enable this cmd flag at their own risk.
+
+3. `--cuda-stream` (This flag will make things **faster** but more risky). This will use pytorch CUDA streams (a special type of thread on GPU) to move models and compute tensors simultaneously. This can almost eliminate all model moving time, and speed up SDXL on 30XX/40XX devices with small VRAM (eg, RTX 4050 6GB, RTX 3060 Laptop 6GB, etc) by about 15\% to 25\%. However, this unfortunately cannot be set as default because I observe higher possibility of pure black images (Nan outputs) on 2060, and higher chance of OOM on 1080 and 2060. When the resolution is large, there is a chance that the computation time of one single attention layer is longer than the time for moving entire model to GPU. When that happens, the next attention layer will OOM since the GPU is filled with the entire model, and no remaining space is available for computing another attention layer. Most overhead detecting methods are not robust enough to be reliable on old devices (in my tests). Users need to enable this cmd flag at their own risk.
+
+4. `--pin-shared-memory` (This flag will make things **faster** but more risky). Effective only when used together with `--cuda-stream`. This will offload modules to Shared GPU Memory instead of system RAM when offloading models. On some 30XX/40XX devices with small VRAM (eg, RTX 4050 6GB, RTX 3060 Laptop 6GB, etc), I can observe significant (at least 20\%) speed-up for SDXL. However, this unfortunately cannot be set as default because the OOM of Shared GPU Memory is a much more severe problem than common GPU memory OOM. Pytorch does not provide any robust method to unload or detect Shared GPU Memory. Once the Shared GPU Memory OOM, the entire program will crash (observed with SDXL on GTX 1060/1050/1066), and there is no dynamic method to prevent or recover from the crash. Users need to enable this cmd flag at their own risk.
 
 If you really want to play with cmd flags, you can additionally control the GPU with:
 

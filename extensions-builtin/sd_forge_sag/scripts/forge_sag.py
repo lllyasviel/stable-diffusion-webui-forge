@@ -8,6 +8,8 @@ opSelfAttentionGuidance = SelfAttentionGuidance()
 
 
 class SAGForForge(scripts.Script):
+    sorting_priority = 12.5
+
     def title(self):
         return "SelfAttentionGuidance Integrated"
 

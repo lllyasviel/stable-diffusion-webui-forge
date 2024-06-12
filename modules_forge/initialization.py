@@ -43,6 +43,10 @@ def initialize_forge():
         os.environ['CUDA_VISIBLE_DEVICES'] = str(args_parser.args.gpu_device_id)
         print("Set device to:", args_parser.args.gpu_device_id)
 
+    if args_parser.args.cuda_malloc:
+        from modules_forge.cuda_malloc import try_cuda_malloc
+        try_cuda_malloc()
+
     import ldm_patched.modules.model_management as model_management
     import torch
 
@@ -54,6 +58,9 @@ def initialize_forge():
 
     import modules_forge.patch_basic
     modules_forge.patch_basic.patch_all_basics()
+
+    from modules_forge import stream
+    print('CUDA Stream Activated: ', stream.using_stream)
 
     from modules_forge.shared import diffusers_dir
 

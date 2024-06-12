@@ -7,12 +7,12 @@ from modules_forge.supported_controlnet import ControlModelPatcher
 from modules_forge.forge_sampler import sampling_prepare
 from ldm_patched.modules.utils import load_torch_file
 from ldm_patched.modules import model_patcher
-from ldm_patched.modules.model_management import cast_to_device, LoadedModel, current_loaded_models
+from ldm_patched.modules.model_management import cast_to_device, current_loaded_models
 from ldm_patched.modules.lora import model_lora_keys_unet
 
 
 def is_model_loaded(model):
-    return LoadedModel(model) in current_loaded_models
+    return any(model == m.model for m in current_loaded_models)
 
 
 class InpaintHead(torch.nn.Module):

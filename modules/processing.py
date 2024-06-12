@@ -33,6 +33,8 @@ from ldm.models.diffusion.ddpm import LatentDepth2ImageDiffusion
 
 from einops import repeat, rearrange
 from blendmodes.blend import blendLayers, BlendType
+from modules.sd_models import apply_token_merging
+from modules_forge.forge_util import apply_circular_forge
 
 
 # some of those options should not be changed at all because they would break the model, so I removed them from options.
@@ -74,16 +76,18 @@ def uncrop(image, dest_size, paste_loc):
 
 def apply_overlay(image, paste_loc, overlay):
     if overlay is None:
-        return image
+        return image, image.copy()
 
     if paste_loc is not None:
         image = uncrop(image, (overlay.width, overlay.height), paste_loc)
+
+    original_denoised_image = image.copy()
 
     image = image.convert('RGBA')
     image.alpha_composite(overlay)
     image = image.convert('RGB')
 
-    return image
+    return image, original_denoised_image
 
 def create_binary_mask(image, round=True):
     if image.mode == 'RGBA' and image.getextrema()[-1] != (255, 255):
@@ -629,10 +633,10 @@ class DecodedSamples(list):
 
 def decode_latent_batch(model, batch, target_device=None, check_for_nans=False):
     samples = DecodedSamples()
+    samples_pytorch = decode_first_stage(model, batch).to(target_device)
 
-    for i in range(batch.shape[0]):
-        sample = decode_first_stage(model, batch[i:i + 1])[0]
-        samples.append(sample.to(target_device))
+    for x in samples_pytorch:
+        samples.append(x)
 
     return samples
 
@@ -745,13 +749,9 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
             if k == 'sd_vae':
                 sd_vae.reload_vae_weights()
 
-        sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio())
-
         res = process_images_inner(p)
 
     finally:
-        sd_models.apply_token_merging(p.sd_model, 0)
-
         # restore opts to original state
         if p.override_settings_restore_afterwards:
             for k, v in stored_opts.items():
@@ -792,7 +792,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     p.sd_vae_name = sd_vae.get_loaded_vae_name()
     p.sd_vae_hash = sd_vae.get_loaded_vae_hash()
 
-    modules.sd_hijack.model_hijack.apply_circular(p.tiling)
+    apply_circular_forge(p.sd_model, p.tiling)
     modules.sd_hijack.model_hijack.clear_comments()
 
     p.setup_prompts()
@@ -917,11 +917,13 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 alphas_cumprod_backup = p.sd_model.alphas_cumprod
                 for modifier in alphas_cumprod_modifiers:
                     p.sd_model.alphas_cumprod = modifier(p.sd_model.alphas_cumprod)
+                p.sd_model.forge_objects.unet.model.model_sampling.set_sigmas(((1 - p.sd_model.alphas_cumprod) / p.sd_model.alphas_cumprod) ** 0.5)
 
             samples_ddim = p.sample(conditioning=p.c, unconditional_conditioning=p.uc, seeds=p.seeds, subseeds=p.subseeds, subseed_strength=p.subseed_strength, prompts=p.prompts)
 
             if alphas_cumprod_backup is not None:
                 p.sd_model.alphas_cumprod = alphas_cumprod_backup
+                p.sd_model.forge_objects.unet.model.model_sampling.set_sigmas(((1 - p.sd_model.alphas_cumprod) / p.sd_model.alphas_cumprod) ** 0.5)
 
             if p.scripts is not None:
                 ps = scripts.PostSampleArgs(samples_ddim)
@@ -997,7 +999,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
                 if p.color_corrections is not None and i < len(p.color_corrections):
                     if save_samples and opts.save_images_before_color_correction:
-                        image_without_cc = apply_overlay(image, p.paste_to, overlay_image)
+                        image_without_cc, _ = apply_overlay(image, p.paste_to, overlay_image)
                         images.save_image(image_without_cc, p.outpath_samples, "", p.seeds[i], p.prompts[i], opts.samples_format, info=infotext(i), p=p, suffix="-before-color-correction")
                     image = apply_color_correction(p.color_corrections[i], image)
 
@@ -1005,12 +1007,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 # that is being composited over the original image,
                 # we need to keep the original image around
                 # and use it in the composite step.
-                original_denoised_image = image.copy()
-
-                if p.paste_to is not None:
-                    original_denoised_image = uncrop(original_denoised_image, (overlay_image.width, overlay_image.height), p.paste_to)
-
-                image = apply_overlay(image, p.paste_to, overlay_image)
+                image, original_denoised_image = apply_overlay(image, p.paste_to, overlay_image)
 
                 if p.scripts is not None:
                     pp = scripts.PostprocessImageArgs(image)
@@ -1262,6 +1259,8 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
             x = self.rng.next()
 
             self.sd_model.forge_objects = self.sd_model.forge_objects_after_applying_lora.shallow_copy()
+            apply_token_merging(self.sd_model, self.get_token_merging_ratio())
+
             if self.scripts is not None:
                 self.scripts.process_before_every_sampling(self,
                                                            x=x,
@@ -1369,12 +1368,12 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
         with devices.autocast():
             self.calculate_hr_conds()
 
-        sd_models.apply_token_merging(self.sd_model, self.get_token_merging_ratio(for_hr=True))
-
         if self.scripts is not None:
             self.scripts.before_hr(self)
 
         self.sd_model.forge_objects = self.sd_model.forge_objects_after_applying_lora.shallow_copy()
+        apply_token_merging(self.sd_model, self.get_token_merging_ratio(for_hr=True))
+
         if self.scripts is not None:
             self.scripts.process_before_every_sampling(self,
                                                        x=samples,
@@ -1387,8 +1386,6 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
             self.modified_noise = None
 
         samples = self.sampler.sample_img2img(self, samples, noise, self.hr_c, self.hr_uc, steps=self.hr_second_pass_steps or self.steps, image_conditioning=image_conditioning)
-
-        sd_models.apply_token_merging(self.sd_model, self.get_token_merging_ratio())
 
         self.sampler = None
         devices.torch_gc()
@@ -1690,6 +1687,8 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             x *= self.initial_noise_multiplier
 
         self.sd_model.forge_objects = self.sd_model.forge_objects_after_applying_lora.shallow_copy()
+        apply_token_merging(self.sd_model, self.get_token_merging_ratio())
+
         if self.scripts is not None:
             self.scripts.process_before_every_sampling(self,
                                                        x=self.init_latent,

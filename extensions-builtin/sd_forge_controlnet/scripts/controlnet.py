@@ -56,6 +56,8 @@ class ControlNetCachedParameters:
 
 
 class ControlNetForForgeOfficial(scripts.Script):
+    sorting_priority = 10
+
     def title(self):
         return "ControlNet"
 

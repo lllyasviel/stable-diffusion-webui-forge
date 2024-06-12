@@ -191,8 +191,8 @@ def send_image_and_dimensions(x):
         img = image_from_url_text(x)
 
     if shared.opts.send_size and isinstance(img, Image.Image):
-        w = img.width
-        h = img.height
+        w = min(img.width, 2048)
+        h = min(img.height, 2048)
     else:
         w = gr.update()
         h = gr.update()

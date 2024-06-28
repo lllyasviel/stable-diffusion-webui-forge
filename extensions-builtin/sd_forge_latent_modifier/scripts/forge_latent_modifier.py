@@ -1,5 +1,6 @@
 import gradio as gr
 from modules import scripts
+from modules.infotext_utils import PasteField
 
 from lib_latent_modifier.sampler_mega_modifier import ModelSamplerLatentMegaModifier
 
@@ -59,7 +60,33 @@ class LatentModifierForForge(scripts.Script):
             dyn_cfg_augmentation = gr.Radio(label='Dyn Cfg Augmentation',
                                             choices=['None', 'dyncfg-halfcosine', 'dyncfg-halfcosine-mimic'],
                                             value='None')
-
+        
+        self.infotext_fields = [
+            PasteField(enabled, "latent_modifier_enabled", api="latent_modifier_enabled"),
+            PasteField(sharpness_multiplier, "latent_modifier_sharpness_multiplier", api="latent_modifier_sharpness_multiplier"),
+            PasteField(sharpness_method, "latent_modifier_sharpness_method", api="latent_modifier_sharpness_method"),
+            PasteField(tonemap_multiplier, "latent_modifier_tonemap_multiplier", api="latent_modifier_tonemap_multiplier"),
+            PasteField(tonemap_method, "latent_modifier_tonemap_method", api="latent_modifier_tonemap_method"),
+            PasteField(tonemap_percentile, "latent_modifier_tonemap_percentile", api="latent_modifier_tonemap_percentile"),
+            PasteField(contrast_multiplier, "latent_modifier_contrast_multiplier", api="latent_modifier_contrast_multiplier"),
+            PasteField(combat_method, "latent_modifier_combat_method", api="latent_modifier_combat_method"),
+            PasteField(combat_cfg_drift, "latent_modifier_combat_cfg_drift", api="latent_modifier_combat_cfg_drift"),
+            PasteField(rescale_cfg_phi, "latent_modifier_rescale_cfg_phi", api="latent_modifier_rescale_cfg_phi"),
+            PasteField(extra_noise_type, "latent_modifier_extra_noise_type", api="latent_modifier_extra_noise_type"),
+            PasteField(extra_noise_method, "latent_modifier_extra_noise_method", api="latent_modifier_extra_noise_method"),
+            PasteField(extra_noise_multiplier, "latent_modifier_extra_noise_multiplier", api="latent_modifier_extra_noise_multiplier"),
+            PasteField(extra_noise_lowpass, "latent_modifier_extra_noise_lowpass", api="latent_modifier_extra_noise_lowpass"),
+            PasteField(divisive_norm_size, "latent_modifier_divisive_norm_size", api="latent_modifier_divisive_norm_size"),
+            PasteField(divisive_norm_multiplier, "latent_modifier_divisive_norm_multiplier", api="latent_modifier_divisive_norm_multiplier"),
+            PasteField(spectral_mod_mode, "latent_modifier_spectral_mod_mode", api="latent_modifier_spectral_mod_mode"),
+            PasteField(spectral_mod_percentile, "latent_modifier_spectral_mod_percentile", api="latent_modifier_spectral_mod_percentile"),
+            PasteField(spectral_mod_multiplier, "latent_modifier_spectral_mod_multiplier", api="latent_modifier_spectral_mod_multiplier"),
+            PasteField(affect_uncond, "latent_modifier_affect_uncond", api="latent_modifier_affect_uncond"),
+            PasteField(dyn_cfg_augmentation, "latent_modifier_dyn_cfg_augmentation", api="latent_modifier_dyn_cfg_augmentation"),
+        ]
+        self.paste_field_names = []
+        for field in self.infotext_fields:
+            self.paste_field_names.append(field.api)
         return enabled, sharpness_multiplier, sharpness_method, tonemap_multiplier, tonemap_method, tonemap_percentile, contrast_multiplier, combat_method, combat_cfg_drift, rescale_cfg_phi, extra_noise_type, extra_noise_method, extra_noise_multiplier, extra_noise_lowpass, divisive_norm_size, divisive_norm_multiplier, spectral_mod_mode, spectral_mod_percentile, spectral_mod_multiplier, affect_uncond, dyn_cfg_augmentation
 
     def process_before_every_sampling(self, p, *script_args, **kwargs):

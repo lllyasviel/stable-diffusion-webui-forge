@@ -1,3 +1,5 @@
+import gradio as gr
+import logging
 import os
 import re
 
@@ -8,7 +10,7 @@ import network
 import torch
 from typing import Union
 
-from modules import shared, sd_models, errors, scripts
+from modules import shared, sd_models, errors, scripts, sd_hijack
 from ldm_patched.modules.utils import load_torch_file
 from ldm_patched.modules.sd import load_lora_for_models
 
@@ -51,19 +53,35 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
         list_available_networks()
         networks_on_disk = [available_networks.get(name, None) if name.lower() in forbidden_network_aliases else available_network_aliases.get(name, None) for name in names]
 
+    failed_to_load_networks = []
+
     for i, (network_on_disk, name) in enumerate(zip(networks_on_disk, names)):
         try:
             net = load_network(name, network_on_disk)
         except Exception as e:
-            errors.display(e, f"loading network {network_on_disk.filename}")
+            failed_to_load_networks.append(name)
+            logging.info(f"Couldn't find network with name {name}")
+            if network_on_disk is not None:
+                errors.display(e, f"loading network {network_on_disk.filename}")
             continue
+
         net.mentioned_name = name
         network_on_disk.read_hash()
         loaded_networks.append(net)
 
+    if failed_to_load_networks:
+        sd_hijack.model_hijack.comments.append("Networks not found: " + ", ".join(failed_to_load_networks))
+
+        lora_not_found_message = f'Lora not found: {", ".join(failed_to_load_networks)}'
+        if shared.opts.lora_not_found_warning_console:
+            print(f'\n{lora_not_found_message}\n')
+        if shared.opts.lora_not_found_gradio_warning:
+            gr.Warning(lora_not_found_message)
+
     compiled_lora_targets = []
     for a, b, c in zip(networks_on_disk, unet_multipliers, te_multipliers):
-        compiled_lora_targets.append([a.filename, b, c])
+        if a is not None:
+            compiled_lora_targets.append([a.filename, b, c])
 
     compiled_lora_targets_hash = str(compiled_lora_targets)
 

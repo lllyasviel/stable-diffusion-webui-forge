@@ -14,13 +14,17 @@ If you know what you are doing, you can install Forge using same method as SD-We
 
 **Or you can just use this one-click installation package (with git and python included).**
 
-[>>> Click Here to Download One-Click Package<<<](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu121_torch21.7z)
+[>>> Click Here to Download One-Click Package <<<](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu121_torch21.7z)
 
 After you download, you uncompress, use `update.bat` to update, and use `run.bat` to run.
 
 Note that running `update.bat` is important, otherwise you may be using a previous version with potential bugs unfixed.
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/c49bd60d-82bd-4086-9859-88d472582b94)
+
+## Previous Versions
+
+You can download previous versions [here](https://github.com/lllyasviel/stable-diffusion-webui-forge/discussions/849).
 
 # Screenshots of Comparison
 

@@ -14,7 +14,13 @@ from PIL import Image
 from io import BytesIO
 from gradio.context import Context
 from functools import wraps
-from modules.ui_components import FormComponent
+
+
+class FormComponent:
+    webui_do_not_create_gradio_pyi_thank_you = True
+
+    def get_expected_parent(self):
+        return gr.components.Form
 
 
 canvas_js_root_path = os.path.dirname(__file__)

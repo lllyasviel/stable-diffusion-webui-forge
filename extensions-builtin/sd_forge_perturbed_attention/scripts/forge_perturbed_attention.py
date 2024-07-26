@@ -9,7 +9,7 @@ class PerturbedAttentionGuidanceForForge(scripts.Script):
     sorting_priority = 13
 
     def title(self):
-        return "Perturbed Attention Guidance Integrated"
+        return "PerturbedAttentionGuidance Integrated"
 
     def show(self, is_img2img):
         return scripts.AlwaysVisible

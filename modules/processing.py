@@ -490,14 +490,16 @@ class StableDiffusionProcessing:
 
         for cache in caches:
             if cache[0] is not None and cached_params == cache[0]:
-                modules.sd_hijack.model_hijack.extra_generation_params.update(cache[2])
+                if len(cache) > 2:
+                    modules.sd_hijack.model_hijack.extra_generation_params.update(cache[2])
                 return cache[1]
 
         cache = caches[0]
 
         with devices.autocast():
             cache[1] = function(shared.sd_model, required_prompts, steps, hires_steps, shared.opts.use_old_scheduling)
-            cache[2] = modules.sd_hijack.model_hijack.extra_generation_params
+            if len(cache) > 2:
+                cache[2] = modules.sd_hijack.model_hijack.extra_generation_params
 
         cache[0] = cached_params
         return cache[1]

@@ -3,6 +3,21 @@
 # by lllyasviel
 # Commercial Use is not allowed. (Contact us for commercial use.)
 
+import gradio.component_meta
+
+
+create_or_modify_pyi_org = gradio.component_meta.create_or_modify_pyi
+
+
+def create_or_modify_pyi_org_patched(component_class, class_name, events):
+    if component_class.__name__ == 'LogicalImage':
+        return
+
+    return create_or_modify_pyi_org(component_class, class_name, events)
+
+
+gradio.component_meta.create_or_modify_pyi = create_or_modify_pyi_org_patched
+
 
 import os
 import uuid
@@ -14,13 +29,6 @@ from PIL import Image
 from io import BytesIO
 from gradio.context import Context
 from functools import wraps
-
-
-class FormComponent:
-    webui_do_not_create_gradio_pyi_thank_you = True
-
-    def get_expected_parent(self):
-        return gr.components.Form
 
 
 canvas_js_root_path = os.path.dirname(__file__)
@@ -63,7 +71,7 @@ def base64_to_image(base64_str, numpy=True):
     return image_array
 
 
-class LogicalImage(gr.Textbox, FormComponent):
+class LogicalImage(gr.Textbox):
     @wraps(gr.Textbox.__init__)
     def __init__(self, *args, numpy=True, **kwargs):
         self.numpy = numpy

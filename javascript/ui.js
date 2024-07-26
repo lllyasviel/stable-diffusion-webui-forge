@@ -26,12 +26,17 @@ function selected_gallery_index() {
     return all_gallery_buttons().findIndex(elem => elem.classList.contains('selected'));
 }
 
+function gallery_container_buttons(gallery_container) {
+    return gradioApp().querySelectorAll(`#${gallery_container} .thumbnail-item.thumbnail-small`);
+}
+
+function selected_gallery_index_id(gallery_container) {
+    return Array.from(gallery_container_buttons(gallery_container)).findIndex(elem => elem.classList.contains('selected'));
+}
+
 function extract_image_from_gallery(gallery) {
     if (gallery.length == 0) {
         return [null];
-    }
-    if (gallery.length == 1) {
-        return [gallery[0]];
     }
 
     var index = selected_gallery_index();
@@ -41,7 +46,7 @@ function extract_image_from_gallery(gallery) {
         index = 0;
     }
 
-    return [gallery[index]];
+    return [[gallery[index]]];
 }
 
 window.args_to_array = Array.from; // Compatibility with e.g. extensions that may expect this to be around
@@ -113,14 +118,6 @@ function get_img2img_tab_index() {
 function create_submit_args(args) {
     var res = Array.from(args);
 
-    // As it is currently, txt2img and img2img send back the previous output args (txt2img_gallery, generation_info, html_info) whenever you generate a new image.
-    // This can lead to uploading a huge gallery of previously generated images, which leads to an unnecessary delay between submitting and beginning to generate.
-    // I don't know why gradio is sending outputs along with inputs, but we can prevent sending the image gallery here, which seems to be an issue for some.
-    // If gradio at some point stops sending outputs, this may break something
-    if (Array.isArray(res[res.length - 3])) {
-        res[res.length - 3] = null;
-    }
-
     return res;
 }
 
@@ -141,11 +138,10 @@ function showSubmitInterruptingPlaceholder(tabname) {
 function showRestoreProgressButton(tabname, show) {
     var button = gradioApp().getElementById(tabname + "_restore_progress");
     if (!button) return;
-
-    button.style.display = show ? "flex" : "none";
+    button.style.setProperty('display', show ? 'flex' : 'none', 'important');
 }
 
-function submit() {
+function submit(args) {
     showSubmitButtons('txt2img', false);
 
     var id = randomId();
@@ -157,22 +153,22 @@ function submit() {
         showRestoreProgressButton('txt2img', false);
     });
 
-    var res = create_submit_args(arguments);
+    var res = create_submit_args(args);
 
     res[0] = id;
 
     return res;
 }
 
-function submit_txt2img_upscale() {
-    var res = submit(...arguments);
+function submit_txt2img_upscale(args) {
+    var res = submit(...args);
 
     res[2] = selected_gallery_index();
 
     return res;
 }
 
-function submit_img2img() {
+function submit_img2img(args) {
     showSubmitButtons('img2img', false);
 
     var id = randomId();
@@ -184,15 +180,14 @@ function submit_img2img() {
         showRestoreProgressButton('img2img', false);
     });
 
-    var res = create_submit_args(arguments);
+    var res = create_submit_args(args);
 
     res[0] = id;
-    res[1] = get_tab_index('mode_img2img');
 
     return res;
 }
 
-function submit_extras() {
+function submit_extras(args) {
     showSubmitButtons('extras', false);
 
     var id = randomId();
@@ -201,11 +196,10 @@ function submit_extras() {
         showSubmitButtons('extras', true);
     });
 
-    var res = create_submit_args(arguments);
+    var res = create_submit_args(args);
 
     res[0] = id;
 
-    console.log(res);
     return res;
 }
 
@@ -214,6 +208,7 @@ function restoreProgressTxt2img() {
     var id = localGet("txt2img_task_id");
 
     if (id) {
+        showSubmitInterruptingPlaceholder('txt2img');
         requestProgress(id, gradioApp().getElementById('txt2img_gallery_container'), gradioApp().getElementById('txt2img_gallery'), function() {
             showSubmitButtons('txt2img', true);
         }, null, 0);
@@ -228,6 +223,7 @@ function restoreProgressImg2img() {
     var id = localGet("img2img_task_id");
 
     if (id) {
+        showSubmitInterruptingPlaceholder('img2img');
         requestProgress(id, gradioApp().getElementById('img2img_gallery_container'), gradioApp().getElementById('img2img_gallery'), function() {
             showSubmitButtons('img2img', true);
         }, null, 0);
@@ -303,6 +299,7 @@ onAfterUiUpdate(function() {
     var jsdata = textarea.value;
     opts = JSON.parse(jsdata);
 
+    executeCallbacks(optionsAvailableCallbacks); /*global optionsAvailableCallbacks*/
     executeCallbacks(optionsChangedCallbacks); /*global optionsChangedCallbacks*/
 
     Object.defineProperty(textarea, 'value', {
@@ -341,8 +338,8 @@ onOptionsChanged(function() {
 let txt2img_textarea, img2img_textarea = undefined;
 
 function restart_reload() {
+    document.body.style.backgroundColor = "var(--background-fill-primary)";
     document.body.innerHTML = '<h1 style="font-family:monospace;margin-top:20%;color:lightgray;text-align:center;">Reloading...</h1>';
-
     var requestPing = function() {
         requestGet("./internal/ping", {}, function(data) {
             location.reload();
@@ -371,9 +368,9 @@ function selectCheckpoint(name) {
     gradioApp().getElementById('change_checkpoint').click();
 }
 
-function currentImg2imgSourceResolution(w, h, scaleBy) {
-    var img = gradioApp().querySelector('#mode_img2img > div[style="display: block;"] img');
-    return img ? [img.naturalWidth, img.naturalHeight, scaleBy] : [0, 0, scaleBy];
+function currentImg2imgSourceResolution(w, h, r) {
+    var img = gradioApp().querySelector('#mode_img2img > div[style="display: block;"] :is(img, canvas)');
+    return img ? [img.naturalWidth || img.width, img.naturalHeight || img.height, r] : [0, 0, r];
 }
 
 function updateImg2imgResizeToTextAfterChangingImage() {
@@ -416,7 +413,7 @@ function switchWidthHeight(tabname) {
 
 var onEditTimers = {};
 
-// calls func after afterMs milliseconds has passed since the input elem has beed enited by user
+// calls func after afterMs milliseconds has passed since the input elem has been edited by user
 function onEdit(editId, elem, afterMs, func) {
     var edited = function() {
         var existingTimer = onEditTimers[editId];

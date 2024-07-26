@@ -226,3 +226,26 @@
     background: var(--background-fill-primary);
     color: var(--block-label-text-color);
 }
+
+.controlnet_control_type_filter_group label {
+    background: unset !important;
+    border: unset !important;
+    margin-left: -10px !important;
+}
+
+.controlnet_control_type_filter_group > span {
+    display: none !important;
+}
+
+.controlnet_control_type_filter_group > .wrap {
+    margin-top: -20px !important;
+}
+
+.cnet-toolbutton {
+    background: unset !important;
+    border: unset !important;
+}
+
+.range-slider {
+    margin-top: -8px;
+}

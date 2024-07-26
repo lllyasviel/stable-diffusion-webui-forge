@@ -155,76 +155,31 @@ class GradioImageMaskPair(TypedDict):
 
 @dataclass
 class ControlNetUnit:
-    """Represents an entire ControlNet processing unit.
-
-    To add a new field to this class
-    ## If the new field can be specified on UI, you need to
-    - Add a new field of the same name in constructor of `ControlNetUiGroup`
-    - Initialize the new `ControlNetUiGroup` field in `ControlNetUiGroup.render`
-      as a Gradio `IOComponent`.
-    - Add the new `ControlNetUiGroup` field to `unit_args` in
-      `ControlNetUiGroup.render`. The order of parameters matters.
-
-    ## If the new field needs to appear in infotext, you need to
-    - Add a new item in `ControlNetUnit.infotext_fields`.
-    API-only fields cannot appear in infotext.
-    """
-    # Following fields should only be used in the UI.
-    # ====== Start of UI only fields ======
-    # Specifies the input mode for the unit, defaulting to a simple mode.
     input_mode: InputMode = InputMode.SIMPLE
-    # Determines whether to use the preview image as input; defaults to False.
     use_preview_as_input: bool = False
-    # Directory path for batch processing of images.
     batch_image_dir: str = ''
-    # Directory path for batch processing of masks.
     batch_mask_dir: str = ''
-    # Optional list of gallery images for batch input; defaults to None.
     batch_input_gallery: Optional[List[str]] = None
-    # Optional list of gallery masks for batch processing; defaults to None.
     batch_mask_gallery: Optional[List[str]] = None
-    # Holds the preview image as a NumPy array; defaults to None.
     generated_image: Optional[np.ndarray] = None
-    # ====== End of UI only fields ======
-
-    # Following fields are used in both the API and the UI.
-    # Holds the mask image; defaults to None.
     mask_image: Optional[GradioImageMaskPair] = None
-    # Specifies how this unit should be applied in each pass of high-resolution fix.
-    # Ignored if high-resolution fix is not enabled.
+    mask_image_fg: Optional[GradioImageMaskPair] = None
     hr_option: Union[HiResFixOption, int, str] = HiResFixOption.BOTH
-    # Indicates whether the unit is enabled; defaults to True.
     enabled: bool = True
-    # Name of the module being used; defaults to "None".
     module: str = "None"
-    # Name of the model being used; defaults to "None".
     model: str = "None"
-    # Weight of the unit in the overall processing; defaults to 1.0.
     weight: float = 1.0
-    # Optional image for input; defaults to None.
     image: Optional[GradioImageMaskPair] = None
-    # Specifies the mode of image resizing; defaults to inner fit.
+    image_fg: Optional[GradioImageMaskPair] = None
     resize_mode: Union[ResizeMode, int, str] = ResizeMode.INNER_FIT
-    # Resolution for processing by the unit; defaults to -1 (unspecified).
     processor_res: int = -1
-    # Threshold A for processing; defaults to -1 (unspecified).
     threshold_a: float = -1
-    # Threshold B for processing; defaults to -1 (unspecified).
     threshold_b: float = -1
-    # Start value for guidance; defaults to 0.0.
     guidance_start: float = 0.0
-    # End value for guidance; defaults to 1.0.
     guidance_end: float = 1.0
-    # Enables pixel-perfect processing; defaults to False.
     pixel_perfect: bool = False
-    # Control mode for the unit; defaults to balanced.
     control_mode: Union[ControlMode, int, str] = ControlMode.BALANCED
-
-    # Following fields should only be used in the API.
-    # ====== Start of API only fields ======
-    # Whether to save the detected map for this unit; defaults to True.
     save_detected_map: bool = True
-    # ====== End of API only fields ======
 
     @staticmethod
     def infotext_fields():

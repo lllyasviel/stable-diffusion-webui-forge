@@ -223,7 +223,10 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     if getattr(sd_model, 'parameterization', None) == 'v':
         sd_model.forge_objects.unet.model.model_sampling = model_sampling(sd_model.forge_objects.unet.model.model_config, ModelType.V_PREDICTION)
 
+    sd_model.is_sd3 = False
+    sd_model.latent_channels = 4
     sd_model.is_sdxl = conditioner is not None
+    sd_model.is_sdxl_inpaint = sd_model.is_sdxl and forge_objects.unet.model.diffusion_model.in_channels == 9
     sd_model.is_sd2 = not sd_model.is_sdxl and hasattr(sd_model.cond_stage_model, 'model')
     sd_model.is_sd1 = not sd_model.is_sdxl and not sd_model.is_sd2
     sd_model.is_ssd = sd_model.is_sdxl and 'model.diffusion_model.middle_block.1.transformer_blocks.0.attn1.to_q.weight' not in sd_model.state_dict().keys()

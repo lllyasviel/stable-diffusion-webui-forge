@@ -182,7 +182,7 @@ class AutoencodingEngineLegacy(AutoencodingEngine):
         return params
 
     def encode(
-        self, x: torch.Tensor, return_reg_log: bool = False
+        self, x: torch.Tensor, regulation=None, return_reg_log: bool = False
     ) -> Union[torch.Tensor, Tuple[torch.Tensor, dict]]:
         if self.max_batch_size is None:
             z = self.encoder(x)
@@ -198,7 +198,7 @@ class AutoencodingEngineLegacy(AutoencodingEngine):
                 z.append(z_batch)
             z = torch.cat(z, 0)
 
-        z, reg_log = self.regularization(z)
+        z, reg_log = self.regularization(z) if regulation is None else regulation(z)
         if return_reg_log:
             return z, reg_log
         return z

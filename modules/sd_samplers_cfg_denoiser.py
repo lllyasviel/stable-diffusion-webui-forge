@@ -1,5 +1,5 @@
 import torch
-from modules import prompt_parser, devices, sd_samplers_common
+from modules import prompt_parser, sd_samplers_common
 
 from modules.shared import opts, state
 import modules.shared as shared
@@ -183,7 +183,15 @@ class CFGDenoiser(torch.nn.Module):
                                               cond_scale=cond_scale, cond_composition=cond_composition)
 
         if self.mask is not None:
-            denoised = denoised * self.nmask + self.init_latent * self.mask
+            blended_latent = denoised * self.nmask + self.init_latent * self.mask
+
+            if self.p.scripts is not None:
+                from modules import scripts
+                mba = scripts.MaskBlendArgs(denoised, self.nmask, self.init_latent, self.mask, blended_latent, denoiser=self, sigma=sigma)
+                self.p.scripts.on_mask_blend(self.p, mba)
+                blended_latent = mba.blended_latent
+
+            denoised = blended_latent
 
         preview = self.sampler.last_latent = denoised
         sd_samplers_common.store_latent(preview)

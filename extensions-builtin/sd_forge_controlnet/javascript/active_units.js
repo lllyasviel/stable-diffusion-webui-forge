@@ -95,7 +95,6 @@
                 this.attachImageUploadListener();
                 this.attachImageStateChangeObserver();
                 this.attachA1111SendInfoObserver();
-                this.attachPresetDropdownObserver();
                 this.attachAccordionStateObserver();
             }
 
@@ -119,7 +118,7 @@
              */
             getUnitHeaderTextElement() {
                 return this.tab.querySelector(
-                    `:nth-child(${this.tabIndex + 1}) span.svelte-s1r2yt`
+                    `button > span:nth-child(1)`
                 );
             }
 
@@ -192,16 +191,17 @@
                 unitHeader.appendChild(span);
             }
             getInputImageSrc() {
-                const img = this.inputImageGroup.querySelector('.cnet-image img');
-                return img ? img.src : null;
+                const img = this.inputImageGroup.querySelector('.cnet-image .forge-image');
+                return (img && img.src.startsWith('data')) ? img.src : null;
             }
             getPreprocessorPreviewImageSrc() {
-                const img = this.generatedImageGroup.querySelector('.cnet-image img');
-                return img ? img.src : null;
+                const img = this.generatedImageGroup.querySelector('.cnet-image .forge-image');
+                return (img && img.src.startsWith('data')) ? img.src : null;
             }
             getMaskImageSrc() {
                 function isEmptyCanvas(canvas) {
                     if (!canvas) return true;
+                    if (canvas.width == 0 || canvas.height ==0) return true;
                     const ctx = canvas.getContext('2d');
                     // Get the image data
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -216,14 +216,14 @@
                     }
                     return isPureBlack;
                 }
-                const maskImg = this.maskImageGroup.querySelector('.cnet-mask-image img');
+                const maskImg = this.maskImageGroup.querySelector('.cnet-mask-image .forge-image');
                 // Hand-drawn mask on mask upload.
-                const handDrawnMaskCanvas = this.maskImageGroup.querySelector('.cnet-mask-image canvas[key="mask"]');
+                const handDrawnMaskCanvas = this.maskImageGroup.querySelector('.cnet-mask-image .forge-drawing-canvas');
                 // Hand-drawn mask on input image upload.
-                const inputImageHandDrawnMaskCanvas = this.inputImageGroup.querySelector('.cnet-image canvas[key="mask"]');
+                const inputImageHandDrawnMaskCanvas = this.inputImageGroup.querySelector('.cnet-image .forge-drawing-canvas');
                 if (!isEmptyCanvas(handDrawnMaskCanvas)) {
                     return handDrawnMaskCanvas.toDataURL();
-                } else if (maskImg) {
+                } else if (maskImg && maskImg.src.startsWith('data')) {
                     return maskImg.src;
                 } else if (!isEmptyCanvas(inputImageHandDrawnMaskCanvas)) {
                     return inputImageHandDrawnMaskCanvas.toDataURL();
@@ -347,25 +347,6 @@
                 }
             }
 
-            attachPresetDropdownObserver() {
-                const presetDropDown = this.tab.querySelector('.cnet-preset-dropdown');
-
-                new MutationObserver((mutationsList) => {
-                    for (const mutation of mutationsList) {
-                        if (mutation.removedNodes.length > 0) {
-                            setTimeout(() => {
-                                this.updateActiveState();
-                                this.updateActiveUnitCount();
-                                this.updateActiveControlType();
-                            }, 1000);
-                            return;
-                        }
-                    }
-                }).observe(presetDropDown, {
-                    childList: true,
-                    subtree: true,
-                });
-            }
             /**
              * Observer that triggers when the ControlNetUnit's accordion(tab) closes.
              */

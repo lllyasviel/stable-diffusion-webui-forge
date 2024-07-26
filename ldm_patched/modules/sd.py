@@ -296,6 +296,8 @@ class VAE:
         if model_management.VAE_ALWAYS_TILED:
             return self.encode_tiled(pixel_samples)
 
+        regulation = self.patcher.model_options.get("model_vae_regulation", None)
+
         pixel_samples = pixel_samples.movedim(-1,1)
         try:
             memory_used = self.memory_used_encode(pixel_samples.shape, self.vae_dtype)
@@ -306,7 +308,7 @@ class VAE:
             samples = torch.empty((pixel_samples.shape[0], self.latent_channels, round(pixel_samples.shape[2] // self.downscale_ratio), round(pixel_samples.shape[3] // self.downscale_ratio)), device=self.output_device)
             for x in range(0, pixel_samples.shape[0], batch_number):
                 pixels_in = (2. * pixel_samples[x:x+batch_number] - 1.).to(self.vae_dtype).to(self.device)
-                samples[x:x+batch_number] = self.first_stage_model.encode(pixels_in).to(self.output_device).float()
+                samples[x:x+batch_number] = self.first_stage_model.encode(pixels_in, regulation).to(self.output_device).float()
 
         except model_management.OOM_EXCEPTION as e:
             print("Warning: Ran out of memory when regular VAE encoding, retrying with tiled VAE encoding.")

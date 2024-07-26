@@ -169,5 +169,7 @@ class State:
 
     @torch.inference_mode()
     def assign_current_image(self, image):
+        if shared.opts.live_previews_image_format == 'jpeg' and image.mode in ('RGBA', 'P'):
+            image = image.convert('RGB')
         self.current_image = image
         self.id_live_preview += 1

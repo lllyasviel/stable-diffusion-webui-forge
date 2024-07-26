@@ -1,6 +1,6 @@
 import inspect
 
-from pydantic import BaseModel, Field, create_model
+from pydantic import BaseModel, Field, create_model, ConfigDict
 from typing import Any, Optional, Literal
 from inflection import underscore
 from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img
@@ -92,9 +92,7 @@ class PydanticModelGenerator:
         fields = {
             d.field: (d.field_type, Field(default=d.field_value, alias=d.field_alias, exclude=d.field_exclude)) for d in self._model_def
         }
-        DynamicModel = create_model(self._model_name, **fields)
-        DynamicModel.__config__.allow_population_by_field_name = True
-        DynamicModel.__config__.allow_mutation = True
+        DynamicModel = create_model(self._model_name, __config__=ConfigDict(populate_by_name=True, frozen=False), **fields)
         return DynamicModel
 
 StableDiffusionTxt2ImgProcessingAPI = PydanticModelGenerator(
@@ -102,13 +100,13 @@ StableDiffusionTxt2ImgProcessingAPI = PydanticModelGenerator(
     StableDiffusionProcessingTxt2Img,
     [
         {"key": "sampler_index", "type": str, "default": "Euler"},
-        {"key": "script_name", "type": str, "default": None},
+        {"key": "script_name", "type": str | None, "default": None},
         {"key": "script_args", "type": list, "default": []},
         {"key": "send_images", "type": bool, "default": True},
         {"key": "save_images", "type": bool, "default": False},
         {"key": "alwayson_scripts", "type": dict, "default": {}},
-        {"key": "force_task_id", "type": str, "default": None},
-        {"key": "infotext", "type": str, "default": None},
+        {"key": "force_task_id", "type": str | None, "default": None},
+        {"key": "infotext", "type": str | None, "default": None},
     ]
 ).generate_model()
 
@@ -117,27 +115,27 @@ StableDiffusionImg2ImgProcessingAPI = PydanticModelGenerator(
     StableDiffusionProcessingImg2Img,
     [
         {"key": "sampler_index", "type": str, "default": "Euler"},
-        {"key": "init_images", "type": list, "default": None},
+        {"key": "init_images", "type": list | None, "default": None},
         {"key": "denoising_strength", "type": float, "default": 0.75},
-        {"key": "mask", "type": str, "default": None},
+        {"key": "mask", "type": str | None, "default": None},
         {"key": "include_init_images", "type": bool, "default": False, "exclude" : True},
-        {"key": "script_name", "type": str, "default": None},
+        {"key": "script_name", "type": str | None, "default": None},
         {"key": "script_args", "type": list, "default": []},
         {"key": "send_images", "type": bool, "default": True},
         {"key": "save_images", "type": bool, "default": False},
         {"key": "alwayson_scripts", "type": dict, "default": {}},
-        {"key": "force_task_id", "type": str, "default": None},
-        {"key": "infotext", "type": str, "default": None},
+        {"key": "force_task_id", "type": str | None, "default": None},
+        {"key": "infotext", "type": str | None, "default": None},
     ]
 ).generate_model()
 
 class TextToImageResponse(BaseModel):
-    images: list[str] = Field(default=None, title="Image", description="The generated image in base64 format.")
+    images: list[str] | None = Field(default=None, title="Image", description="The generated image in base64 format.")
     parameters: dict
     info: str
 
 class ImageToImageResponse(BaseModel):
-    images: list[str] = Field(default=None, title="Image", description="The generated image in base64 format.")
+    images: list[str] | None = Field(default=None, title="Image", description="The generated image in base64 format.")
     parameters: dict
     info: str
 
@@ -147,7 +145,7 @@ class ExtrasBaseRequest(BaseModel):
     gfpgan_visibility: float = Field(default=0, title="GFPGAN Visibility", ge=0, le=1, allow_inf_nan=False, description="Sets the visibility of GFPGAN, values should be between 0 and 1.")
     codeformer_visibility: float = Field(default=0, title="CodeFormer Visibility", ge=0, le=1, allow_inf_nan=False, description="Sets the visibility of CodeFormer, values should be between 0 and 1.")
     codeformer_weight: float = Field(default=0, title="CodeFormer Weight", ge=0, le=1, allow_inf_nan=False, description="Sets the weight of CodeFormer, values should be between 0 and 1.")
-    upscaling_resize: float = Field(default=2, title="Upscaling Factor", ge=1, le=8, description="By how much to upscale the image, only used when resize_mode=0.")
+    upscaling_resize: float = Field(default=2, title="Upscaling Factor", gt=0, description="By how much to upscale the image, only used when resize_mode=0.")
     upscaling_resize_w: int = Field(default=512, title="Target Width", ge=1, description="Target width for the upscaler to hit. Only used when resize_mode=1.")
     upscaling_resize_h: int = Field(default=512, title="Target Height", ge=1, description="Target height for the upscaler to hit. Only used when resize_mode=1.")
     upscaling_crop: bool = Field(default=True, title="Crop to fit", description="Should the upscaler crop the image to fit in the chosen size?")
@@ -163,7 +161,7 @@ class ExtrasSingleImageRequest(ExtrasBaseRequest):
     image: str = Field(default="", title="Image", description="Image to work on, must be a Base64 string containing the image's data.")
 
 class ExtrasSingleImageResponse(ExtraBaseResponse):
-    image: str = Field(default=None, title="Image", description="The generated image in base64 format.")
+    image: str | None = Field(default=None, title="Image", description="The generated image in base64 format.")
 
 class FileData(BaseModel):
     data: str = Field(title="File data", description="Base64 representation of the file")
@@ -190,15 +188,15 @@ class ProgressResponse(BaseModel):
     progress: float = Field(title="Progress", description="The progress with a range of 0 to 1")
     eta_relative: float = Field(title="ETA in secs")
     state: dict = Field(title="State", description="The current state snapshot")
-    current_image: str = Field(default=None, title="Current image", description="The current image in base64 format. opts.show_progress_every_n_steps is required for this to work.")
-    textinfo: str = Field(default=None, title="Info text", description="Info text used by WebUI.")
+    current_image: str | None = Field(default=None, title="Current image", description="The current image in base64 format. opts.show_progress_every_n_steps is required for this to work.")
+    textinfo: str | None = Field(default=None, title="Info text", description="Info text used by WebUI.")
 
 class InterrogateRequest(BaseModel):
     image: str = Field(default="", title="Image", description="Image to work on, must be a Base64 string containing the image's data.")
     model: str = Field(default="clip", title="Model", description="The interrogate model used.")
 
 class InterrogateResponse(BaseModel):
-    caption: str = Field(default=None, title="Caption", description="The generated caption for the image.")
+    caption: str | None = Field(default=None, title="Caption", description="The generated caption for the image.")
 
 class TrainResponse(BaseModel):
     info: str = Field(title="Train info", description="Response string from train embedding or hypernetwork task.")
@@ -223,7 +221,7 @@ _options = vars(parser)['_option_string_actions']
 for key in _options:
     if(_options[key].dest != 'help'):
         flag = _options[key]
-        _type = str
+        _type = str | None
         if _options[key].default is not None:
             _type = type(_options[key].default)
         flags.update({flag.dest: (_type, Field(default=flag.default, description=flag.help))})
@@ -233,9 +231,19 @@ FlagsModel = create_model("Flags", **flags)
 class SamplerItem(BaseModel):
     name: str = Field(title="Name")
     aliases: list[str] = Field(title="Aliases")
-    options: dict[str, str] = Field(title="Options")
+    options: dict[str, Any] = Field(title="Options")
+
+class SchedulerItem(BaseModel):
+    name: str = Field(title="Name")
+    label: str = Field(title="Label")
+    aliases: Optional[list[str]] = Field(title="Aliases")
+    default_rho: Optional[float] = Field(title="Default Rho")
+    need_inner_model: Optional[bool] = Field(title="Needs Inner Model")
 
 class UpscalerItem(BaseModel):
+    class Config:
+        protected_namespaces = ()
+
     name: str = Field(title="Name")
     model_name: Optional[str] = Field(title="Model Name")
     model_path: Optional[str] = Field(title="Path")
@@ -246,6 +254,9 @@ class LatentUpscalerModeItem(BaseModel):
     name: str = Field(title="Name")
 
 class SDModelItem(BaseModel):
+    class Config:
+        protected_namespaces = ()
+
     title: str = Field(title="Title")
     model_name: str = Field(title="Model Name")
     hash: Optional[str] = Field(title="Short hash")
@@ -254,6 +265,9 @@ class SDModelItem(BaseModel):
     config: Optional[str] = Field(title="Config file")
 
 class SDVaeItem(BaseModel):
+    class Config:
+        protected_namespaces = ()
+
     model_name: str = Field(title="Model Name")
     filename: str = Field(title="Filename")
 
@@ -293,12 +307,12 @@ class MemoryResponse(BaseModel):
 
 
 class ScriptsList(BaseModel):
-    txt2img: list = Field(default=None, title="Txt2img", description="Titles of scripts (txt2img)")
-    img2img: list = Field(default=None, title="Img2img", description="Titles of scripts (img2img)")
+    txt2img: list | None = Field(default=None, title="Txt2img", description="Titles of scripts (txt2img)")
+    img2img: list | None = Field(default=None, title="Img2img", description="Titles of scripts (img2img)")
 
 
 class ScriptArg(BaseModel):
-    label: str = Field(default=None, title="Label", description="Name of the argument in UI")
+    label: str | None = Field(default=None, title="Label", description="Name of the argument in UI")
     value: Optional[Any] = Field(default=None, title="Value", description="Default value of the argument")
     minimum: Optional[Any] = Field(default=None, title="Minimum", description="Minimum allowed value for the argumentin UI")
     maximum: Optional[Any] = Field(default=None, title="Minimum", description="Maximum allowed value for the argumentin UI")
@@ -307,9 +321,9 @@ class ScriptArg(BaseModel):
 
 
 class ScriptInfo(BaseModel):
-    name: str = Field(default=None, title="Name", description="Script name")
-    is_alwayson: bool = Field(default=None, title="IsAlwayson", description="Flag specifying whether this script is an alwayson script")
-    is_img2img: bool = Field(default=None, title="IsImg2img", description="Flag specifying whether this script is an img2img script")
+    name: str | None = Field(default=None, title="Name", description="Script name")
+    is_alwayson: bool | None = Field(default=None, title="IsAlwayson", description="Flag specifying whether this script is an alwayson script")
+    is_img2img: bool | None = Field(default=None, title="IsImg2img", description="Flag specifying whether this script is an img2img script")
     args: list[ScriptArg] = Field(title="Arguments", description="List of script's arguments")
 
 class ExtensionItem(BaseModel):

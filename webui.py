@@ -11,6 +11,8 @@ from modules_forge.initialization import initialize_forge
 from modules_forge import main_thread
 
 
+from modules_forge.forge_canvas.canvas import canvas_js_root_path
+
 startup_timer = timer.startup_timer
 startup_timer.record("launcher")
 
@@ -92,7 +94,7 @@ def webui_worker():
             auth=gradio_auth_creds,
             inbrowser=auto_launch_browser,
             prevent_thread_lock=True,
-            allowed_paths=cmd_opts.gradio_allowed_path,
+            allowed_paths=cmd_opts.gradio_allowed_path + [canvas_js_root_path],
             app_kwargs={
                 "docs_url": "/docs",
                 "redoc_url": "/redoc",

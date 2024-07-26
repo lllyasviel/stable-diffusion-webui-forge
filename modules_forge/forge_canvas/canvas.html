@@ -1,0 +1,63 @@
+<div class="forge-container" id="container_forge_mixin">
+    <input type="file" id="imageInput_forge_mixin" class="forge-file-upload">
+    <div id="imageContainer_forge_mixin" class="forge-image-container">
+        <div id="uploadHint_forge_mixin">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24" fill="none"
+                 stroke="white"
+                 stroke-width="4"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 class="forge-upload-hint">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24" fill="none"
+                 stroke="grey"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 class="forge-upload-hint">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+        </div>
+        <img id="image_forge_mixin" class="forge-image forge-no-select">
+        <canvas id="drawingCanvas_forge_mixin" class="forge-drawing-canvas"
+                style="position:absolute;top:0;left:0;" width="1" height="1"></canvas>
+        <div class="forge-toolbar" id="toolbar_forge_mixin">
+            <div class="forge-toolbar-box-a">
+                <button id="maxButton_forge_mixin" class="forge-btn forge-no-select" title="Maximize">⛶</button>
+                <button id="minButton_forge_mixin" class="forge-btn forge-no-select" title="Minimize" style="display: none;">➖</button>
+                <button id="uploadButton_forge_mixin" class="forge-btn forge-no-select" title="Upload">📂</button>
+                <button id="removeButton_forge_mixin" class="forge-btn forge-no-select" title="Remove">🗑️</button>
+                <button id="centerButton_forge_mixin" class="forge-btn forge-no-select" title="Center Position">✠</button>
+                <button id="resetButton_forge_mixin" class="forge-btn forge-no-select" title="Reset">🔄</button>
+                <button id="undoButton_forge_mixin" class="forge-btn forge-no-select" title="Undo">↩️</button>
+                <button id="redoButton_forge_mixin" class="forge-btn forge-no-select" title="Redo">↪️</button>
+            </div>
+            <div class="forge-toolbar-box-b">
+                <div class="forge-color-picker-block" id="scribbleColorBlock_forge_mixin">
+                    <input type="color" id="scribbleColor_forge_mixin" class="forge-toolbar-color" value="#000000">
+                </div>
+                <div class="forge-range-row" id="scribbleWidthBlock_forge_mixin">
+                    <div id="widthLabel_forge_mixin" class="forge-toolbar-label">brush width</div>
+                    <input type="range" id="scribbleWidth_forge_mixin" class="forge-toolbar-range" min="1" max="20" value="4">
+                </div>
+                <div class="forge-range-row" id="scribbleAlphaBlock_forge_mixin">
+                    <div id="alphaLabel_forge_mixin" class="forge-toolbar-label">brush opacity</div>
+                    <input type="range" id="scribbleAlpha_forge_mixin" class="forge-toolbar-range" min="0" max="100" value="100">
+                </div>
+                <div class="forge-range-row" id="scribbleSoftnessBlock_forge_mixin">
+                    <div id="softnessLabel_forge_mixin" class="forge-toolbar-label">brush softness</div>
+                    <input type="range" id="scribbleSoftness_forge_mixin" class="forge-toolbar-range" min="0" max="100" value="0">
+                </div>
+            </div>
+        </div>
+        <div id="scribbleIndicator_forge_mixin" class="forge-scribble-indicator"></div>
+    </div>
+    <div class="forge-resize-line" id="resizeLine_forge_mixin"></div>
+</div>

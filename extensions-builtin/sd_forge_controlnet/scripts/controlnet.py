@@ -157,7 +157,7 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         if unit.input_mode == external_code.InputMode.MERGE:
             for idx, item in enumerate(unit.batch_input_gallery):
-                img_path = item['name']
+                img_path = item[0]
                 logger.info(f'Try to read image: {img_path}')
                 img = np.ascontiguousarray(cv2.imread(img_path)[:, :, ::-1]).copy()
                 mask = None
@@ -197,30 +197,36 @@ class ControlNetForForgeOfficial(scripts.Script):
 
             using_a1111_data = False
 
+            unit_image = unit.image
+            unit_image_fg = unit.image_fg[:, :, 3] if unit.image_fg is not None else None
+
             if unit.use_preview_as_input and unit.generated_image is not None:
                 image = unit.generated_image
             elif unit.image is None:
                 resize_mode = external_code.resize_mode_from_value(p.resize_mode)
                 image = HWC3(np.asarray(a1111_i2i_image))
                 using_a1111_data = True
-            elif (unit.image['image'] < 5).all() and (unit.image['mask'] > 5).any():
-                image = unit.image['mask']
+            elif (unit_image < 5).all() and (unit_image_fg > 5).any():
+                image = unit_image_fg
             else:
-                image = unit.image['image']
+                image = unit_image
 
             if not isinstance(image, np.ndarray):
                 raise ValueError("controlnet is enabled but no input image is given")
 
             image = HWC3(image)
 
+            unit_mask_image = unit.mask_image
+            unit_mask_image_fg = unit.mask_image_fg[:, :, 3] if unit.mask_image_fg is not None else None
+
             if using_a1111_data:
                 mask = HWC3(np.asarray(a1111_i2i_mask)) if a1111_i2i_mask is not None else None
-            elif unit.mask_image is not None and (unit.mask_image['image'] > 5).any():
-                mask = unit.mask_image['image']
-            elif unit.mask_image is not None and (unit.mask_image['mask'] > 5).any():
-                mask = unit.mask_image['mask']
-            elif unit.image is not None and (unit.image['mask'] > 5).any():
-                mask = unit.image['mask']
+            elif unit_mask_image_fg is not None and (unit_mask_image_fg > 5).any():
+                mask = unit_mask_image_fg
+            elif unit_mask_image is not None and (unit_mask_image > 5).any():
+                mask = unit_mask_image
+            elif unit_image_fg is not None and (unit_image_fg > 5).any():
+                mask = unit_image_fg
             else:
                 mask = None
 

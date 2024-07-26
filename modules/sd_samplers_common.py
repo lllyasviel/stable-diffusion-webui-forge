@@ -237,7 +237,7 @@ class Sampler:
         self.eta_infotext_field = 'Eta'
         self.eta_default = 1.0
 
-        self.conditioning_key = shared.sd_model.model.conditioning_key
+        self.conditioning_key = getattr(shared.sd_model.model, 'conditioning_key', 'crossattn')
 
         self.p = None
         self.model_wrap_cfg = None

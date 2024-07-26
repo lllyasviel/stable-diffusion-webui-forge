@@ -1,0 +1,159 @@
+.forge-container {
+    width: 100%;
+    height: 512px;
+    position: relative;
+    overflow: hidden;
+}
+
+.forge-image-container {
+    width: 100%;
+    height: calc(100% - 6px);
+    position: relative;
+    overflow: hidden;
+    background-color: #cccccc;
+    background-image: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee),
+    linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+}
+
+.forge-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-size: contain;
+    background-repeat: no-repeat;
+    cursor: grab;
+    max-width: unset !important;
+    max-height: unset !important;
+}
+
+.forge-image:active {
+    cursor: grabbing;
+}
+
+.forge-file-upload {
+    display: none;
+}
+
+.forge-resize-line {
+    width: 100%;
+    height: 6px;
+    background-image: linear-gradient(to bottom, grey 50%, darkgrey 50%);
+    background-size: 4px 4px;
+    background-repeat: repeat;
+    cursor: ns-resize;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.forge-toolbar {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 10;
+    background: rgba(47, 47, 47, 0.8);
+    padding: 6px 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.forge-toolbar .forge-btn {
+    padding: 2px 6px;
+    border: none;
+    background-color: #4a4a4a;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.forge-toolbar .forge-btn:hover {
+    background-color: #5e5e5e;
+}
+
+.forge-toolbar .forge-btn:active {
+    background-color: #3e3e3e;
+}
+
+.forge-toolbar-box-a {
+    flex-wrap: wrap;
+}
+
+.forge-toolbar-box-b {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+}
+
+.forge-color-picker-block {
+    display: flex;
+    align-items: center;
+}
+
+.forge-range-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.forge-toolbar-color {
+    border: none;
+    background: none;
+    padding: 3px;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+.forge-toolbar-color::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border-radius: 50%;
+}
+
+.forge-toolbar-color::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+    background: none;
+}
+
+.forge-toolbar-label {
+    color: white !important;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px; /* Adjust margin as needed */
+}
+
+.forge-toolbar-range {
+}
+
+.forge-scribble-indicator {
+    position: relative;
+    border-radius: 50%;
+    border: 1px solid;
+    pointer-events: none;
+    display: none;
+    width: 80px;
+    height: 80px;
+}
+
+.forge-no-select {
+    user-select: none;
+}
+
+.forge-upload-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30%;
+    height: 30%;
+    transform: translate(-50%, -50%);
+}

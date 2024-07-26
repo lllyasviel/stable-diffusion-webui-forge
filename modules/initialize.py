@@ -50,7 +50,7 @@ def imports():
     shared_init.initialize()
     startup_timer.record("initialize shared")
 
-    from modules import processing, gradio_extensons, ui  # noqa: F401
+    from modules import processing, gradio_extensions, ui  # noqa: F401
     startup_timer.record("other imports")
 
 
@@ -65,6 +65,7 @@ def check_versions():
 def initialize():
     from modules import initialize_util
     initialize_util.fix_torch_version()
+    initialize_util.fix_pytorch_lightning()
     initialize_util.fix_asyncio_event_loop_policy()
     initialize_util.validate_tls_options()
     initialize_util.configure_sigint_handler()
@@ -123,7 +124,7 @@ def initialize_rest(*, reload_script_modules=False):
     with startup_timer.subcategory("load scripts"):
         scripts.load_scripts()
 
-    if reload_script_modules:
+    if reload_script_modules and shared.opts.enable_reloading_ui_scripts:
         for module in [module for name, module in sys.modules.items() if name.startswith("modules.ui")]:
             importlib.reload(module)
         startup_timer.record("reload script modules")

@@ -112,7 +112,7 @@ class OpenposeEditor(object):
         self.render_button.click(
             fn=render_pose,
             inputs=[self.pose_input],
-            outputs=[generated_image, use_preview_as_input, *self.outputs()],
+            outputs=[generated_image.background, use_preview_as_input, *self.outputs()],
         )
 
         def update_upload_link(model: str) -> Dict:

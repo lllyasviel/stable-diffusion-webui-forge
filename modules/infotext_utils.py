@@ -8,7 +8,7 @@ import sys
 
 import gradio as gr
 from modules.paths import data_path
-from modules import shared, ui_tempdir, script_callbacks, processing, infotext_versions
+from modules import shared, ui_tempdir, script_callbacks, processing, infotext_versions, images, prompt_parser, errors
 from PIL import Image
 
 sys.modules['modules.generation_parameters_copypaste'] = sys.modules[__name__]  # alias for old name
@@ -74,29 +74,38 @@ def image_from_url_text(filedata):
     if filedata is None:
         return None
 
-    if type(filedata) == list and filedata and type(filedata[0]) == dict and filedata[0].get("is_file", False):
-        filedata = filedata[0]
-
-    if type(filedata) == dict and filedata.get("is_file", False):
-        filename = filedata["name"]
-        is_in_right_dir = ui_tempdir.check_tmp_file(shared.demo, filename)
-        assert is_in_right_dir, 'trying to open image file outside of allowed directories'
-
-        filename = filename.rsplit('?', 1)[0]
-        return Image.open(filename)
-
-    if type(filedata) == list:
+    if isinstance(filedata, list):
         if len(filedata) == 0:
             return None
 
         filedata = filedata[0]
 
-    if filedata.startswith("data:image/png;base64,"):
-        filedata = filedata[len("data:image/png;base64,"):]
+    if isinstance(filedata, dict) and filedata.get("is_file", False):
+        filedata = filedata
 
-    filedata = base64.decodebytes(filedata.encode('utf-8'))
-    image = Image.open(io.BytesIO(filedata))
-    return image
+    filename = None
+    if type(filedata) == dict and filedata.get("is_file", False):
+        filename = filedata["name"]
+
+    elif isinstance(filedata, tuple) and len(filedata) == 2:  # gradio 4.16 sends images from gallery as a list of tuples
+        return filedata[0]
+
+    if filename:
+        is_in_right_dir = ui_tempdir.check_tmp_file(shared.demo, filename)
+        assert is_in_right_dir, 'trying to open image file outside of allowed directories'
+
+        filename = filename.rsplit('?', 1)[0]
+        return images.read(filename)
+
+    if isinstance(filedata, str):
+        if filedata.startswith("data:image/png;base64,"):
+            filedata = filedata[len("data:image/png;base64,"):]
+
+        filedata = base64.decodebytes(filedata.encode('utf-8'))
+        image = images.read(io.BytesIO(filedata))
+        return image
+
+    return None
 
 
 def add_paste_fields(tabname, init_img, fields, override_settings_component=None):
@@ -138,8 +147,6 @@ def register_paste_params_button(binding: ParamBinding):
 
 def connect_paste_params_buttons():
     for binding in registered_param_bindings:
-        if binding.tabname not in paste_fields:
-            continue
         destination_image_component = paste_fields[binding.tabname]["init_img"]
         fields = paste_fields[binding.tabname]["fields"]
         override_settings_component = binding.override_settings_component or paste_fields[binding.tabname]["override_settings_component"]
@@ -148,18 +155,19 @@ def connect_paste_params_buttons():
         destination_height_component = next(iter([field for field, name in fields if name == "Size-2"] if fields else []), None)
 
         if binding.source_image_component and destination_image_component:
+            need_send_dementions = destination_width_component and binding.tabname != 'inpaint'
             if isinstance(binding.source_image_component, gr.Gallery):
-                func = send_image_and_dimensions if destination_width_component else image_from_url_text
+                func = send_image_and_dimensions if need_send_dementions else image_from_url_text
                 jsfunc = "extract_image_from_gallery"
             else:
-                func = send_image_and_dimensions if destination_width_component else lambda x: x
+                func = send_image_and_dimensions if need_send_dementions else lambda x: x
                 jsfunc = None
 
             binding.paste_button.click(
                 fn=func,
                 _js=jsfunc,
                 inputs=[binding.source_image_component],
-                outputs=[destination_image_component, destination_width_component, destination_height_component] if destination_width_component else [destination_image_component],
+                outputs=[destination_image_component, destination_width_component, destination_height_component] if need_send_dementions else [destination_image_component],
                 show_progress=False,
             )
 
@@ -187,6 +195,8 @@ def connect_paste_params_buttons():
 def send_image_and_dimensions(x):
     if isinstance(x, Image.Image):
         img = x
+    elif isinstance(x, list) and isinstance(x[0], tuple):
+        img = x[0][0]
     else:
         img = image_from_url_text(x)
 
@@ -267,17 +277,6 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
         else:
             prompt += ("" if prompt == "" else "\n") + line
 
-    if shared.opts.infotext_styles != "Ignore":
-        found_styles, prompt, negative_prompt = shared.prompt_styles.extract_styles_from_prompt(prompt, negative_prompt)
-
-        if shared.opts.infotext_styles == "Apply":
-            res["Styles array"] = found_styles
-        elif shared.opts.infotext_styles == "Apply if any" and found_styles:
-            res["Styles array"] = found_styles
-
-    res["Prompt"] = prompt
-    res["Negative prompt"] = negative_prompt
-
     for k, v in re_param.findall(lastline):
         try:
             if v[0] == '"' and v[-1] == '"':
@@ -291,6 +290,26 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
                 res[k] = v
         except Exception:
             print(f"Error parsing \"{k}: {v}\"")
+
+    # Extract styles from prompt
+    if shared.opts.infotext_styles != "Ignore":
+        found_styles, prompt_no_styles, negative_prompt_no_styles = shared.prompt_styles.extract_styles_from_prompt(prompt, negative_prompt)
+
+        same_hr_styles = True
+        if ("Hires prompt" in res or "Hires negative prompt" in res) and (infotext_ver > infotext_versions.v180_hr_styles if (infotext_ver := infotext_versions.parse_version(res.get("Version"))) else True):
+            hr_prompt, hr_negative_prompt = res.get("Hires prompt", prompt), res.get("Hires negative prompt", negative_prompt)
+            hr_found_styles, hr_prompt_no_styles, hr_negative_prompt_no_styles = shared.prompt_styles.extract_styles_from_prompt(hr_prompt, hr_negative_prompt)
+            if same_hr_styles := found_styles == hr_found_styles:
+                res["Hires prompt"] = '' if hr_prompt_no_styles == prompt_no_styles else hr_prompt_no_styles
+                res['Hires negative prompt'] = '' if hr_negative_prompt_no_styles == negative_prompt_no_styles else hr_negative_prompt_no_styles
+
+        if same_hr_styles:
+            prompt, negative_prompt = prompt_no_styles, negative_prompt_no_styles
+            if (shared.opts.infotext_styles == "Apply if any" and found_styles) or shared.opts.infotext_styles == "Apply":
+                res['Styles array'] = found_styles
+
+    res["Prompt"] = prompt
+    res["Negative prompt"] = negative_prompt
 
     # Missing CLIP skip means it was set to 1 (the default)
     if "Clip skip" not in res:
@@ -306,6 +325,9 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
 
     if "Hires sampler" not in res:
         res["Hires sampler"] = "Use same sampler"
+
+    if "Hires schedule type" not in res:
+        res["Hires schedule type"] = "Use same scheduler"
 
     if "Hires checkpoint" not in res:
         res["Hires checkpoint"] = "Use same checkpoint"
@@ -358,8 +380,14 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
     if "Cache FP16 weight for LoRA" not in res and res["FP8 weight"] != "Disable":
         res["Cache FP16 weight for LoRA"] = False
 
-    if "Emphasis" not in res:
+    prompt_attention = prompt_parser.parse_prompt_attention(prompt)
+    prompt_attention += prompt_parser.parse_prompt_attention(negative_prompt)
+    prompt_uses_emphasis = len(prompt_attention) != len([p for p in prompt_attention if p[1] == 1.0 or p[0] == 'BREAK'])
+    if "Emphasis" not in res and prompt_uses_emphasis:
         res["Emphasis"] = "Original"
+
+    if "Refiner switch by sampling steps" not in res:
+        res["Refiner switch by sampling steps"] = False
 
     infotext_versions.backcompat(res)
 
@@ -395,6 +423,9 @@ def create_override_settings_dict(text_pairs):
     """
 
     res = {}
+
+    if not text_pairs:
+        return res
 
     params = {}
     for pair in text_pairs:
@@ -458,7 +489,7 @@ def get_override_settings(params, *, skip_fields=None):
 
 def connect_paste(button, paste_fields, input_comp, override_settings_component, tabname):
     def paste_func(prompt):
-        if not prompt and not shared.cmd_opts.hide_ui_dir_config:
+        if not prompt and not shared.cmd_opts.hide_ui_dir_config and not shared.cmd_opts.no_prompt_history:
             filename = os.path.join(data_path, "params.txt")
             try:
                 with open(filename, "r", encoding="utf8") as file:
@@ -472,7 +503,11 @@ def connect_paste(button, paste_fields, input_comp, override_settings_component,
 
         for output, key in paste_fields:
             if callable(key):
-                v = key(params)
+                try:
+                    v = key(params)
+                except Exception:
+                    errors.report(f"Error executing {key}", exc_info=True)
+                    v = None
             else:
                 v = params.get(key, None)
 

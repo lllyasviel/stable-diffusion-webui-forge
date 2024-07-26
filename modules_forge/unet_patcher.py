@@ -196,3 +196,16 @@ class UnetPatcher(ModelPatcher):
 
         self.add_patches(patches=patch_flat, strength_patch=float(strength), strength_model=1.0)
         return
+
+
+def copy_and_update_model_options(model_options, patch, name, block_name, number, transformer_index=None):
+    model_options = model_options.copy()
+    transformer_options = model_options.get("transformer_options", {}).copy()
+    patches_replace = transformer_options.get("patches_replace", {}).copy()
+    name_patches = patches_replace.get(name, {}).copy()
+    block = (block_name, number, transformer_index) if transformer_index is not None else (block_name, number)
+    name_patches[block] = patch
+    patches_replace[name] = name_patches
+    transformer_options["patches_replace"] = patches_replace
+    model_options["transformer_options"] = transformer_options
+    return model_options

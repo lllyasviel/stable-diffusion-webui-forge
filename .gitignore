@@ -3,7 +3,6 @@ __pycache__
 *.safetensors
 *.pth
 *.dev.js
-*.pyi
 .DS_Store
 /output/
 /ESRGAN/*

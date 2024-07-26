@@ -4,6 +4,8 @@ Stable Diffusion WebUI Forge is a platform on top of [Stable Diffusion WebUI](ht
 
 The name "Forge" is inspired from "Minecraft Forge". This project is aimed at becoming SD WebUI's Forge.
 
+Forge is currently based on SD-WebUI 1.10.
+
 # Installing Forge
 
 If you are proficient in Git and you want to install Forge as another branch of SD-WebUI, please see [here](https://github.com/continue-revolution/sd-webui-animatediff/blob/forge/master/docs/how-to-use.md#you-have-a1111-and-you-know-git). In this way, you can reuse all SD checkpoints and all extensions you installed previously in your OG SD-WebUI, but you should know what you are doing.

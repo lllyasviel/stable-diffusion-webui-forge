@@ -4,7 +4,7 @@ Stable Diffusion WebUI Forge is a platform on top of [Stable Diffusion WebUI](ht
 
 The name "Forge" is inspired from "Minecraft Forge". This project is aimed at becoming SD WebUI's Forge.
 
-Forge is currently based on SD-WebUI 1.10 at [this commit](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/8b3d98c5a580c3c72e82d03fdab2b643bf9a8edd).
+Forge is currently based on SD-WebUI 1.10.1 at [this commit](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/82a973c04367123ae98bd9abdf80d9eda9b910e2).
 
 # Installing Forge
 

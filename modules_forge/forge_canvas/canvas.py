@@ -10,9 +10,11 @@ create_or_modify_pyi_org = gradio.component_meta.create_or_modify_pyi
 
 
 def create_or_modify_pyi_org_patched(component_class, class_name, events):
-    if component_class.__name__ == 'LogicalImage':
-        return
-
+    try:
+        if component_class.__name__ == 'LogicalImage':
+            return
+    except:
+        pass
     return create_or_modify_pyi_org(component_class, class_name, events)
 
 

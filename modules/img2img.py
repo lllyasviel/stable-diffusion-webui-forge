@@ -157,6 +157,9 @@ def img2img_function(id_task: str, request: gr.Request, mode: int, prompt: str, 
 
     height, width = int(height), int(width)
 
+    image = None
+    mask = None
+
     if mode == 0:  # img2img
         image = init_img
         mask = None

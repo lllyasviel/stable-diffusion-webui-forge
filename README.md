@@ -26,6 +26,30 @@ Note that running `update.bat` is important, otherwise you may be using a previo
 
 You can download previous versions [here](https://github.com/lllyasviel/stable-diffusion-webui-forge/discussions/849).
 
+# Forge Status
+
+Based on manual test one-by-one:
+
+| Component                                         | Status  | Last Test    |
+|---------------------------------------------------|---------|--------------|
+| Basic Diffusion                                   | Normal  | 2024 July 27 |
+| GPU Memory Management System                      | Normal  | 2024 July 27 |
+| LoRAs                                             | Normal  | 2024 July 27 |
+| All Preprocessors                                 | Normal  | 2024 July 27 |
+| All ControlNets                                   | Normal  | 2024 July 27 |
+| All IP-Adapters                                   | Normal  | 2024 July 27 |
+| All Instant-IDs                                   | Normal  | 2024 July 27 |
+| All Reference-only Methods                        | Normal  | 2024 July 27 |
+| All Integrated Extensions                         | Normal  | 2024 July 27 |
+| Popular Extensions (Adetailer, etc)               | Normal  | 2024 July 27 |
+| Gradio 4 UIs                                      | Normal  | 2024 July 27 |
+| Gradio 4 Forge Canvas                             | Normal  | 2024 July 27 |
+| LoRA/Checkpoint Selection UI for Gradio 4         | Normal  | 2024 July 27 |
+| Photopea/OpenposeEditor/etc for ControlNet        | Normal  | 2024 July 27 |
+| Wacom 128 level touch pressure support for Canvas | Normal  | 2024 July 15 |
+
+Feel free to open issue if anything is broken and I will take a look every several days. If I do not update this "Forge Status" then it means I cannot reproduce any problem. In that case, fresh re-install should help most.
+
 # Under Construction
 
 This Readme is under construction ... more docs/wiki coming soon ...

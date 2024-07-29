@@ -47,6 +47,7 @@ Based on manual test one-by-one:
 | LoRA/Checkpoint Selection UI for Gradio 4         | Normal  | 2024 July 27 |
 | Photopea/OpenposeEditor/etc for ControlNet        | Normal  | 2024 July 27 |
 | Wacom 128 level touch pressure support for Canvas | Normal  | 2024 July 15 |
+| Microsoft Surface touch pressure support for Canvas | Broken, pending fix  | 2024 July 29 |
 
 Feel free to open issue if anything is broken and I will take a look every several days. If I do not update this "Forge Status" then it means I cannot reproduce any problem. In that case, fresh re-install should help most.
 

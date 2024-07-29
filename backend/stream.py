@@ -1,5 +1,5 @@
 import torch
-import argparse
+from backend import args
 
 
 def stream_context():
@@ -55,11 +55,6 @@ def get_new_stream():
 current_stream = None
 mover_stream = None
 using_stream = False
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--cuda-stream", action="store_true")
-args = parser.parse_known_args()[0]
 
 if args.cuda_stream:
     current_stream = get_current_stream()

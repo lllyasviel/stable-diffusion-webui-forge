@@ -1,7 +1,7 @@
 import torch
 import contextlib
 
-from modules_forge import stream
+from backend import stream
 
 
 stash = {}

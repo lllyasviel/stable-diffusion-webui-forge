@@ -1,5 +1,5 @@
 import torch
-from backend import args
+from backend.args import args
 
 
 def stream_context():

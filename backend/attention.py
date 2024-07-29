@@ -1,8 +1,6 @@
 import torch
 
 from backend.args import args
-from einops import rearrange, repeat
-from typing import Optional
 
 if args.xformers:
     import xformers

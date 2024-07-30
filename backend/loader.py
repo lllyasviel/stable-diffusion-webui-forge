@@ -23,9 +23,14 @@ def load_component(component_name, lib_name, cls_name, repo_path, sd):
     return None
 
 
+def guess_repo_name_from_state_dict(sd):
+    result = fetch_diffusers_config(sd)['pretrained_model_name_or_path']
+    return result
+
+
 def load_huggingface_components(sd):
-    pretrained_model_name_or_path = fetch_diffusers_config(sd)['pretrained_model_name_or_path']
-    local_path = os.path.join(dir_path, 'huggingface', pretrained_model_name_or_path)
+    repo_name = guess_repo_name_from_state_dict(sd)
+    local_path = os.path.join(dir_path, 'huggingface', repo_name)
     config = DiffusionPipeline.load_config(local_path)
     result = {"repo_path": local_path}
     for component_name, v in config.items():

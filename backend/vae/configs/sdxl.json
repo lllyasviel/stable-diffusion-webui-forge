@@ -18,8 +18,8 @@
   "layers_per_block": 2,
   "norm_num_groups": 32,
   "out_channels": 3,
-  "sample_size": 512,
-  "scaling_factor": 0.18215,
+  "sample_size": 1024,
+  "scaling_factor": 0.13025,
   "up_block_types": [
     "UpDecoderBlock2D",
     "UpDecoderBlock2D",

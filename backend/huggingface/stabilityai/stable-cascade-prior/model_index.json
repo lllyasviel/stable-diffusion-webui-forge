@@ -1,0 +1,29 @@
+{
+  "_class_name": "StableCascadePriorPipeline",
+  "_diffusers_version": "0.27.0.dev0",
+  "feature_extractor": [
+    "transformers",
+    "CLIPImageProcessor"
+  ],
+  "image_encoder": [
+    "transformers",
+    "CLIPVisionModelWithProjection"
+  ],
+  "prior": [
+    "diffusers",
+    "StableCascadeUNet"
+  ],
+  "resolution_multiple": 42.67,
+  "scheduler": [
+    "diffusers",
+    "DDPMWuerstchenScheduler"
+  ],
+  "text_encoder": [
+    "transformers",
+    "CLIPTextModelWithProjection"
+  ],
+  "tokenizer": [
+    "transformers",
+    "CLIPTokenizerFast"
+  ]
+}

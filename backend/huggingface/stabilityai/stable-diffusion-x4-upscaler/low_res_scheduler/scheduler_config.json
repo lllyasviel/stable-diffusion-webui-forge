@@ -1,0 +1,12 @@
+{
+  "_class_name": "DDPMScheduler",
+  "_diffusers_version": "0.9.0.dev0",
+  "beta_end": 0.02,
+  "beta_schedule": "scaled_linear",
+  "beta_start": 0.0001,
+  "clip_sample": true,
+  "num_train_timesteps": 1000,
+  "prediction_type": "epsilon",
+  "trained_betas": null,
+  "variance_type": "fixed_small"
+}

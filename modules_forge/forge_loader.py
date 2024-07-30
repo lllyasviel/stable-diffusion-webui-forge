@@ -106,8 +106,8 @@ def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_c
         model.load_model_weights(sd, "model.diffusion_model.")
 
     if output_vae:
-        vae, mapping = load_vae_from_state_dict(sd)
-        vae = VAE(model=vae, mapping=mapping)
+        vae = load_vae_from_state_dict(sd)
+        vae = VAE(model=vae, mapping=vae.state_dict_mapping)
 
     if output_clip:
         w = WeightsLoader()

@@ -337,9 +337,9 @@ class LoadedModel:
             real_async_memory = 0
             mem_counter = 0
             for m in self.real_model.modules():
-                if hasattr(m, "ldm_patched_cast_weights"):
-                    m.prev_ldm_patched_cast_weights = m.ldm_patched_cast_weights
-                    m.ldm_patched_cast_weights = True
+                if hasattr(m, "parameters_manual_cast"):
+                    m.prev_parameters_manual_cast = m.parameters_manual_cast
+                    m.parameters_manual_cast = True
                     module_mem = module_size(m)
                     if mem_counter + module_mem < async_kept_memory:
                         m.to(self.device)
@@ -366,9 +366,9 @@ class LoadedModel:
     def model_unload(self, avoid_model_moving=False):
         if self.model_accelerated:
             for m in self.real_model.modules():
-                if hasattr(m, "prev_ldm_patched_cast_weights"):
-                    m.ldm_patched_cast_weights = m.prev_ldm_patched_cast_weights
-                    del m.prev_ldm_patched_cast_weights
+                if hasattr(m, "prev_parameters_manual_cast"):
+                    m.parameters_manual_cast = m.prev_parameters_manual_cast
+                    del m.prev_parameters_manual_cast
 
             self.model_accelerated = False
 

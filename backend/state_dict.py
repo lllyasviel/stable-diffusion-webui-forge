@@ -13,6 +13,17 @@ class StateDictItem:
         return StateDictItem(self.key, t, advanced_indexing=advanced_indexing)
 
 
+def split_state_dict_with_prefix(sd, prefix):
+    vae_sd = {}
+
+    for k, v in list(sd.items()):
+        if k.startswith(prefix):
+            vae_sd[k] = StateDictItem(k[len(prefix):], v)
+            del sd[k]
+
+    return vae_sd
+
+
 def shrink_last_key(t):
     ts = t.split('.')
     del ts[-1]

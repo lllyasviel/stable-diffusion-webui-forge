@@ -54,14 +54,39 @@ def attention_pytorch(q, k, v, heads, mask=None):
     return out
 
 
+def attention_xformers_single_head(q, k, v):
+    B, C, H, W = q.shape
+    q, k, v = map(
+        lambda t: t.view(B, C, -1).transpose(1, 2).contiguous(),
+        (q, k, v),
+    )
+    out = xformers.ops.memory_efficient_attention(q, k, v, attn_bias=None)
+    out = out.transpose(1, 2).reshape(B, C, H, W)
+    return out
+
+
+def attention_pytorch_single_head(q, k, v):
+    B, C, H, W = q.shape
+    q, k, v = map(
+        lambda t: t.view(B, 1, C, -1).transpose(2, 3).contiguous(),
+        (q, k, v),
+    )
+    out = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=0.0, is_causal=False)
+    out = out.transpose(2, 3).reshape(B, C, H, W)
+    return out
+
+
 attention_function = attention_pytorch
+attention_function_single_head = attention_pytorch_single_head
 
 if args.xformers:
     print("Using xformers cross attention")
     attention_function = attention_xformers
+    attention_function_single_head = attention_xformers_single_head
 else:
     print("Using pytorch cross attention")
     attention_function = attention_pytorch
+    attention_function_single_head = attention_pytorch_single_head
 
 
 class AttentionProcessorForge:

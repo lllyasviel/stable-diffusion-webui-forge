@@ -109,7 +109,7 @@ def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_c
 
     if output_vae:
         vae = huggingface_components['vae']
-        vae = VAE(model=vae, mapping=vae.state_dict_mapping)
+        vae = VAE(model=vae)
 
     if output_clip:
         w = WeightsLoader()

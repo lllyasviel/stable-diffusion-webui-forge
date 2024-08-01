@@ -1,11 +1,8 @@
 import os
 import importlib
-import diffusers
-import transformers
 
 from diffusers.loaders.single_file_utils import fetch_diffusers_config
 from diffusers import DiffusionPipeline
-from diffusers import AutoencoderKL
 from backend.vae import load_vae
 
 
@@ -13,13 +10,12 @@ dir_path = os.path.dirname(__file__)
 
 
 def load_component(component_name, lib_name, cls_name, repo_path, sd):
+    config_path = os.path.join(repo_path, component_name)
     if component_name in ['scheduler', 'tokenizer']:
         cls = getattr(importlib.import_module(lib_name), cls_name)
         return cls.from_pretrained(os.path.join(repo_path, component_name))
     if cls_name in ['AutoencoderKL']:
-        config = AutoencoderKL.load_config(os.path.join(repo_path, component_name))
-        return load_vae(sd, config)
-
+        return load_vae(sd, config_path)
     return None
 
 

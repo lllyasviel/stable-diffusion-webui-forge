@@ -163,10 +163,7 @@ class CLIP:
         return self.patcher.get_key_patches()
 
 class VAE:
-    def __init__(self, model=None, mapping=None, device=None, dtype=None, no_init=False):
-        if mapping is None:
-            mapping = {}
-
+    def __init__(self, model=None, device=None, dtype=None, no_init=False):
         if no_init:
             return
 
@@ -176,7 +173,6 @@ class VAE:
         self.latent_channels = 4
 
         self.first_stage_model = model.eval()
-        self.state_dict_mapping = mapping
 
         if device is None:
             device = model_management.vae_device()
@@ -202,7 +198,6 @@ class VAE:
         n.downscale_ratio = self.downscale_ratio
         n.latent_channels = self.latent_channels
         n.first_stage_model = self.first_stage_model
-        n.state_dict_mapping = self.state_dict_mapping
         n.device = self.device
         n.vae_dtype = self.vae_dtype
         n.output_device = self.output_device

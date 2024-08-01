@@ -53,7 +53,8 @@ class FreeUForForge(scripts.Script):
         return scripts.AlwaysVisible
 
     def ui(self, *args, **kwargs):
-        with gr.Accordion(open=False, label=self.title()):
+        with gr.Accordion(open=False, label=self.title(), elem_id="extensions-freeu",
+                              elem_classes=["extensions-freeu"]):
             freeu_enabled = gr.Checkbox(label='Enabled', value=False)
             freeu_b1 = gr.Slider(label='B1', minimum=0, maximum=2, step=0.01, value=1.01)
             freeu_b2 = gr.Slider(label='B2', minimum=0, maximum=2, step=0.01, value=1.02)

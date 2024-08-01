@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-from backend.attention import attention_function_single_head
+from backend.attention import attention_function_single_head_spatial
 from diffusers.configuration_utils import ConfigMixin, register_to_config
 from typing import Optional, Tuple
 from torch import nn
@@ -181,7 +181,7 @@ class AttnBlock(nn.Module):
         q = self.q(h_)
         k = self.k(h_)
         v = self.v(h_)
-        h_ = attention_function_single_head(q, k, v)
+        h_ = attention_function_single_head_spatial(q, k, v)
         h_ = self.proj_out(h_)
         return x + h_
 

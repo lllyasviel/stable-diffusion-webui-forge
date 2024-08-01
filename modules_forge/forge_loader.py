@@ -112,13 +112,7 @@ def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_c
         vae = VAE(model=vae)
 
     if output_clip:
-        w = WeightsLoader()
-        clip_target = model_config.clip_target()
-        if clip_target is not None:
-            clip = CLIP(clip_target, embedding_directory=embedding_directory)
-            w.cond_stage_model = clip.cond_stage_model
-            sd = model_config.process_clip_state_dict(sd)
-            load_model_weights(w, sd)
+        clip = CLIP(huggingface_components)
 
     left_over = sd.keys()
     if len(left_over) > 0:
@@ -177,7 +171,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
             embedder = conditioner.embedders[i]
             typename = type(embedder).__name__
             if typename == 'FrozenCLIPEmbedder':  # SDXL Clip L
-                embedder.tokenizer = forge_objects.clip.tokenizer.clip_l.tokenizer
+                embedder.tokenizer = forge_objects.clip.tokenizer.clip_l
                 embedder.transformer = forge_objects.clip.cond_stage_model.clip_l.transformer
                 model_embeddings = embedder.transformer.text_model.embeddings
                 model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
@@ -186,7 +180,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
                 conditioner.embedders[i] = embedder
                 text_cond_models.append(embedder)
             elif typename == 'FrozenOpenCLIPEmbedder2':  # SDXL Clip G
-                embedder.tokenizer = forge_objects.clip.tokenizer.clip_g.tokenizer
+                embedder.tokenizer = forge_objects.clip.tokenizer.clip_g
                 embedder.transformer = forge_objects.clip.cond_stage_model.clip_g.transformer
                 embedder.text_projection = forge_objects.clip.cond_stage_model.clip_g.text_projection
                 model_embeddings = embedder.transformer.text_model.embeddings
@@ -201,14 +195,14 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         else:
             sd_model.cond_stage_model = conditioner
     elif type(sd_model.cond_stage_model).__name__ == 'FrozenCLIPEmbedder':  # SD15 Clip
-        sd_model.cond_stage_model.tokenizer = forge_objects.clip.tokenizer.clip_l.tokenizer
+        sd_model.cond_stage_model.tokenizer = forge_objects.clip.tokenizer.clip_l
         sd_model.cond_stage_model.transformer = forge_objects.clip.cond_stage_model.clip_l.transformer
         model_embeddings = sd_model.cond_stage_model.transformer.text_model.embeddings
         model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
             model_embeddings.token_embedding, sd_hijack.model_hijack)
         sd_model.cond_stage_model = forge_clip.CLIP_SD_15_L(sd_model.cond_stage_model, sd_hijack.model_hijack)
     elif type(sd_model.cond_stage_model).__name__ == 'FrozenOpenCLIPEmbedder':  # SD21 Clip
-        sd_model.cond_stage_model.tokenizer = forge_objects.clip.tokenizer.clip_h.tokenizer
+        sd_model.cond_stage_model.tokenizer = forge_objects.clip.tokenizer.clip_h
         sd_model.cond_stage_model.transformer = forge_objects.clip.cond_stage_model.clip_h.transformer
         model_embeddings = sd_model.cond_stage_model.transformer.text_model.embeddings
         model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(

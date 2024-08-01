@@ -352,7 +352,7 @@ class LoadedModel:
                 elif hasattr(m, "weight"):
                     m.to(self.device)
                     mem_counter += module_size(m)
-                    print(f"[Memory Management] {flag} Loader Disabled for ", m)
+                    print(f"[Memory Management] {flag} Loader Disabled for", type(m).__name__)
             print(f"[Memory Management] Parameters Loaded to {flag} Stream (MB) = ", real_async_memory / (1024 * 1024))
             print(f"[Memory Management] Parameters Loaded to GPU (MB) = ", mem_counter / (1024 * 1024))
 

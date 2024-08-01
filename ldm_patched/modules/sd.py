@@ -97,22 +97,22 @@ def load_lora_for_models(model, clip, lora, strength_model, strength_clip, filen
     return model, clip
 
 
+from backend.clip import JointCLIP, JointTokenizer
+
+
 class CLIP:
-    def __init__(self, target=None, embedding_directory=None, no_init=False):
+    def __init__(self, huggingface_components, no_init=False):
         if no_init:
             return
-        params = target.params.copy()
-        clip = target.clip
-        tokenizer = target.tokenizer
 
         load_device = model_management.text_encoder_device()
         offload_device = model_management.text_encoder_offload_device()
-        params['device'] = offload_device
-        params['dtype'] = model_management.text_encoder_dtype(load_device)
+        text_encoder_dtype = model_management.text_encoder_dtype(load_device)
 
-        self.cond_stage_model = clip(**(params))
+        self.cond_stage_model = JointCLIP(huggingface_components)
+        self.tokenizer = JointTokenizer(huggingface_components)
 
-        self.tokenizer = tokenizer(embedding_directory=embedding_directory)
+        self.cond_stage_model.to(dtype=text_encoder_dtype, device=offload_device)
         self.patcher = ldm_patched.modules.model_patcher.ModelPatcher(self.cond_stage_model, load_device=load_device, offload_device=offload_device)
         self.layer_idx = None
 

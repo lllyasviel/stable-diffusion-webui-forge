@@ -2,7 +2,7 @@
 
 WebUI Forge is under a week of major revision right now between 2021 Aug 1 and Aug 7. To join the test, just update to the latest unstable version.
 
-For download previous version, see [Previous Versions](#previous-versions)
+For downloading previous versions, see [Previous Versions](https://github.com/lllyasviel/stable-diffusion-webui-forge/discussions/849).
 
 # Stable Diffusion WebUI Forge
 

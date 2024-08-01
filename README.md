@@ -1,3 +1,9 @@
+# Under Construction
+
+WebUI Forge is under a week of major revision right now between 2021 Aug 1 and Aug 7. To join the test, just update to the latest unstable version.
+
+For download previous version, see [Previous Versions](#previous-versions)
+
 # Stable Diffusion WebUI Forge
 
 Stable Diffusion WebUI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) (based on [Gradio](https://www.gradio.app/)) to make development easier, optimize resource management, speed up inference, and study experimental features.

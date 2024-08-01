@@ -101,7 +101,7 @@ from backend.clip import JointCLIP, JointTokenizer
 
 
 class CLIP:
-    def __init__(self, huggingface_components, no_init=False):
+    def __init__(self, huggingface_components=None, no_init=False):
         if no_init:
             return
 

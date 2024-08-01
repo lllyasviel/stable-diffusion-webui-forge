@@ -405,6 +405,8 @@ class IntegratedAutoencoderKL(nn.Module, ConfigMixin):
         self.quant_conv = nn.Conv2d(2 * latent_channels, 2 * latent_channels, 1)
         self.post_quant_conv = nn.Conv2d(latent_channels, latent_channels, 1)
         self.embed_dim = latent_channels
+        self.scaling_factor = scaling_factor
+        self.shift_factor = shift_factor
 
     def encode(self, x, regulation=None):
         z = self.encoder(x)

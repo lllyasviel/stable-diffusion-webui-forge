@@ -202,7 +202,6 @@ class BasicTransformerBlock(nn.Module):
         self.checkpoint = checkpoint
         self.n_heads = n_heads
         self.d_head = d_head
-        self.switch_temporal_ca_to_sa = switch_temporal_ca_to_sa
 
     def forward(self, x, context=None, transformer_options={}):
         return checkpoint(self._forward, (x, context, transformer_options), self.parameters(), self.checkpoint)

@@ -97,9 +97,6 @@ def load_lora_for_models(model, clip, lora, strength_model, strength_clip, filen
     return model, clip
 
 
-from backend.modules.clip import JointCLIP, JointTokenizer
-
-
 class CLIP:
     def __init__(self, huggingface_components=None, no_init=False):
         if no_init:

@@ -4,7 +4,9 @@ import contextlib
 from ldm_patched.modules import model_management
 from ldm_patched.modules import model_detection
 
-from ldm_patched.modules.sd import VAE, CLIP, load_model_weights
+from ldm_patched.modules.sd import VAE, load_model_weights
+from backend.patcher.clip import CLIP
+from backend.patcher.vae import VAE
 import ldm_patched.modules.model_patcher
 import ldm_patched.modules.utils
 import ldm_patched.modules.clip_vision

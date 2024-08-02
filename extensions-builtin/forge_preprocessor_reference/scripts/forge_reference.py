@@ -67,8 +67,8 @@ class PreprocessorReference(Preprocessor):
         gen_cpu = torch.Generator().manual_seed(gen_seed)
 
         unet = process.sd_model.forge_objects.unet.clone()
-        sigma_max = unet.model.prediction.percent_to_sigma(start_percent)
-        sigma_min = unet.model.prediction.percent_to_sigma(end_percent)
+        sigma_max = unet.model.predictor.percent_to_sigma(start_percent)
+        sigma_min = unet.model.predictor.percent_to_sigma(end_percent)
 
         self.recorded_attn1 = {}
         self.recorded_h = {}

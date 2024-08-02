@@ -38,7 +38,7 @@ class DynamicThresholdingNode:
             cond = input - args["cond"]
             uncond = input - args["uncond"]
             cond_scale = args["cond_scale"]
-            time_step = model.model.prediction.timestep(args["sigma"])
+            time_step = model.model.predictor.timestep(args["sigma"])
             time_step = time_step[0].item()
             dynamic_thresh.step = 999 - time_step
 

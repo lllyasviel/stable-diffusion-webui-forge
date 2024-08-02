@@ -12,11 +12,11 @@ class KModel(torch.nn.Module):
         self.computation_dtype = computation_dtype
 
         self.diffusion_model = huggingface_components['unet']
-        self.prediction = k_prediction_from_diffusers_scheduler(huggingface_components['scheduler'])
+        self.predictor = k_prediction_from_diffusers_scheduler(huggingface_components['scheduler'])
 
     def apply_model(self, x, t, c_concat=None, c_crossattn=None, control=None, transformer_options={}, **kwargs):
         sigma = t
-        xc = self.prediction.calculate_input(sigma, x)
+        xc = self.predictor.calculate_input(sigma, x)
         if c_concat is not None:
             xc = torch.cat([xc] + [c_concat], dim=1)
 
@@ -24,7 +24,7 @@ class KModel(torch.nn.Module):
         dtype = self.computation_dtype
 
         xc = xc.to(dtype)
-        t = self.prediction.timestep(t).float()
+        t = self.predictor.timestep(t).float()
         context = context.to(dtype)
         extra_conds = {}
         for o in kwargs:
@@ -35,7 +35,7 @@ class KModel(torch.nn.Module):
             extra_conds[o] = extra
 
         model_output = self.diffusion_model(xc, t, context=context, control=control, transformer_options=transformer_options, **extra_conds).float()
-        return self.prediction.calculate_denoised(sigma, model_output, x)
+        return self.predictor.calculate_denoised(sigma, model_output, x)
 
     def memory_required(self, input_shape):
         area = input_shape[0] * input_shape[2] * input_shape[3]

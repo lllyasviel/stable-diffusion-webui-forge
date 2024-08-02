@@ -108,7 +108,7 @@ def sampling_prepare(unet, x):
 
     real_model = unet.model
 
-    percent_to_timestep_function = lambda p: real_model.prediction.percent_to_sigma(p)
+    percent_to_timestep_function = lambda p: real_model.predictor.percent_to_sigma(p)
 
     for cnet in unet.list_controlnets():
         cnet.pre_run(real_model, percent_to_timestep_function)

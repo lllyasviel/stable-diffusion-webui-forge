@@ -102,8 +102,8 @@ class FooocusInpaintPatcher(ControlModelPatcher):
         if not_patched_count > 0:
             print(f"[Fooocus Patch Loader] Failed to load {not_patched_count} keys")
 
-        sigma_start = unet.model.prediction.percent_to_sigma(self.start_percent)
-        sigma_end = unet.model.prediction.percent_to_sigma(self.end_percent)
+        sigma_start = unet.model.predictor.percent_to_sigma(self.start_percent)
+        sigma_end = unet.model.predictor.percent_to_sigma(self.end_percent)
 
         def conditioning_modifier(model, x, timestep, uncond, cond, cond_scale, model_options, seed):
             if timestep > sigma_start or timestep < sigma_end:

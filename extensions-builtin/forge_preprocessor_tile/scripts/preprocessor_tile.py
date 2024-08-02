@@ -43,7 +43,7 @@ class PreprocessorTileColorFix(PreprocessorTile):
         latent = self.register_latent(process, cond)
 
         unet = process.sd_model.forge_objects.unet.clone()
-        sigma_data = process.sd_model.forge_objects.unet.model.prediction.sigma_data
+        sigma_data = process.sd_model.forge_objects.unet.model.predictor.sigma_data
 
         if getattr(process, 'is_hr_pass', False):
             k = int(self.variation * 2)

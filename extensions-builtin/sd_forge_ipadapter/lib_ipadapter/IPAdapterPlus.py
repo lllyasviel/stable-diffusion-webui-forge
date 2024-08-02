@@ -760,8 +760,8 @@ class IPAdapterApply:
         if attn_mask is not None:
             attn_mask = attn_mask.to(self.device)
 
-        sigma_start = model.model.prediction.percent_to_sigma(start_at)
-        sigma_end = model.model.prediction.percent_to_sigma(end_at)
+        sigma_start = model.model.predictor.percent_to_sigma(start_at)
+        sigma_end = model.model.predictor.percent_to_sigma(end_at)
 
         patch_kwargs = {
             "number": 0,

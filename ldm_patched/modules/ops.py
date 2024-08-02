@@ -6,7 +6,7 @@ import torch
 import ldm_patched.modules.model_management
 import contextlib
 
-from modules_forge import stream
+from backend import stream
 
 
 # https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855/files

@@ -174,9 +174,7 @@ class CrossAttention(nn.Module):
 
 class BasicTransformerBlock(nn.Module):
     def __init__(self, dim, n_heads, d_head, dropout=0., context_dim=None, gated_ff=True, checkpoint=True, ff_in=False,
-                 inner_dim=None,
-                 disable_self_attn=False, disable_temporal_crossattention=False, switch_temporal_ca_to_sa=False,
-                 dtype=None, device=None):
+                 inner_dim=None, disable_self_attn=False, dtype=None, device=None):
         super().__init__()
 
         self.ff_in = ff_in or inner_dim is not None
@@ -193,23 +191,13 @@ class BasicTransformerBlock(nn.Module):
         self.attn1 = CrossAttention(query_dim=inner_dim, heads=n_heads, dim_head=d_head, dropout=dropout,
                                     context_dim=context_dim if self.disable_self_attn else None, dtype=dtype,
                                     device=device)
-        self.ff = FeedForward(inner_dim, dim_out=dim, dropout=dropout, glu=gated_ff, dtype=dtype, device=device)
-
-        if disable_temporal_crossattention:
-            if switch_temporal_ca_to_sa:
-                raise ValueError
-            else:
-                self.attn2 = None
-        else:
-            context_dim_attn2 = None
-            if not switch_temporal_ca_to_sa:
-                context_dim_attn2 = context_dim
-
-            self.attn2 = CrossAttention(query_dim=inner_dim, context_dim=context_dim_attn2,
-                                        heads=n_heads, dim_head=d_head, dropout=dropout, dtype=dtype, device=device)
-            self.norm2 = nn.LayerNorm(inner_dim, dtype=dtype, device=device)
-
         self.norm1 = nn.LayerNorm(inner_dim, dtype=dtype, device=device)
+
+        self.attn2 = CrossAttention(query_dim=inner_dim, context_dim=context_dim,
+                                    heads=n_heads, dim_head=d_head, dropout=dropout, dtype=dtype, device=device)
+        self.norm2 = nn.LayerNorm(inner_dim, dtype=dtype, device=device)
+
+        self.ff = FeedForward(inner_dim, dim_out=dim, dropout=dropout, glu=gated_ff, dtype=dtype, device=device)
         self.norm3 = nn.LayerNorm(inner_dim, dtype=dtype, device=device)
         self.checkpoint = checkpoint
         self.n_heads = n_heads

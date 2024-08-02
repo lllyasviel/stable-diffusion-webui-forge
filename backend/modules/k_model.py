@@ -1,6 +1,6 @@
 import torch
 
-from backend import memory_management
+from backend import memory_management, attention
 from backend.modules.k_prediction import k_prediction_from_diffusers_scheduler
 
 
@@ -41,14 +41,11 @@ class KModel(torch.nn.Module):
         area = input_shape[0] * input_shape[2] * input_shape[3]
         dtype_size = memory_management.dtype_size(self.computation_dtype)
 
-        scaler = 1.28
-
-        # TODO: Consider these again
-        # if ldm_patched.modules.model_management.xformers_enabled() or ldm_patched.modules.model_management.pytorch_attention_flash_attention():
-        #     scaler = 1.28
-        # else:
-        #     scaler = 1.65
-        #     if ldm_patched.ldm.modules.attention._ATTN_PRECISION == "fp32":
-        #         dtype_size = 4
+        if attention.attention_function in [attention.attention_pytorch, attention.attention_xformers]:
+            scaler = 1.28
+        else:
+            scaler = 1.65
+            if attention.get_attn_precision() == torch.float32:
+                dtype_size = 4
 
         return scaler * area * dtype_size * 16384

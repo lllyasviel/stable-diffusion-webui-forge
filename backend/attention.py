@@ -22,7 +22,7 @@ if memory_management.xformers_enabled():
 FORCE_UPCAST_ATTENTION_DTYPE = memory_management.force_upcast_attention_dtype()
 
 
-def get_attn_precision(attn_precision):
+def get_attn_precision(attn_precision=torch.float32):
     if args.disable_attention_upcast:
         return None
     if FORCE_UPCAST_ATTENTION_DTYPE is not None:

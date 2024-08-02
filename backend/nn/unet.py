@@ -660,6 +660,7 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
             transformer_depth=transformer_depth,
             transformer_depth_output=transformer_depth_output,
             transformer_depth_middle=transformer_depth_middle,
+            model_channels=model_channels,
         )
 
         if context_dim is not None:

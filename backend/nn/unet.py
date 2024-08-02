@@ -670,6 +670,14 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
         dtype = unet_initial_dtype
         device = unet_initial_device
 
+        self.legacy_config = dict(
+            num_res_blocks=num_res_blocks,
+            channel_mult=channel_mult,
+            transformer_depth=transformer_depth,
+            transformer_depth_output=transformer_depth_output,
+            transformer_depth_middle=transformer_depth_middle,
+        )
+
         if context_dim is not None:
             assert use_spatial_transformer
 

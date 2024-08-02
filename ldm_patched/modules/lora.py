@@ -210,7 +210,7 @@ def model_lora_keys_unet(model, key_map={}):
             key_lora = k[len("diffusion_model."):-len(".weight")].replace(".", "_")
             key_map["lora_unet_{}".format(key_lora)] = k
 
-    diffusers_keys = ldm_patched.modules.utils.unet_to_diffusers(model.model_config.unet_config)
+    diffusers_keys = ldm_patched.modules.utils.unet_to_diffusers(model.diffusion_model.legacy_config)
     for k in diffusers_keys:
         if k.endswith(".weight"):
             unet_key = "diffusion_model.{}".format(diffusers_keys[k])

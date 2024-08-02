@@ -1,6 +1,6 @@
 import torch
 import os
-import safetensors
+import safetensors.torch
 
 
 def build_loaded(module, loader_name):

@@ -10,7 +10,7 @@ sd_xl_repo_configs_path = os.path.join(paths.paths['Stable Diffusion XL'], "conf
 
 
 config_default = shared.sd_default_config
-config_sd2 = os.path.join(sd_repo_configs_path, "v2-inference.yaml")
+# config_sd2 = os.path.join(sd_repo_configs_path, "v2-inference.yaml")
 config_sd2v = os.path.join(sd_repo_configs_path, "v2-inference-v.yaml")
 config_sd2_inpainting = os.path.join(sd_repo_configs_path, "v2-inpainting-inference.yaml")
 config_sdxl = os.path.join(sd_xl_repo_configs_path, "sd_xl_base.yaml")
@@ -95,10 +95,10 @@ def guess_model_config_from_state_dict(sd, filename):
     if sd2_cond_proj_weight is not None and sd2_cond_proj_weight.shape[1] == 1024:
         if diffusion_model_input.shape[1] == 9:
             return config_sd2_inpainting
-        elif is_using_v_parameterization_for_sd2(sd):
-            return config_sd2v
+        # elif is_using_v_parameterization_for_sd2(sd):
+        #     return config_sd2v
         else:
-            return config_sd2
+            return config_sd2v
 
     if diffusion_model_input is not None:
         if diffusion_model_input.shape[1] == 9:

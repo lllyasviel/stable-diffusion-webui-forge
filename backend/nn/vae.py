@@ -381,7 +381,7 @@ class IntegratedAutoencoderKL(nn.Module, ConfigMixin):
             norm_num_groups: int = 32,
             sample_size: int = 32,
             scaling_factor: float = 0.18215,
-            shift_factor: Optional[float] = None,
+            shift_factor: Optional[float] = 0.0,
             latents_mean: Optional[Tuple[float]] = None,
             latents_std: Optional[Tuple[float]] = None,
             force_upcast: float = True,
@@ -403,6 +403,9 @@ class IntegratedAutoencoderKL(nn.Module, ConfigMixin):
         self.scaling_factor = scaling_factor
         self.shift_factor = shift_factor
 
+        if not isinstance(self.shift_factor, float):
+            self.shift_factor = 0.0
+
     def encode(self, x, regulation=None):
         z = self.encoder(x)
         z = self.quant_conv(z)
@@ -416,3 +419,9 @@ class IntegratedAutoencoderKL(nn.Module, ConfigMixin):
         z = self.post_quant_conv(z)
         x = self.decoder(z)
         return x
+
+    def process_in(self, latent):
+        return (latent - self.shift_factor) * self.scaling_factor
+
+    def process_out(self, latent):
+        return (latent / self.scaling_factor) + self.shift_factor

@@ -46,7 +46,7 @@ class PreprocessorInpaintOnly(PreprocessorInpaint):
         # This is a powerful VAE with integrated memory management, bf16, and tiled fallback.
 
         latent_image = vae.encode(self.image.movedim(1, -1))
-        latent_image = process.sd_model.forge_objects.unet.model.latent_format.process_in(latent_image)
+        latent_image = process.sd_model.forge_objects.vae.first_stage_model.process_in(latent_image)
 
         B, C, H, W = latent_image.shape
 
@@ -154,7 +154,7 @@ class PreprocessorInpaintLama(PreprocessorInpaintOnly):
 
     def process_before_every_sampling(self, process, cond, mask, *args, **kwargs):
         cond, mask = super().process_before_every_sampling(process, cond, mask, *args, **kwargs)
-        sigma_max = process.sd_model.forge_objects.unet.model.model_sampling.sigma_max
+        sigma_max = process.sd_model.forge_objects.unet.model.prediction.sigma_max
         original_noise = kwargs['noise']
         process.modified_noise = original_noise + self.latent.to(original_noise) / sigma_max.to(original_noise)
         return cond, mask

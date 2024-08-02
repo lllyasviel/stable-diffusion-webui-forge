@@ -24,7 +24,7 @@ class PreprocessorTile(Preprocessor):
         # This is a powerful VAE with integrated memory management, bf16, and tiled fallback.
 
         latent_image = vae.encode(cond.movedim(1, -1))
-        latent_image = process.sd_model.forge_objects.unet.model.latent_format.process_in(latent_image)
+        latent_image = process.sd_model.forge_objects.vae.first_stage_model.process_in(latent_image)
         self.latent = latent_image
         return self.latent
 
@@ -43,7 +43,7 @@ class PreprocessorTileColorFix(PreprocessorTile):
         latent = self.register_latent(process, cond)
 
         unet = process.sd_model.forge_objects.unet.clone()
-        sigma_data = process.sd_model.forge_objects.unet.model.model_sampling.sigma_data
+        sigma_data = process.sd_model.forge_objects.unet.model.prediction.sigma_data
 
         if getattr(process, 'is_hr_pass', False):
             k = int(self.variation * 2)

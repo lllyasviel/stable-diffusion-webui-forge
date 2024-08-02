@@ -919,10 +919,10 @@ class ModelSamplerLatentMegaModifier:
             cond = args["cond"]
             uncond = args["uncond"]
             cond_scale = args["cond_scale"]
-            timestep = model.model.model_sampling.timestep(args["timestep"])
+            timestep = model.model.prediction.timestep(args["timestep"])
             sigma = args["sigma"]
             sigma = sigma.view(sigma.shape[:1] + (1,) * (cond.ndim - 1))
-            #print(model.model.model_sampling.timestep(timestep))
+            #print(model.model.prediction.timestep(timestep))
 
             x = x_input / (sigma * sigma + 1.0)
             cond = ((x - (x_input - cond)) * (sigma ** 2 + 1.0) ** 0.5) / (sigma)

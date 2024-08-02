@@ -61,14 +61,14 @@ class PreprocessorReference(Preprocessor):
         # This is a powerful VAE with integrated memory management, bf16, and tiled fallback.
 
         latent_image = vae.encode(cond.movedim(1, -1))
-        latent_image = process.sd_model.forge_objects.unet.model.latent_format.process_in(latent_image)
+        latent_image = process.sd_model.forge_objects.vae.first_stage_model.process_in(latent_image)
 
         gen_seed = process.seeds[0] + 1
         gen_cpu = torch.Generator().manual_seed(gen_seed)
 
         unet = process.sd_model.forge_objects.unet.clone()
-        sigma_max = unet.model.model_sampling.percent_to_sigma(start_percent)
-        sigma_min = unet.model.model_sampling.percent_to_sigma(end_percent)
+        sigma_max = unet.model.prediction.percent_to_sigma(start_percent)
+        sigma_min = unet.model.prediction.percent_to_sigma(end_percent)
 
         self.recorded_attn1 = {}
         self.recorded_h = {}

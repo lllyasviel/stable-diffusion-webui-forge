@@ -4,11 +4,12 @@ import torch
 from ldm_patched.modules.model_patcher import ModelPatcher
 from ldm_patched.modules.sample import convert_cond
 from ldm_patched.modules.samplers import encode_model_conds
+from ldm_patched.modules import model_management
 
 
 class UnetPatcher(ModelPatcher):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, model, *args, **kwargs):
+        super().__init__(model, *args, **kwargs)
         self.controlnet_linked_list = None
         self.extra_preserved_memory_during_sampling = 0
         self.extra_model_patchers_during_sampling = []

@@ -285,7 +285,7 @@ class ControlNet(ControlBase):
 
     def pre_run(self, model, percent_to_timestep_function):
         super().pre_run(model, percent_to_timestep_function)
-        self.model_sampling_current = model.model_sampling
+        self.model_sampling_current = model.prediction
 
     def cleanup(self):
         self.model_sampling_current = None

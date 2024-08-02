@@ -76,7 +76,7 @@ class FooocusInpaintPatcher(ControlModelPatcher):
         vae = process.sd_model.forge_objects.vae
 
         latent_image = vae.encode(cond_original.movedim(1, -1))
-        latent_image = process.sd_model.forge_objects.unet.model.latent_format.process_in(latent_image)
+        latent_image = process.sd_model.forge_objects.vae.first_stage_model.process_in(latent_image)
         latent_mask = torch.nn.functional.max_pool2d(mask_original, (8, 8)).round().to(cond)
         feed = torch.cat([
             latent_mask.to(device=torch.device('cpu'), dtype=torch.float32),
@@ -102,8 +102,8 @@ class FooocusInpaintPatcher(ControlModelPatcher):
         if not_patched_count > 0:
             print(f"[Fooocus Patch Loader] Failed to load {not_patched_count} keys")
 
-        sigma_start = unet.model.model_sampling.percent_to_sigma(self.start_percent)
-        sigma_end = unet.model.model_sampling.percent_to_sigma(self.end_percent)
+        sigma_start = unet.model.prediction.percent_to_sigma(self.start_percent)
+        sigma_end = unet.model.prediction.percent_to_sigma(self.end_percent)
 
         def conditioning_modifier(model, x, timestep, uncond, cond, cond_scale, model_options, seed):
             if timestep > sigma_start or timestep < sigma_end:

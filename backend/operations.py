@@ -150,11 +150,13 @@ class ForgeOperationsWithManualCast(ForgeOperations):
 
 
 @contextlib.contextmanager
-def using_forge_operations(parameters_manual_cast=False):
-    operations = ForgeOperations
+def using_forge_operations(parameters_manual_cast=False, operations=None):
 
-    if parameters_manual_cast:
-        operations = ForgeOperationsWithManualCast
+    if operations is None:
+        operations = ForgeOperations
+
+        if parameters_manual_cast:
+            operations = ForgeOperationsWithManualCast
 
     op_names = ['Linear', 'Conv2d', 'Conv3d', 'GroupNorm', 'LayerNorm']
     backups = {op_name: getattr(torch.nn, op_name) for op_name in op_names}

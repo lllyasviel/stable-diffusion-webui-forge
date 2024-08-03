@@ -26,7 +26,7 @@ import ldm_patched.modules.samplers
 import ldm_patched.modules.sample
 import ldm_patched.modules.sd
 import ldm_patched.modules.utils
-import ldm_patched.modules.controlnet
+# import ldm_patched.modules.controlnet
 
 import ldm_patched.modules.clip_vision
 

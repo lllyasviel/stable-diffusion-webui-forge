@@ -28,3 +28,11 @@ def get_attr(obj, attr):
     for name in attrs:
         obj = getattr(obj, name)
     return obj
+
+
+def calculate_parameters(sd, prefix=""):
+    params = 0
+    for k in sd.keys():
+        if k.startswith(prefix):
+            params += sd[k].nelement()
+    return params

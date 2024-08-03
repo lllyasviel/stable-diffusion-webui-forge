@@ -22,7 +22,7 @@ from . import sdxl_clip
 
 import ldm_patched.modules.model_patcher
 import ldm_patched.modules.lora
-import ldm_patched.t2ia.adapter
+# import ldm_patched.t2ia.adapter
 import ldm_patched.modules.supported_models_base
 import ldm_patched.taesd.taesd
 

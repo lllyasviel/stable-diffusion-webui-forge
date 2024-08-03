@@ -1,6 +1,6 @@
-#taken from https://github.com/TencentARC/T2I-Adapter
 import torch
 import torch.nn as nn
+
 from collections import OrderedDict
 
 
@@ -274,9 +274,9 @@ class Adapter_light(nn.Module):
 
         for i in range(len(channels)):
             if i == 0:
-                self.body.append(extractor(in_c=cin, inter_c=channels[i]//4, out_c=channels[i], nums_rb=nums_rb, down=False))
+                self.body.append(extractor(in_c=cin, inter_c=channels[i] // 4, out_c=channels[i], nums_rb=nums_rb, down=False))
             else:
-                self.body.append(extractor(in_c=channels[i-1], inter_c=channels[i]//4, out_c=channels[i], nums_rb=nums_rb, down=True))
+                self.body.append(extractor(in_c=channels[i - 1], inter_c=channels[i] // 4, out_c=channels[i], nums_rb=nums_rb, down=True))
         self.body = nn.ModuleList(self.body)
 
     def forward(self, x):

@@ -655,12 +655,32 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
         device = unet_initial_device
 
         self.legacy_config = dict(
-            num_res_blocks=num_res_blocks,
-            channel_mult=channel_mult,
-            transformer_depth=transformer_depth,
-            transformer_depth_output=transformer_depth_output,
-            transformer_depth_middle=transformer_depth_middle,
+            in_channels=in_channels,
+            out_channels=out_channels,
             model_channels=model_channels,
+            num_res_blocks=num_res_blocks,
+            dropout=dropout,
+            channel_mult=channel_mult,
+            conv_resample=conv_resample,
+            dims=dims,
+            num_classes=num_classes,
+            dtype=dtype,
+            num_heads=num_heads,
+            num_head_channels=num_head_channels,
+            num_heads_upsample=num_heads_upsample,
+            use_scale_shift_norm=use_scale_shift_norm,
+            resblock_updown=resblock_updown,
+            use_spatial_transformer=use_spatial_transformer,
+            transformer_depth=transformer_depth,
+            context_dim=context_dim,
+            disable_self_attentions=disable_self_attentions,
+            num_attention_blocks=num_attention_blocks,
+            disable_middle_self_attn=disable_middle_self_attn,
+            use_linear_in_transformer=use_linear_in_transformer,
+            adm_in_channels=adm_in_channels,
+            transformer_depth_middle=transformer_depth_middle,
+            transformer_depth_output=transformer_depth_output,
+            device=device,
         )
 
         if context_dim is not None:

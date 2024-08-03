@@ -14,7 +14,7 @@ from ldm_patched.modules.model_base import BaseModel
 from typing import List, Union, Tuple, Dict
 from ldm_patched.contrib.external import ImageScale
 import ldm_patched.modules.utils
-from ldm_patched.modules.controlnet import ControlNet, T2IAdapter
+from backend.patcher.controlnet import ControlNet, T2IAdapter
 
 opt_C = 4
 opt_f = 8

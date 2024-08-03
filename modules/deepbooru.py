@@ -5,8 +5,8 @@ import torch
 import numpy as np
 
 from modules import modelloader, paths, deepbooru_model, images, shared
-from ldm_patched.modules import model_management
-from ldm_patched.modules.model_patcher import ModelPatcher
+from backend import memory_management
+from backend.patcher.base import ModelPatcher
 
 
 re_special = re.compile(r'([\\()])')
@@ -15,11 +15,11 @@ re_special = re.compile(r'([\\()])')
 class DeepDanbooru:
     def __init__(self):
         self.model = None
-        self.load_device = model_management.text_encoder_device()
-        self.offload_device = model_management.text_encoder_offload_device()
+        self.load_device = memory_management.text_encoder_device()
+        self.offload_device = memory_management.text_encoder_offload_device()
         self.dtype = torch.float32
 
-        if model_management.should_use_fp16(device=self.load_device):
+        if memory_management.should_use_fp16(device=self.load_device):
             self.dtype = torch.float16
 
         self.patcher = None
@@ -45,7 +45,7 @@ class DeepDanbooru:
 
     def start(self):
         self.load()
-        model_management.load_models_gpu([self.patcher])
+        memory_management.load_models_gpu([self.patcher])
 
     def stop(self):
         pass

@@ -14,13 +14,11 @@ import ldm.modules.midas as midas
 import gc
 
 from modules import paths, shared, modelloader, devices, script_callbacks, sd_vae, sd_disable_initialization, errors, hashes, sd_models_config, sd_unet, sd_models_xl, cache, extra_networks, processing, lowvram, sd_hijack, patches
+from modules.shared import opts
 from modules.timer import Timer
 import numpy as np
 from modules_forge import forge_loader
-import modules_forge.ops as forge_ops
-from ldm_patched.modules.ops import manual_cast
-from ldm_patched.modules import model_management as model_management
-import ldm_patched.modules.model_patcher
+from backend import memory_management
 
 
 model_dir = "Stable-diffusion"
@@ -650,8 +648,8 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
 
         model_data.sd_model = None
         model_data.loaded_sd_models = []
-        model_management.unload_all_models()
-        model_management.soft_empty_cache()
+        memory_management.unload_all_models()
+        memory_management.soft_empty_cache()
         gc.collect()
 
     timer.record("unload existing model")
@@ -724,7 +722,7 @@ def apply_token_merging(sd_model, token_merging_ratio):
 
     print(f'token_merging_ratio = {token_merging_ratio}')
 
-    from ldm_patched.contrib.external_tomesd import TomePatcher
+    from backend.misc.tomesd import TomePatcher
 
     sd_model.forge_objects.unet = TomePatcher().patch(
         model=sd_model.forge_objects.unet,

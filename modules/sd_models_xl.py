@@ -8,7 +8,7 @@ import sgm.modules.diffusionmodules.discretizer
 from modules import devices, shared, prompt_parser
 from modules import torch_utils
 
-import ldm_patched.modules.model_management as model_management
+from backend import memory_management
 from modules_forge.forge_clip import move_clip_to_gpu
 
 
@@ -23,7 +23,7 @@ def get_learned_conditioning(self: sgm.models.diffusion.DiffusionEngine, batch: 
     is_negative_prompt = getattr(batch, 'is_negative_prompt', False)
     aesthetic_score = shared.opts.sdxl_refiner_low_aesthetic_score if is_negative_prompt else shared.opts.sdxl_refiner_high_aesthetic_score
 
-    devices_args = dict(device=self.forge_objects.clip.patcher.current_device, dtype=model_management.text_encoder_dtype())
+    devices_args = dict(device=self.forge_objects.clip.patcher.current_device, dtype=memory_management.text_encoder_dtype())
 
     sdxl_conds = {
         "txt": batch,

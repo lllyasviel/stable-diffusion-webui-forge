@@ -11,8 +11,8 @@ from torchvision import transforms
 from torchvision.transforms.functional import InterpolationMode
 
 from modules import devices, paths, shared, modelloader, errors
-from ldm_patched.modules import model_management
-from ldm_patched.modules.model_patcher import ModelPatcher
+from backend import memory_management
+from backend.patcher.base import ModelPatcher
 
 
 blip_image_eval_size = 384
@@ -57,11 +57,11 @@ class InterrogateModels:
         self.skip_categories = []
         self.content_dir = content_dir
 
-        self.load_device = model_management.text_encoder_device()
-        self.offload_device = model_management.text_encoder_offload_device()
+        self.load_device = memory_management.text_encoder_device()
+        self.offload_device = memory_management.text_encoder_offload_device()
         self.dtype = torch.float32
 
-        if model_management.should_use_fp16(device=self.load_device):
+        if memory_management.should_use_fp16(device=self.load_device):
             self.dtype = torch.float16
 
         self.blip_patcher = None
@@ -137,7 +137,7 @@ class InterrogateModels:
             self.clip_model = self.clip_model.to(device=self.offload_device, dtype=self.dtype)
             self.clip_patcher = ModelPatcher(self.clip_model, load_device=self.load_device, offload_device=self.offload_device)
 
-        model_management.load_models_gpu([self.blip_patcher, self.clip_patcher])
+        memory_management.load_models_gpu([self.blip_patcher, self.clip_patcher])
         return
 
     def send_clip_to_ram(self):

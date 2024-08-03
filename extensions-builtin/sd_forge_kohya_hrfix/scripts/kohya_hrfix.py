@@ -1,7 +1,33 @@
 import gradio as gr
 
 from modules import scripts
-from ldm_patched.contrib.external_model_downscale import PatchModelAddDownscale
+from backend.misc.image_resize import adaptive_resize
+
+
+class PatchModelAddDownscale:
+    def patch(self, model, block_number, downscale_factor, start_percent, end_percent, downscale_after_skip, downscale_method, upscale_method):
+        sigma_start = model.model.predictor.percent_to_sigma(start_percent)
+        sigma_end = model.model.predictor.percent_to_sigma(end_percent)
+
+        def input_block_patch(h, transformer_options):
+            if transformer_options["block"][1] == block_number:
+                sigma = transformer_options["sigmas"][0].item()
+                if sigma <= sigma_start and sigma >= sigma_end:
+                    h = adaptive_resize(h, round(h.shape[-1] * (1.0 / downscale_factor)), round(h.shape[-2] * (1.0 / downscale_factor)), downscale_method, "disabled")
+            return h
+
+        def output_block_patch(h, hsp, transformer_options):
+            if h.shape[2] != hsp.shape[2]:
+                h = adaptive_resize(h, hsp.shape[-1], hsp.shape[-2], upscale_method, "disabled")
+            return h, hsp
+
+        m = model.clone()
+        if downscale_after_skip:
+            m.set_model_input_block_patch_after_skip(input_block_patch)
+        else:
+            m.set_model_input_block_patch(input_block_patch)
+        m.set_model_output_block_patch(output_block_patch)
+        return (m,)
 
 
 opPatchModelAddDownscale = PatchModelAddDownscale()

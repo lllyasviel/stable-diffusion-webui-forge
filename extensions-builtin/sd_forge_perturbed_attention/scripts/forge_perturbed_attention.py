@@ -1,8 +1,8 @@
 import gradio as gr
-import ldm_patched.modules.samplers
 
 from modules import scripts
 from backend.patcher.base import set_model_options_patch_replace
+from backend.sampling.sampling_function import calc_cond_uncond_batch
 
 
 class PerturbedAttentionGuidanceForForge(scripts.Script):
@@ -41,7 +41,7 @@ class PerturbedAttentionGuidanceForForge(scripts.Script):
             if scale == 0:
                 return denoised
 
-            degraded, _ = ldm_patched.modules.samplers.calc_cond_uncond_batch(model, cond, None, x, sigma, new_options)
+            degraded, _ = calc_cond_uncond_batch(model, cond, None, x, sigma, new_options)
 
             return denoised + (cond_denoised - degraded) * scale
 

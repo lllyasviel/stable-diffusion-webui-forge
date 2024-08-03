@@ -1,15 +1,10 @@
 import torch
 import contextlib
 
-from ldm_patched.modules import model_management
-from ldm_patched.modules import model_detection
-
-from ldm_patched.modules.sd import VAE, load_model_weights
+from backend import memory_management, utils
 from backend.patcher.clip import CLIP
 from backend.patcher.vae import VAE
-import ldm_patched.modules.model_patcher
-import ldm_patched.modules.utils
-import ldm_patched.modules.clip_vision
+from backend.patcher.base import ModelPatcher
 import backend.nn.unet
 
 from omegaconf import OmegaConf
@@ -20,7 +15,6 @@ from modules.sd_models_xl import extend_sdxl
 from ldm.util import instantiate_from_config
 from modules_forge import forge_clip
 from modules_forge.unet_patcher import UnetPatcher
-from ldm_patched.modules.model_base import model_sampling, ModelType
 from backend.loader import load_huggingface_components
 from backend.modules.k_model import KModel
 
@@ -85,13 +79,13 @@ def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_c
     model_patcher = None
     clip_target = None
 
-    parameters = ldm_patched.modules.utils.calculate_parameters(sd, "model.diffusion_model.")
-    unet_dtype = model_management.unet_dtype(model_params=parameters)
-    load_device = model_management.get_torch_device()
-    manual_cast_dtype = model_management.unet_manual_cast(unet_dtype, load_device)
+    parameters = utils.calculate_parameters(sd, "model.diffusion_model.")
+    unet_dtype = memory_management.unet_dtype(model_params=parameters)
+    load_device = memory_management.get_torch_device()
+    manual_cast_dtype = memory_management.unet_manual_cast(unet_dtype, load_device)
     manual_cast_dtype = unet_dtype if manual_cast_dtype is None else manual_cast_dtype
 
-    initial_load_device = model_management.unet_inital_load_device(parameters, unet_dtype)
+    initial_load_device = memory_management.unet_inital_load_device(parameters, unet_dtype)
     backend.nn.unet.unet_initial_device = initial_load_device
     backend.nn.unet.unet_initial_dtype = unet_dtype
 
@@ -101,7 +95,7 @@ def load_checkpoint_guess_config(sd, output_vae=True, output_clip=True, output_c
         k_model = KModel(huggingface_components, storage_dtype=unet_dtype, computation_dtype=manual_cast_dtype)
         k_model.to(device=initial_load_device, dtype=unet_dtype)
         model_patcher = UnetPatcher(k_model, load_device=load_device,
-                                    offload_device=model_management.unet_offload_device(),
+                                    offload_device=memory_management.unet_offload_device(),
                                     current_device=initial_load_device)
 
     if output_vae:

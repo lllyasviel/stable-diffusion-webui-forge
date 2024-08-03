@@ -1,15 +1,15 @@
 import time
 import torch
 import contextlib
-from ldm_patched.modules import model_management
-from ldm_patched.modules.ops import use_patched_ops
+
+from backend import memory_management
 
 
 @contextlib.contextmanager
 def automatic_memory_management():
-    model_management.free_memory(
+    memory_management.free_memory(
         memory_required=3 * 1024 * 1024 * 1024,
-        device=model_management.get_torch_device()
+        device=memory_management.get_torch_device()
     )
 
     module_list = []
@@ -39,7 +39,7 @@ def automatic_memory_management():
     for module in module_list:
         module.cpu()
 
-    model_management.soft_empty_cache()
+    memory_management.soft_empty_cache()
     end = time.perf_counter()
 
     print(f'Automatic Memory Management: {len(module_list)} Modules in {(end - start):.2f} seconds.')

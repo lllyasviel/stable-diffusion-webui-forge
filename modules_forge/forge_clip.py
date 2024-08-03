@@ -1,5 +1,5 @@
 from modules.sd_hijack_clip import FrozenCLIPEmbedderWithCustomWords
-from ldm_patched.modules import model_management
+from backend import memory_management
 from modules import sd_models
 from modules.shared import opts
 
@@ -9,7 +9,7 @@ def move_clip_to_gpu():
         print('Error: CLIP called before SD is loaded!')
         return
 
-    model_management.load_model_gpu(sd_models.model_data.sd_model.forge_objects.clip.patcher)
+    memory_management.load_model_gpu(sd_models.model_data.sd_model.forge_objects.clip.patcher)
     return
 
 

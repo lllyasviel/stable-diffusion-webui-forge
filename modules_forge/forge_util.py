@@ -6,17 +6,17 @@ import random
 import string
 import cv2
 
-from ldm_patched.modules import model_management
+from backend import memory_management
 
 
 def prepare_free_memory(aggressive=False):
     if aggressive:
-        model_management.unload_all_models()
+        memory_management.unload_all_models()
         print('Cleanup all memory.')
         return
 
-    model_management.free_memory(memory_required=model_management.minimum_inference_memory(),
-                                 device=model_management.get_torch_device())
+    memory_management.free_memory(memory_required=memory_management.minimum_inference_memory(),
+                                 device=memory_management.get_torch_device())
     print('Cleanup minimal inference memory.')
     return
 
@@ -151,6 +151,6 @@ def resize_image_with_pad(img, resolution):
 
 
 def lazy_memory_management(model):
-    required_memory = model_management.module_size(model) + model_management.minimum_inference_memory()
-    model_management.free_memory(required_memory, device=model_management.get_torch_device())
+    required_memory = memory_management.module_size(model) + memory_management.minimum_inference_memory()
+    memory_management.free_memory(required_memory, device=memory_management.get_torch_device())
     return

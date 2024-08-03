@@ -2,10 +2,10 @@ import cv2
 import torch
 
 from modules_forge.shared import add_supported_preprocessor, preprocessor_dir
-from ldm_patched.modules import model_management
-from ldm_patched.modules.model_patcher import ModelPatcher
+from backend import memory_management
+from backend.patcher.base import ModelPatcher
+from backend.patcher import clipvision
 from modules_forge.forge_util import resize_image_with_pad
-import ldm_patched.modules.clip_vision
 from modules.modelloader import load_file_from_url
 from modules_forge.forge_util import numpy_to_pytorch
 
@@ -37,12 +37,12 @@ class Preprocessor:
 
     def setup_model_patcher(self, model, load_device=None, offload_device=None, dtype=torch.float32, **kwargs):
         if load_device is None:
-            load_device = model_management.get_torch_device()
+            load_device = memory_management.get_torch_device()
 
         if offload_device is None:
             offload_device = torch.device('cpu')
 
-        if not model_management.should_use_fp16(load_device):
+        if not memory_management.should_use_fp16(load_device):
             dtype = torch.float32
 
         model.eval()
@@ -53,7 +53,7 @@ class Preprocessor:
         return self.model_patcher
 
     def move_all_model_patchers_to_gpu(self):
-        model_management.load_models_gpu([self.model_patcher])
+        memory_management.load_models_gpu([self.model_patcher])
         return
 
     def send_tensor_to_model_device(self, x):
@@ -127,7 +127,7 @@ class PreprocessorClipVision(Preprocessor):
         if ckpt_path in PreprocessorClipVision.global_cache:
             self.clipvision = PreprocessorClipVision.global_cache[ckpt_path]
         else:
-            self.clipvision = ldm_patched.modules.clip_vision.load(ckpt_path)
+            self.clipvision = clipvision.load(ckpt_path)
             PreprocessorClipVision.global_cache[ckpt_path] = self.clipvision
 
         return self.clipvision

@@ -35,15 +35,13 @@ def initialize_forge():
             print(f'In extreme cases, if you want to force previous lowvram/medvram behaviors, '
                   f'please use --always-offload-from-vram')
 
-    from ldm_patched.modules import args_parser
+    from backend.args import args
 
-    args_parser.args, _ = args_parser.parser.parse_known_args()
+    if args.gpu_device_id is not None:
+        os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_device_id)
+        print("Set device to:", args.gpu_device_id)
 
-    if args_parser.args.gpu_device_id is not None:
-        os.environ['CUDA_VISIBLE_DEVICES'] = str(args_parser.args.gpu_device_id)
-        print("Set device to:", args_parser.args.gpu_device_id)
-
-    if args_parser.args.cuda_malloc:
+    if args.cuda_malloc:
         from modules_forge.cuda_malloc import try_cuda_malloc
         try_cuda_malloc()
 

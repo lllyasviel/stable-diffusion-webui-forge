@@ -7,7 +7,7 @@ from modules.script_callbacks import ExtraNoiseParams, extra_noise_callback
 
 from modules.shared import opts
 import modules.shared as shared
-from modules_forge.forge_sampler import sampling_prepare, sampling_cleanup
+from backend.sampling.sampling_function import sampling_prepare, sampling_cleanup
 
 
 samplers_k_diffusion = [

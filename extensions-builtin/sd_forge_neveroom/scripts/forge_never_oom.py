@@ -1,7 +1,7 @@
 import gradio as gr
 
 from modules import scripts
-from ldm_patched.modules import model_management
+from backend import memory_management
 
 
 class NeverOOMForForge(scripts.Script):
@@ -9,7 +9,7 @@ class NeverOOMForForge(scripts.Script):
 
     def __init__(self):
         self.previous_unet_enabled = False
-        self.original_vram_state = model_management.vram_state
+        self.original_vram_state = memory_management.vram_state
 
     def title(self):
         return "Never OOM Integrated"
@@ -32,16 +32,16 @@ class NeverOOMForForge(scripts.Script):
         if vae_enabled:
             print('NeverOOM Enabled for VAE (always tiled)')
 
-        model_management.VAE_ALWAYS_TILED = vae_enabled
+        memory_management.VAE_ALWAYS_TILED = vae_enabled
 
         if self.previous_unet_enabled != unet_enabled:
-            model_management.unload_all_models()
+            memory_management.unload_all_models()
             if unet_enabled:
-                self.original_vram_state = model_management.vram_state
-                model_management.vram_state = model_management.VRAMState.NO_VRAM
+                self.original_vram_state = memory_management.vram_state
+                memory_management.vram_state = memory_management.VRAMState.NO_VRAM
             else:
-                model_management.vram_state = self.original_vram_state
-            print(f'VARM State Changed To {model_management.vram_state.name}')
+                memory_management.vram_state = self.original_vram_state
+            print(f'VARM State Changed To {memory_management.vram_state.name}')
             self.previous_unet_enabled = unet_enabled
 
         return

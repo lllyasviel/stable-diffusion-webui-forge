@@ -150,7 +150,7 @@ class ForgeOperationsWithManualCast(ForgeOperations):
 
 
 @contextlib.contextmanager
-def using_forge_operations(parameters_manual_cast=False, operations=None):
+def using_forge_operations(parameters_manual_cast=True, operations=None):
 
     if operations is None:
         operations = ForgeOperations

@@ -116,7 +116,7 @@ class ControlNetPatcher(ControlModelPatcher):
         controlnet_config.pop("out_channels")
         controlnet_config["hint_channels"] = controlnet_data["{}input_hint_block.0.weight".format(prefix)].shape[1]
 
-        with using_forge_operations(parameters_manual_cast=manual_cast_dtype is not None):
+        with using_forge_operations():
             control_model = cldm.ControlNet(**controlnet_config)
 
         if pth:

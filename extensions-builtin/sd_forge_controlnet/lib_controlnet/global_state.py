@@ -3,7 +3,6 @@ import stat
 from collections import OrderedDict
 
 from modules import shared, sd_models
-from lib_controlnet.enums import StableDiffusionVersion
 from modules_forge.shared import controlnet_dir, supported_preprocessors
 
 from typing import Dict, Tuple, List
@@ -108,13 +107,7 @@ def get_filtered_controlnet_names(tag):
     model_filename_filters = []
     for p in filtered_preprocessors.values():
         model_filename_filters += p.model_filename_filters
-    return [
-        x for x in controlnet_names
-        if x == 'None' or (
-            any(f.lower() in x.lower() for f in model_filename_filters) and
-            get_sd_version().is_compatible_with(StableDiffusionVersion.detect_from_model_name(x))
-        )
-    ]
+    return [x for x in controlnet_names if x == 'None' or any(f.lower() in x.lower() for f in model_filename_filters)]
 
 
 def update_controlnet_filenames():
@@ -138,22 +131,8 @@ def update_controlnet_filenames():
     return
 
 
-def get_sd_version() -> StableDiffusionVersion:
-    if not shared.sd_model:
-        return StableDiffusionVersion.UNKNOWN
-    if shared.sd_model.is_sdxl:
-        return StableDiffusionVersion.SDXL
-    elif shared.sd_model.is_sd2:
-        return StableDiffusionVersion.SD2x
-    elif shared.sd_model.is_sd1:
-        return StableDiffusionVersion.SD1x
-    else:
-        return StableDiffusionVersion.UNKNOWN
-
-
 def select_control_type(
     control_type: str,
-    sd_version: StableDiffusionVersion = StableDiffusionVersion.UNKNOWN,
 ) -> Tuple[List[str], List[str], str, str]:
     global controlnet_names
 

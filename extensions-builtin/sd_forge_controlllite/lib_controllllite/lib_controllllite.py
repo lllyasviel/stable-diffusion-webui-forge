@@ -1,8 +1,5 @@
 import math
 import torch
-import os
-
-import ldm_patched.modules
 
 
 def extra_options_to_module_prefix(extra_options):

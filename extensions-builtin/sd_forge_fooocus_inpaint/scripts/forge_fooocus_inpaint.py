@@ -1,14 +1,14 @@
 import os
 import torch
 import copy
+import backend.patcher.base
 
 from modules_forge.shared import add_supported_control_model
 from modules_forge.supported_controlnet import ControlModelPatcher
 from modules_forge.forge_sampler import sampling_prepare
-from ldm_patched.modules.utils import load_torch_file
-from ldm_patched.modules import model_patcher
-from ldm_patched.modules.model_management import cast_to_device, current_loaded_models
-from ldm_patched.modules.lora import model_lora_keys_unet
+from backend.utils import load_torch_file
+from backend.memory_management import cast_to_device, current_loaded_models
+from backend.patcher.lora import model_lora_keys_unet
 
 
 def is_model_loaded(model):
@@ -127,5 +127,5 @@ class FooocusInpaintPatcher(ControlModelPatcher):
         return
 
 
-model_patcher.extra_weight_calculators['fooocus'] = calculate_weight_fooocus
+backend.patcher.base.extra_weight_calculators['fooocus'] = calculate_weight_fooocus
 add_supported_control_model(FooocusInpaintPatcher)

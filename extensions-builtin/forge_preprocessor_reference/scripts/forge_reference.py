@@ -2,15 +2,15 @@ import torch
 
 from modules_forge.supported_preprocessor import Preprocessor, PreprocessorParameter
 from modules_forge.shared import add_supported_preprocessor
-from ldm_patched.modules.samplers import sampling_function
-import ldm_patched.ldm.modules.attention as attention
+from backend.sampling.sampling_function import sampling_function_inner
+from backend import attention
 
 
 def sdp(q, k, v, transformer_options):
     if q.shape[0] == 0:
         return q
 
-    return attention.optimized_attention(q, k, v, heads=transformer_options["n_heads"], mask=None)
+    return attention.attention_function(q, k, v, heads=transformer_options["n_heads"], mask=None)
 
 
 def adain(x, target_std, target_mean):
@@ -81,7 +81,7 @@ class PreprocessorReference(Preprocessor):
             self.is_recording_style = True
 
             xt = latent_image.to(x) + torch.randn(x.size(), dtype=x.dtype, generator=gen_cpu).to(x) * sigma
-            sampling_function(model, xt, timestep, uncond, cond, 1, model_options, seed)
+            sampling_function_inner(model, xt, timestep, uncond, cond, 1, model_options, seed)
 
             self.is_recording_style = False
 

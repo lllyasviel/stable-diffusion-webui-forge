@@ -6,7 +6,7 @@ from annotator.pidinet.model import pidinet
 from annotator.util import safe_step
 from modules import devices
 from annotator.annotator_path import models_path
-from ldm_patched.modules.utils import load_torch_file
+from backend.utils import load_torch_file
 
 netNetwork = None
 remote_model_path = "https://huggingface.co/lllyasviel/Annotators/resolve/main/table5_pidinet.pth"

@@ -2,11 +2,11 @@ import torch
 import gradio as gr
 
 from modules import scripts
-import ldm_patched.ldm.modules.attention as attention
+from backend import attention
 
 
 def sdp(q, k, v, transformer_options):
-    return attention.optimized_attention(q, k, v, heads=transformer_options["n_heads"], mask=None)
+    return attention.attention_function(q, k, v, heads=transformer_options["n_heads"], mask=None)
 
 
 class StyleAlignForForge(scripts.Script):

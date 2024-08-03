@@ -10,7 +10,7 @@ import numpy as np
 import torch
 
 from modules import devices, errors, face_restoration, shared
-from modules_forge.forge_util import prepare_free_memory
+from modules_forge.utils import prepare_free_memory
 
 if TYPE_CHECKING:
     from facexlib.utils.face_restoration_helper import FaceRestoreHelper

@@ -17,7 +17,7 @@ from lib_controlnet.controlnet_ui.photopea import Photopea
 from lib_controlnet.enums import InputMode, HiResFixOption
 from modules import shared, script_callbacks
 from modules.ui_components import FormRow
-from modules_forge.forge_util import HWC3
+from modules_forge.utils import HWC3
 from lib_controlnet.external_code import UiControlNetUnit
 from modules.ui_components import ToolButton
 from gradio_rangeslider import RangeSlider

@@ -13,7 +13,7 @@ from modules.shared import cmd_opts
 from modules import sd_hijack
 from modules.sd_models_xl import extend_sdxl
 from ldm.util import instantiate_from_config
-from modules_forge import forge_clip
+from modules_forge import clip
 from modules_forge.unet_patcher import UnetPatcher
 from backend.loader import load_huggingface_components
 from backend.modules.k_model import KModel
@@ -119,13 +119,13 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
     timer.record("forge solving config")
 
     if hasattr(a1111_config.model.params, 'network_config'):
-        a1111_config.model.params.network_config.target = 'modules_forge.forge_loader.FakeObject'
+        a1111_config.model.params.network_config.target = 'modules_forge.loader.FakeObject'
 
     if hasattr(a1111_config.model.params, 'unet_config'):
-        a1111_config.model.params.unet_config.target = 'modules_forge.forge_loader.FakeObject'
+        a1111_config.model.params.unet_config.target = 'modules_forge.loader.FakeObject'
 
     if hasattr(a1111_config.model.params, 'first_stage_config'):
-        a1111_config.model.params.first_stage_config.target = 'modules_forge.forge_loader.FakeObject'
+        a1111_config.model.params.first_stage_config.target = 'modules_forge.loader.FakeObject'
 
     with no_clip():
         sd_model = instantiate_from_config(a1111_config.model)
@@ -161,7 +161,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
                 model_embeddings = embedder.transformer.text_model.embeddings
                 model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
                     model_embeddings.token_embedding, sd_hijack.model_hijack)
-                embedder = forge_clip.CLIP_SD_XL_L(embedder, sd_hijack.model_hijack)
+                embedder = clip.CLIP_SD_XL_L(embedder, sd_hijack.model_hijack)
                 conditioner.embedders[i] = embedder
                 text_cond_models.append(embedder)
             elif typename == 'FrozenOpenCLIPEmbedder2':  # SDXL Clip G
@@ -171,7 +171,7 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
                 model_embeddings = embedder.transformer.text_model.embeddings
                 model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
                     model_embeddings.token_embedding, sd_hijack.model_hijack, textual_inversion_key='clip_g')
-                embedder = forge_clip.CLIP_SD_XL_G(embedder, sd_hijack.model_hijack)
+                embedder = clip.CLIP_SD_XL_G(embedder, sd_hijack.model_hijack)
                 conditioner.embedders[i] = embedder
                 text_cond_models.append(embedder)
 
@@ -185,14 +185,14 @@ def load_model_for_a1111(timer, checkpoint_info=None, state_dict=None):
         model_embeddings = sd_model.cond_stage_model.transformer.text_model.embeddings
         model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
             model_embeddings.token_embedding, sd_hijack.model_hijack)
-        sd_model.cond_stage_model = forge_clip.CLIP_SD_15_L(sd_model.cond_stage_model, sd_hijack.model_hijack)
+        sd_model.cond_stage_model = clip.CLIP_SD_15_L(sd_model.cond_stage_model, sd_hijack.model_hijack)
     elif type(sd_model.cond_stage_model).__name__ == 'FrozenOpenCLIPEmbedder':  # SD21 Clip
         sd_model.cond_stage_model.tokenizer = forge_objects.clip.tokenizer.clip_l
         sd_model.cond_stage_model.transformer = forge_objects.clip.cond_stage_model.clip_l.transformer
         model_embeddings = sd_model.cond_stage_model.transformer.text_model.embeddings
         model_embeddings.token_embedding = sd_hijack.EmbeddingsWithFixes(
             model_embeddings.token_embedding, sd_hijack.model_hijack)
-        sd_model.cond_stage_model = forge_clip.CLIP_SD_21_H(sd_model.cond_stage_model, sd_hijack.model_hijack)
+        sd_model.cond_stage_model = clip.CLIP_SD_21_H(sd_model.cond_stage_model, sd_hijack.model_hijack)
     else:
         raise NotImplementedError('Bad Clip Class Name:' + type(sd_model.cond_stage_model).__name__)
 

@@ -6,7 +6,7 @@ from PIL import Image
 
 from modules import devices, modelloader, script_callbacks, shared, upscaler_utils
 from modules.upscaler import Upscaler, UpscalerData
-from modules_forge.forge_util import prepare_free_memory
+from modules_forge.utils import prepare_free_memory
 
 SWINIR_MODEL_URL = "https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth"
 

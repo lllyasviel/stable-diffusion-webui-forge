@@ -9,7 +9,7 @@ from modules import devices, shared, prompt_parser
 from modules import torch_utils
 
 from backend import memory_management
-from modules_forge.forge_clip import move_clip_to_gpu
+from modules_forge.clip import move_clip_to_gpu
 
 
 def get_learned_conditioning(self: sgm.models.diffusion.DiffusionEngine, batch: prompt_parser.SdConditioning | list[str]):

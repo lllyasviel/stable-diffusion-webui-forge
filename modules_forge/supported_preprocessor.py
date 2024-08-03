@@ -5,9 +5,9 @@ from modules_forge.shared import add_supported_preprocessor, preprocessor_dir
 from backend import memory_management
 from backend.patcher.base import ModelPatcher
 from backend.patcher import clipvision
-from modules_forge.forge_util import resize_image_with_pad
+from modules_forge.utils import resize_image_with_pad
 from modules.modelloader import load_file_from_url
-from modules_forge.forge_util import numpy_to_pytorch
+from modules_forge.utils import numpy_to_pytorch
 
 
 class PreprocessorParameter:

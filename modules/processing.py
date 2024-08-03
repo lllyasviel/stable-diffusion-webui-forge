@@ -34,7 +34,7 @@ from ldm.models.diffusion.ddpm import LatentDepth2ImageDiffusion
 from einops import repeat, rearrange
 from blendmodes.blend import blendLayers, BlendType
 from modules.sd_models import apply_token_merging
-from modules_forge.forge_util import apply_circular_forge
+from modules_forge.utils import apply_circular_forge
 
 
 # some of those options should not be changed at all because they would break the model, so I removed them from options.

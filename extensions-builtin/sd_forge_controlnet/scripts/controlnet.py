@@ -20,7 +20,7 @@ from lib_controlnet.logging import logger
 from modules.processing import StableDiffusionProcessingImg2Img, StableDiffusionProcessingTxt2Img, \
     StableDiffusionProcessing
 from lib_controlnet.infotext import Infotext
-from modules_forge.forge_util import HWC3, numpy_to_pytorch
+from modules_forge.utils import HWC3, numpy_to_pytorch
 from lib_controlnet.enums import HiResFixOption
 from lib_controlnet.api import controlnet_api
 

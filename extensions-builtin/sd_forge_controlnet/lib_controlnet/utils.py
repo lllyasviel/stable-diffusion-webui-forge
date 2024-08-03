@@ -3,7 +3,7 @@ from modules import processing
 
 from lib_controlnet import external_code
 
-from modules_forge.forge_util import HWC3
+from modules_forge.utils import HWC3
 
 from PIL import Image, ImageFilter, ImageOps
 from lib_controlnet.lvminthin import lvmin_thin, nake_nms

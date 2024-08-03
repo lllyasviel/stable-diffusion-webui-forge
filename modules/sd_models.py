@@ -17,7 +17,7 @@ from modules import paths, shared, modelloader, devices, script_callbacks, sd_va
 from modules.shared import opts
 from modules.timer import Timer
 import numpy as np
-from modules_forge import forge_loader
+from modules_forge import loader
 from backend import memory_management
 
 
@@ -663,7 +663,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
         # cache newly loaded model
         checkpoints_loaded[checkpoint_info] = state_dict.copy()
 
-    sd_model = forge_loader.load_model_for_a1111(timer=timer, checkpoint_info=checkpoint_info, state_dict=state_dict)
+    sd_model = loader.load_model_for_a1111(timer=timer, checkpoint_info=checkpoint_info, state_dict=state_dict)
     sd_model.filename = checkpoint_info.filename
 
     if not SkipWritingToConfig.skip:

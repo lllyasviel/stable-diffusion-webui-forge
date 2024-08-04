@@ -127,13 +127,8 @@ class StableDiffusionModelHijack:
     optimization_method = None
 
     def __init__(self):
-        import modules.textual_inversion.textual_inversion
-
         self.extra_generation_params = {}
         self.comments = []
-
-        self.embedding_db = modules.textual_inversion.textual_inversion.EmbeddingDatabase()
-        self.embedding_db.add_embedding_dir(cmd_opts.embeddings_dir)
 
     def apply_optimizations(self, option=None):
         pass

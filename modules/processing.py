@@ -498,8 +498,14 @@ class StableDiffusionProcessing:
 
         with devices.autocast():
             cache[1] = function(shared.sd_model, required_prompts, steps, hires_steps, shared.opts.use_old_scheduling)
+
+            import backend.text_processing.classic_engine
+            last_extra_generation_params = backend.text_processing.classic_engine.last_extra_generation_params.copy()
+
+            modules.sd_hijack.model_hijack.extra_generation_params.update(last_extra_generation_params)
+
             if len(cache) > 2:
-                cache[2] = modules.sd_hijack.model_hijack.extra_generation_params
+                cache[2] = last_extra_generation_params
 
         cache[0] = cached_params
         return cache[1]
@@ -880,7 +886,9 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         p.all_subseeds = [int(subseed) + x for x in range(len(p.all_prompts))]
 
     if os.path.exists(cmd_opts.embeddings_dir) and not p.do_not_reload_embeddings:
-        model_hijack.embedding_db.load_textual_inversion_embeddings()
+        # todo: reload ti
+        # model_hijack.embedding_db.load_textual_inversion_embeddings()
+        pass
 
     if p.scripts is not None:
         p.scripts.process(p)

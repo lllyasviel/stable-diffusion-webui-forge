@@ -128,7 +128,7 @@ class EmbeddingDatabase:
         return self.register_embedding_by_name(embedding, embedding.name)
 
     def register_embedding_by_name(self, embedding, name):
-        ids = self.tokenizer.tokenize([name])[0]
+        ids = self.tokenizer([name], truncation=False, add_special_tokens=False)["input_ids"][0]
         first_id = ids[0]
         if first_id not in self.ids_lookup:
             self.ids_lookup[first_id] = []

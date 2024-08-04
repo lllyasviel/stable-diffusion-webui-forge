@@ -246,7 +246,7 @@ def model_lora_keys_unet(model, key_map={}):
             key_map["lora_unet_{}".format(key_lora)] = k
             key_map["lora_prior_unet_{}".format(key_lora)] = k
 
-    diffusers_keys = unet_to_diffusers(model.diffusion_model.legacy_config)
+    diffusers_keys = unet_to_diffusers(model.diffusion_model.config)
     for k in diffusers_keys:
         if k.endswith(".weight"):
             unet_key = "diffusion_model.{}".format(diffusers_keys[k])

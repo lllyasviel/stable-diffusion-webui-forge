@@ -209,7 +209,7 @@ class EmbeddingDatabase:
                     errors.report(f"Error loading embedding {fn}", exc_info=True)
                     continue
 
-    def load_textual_inversion_embeddings(self, force_reload=False):
+    def load_textual_inversion_embeddings(self, force_reload=False, sync_with_sd_model=True):
         if not force_reload:
             need_reload = False
             for embdir in self.embedding_dirs.values():
@@ -223,7 +223,9 @@ class EmbeddingDatabase:
         self.ids_lookup.clear()
         self.word_embeddings.clear()
         self.skipped_embeddings.clear()
-        self.expected_shape = self.get_expected_shape()
+
+        if sync_with_sd_model:
+            self.expected_shape = self.get_expected_shape()
 
         for embdir in self.embedding_dirs.values():
             self.load_from_dir(embdir)

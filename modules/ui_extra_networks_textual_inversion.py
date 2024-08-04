@@ -1,7 +1,14 @@
 import os
+import modules.textual_inversion.textual_inversion
 
-from modules import ui_extra_networks, sd_hijack, shared
+from modules.shared import cmd_opts
+from modules import ui_extra_networks, shared
 from modules.ui_extra_networks import quote_js
+
+
+embedding_db = modules.textual_inversion.textual_inversion.EmbeddingDatabase()
+embedding_db.add_embedding_dir(cmd_opts.embeddings_dir)
+embedding_db.load_textual_inversion_embeddings(force_reload=True, sync_with_sd_model=False)
 
 
 class ExtraNetworksPageTextualInversion(ui_extra_networks.ExtraNetworksPage):
@@ -10,10 +17,10 @@ class ExtraNetworksPageTextualInversion(ui_extra_networks.ExtraNetworksPage):
         self.allow_negative_prompt = True
 
     def refresh(self):
-        sd_hijack.model_hijack.embedding_db.load_textual_inversion_embeddings(force_reload=True)
+        embedding_db.load_textual_inversion_embeddings(force_reload=True, sync_with_sd_model=False)
 
     def create_item(self, name, index=None, enable_filter=True):
-        embedding = sd_hijack.model_hijack.embedding_db.word_embeddings.get(name)
+        embedding = embedding_db.word_embeddings.get(name)
         if embedding is None:
             return
 
@@ -35,11 +42,11 @@ class ExtraNetworksPageTextualInversion(ui_extra_networks.ExtraNetworksPage):
 
     def list_items(self):
         # instantiate a list to protect against concurrent modification
-        names = list(sd_hijack.model_hijack.embedding_db.word_embeddings)
+        names = list(embedding_db.word_embeddings)
         for index, name in enumerate(names):
             item = self.create_item(name, index)
             if item is not None:
                 yield item
 
     def allowed_directories_for_previews(self):
-        return list(sd_hijack.model_hijack.embedding_db.embedding_dirs)
+        return list(embedding_db.embedding_dirs)

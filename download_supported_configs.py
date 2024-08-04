@@ -8,6 +8,7 @@ from huggingface_hub import snapshot_download
 token = None
 DIFFUSERS_DEFAULT_PIPELINE_PATHS['Kolor'] = {"pretrained_model_name_or_path": "Kwai-Kolors/Kolors"}
 DIFFUSERS_DEFAULT_PIPELINE_PATHS['hunyuan'] = {"pretrained_model_name_or_path": "Tencent-Hunyuan/HunyuanDiT-Diffusers"}
+DIFFUSERS_DEFAULT_PIPELINE_PATHS['flux'] = {"pretrained_model_name_or_path": "black-forest-labs/FLUX.1-dev"}
 
 for config_name, config in DIFFUSERS_DEFAULT_PIPELINE_PATHS.items():
     try:

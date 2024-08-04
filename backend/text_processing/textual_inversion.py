@@ -116,6 +116,7 @@ class EmbeddingDatabase:
         self.skipped_embeddings = {}
         self.expected_shape = expected_shape
         self.tokenizer = tokenizer
+        self.fixes = []
 
     def add_embedding_dir(self, path):
         self.embedding_dirs[path] = DirWithTextualInversionEmbeddings(path)

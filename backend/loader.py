@@ -63,6 +63,7 @@ def load_component(guess, component_name, lib_name, cls_name, repo_path, state_d
 
             with using_forge_operations():
                 model = IntegratedUNet2DConditionModel.from_config(guess.unet_config)
+                model._internal_dict = guess.unet_config
 
             load_state_dict(model, sd)
             return model

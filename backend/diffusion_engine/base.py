@@ -34,13 +34,11 @@ class ForgeDiffusionEngine:
         self.first_stage_model = None  # set this so that you can change VAE in UI
 
         # WebUI Dirty Legacy
-        self.is_sd3 = False
         self.latent_channels = 4
-        self.is_sdxl = False
-        self.is_sdxl_inpaint = False
-        self.is_sd2 = False
         self.is_sd1 = False
-        self.is_ssd = False
+        self.is_sd2 = False
+        self.is_sdxl = False
+        self.is_sd3 = False
 
     def set_clip_skip(self, clip_skip):
         pass

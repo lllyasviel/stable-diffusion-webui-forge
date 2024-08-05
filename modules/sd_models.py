@@ -365,17 +365,7 @@ class SkipWritingToConfig:
 
 
 def check_fp8(model):
-    if model is None:
-        return None
-    if devices.get_optimal_device_name() == "mps":
-        enable_fp8 = False
-    elif shared.opts.fp8_storage == "Enable":
-        enable_fp8 = True
-    elif getattr(model, "is_sdxl", False) and shared.opts.fp8_storage == "Enable for SDXL":
-        enable_fp8 = True
-    else:
-        enable_fp8 = False
-    return enable_fp8
+    pass
 
 
 def set_model_type(model, state_dict):
@@ -383,12 +373,11 @@ def set_model_type(model, state_dict):
 
 
 def set_model_fields(model):
-    if not hasattr(model, 'latent_channels'):
-        model.latent_channels = 4
+    pass
 
 
 def load_model_weights(model, checkpoint_info: CheckpointInfo, state_dict, timer):
-    return
+    pass
 
 
 def enable_midas_autodownload():

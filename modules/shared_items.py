@@ -35,7 +35,9 @@ def refresh_vae_list():
 
 
 def cross_attention_optimizations():
-    return ["Automatic"]
+    import modules.sd_hijack
+
+    return ["Automatic"] + [x.title() for x in modules.sd_hijack.optimizers] + ["None"]
 
 
 def sd_unet_items():

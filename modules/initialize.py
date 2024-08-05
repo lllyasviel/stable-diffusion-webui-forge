@@ -10,6 +10,16 @@ from threading import Thread
 from modules.timer import startup_timer
 
 
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
+
+
 def imports():
     logging.getLogger("torch.distributed.nn").setLevel(logging.ERROR)  # sshh...
     logging.getLogger("xformers").addFilter(lambda record: 'A matching Triton is not available' not in record.getMessage())
@@ -25,8 +35,16 @@ def imports():
     import gradio  # noqa: F401
     startup_timer.record("import gradio")
 
-    from modules import paths, timer, import_hook, errors  # noqa: F401
-    startup_timer.record("setup paths")
+    with HiddenPrints():
+        from modules import paths, timer, import_hook, errors  # noqa: F401
+        startup_timer.record("setup paths")
+
+        import ldm.modules.encoders.modules  # noqa: F401
+        import ldm.modules.diffusionmodules.model
+        startup_timer.record("import ldm")
+
+        import sgm.modules.encoders.modules  # noqa: F401
+        startup_timer.record("import sgm")
 
     from modules import shared_init
     shared_init.initialize()
@@ -122,6 +140,11 @@ def initialize_rest(*, reload_script_modules=False):
     from modules import textual_inversion
     textual_inversion.textual_inversion.list_textual_inversion_templates()
     startup_timer.record("refresh textual inversion templates")
+
+    from modules import script_callbacks, sd_hijack_optimizations, sd_hijack
+    script_callbacks.on_list_optimizers(sd_hijack_optimizations.list_optimizers)
+    sd_hijack.list_optimizers()
+    startup_timer.record("scripts list_optimizers")
 
     from modules import sd_unet
     sd_unet.list_unets()

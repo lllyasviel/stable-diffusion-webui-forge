@@ -23,7 +23,7 @@ logging.getLogger("diffusers").setLevel(logging.ERROR)
 dir_path = os.path.dirname(__file__)
 
 
-def load_component(guess, component_name, lib_name, cls_name, repo_path, state_dict):
+def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_path, state_dict):
     config_path = os.path.join(repo_path, component_name)
 
     if component_name in ['feature_extractor', 'safety_checker']:
@@ -103,7 +103,7 @@ def forge_loader(sd):
         if isinstance(v, list) and len(v) == 2:
             lib_name, cls_name = v
             component_sd = state_dicts.get(component_name, None)
-            component = load_component(estimated_config, component_name, lib_name, cls_name, local_path, component_sd)
+            component = load_huggingface_component(estimated_config, component_name, lib_name, cls_name, local_path, component_sd)
             if component_sd is not None:
                 del state_dicts[component_name]
             if component is not None:

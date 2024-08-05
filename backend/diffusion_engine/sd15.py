@@ -44,7 +44,6 @@ class StableDiffusion(ForgeDiffusionEngine):
             clip_skip=1,
             return_pooled=False,
             final_layer_norm=True,
-            callback_before_encode=None
         )
 
         self.forge_objects = ForgeObjects(unet=unet, clip=clip, vae=vae, clipvision=None)

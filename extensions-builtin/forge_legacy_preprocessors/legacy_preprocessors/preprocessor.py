@@ -11,8 +11,11 @@ from transformers.models.clip.modeling_clip import CLIPVisionModelOutput
 from annotator.util import HWC3
 from typing import Callable, Tuple, Union
 
-from modules.safe import Extra
 from modules import devices
+
+import contextlib
+
+Extra = lambda x: contextlib.nullcontext()
 
 
 def torch_handler(module: str, name: str):

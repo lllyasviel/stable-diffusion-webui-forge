@@ -13,10 +13,11 @@ from backend.nn.clip import IntegratedCLIP, CLIPTextConfig
 from backend.nn.unet import IntegratedUNet2DConditionModel
 
 from backend.diffusion_engine.sd15 import StableDiffusion
+from backend.diffusion_engine.sd20 import StableDiffusion2
 from backend.diffusion_engine.sdxl import StableDiffusionXL
 
 
-possible_models = [StableDiffusion, StableDiffusionXL]
+possible_models = [StableDiffusion, StableDiffusion2, StableDiffusionXL]
 
 
 logging.getLogger("diffusers").setLevel(logging.ERROR)

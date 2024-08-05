@@ -7,7 +7,6 @@ import torch
 import modules.scripts as scripts
 from modules import shared, script_callbacks, masking, images
 from modules.ui_components import InputAccordion
-from modules.api.api import decode_base64_to_image
 import gradio as gr
 
 from lib_controlnet import global_state, external_code

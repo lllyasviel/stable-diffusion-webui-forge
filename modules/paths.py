@@ -36,8 +36,8 @@ assert sd_path is not None, f"Couldn't find Stable Diffusion in any of: {possibl
 mute_sdxl_imports()
 
 path_dirs = [
-    (sd_path, 'ldm', 'Stable Diffusion', []),
-    (os.path.join(sd_path, '../generative-models'), 'sgm', 'Stable Diffusion XL', ["sgm"]),
+    # (sd_path, 'ldm', 'Stable Diffusion', []),
+    # (os.path.join(sd_path, '../generative-models'), 'sgm', 'Stable Diffusion XL', ["sgm"]),
     (os.path.join(sd_path, '../BLIP'), 'models/blip.py', 'BLIP', []),
     (os.path.join(sd_path, '../k-diffusion'), 'k_diffusion/sampling.py', 'k_diffusion', ["atstart"]),
     (os.path.join(sd_path, '../huggingface_guess'), 'huggingface_guess/detection.py', 'huggingface_guess', []),
@@ -53,13 +53,13 @@ for d, must_exist, what, options in path_dirs:
         d = os.path.abspath(d)
         if "atstart" in options:
             sys.path.insert(0, d)
-        elif "sgm" in options:
-            # Stable Diffusion XL repo has scripts dir with __init__.py in it which ruins every extension's scripts dir, so we
-            # import sgm and remove it from sys.path so that when a script imports scripts.something, it doesbn't use sgm's scripts dir.
-
-            sys.path.insert(0, d)
-            import sgm  # noqa: F401
-            sys.path.pop(0)
+        # elif "sgm" in options:
+        #     # Stable Diffusion XL repo has scripts dir with __init__.py in it which ruins every extension's scripts dir, so we
+        #     # import sgm and remove it from sys.path so that when a script imports scripts.something, it doesbn't use sgm's scripts dir.
+        #
+        #     sys.path.insert(0, d)
+        #     import sgm  # noqa: F401
+        #     sys.path.pop(0)
         else:
             sys.path.append(d)
         paths[what] = d

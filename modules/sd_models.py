@@ -14,11 +14,12 @@ import ldm.modules.midas as midas
 import gc
 
 from modules import paths, shared, modelloader, devices, script_callbacks, sd_vae, sd_disable_initialization, errors, hashes, sd_models_config, sd_unet, sd_models_xl, cache, extra_networks, processing, lowvram, sd_hijack, patches
-from modules.shared import opts
+from modules.shared import opts, cmd_opts
 from modules.timer import Timer
 import numpy as np
-from modules_forge import loader
+from backend.loader import forge_loader
 from backend import memory_management
+from backend.args import dynamic_args
 
 
 model_dir = "Stable-diffusion"
@@ -636,6 +637,7 @@ def get_obj_from_str(string, reload=False):
     return getattr(importlib.import_module(module, package=None), cls)
 
 
+@torch.no_grad()
 def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     from modules import sd_hijack
     checkpoint_info = checkpoint_info or select_checkpoint()
@@ -663,8 +665,15 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
         # cache newly loaded model
         checkpoints_loaded[checkpoint_info] = state_dict.copy()
 
-    sd_model = loader.load_model_for_a1111(timer=timer, checkpoint_info=checkpoint_info, state_dict=state_dict)
+    dynamic_args['embedding_dir'] = cmd_opts.embeddings_dir
+    dynamic_args['emphasis_name'] = opts.emphasis
+    sd_model = forge_loader(state_dict)
+    timer.record("forge model load")
+
+    sd_model.sd_checkpoint_info = checkpoint_info
     sd_model.filename = checkpoint_info.filename
+    sd_model.sd_model_hash = checkpoint_info.calculate_shorthash()
+    timer.record("calculate hash")
 
     if not SkipWritingToConfig.skip:
         shared.opts.data["sd_model_checkpoint"] = checkpoint_info.title

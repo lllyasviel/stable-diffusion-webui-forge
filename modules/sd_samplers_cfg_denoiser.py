@@ -39,8 +39,10 @@ class CFGDenoiser(torch.nn.Module):
     negative prompt.
     """
 
-    def __init__(self, sampler):
+    def __init__(self, sampler, model):
         super().__init__()
+        self.inner_model = model
+
         self.model_wrap = None
         self.mask = None
         self.nmask = None
@@ -63,10 +65,6 @@ class CFGDenoiser(torch.nn.Module):
         self.mask_before_denoising = False
 
         self.classic_ddim_eps_estimation = False
-
-    @property
-    def inner_model(self):
-        raise NotImplementedError()
 
     def combine_denoised(self, x_out, conds_list, uncond, cond_scale, timestep, x_in, cond):
         denoised_uncond = x_out[-uncond.shape[0]:]
@@ -158,7 +156,7 @@ class CFGDenoiser(torch.nn.Module):
         original_x_dtype = x.dtype
 
         if self.classic_ddim_eps_estimation:
-            acd = self.inner_model.inner_model.alphas_cumprod
+            acd = self.inner_model.alphas_cumprod
             fake_sigmas = ((1 - acd) / acd) ** 0.5
             real_sigma = fake_sigmas[sigma.round().long().clip(0, int(fake_sigmas.shape[0]))]
             real_sigma_data = 1.0

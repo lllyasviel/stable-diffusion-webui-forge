@@ -1,24 +1,10 @@
-import torch
-
 from backend import memory_management
 from backend.patcher.base import ModelPatcher
-
-
-class JointTokenizer:
-    def __init__(self, huggingface_components):
-        self.clip_l = huggingface_components.get('tokenizer', None)
-        self.clip_g = huggingface_components.get('tokenizer_2', None)
-
-
-class JointCLIPTextEncoder(torch.nn.Module):
-    def __init__(self, huggingface_components):
-        super().__init__()
-        self.clip_l = huggingface_components.get('text_encoder', None)
-        self.clip_g = huggingface_components.get('text_encoder_2', None)
+from backend.nn.base import ModuleDict, ObjectDict
 
 
 class CLIP:
-    def __init__(self, huggingface_components=None, no_init=False):
+    def __init__(self, model_dict={}, tokenizer_dict={}, no_init=False):
         if no_init:
             return
 
@@ -26,8 +12,8 @@ class CLIP:
         offload_device = memory_management.text_encoder_offload_device()
         text_encoder_dtype = memory_management.text_encoder_dtype(load_device)
 
-        self.cond_stage_model = JointCLIPTextEncoder(huggingface_components)
-        self.tokenizer = JointTokenizer(huggingface_components)
+        self.cond_stage_model = ModuleDict(model_dict)
+        self.tokenizer = ObjectDict(tokenizer_dict)
         self.cond_stage_model.to(dtype=text_encoder_dtype, device=offload_device)
         self.patcher = ModelPatcher(self.cond_stage_model, load_device=load_device, offload_device=offload_device)
 

@@ -150,8 +150,7 @@ class StableDiffusionModelHijack:
         self.extra_generation_params = {}
 
     def get_prompt_lengths(self, text, cond_stage_model):
-        _, token_count = cond_stage_model.process_texts([text])
-        return token_count, cond_stage_model.get_target_prompt_token_count(token_count)
+        pass
 
     def redo_hijack(self, m):
         pass

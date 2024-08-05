@@ -301,14 +301,15 @@ def sampling_function_inner(model, x, timestep, uncond, cond, cond_scale, model_
 
 
 def sampling_function(self, denoiser_params, cond_scale, cond_composition):
-    model = self.inner_model.inner_model.forge_objects.unet.model
-    control = self.inner_model.inner_model.forge_objects.unet.controlnet_linked_list
-    extra_concat_condition = self.inner_model.inner_model.forge_objects.unet.extra_concat_condition
+    unet_patcher = self.inner_model.forge_objects.unet
+    model = unet_patcher.model
+    control = unet_patcher.controlnet_linked_list
+    extra_concat_condition = unet_patcher.extra_concat_condition
     x = denoiser_params.x
     timestep = denoiser_params.sigma
     uncond = compile_conditions(denoiser_params.text_uncond)
     cond = compile_weighted_conditions(denoiser_params.text_cond, cond_composition)
-    model_options = self.inner_model.inner_model.forge_objects.unet.model_options
+    model_options = unet_patcher.model_options
     seed = self.p.seeds[0]
 
     if extra_concat_condition is not None:

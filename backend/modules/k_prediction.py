@@ -108,11 +108,11 @@ class Prediction(AbstractPrediction):
         alphas = 1. - betas
         alphas_cumprod = torch.cumprod(alphas, dim=0)
         sigmas = ((1 - alphas_cumprod) / alphas_cumprod) ** 0.5
-        self.set_sigmas(sigmas)
 
-    def set_sigmas(self, sigmas):
+        self.register_buffer('alphas_cumprod', alphas_cumprod.float())
         self.register_buffer('sigmas', sigmas.float())
         self.register_buffer('log_sigmas', sigmas.log().float())
+        return
 
     @property
     def sigma_min(self):

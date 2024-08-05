@@ -57,6 +57,7 @@ class ClassicTextProcessingEngine(torch.nn.Module):
         self.embeddings = EmbeddingDatabase(tokenizer, embedding_expected_shape)
         self.embeddings.add_embedding_dir(embedding_dir)
         self.embeddings.load_textual_inversion_embeddings()
+        self.embedding_key = embedding_key
 
         self.text_encoder = text_encoder
         self.tokenizer = tokenizer
@@ -266,10 +267,13 @@ class ClassicTextProcessingEngine(torch.nn.Module):
             names = []
 
             for name, embedding in used_embeddings.items():
-                print(f'Used Embedding: {name}')
+                print(f'[Textual Inversion] Used Embedding [{name}] in CLIP of [{self.embedding_key}]')
                 names.append(name.replace(":", "").replace(",", ""))
 
-            last_extra_generation_params["TI"] = ", ".join(names)
+            if "TI" in last_extra_generation_params:
+                last_extra_generation_params["TI"] += ", " + ", ".join(names)
+            else:
+                last_extra_generation_params["TI"] = ", ".join(names)
 
         if any(x for x in texts if "(" in x or "[" in x) and self.emphasis.name != "Original":
             last_extra_generation_params["Emphasis"] = self.emphasis.name

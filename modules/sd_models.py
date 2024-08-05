@@ -379,29 +379,7 @@ def check_fp8(model):
 
 
 def set_model_type(model, state_dict):
-    model.is_sd1 = False
-    model.is_sd2 = False
-    model.is_sdxl = False
-    model.is_ssd = False
-    model.is_sd3 = False
-
-    if "model.diffusion_model.x_embedder.proj.weight" in state_dict:
-        model.is_sd3 = True
-        model.model_type = ModelType.SD3
-    elif hasattr(model, 'conditioner'):
-        model.is_sdxl = True
-
-        if 'model.diffusion_model.middle_block.1.transformer_blocks.0.attn1.to_q.weight' not in state_dict.keys():
-            model.is_ssd = True
-            model.model_type = ModelType.SSD
-        else:
-            model.model_type = ModelType.SDXL
-    elif hasattr(model.cond_stage_model, 'model'):
-        model.is_sd2 = True
-        model.model_type = ModelType.SD2
-    else:
-        model.is_sd1 = True
-        model.model_type = ModelType.SD1
+    pass
 
 
 def set_model_fields(model):

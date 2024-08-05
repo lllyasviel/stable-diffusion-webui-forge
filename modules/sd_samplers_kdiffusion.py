@@ -85,7 +85,7 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         if p.sampler_noise_scheduler_override:
             sigmas = p.sampler_noise_scheduler_override(steps)
         elif scheduler is None or scheduler.function is None:
-            raise ValueError('Wrong scheduler!')
+            sigmas = self.model_wrap.get_sigmas(steps)
         else:
             sigmas_kwargs = {'sigma_min': sigma_min, 'sigma_max': sigma_max}
 

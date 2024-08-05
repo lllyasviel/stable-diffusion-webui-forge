@@ -1,3 +1,4 @@
+from ldm.models.diffusion.ddpm import LatentDiffusion
 from typing import TYPE_CHECKING
 
 
@@ -5,7 +6,7 @@ if TYPE_CHECKING:
     from modules.sd_models import CheckpointInfo
 
 
-class WebuiSdModel:
+class WebuiSdModel(LatentDiffusion):
     """This class is not actually instantinated, but its fields are created and fieeld by webui"""
 
     lowvram: bool

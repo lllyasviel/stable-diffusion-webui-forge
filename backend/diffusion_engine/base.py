@@ -31,6 +31,8 @@ class ForgeDiffusionEngine:
         self.current_lora_hash = str([])
         self.tiling_enabled = False
 
+        self.first_stage_model = None  # set this so that you can change VAE in UI
+
         # WebUI Dirty Legacy
         self.cond_stage_key = 'txt'
         self.is_sd3 = False

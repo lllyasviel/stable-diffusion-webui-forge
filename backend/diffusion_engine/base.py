@@ -34,7 +34,6 @@ class ForgeDiffusionEngine:
         self.first_stage_model = None  # set this so that you can change VAE in UI
 
         # WebUI Dirty Legacy
-        self.cond_stage_key = 'txt'
         self.is_sd3 = False
         self.latent_channels = 4
         self.is_sdxl = False

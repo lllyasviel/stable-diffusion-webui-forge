@@ -262,8 +262,6 @@ class ClassicTextProcessingEngine(torch.nn.Module):
 
         global last_extra_generation_params
 
-        last_extra_generation_params = {}
-
         if used_embeddings:
             names = []
 

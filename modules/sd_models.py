@@ -217,10 +217,9 @@ def model_hash(filename):
         return 'NOFILE'
 
 
-def select_checkpoint(model_checkpoint=None):
-    if model_checkpoint is None:
-        from modules_forge import main_entry
-        model_checkpoint = main_entry.sd_model_checkpoint_current_selection
+def select_checkpoint():
+    """Raises `FileNotFoundError` if no checkpoints are found."""
+    model_checkpoint = shared.opts.sd_model_checkpoint
 
     checkpoint_info = checkpoint_aliases.get(model_checkpoint, None)
     if checkpoint_info is not None:
@@ -531,8 +530,9 @@ def get_obj_from_str(string, reload=False):
 
 
 @torch.no_grad()
-def load_model(checkpoint_info=None, checkpoint_name=None, already_loaded_state_dict=None):
-    checkpoint_info = checkpoint_info or select_checkpoint(checkpoint_name)
+def load_model(checkpoint_info=None, already_loaded_state_dict=None):
+    from modules import sd_hijack
+    checkpoint_info = checkpoint_info or select_checkpoint()
 
     timer = Timer()
 

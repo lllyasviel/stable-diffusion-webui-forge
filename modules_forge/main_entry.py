@@ -24,7 +24,7 @@ def bind_to_opts(comp, k, save=False, callback=None):
         shared.opts.set(k, v)
         if save:
             shared.opts.save(shared.config_filename)
-        if callback:
+        if callback is not None:
             callback()
         return
 

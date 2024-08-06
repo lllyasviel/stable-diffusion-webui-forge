@@ -7,6 +7,7 @@ from modules.shared import opts
 from modules.ui_components import FormRow
 from modules.ui_gradio_extensions import reload_javascript
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from modules_forge import main_entry
 
 
 def get_value_for_setting(key):
@@ -40,6 +41,9 @@ def create_setting_component(key, is_quicksettings=False):
         raise Exception(f'bad options item type: {t} for key {key}')
 
     elem_id = f"setting_{key}"
+
+    if comp == gr.State:
+        return gr.State(fun())
 
     if info.refresh is not None:
         if is_quicksettings:
@@ -125,7 +129,7 @@ class UiSettings:
 
             self.result = gr.HTML(elem_id="settings_result")
 
-            self.quicksettings_names = opts.quicksettings_list
+            self.quicksettings_names = opts.quick_setting_list
             self.quicksettings_names = {x: i for i, x in enumerate(self.quicksettings_names) if x != 'quicksettings'}
 
             self.quicksettings_list = []
@@ -289,6 +293,7 @@ class UiSettings:
 
     def add_quicksettings(self):
         with gr.Row(elem_id="quicksettings", variant="compact"):
+            main_entry.make_checkpoint_manager_ui()
             for _i, k, _item in sorted(self.quicksettings_list, key=lambda x: self.quicksettings_names.get(x[1], x[0])):
                 component = create_setting_component(k, is_quicksettings=True)
                 self.component_dict[k] = component
@@ -318,12 +323,15 @@ class UiSettings:
                     show_progress=False,
                 )
 
+        def button_set_checkpoint_change(value, dummy):
+            return value, opts.dumpjson()
+
         button_set_checkpoint = gr.Button('Change checkpoint', elem_id='change_checkpoint', visible=False)
         button_set_checkpoint.click(
-            fn=lambda value, _: self.run_settings_single(value, key='sd_model_checkpoint'),
+            fn=button_set_checkpoint_change,
             _js="function(v){ var res = desiredCheckpointName; desiredCheckpointName = ''; return [res || v, null]; }",
-            inputs=[self.component_dict['sd_model_checkpoint'], self.dummy_component],
-            outputs=[self.component_dict['sd_model_checkpoint'], self.text_settings],
+            inputs=[main_entry.sd_model_checkpoint, self.dummy_component],
+            outputs=[main_entry.sd_model_checkpoint, self.text_settings],
         )
 
         component_keys = [k for k in opts.data_labels.keys() if k in self.component_dict]

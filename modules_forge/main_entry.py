@@ -71,7 +71,7 @@ def model_load_entry():
         forge_unet_storage_dtype=forge_unet_storage_dtype_options[shared.opts.forge_unet_storage_dtype]
     ))
 
-    sd_models.load_model()
+    sd_models.forge_model_reload()
     return
 
 

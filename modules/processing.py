@@ -1502,8 +1502,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
         if self.enable_hr and self.hr_checkpoint_info is None:
             if shared.opts.hires_fix_use_firstpass_conds:
                 self.calculate_hr_conds()
-
-            elif shared.sd_model.sd_checkpoint_info == sd_models.select_checkpoint():  # if in lowvram mode, we need to calculate conds right away, before the cond NN is unloaded
+            else:
                 with devices.autocast():
                     extra_networks.activate(self, self.hr_extra_network_data)
 

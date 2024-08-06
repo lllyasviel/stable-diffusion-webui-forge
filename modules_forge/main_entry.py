@@ -5,6 +5,7 @@ from modules_forge import main_thread
 
 
 sd_model_checkpoint: gr.Dropdown = None
+sd_model_checkpoint_current_selection: str = None
 
 
 def make_checkpoint_manager_ui():
@@ -21,11 +22,12 @@ def make_checkpoint_manager_ui():
 
 
 def checkpoint_change(ckpt_name):
-    a = 0
-    # sd_models.reload_model_weights()
+    global sd_model_checkpoint_current_selection
+    sd_model_checkpoint_current_selection = ckpt_name
+    sd_models.load_model(checkpoint_name=ckpt_name)
     return
 
 
 def forge_main_entry():
-    sd_model_checkpoint.change(main_thread.run_and_wait_result(checkpoint_change), inputs=[sd_model_checkpoint])
+    sd_model_checkpoint.change(lambda x: main_thread.run_and_wait_result(checkpoint_change, x), inputs=[sd_model_checkpoint])
     return

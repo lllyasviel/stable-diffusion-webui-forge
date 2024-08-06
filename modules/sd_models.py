@@ -19,6 +19,7 @@ import numpy as np
 from backend.loader import forge_loader
 from backend import memory_management
 from backend.args import dynamic_args
+from modules_forge import main_entry
 
 
 model_dir = "Stable-diffusion"
@@ -217,9 +218,9 @@ def model_hash(filename):
         return 'NOFILE'
 
 
-def select_checkpoint():
-    """Raises `FileNotFoundError` if no checkpoints are found."""
-    model_checkpoint = shared.opts.sd_model_checkpoint
+def select_checkpoint(model_checkpoint=None):
+    if model_checkpoint is None:
+        model_checkpoint = main_entry.sd_model_checkpoint_current_selection
 
     checkpoint_info = checkpoint_aliases.get(model_checkpoint, None)
     if checkpoint_info is not None:
@@ -530,8 +531,8 @@ def get_obj_from_str(string, reload=False):
 
 
 @torch.no_grad()
-def load_model(checkpoint_info=None, already_loaded_state_dict=None):
-    checkpoint_info = checkpoint_info or select_checkpoint()
+def load_model(checkpoint_info=None, checkpoint_name=None, already_loaded_state_dict=None):
+    checkpoint_info = checkpoint_info or select_checkpoint(checkpoint_name)
 
     timer = Timer()
 
@@ -602,7 +603,7 @@ def reuse_model_from_already_loaded(sd_model, checkpoint_info, timer):
 
 
 def reload_model_weights(sd_model=None, info=None, forced_reload=False):
-    return load_model(info)
+    pass
 
 
 def unload_model_weights(sd_model=None, info=None):

@@ -1,6 +1,7 @@
 import gradio as gr
 
-from modules import shared_items, shared, ui_common, sd_models, sd_vae
+from modules import shared_items, shared, ui_common, sd_models
+from modules import sd_vae as sd_vae_module
 from modules_forge import main_thread
 
 
@@ -51,7 +52,7 @@ def checkpoint_change(ckpt_name):
 
 def vae_change(vae_name):
     shared.opts.set('sd_vae', vae_name)
-    sd_vae.reload_vae_weights()
+    sd_vae_module.reload_vae_weights()
     return
 
 

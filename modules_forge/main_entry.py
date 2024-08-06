@@ -38,5 +38,5 @@ def checkpoint_change(ckpt_name):
 
 
 def forge_main_entry():
-    sd_model_checkpoint.change(lambda x: main_thread.run_and_wait_result(checkpoint_change, x), inputs=[sd_model_checkpoint])
+    sd_model_checkpoint.change(lambda x: main_thread.async_run(checkpoint_change, x), inputs=[sd_model_checkpoint])
     return

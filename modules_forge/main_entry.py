@@ -1,3 +1,4 @@
+import torch
 import gradio as gr
 
 from modules import shared_items, shared, ui_common, sd_models
@@ -8,6 +9,12 @@ from modules_forge import main_thread
 ui_checkpoint: gr.Dropdown = None
 ui_vae: gr.Dropdown = None
 ui_clip_skip: gr.Slider = None
+
+forge_unet_storage_dtype_options = {
+    'None': None,
+    'fp8e4m3': torch.float8_e4m3fn,
+    'fp8e5m2': torch.float8_e5m2,
+}
 
 
 def bind_to_opts(comp, k, save=False):
@@ -49,6 +56,9 @@ def make_checkpoint_manager_ui():
 
     ui_clip_skip = gr.Slider(label="Clip skip", value=shared.opts.CLIP_stop_at_last_layers, **{"minimum": 1, "maximum": 12, "step": 1})
     bind_to_opts(ui_clip_skip, 'CLIP_stop_at_last_layers', save=False)
+
+    ui_forge_unet_storage_dtype_options = gr.Radio(label="Diffusion in FP8", value='None', choices=list(forge_unet_storage_dtype_options.keys()))
+    bind_to_opts(ui_forge_unet_storage_dtype_options, 'forge_unet_storage_dtype', save=True)
 
     return
 

@@ -171,3 +171,10 @@ def using_forge_operations(parameters_manual_cast=False, operations=None):
         for op_name in op_names:
             setattr(torch.nn, op_name, backups[op_name])
     return
+
+
+def shift_manual_cast(model, enabled):
+    for m in model.modules():
+        if hasattr(m, 'parameters_manual_cast'):
+            m.parameters_manual_cast = enabled
+    return

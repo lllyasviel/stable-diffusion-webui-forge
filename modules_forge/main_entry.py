@@ -40,12 +40,17 @@ def make_checkpoint_manager_ui():
     return
 
 
+def model_load_entry():
+    sd_models.load_model()
+    return
+
+
 def checkpoint_change(ckpt_name):
     print(f'Checkpoint Selected: {ckpt_name}')
     shared.opts.set('sd_model_checkpoint', ckpt_name)
     shared.opts.save(shared.config_filename)
 
-    sd_models.load_model()
+    model_load_entry()
     return
 
 
@@ -68,5 +73,5 @@ def forge_main_entry():
     ui_clip_skip.change(lambda x: main_thread.async_run(clip_skip_change, x), inputs=[ui_clip_skip], show_progress=False)
 
     # Load Model
-    main_thread.async_run(sd_models.load_model)
+    main_thread.async_run(model_load_entry)
     return

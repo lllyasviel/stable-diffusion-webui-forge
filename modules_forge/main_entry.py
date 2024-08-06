@@ -5,14 +5,18 @@ from modules_forge import main_thread
 
 
 sd_model_checkpoint: gr.Dropdown = None
-sd_model_checkpoint_current_selection: str = None
+sd_model_checkpoint_current_selection: str = shared.opts.sd_model_checkpoint_default
+if sd_model_checkpoint_current_selection is None:
+    sd_models.list_models()
+    if len(sd_models.checkpoints_list) > 0:
+        sd_model_checkpoint_current_selection = next(iter(sd_models.checkpoints_list.keys()))
 
 
 def make_checkpoint_manager_ui():
     global sd_model_checkpoint
     sd_model_checkpoint_args = lambda: {"choices": shared_items.list_checkpoint_tiles(shared.opts.sd_checkpoint_dropdown_use_short)}
     sd_model_checkpoint = gr.Dropdown(
-        value=None,
+        value=sd_model_checkpoint_current_selection,
         label="Checkpoint",
         **sd_model_checkpoint_args()
     )
@@ -24,6 +28,11 @@ def make_checkpoint_manager_ui():
 def checkpoint_change(ckpt_name):
     global sd_model_checkpoint_current_selection
     sd_model_checkpoint_current_selection = ckpt_name
+
+    print(f'Checkpoint Selected: {ckpt_name}')
+    shared.opts.set('sd_model_checkpoint_default', ckpt_name)
+    shared.opts.save(shared.config_filename)
+
     sd_models.load_model(checkpoint_name=ckpt_name)
     return
 

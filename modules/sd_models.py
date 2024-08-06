@@ -19,7 +19,6 @@ import numpy as np
 from backend.loader import forge_loader
 from backend import memory_management
 from backend.args import dynamic_args
-from modules_forge import main_entry
 
 
 model_dir = "Stable-diffusion"
@@ -220,6 +219,7 @@ def model_hash(filename):
 
 def select_checkpoint(model_checkpoint=None):
     if model_checkpoint is None:
+        from modules_forge import main_entry
         model_checkpoint = main_entry.sd_model_checkpoint_current_selection
 
     checkpoint_info = checkpoint_aliases.get(model_checkpoint, None)

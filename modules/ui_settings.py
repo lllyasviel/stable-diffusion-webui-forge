@@ -321,14 +321,9 @@ class UiSettings:
                 )
 
         def button_set_checkpoint_change(value, dummy):
-            opts.set('sd_model_checkpoint', value)
-
-            if value is None or not opts.set(key, value):
-                return gr.update(value=getattr(opts, key)), opts.dumpjson()
-
+            opts.set('sd_model_checkpoint_default', value)
             opts.save(shared.config_filename)
-
-            return get_value_for_setting(key), opts.dumpjson()
+            return value, opts.dumpjson()
 
         button_set_checkpoint = gr.Button('Change checkpoint', elem_id='change_checkpoint', visible=False)
         button_set_checkpoint.click(

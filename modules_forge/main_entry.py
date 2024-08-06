@@ -18,12 +18,14 @@ forge_unet_storage_dtype_options = {
 }
 
 
-def bind_to_opts(comp, k, save=False):
+def bind_to_opts(comp, k, save=False, callback=None):
     def on_change(v):
         print(f'Setting Changed: {k} = {v}')
         shared.opts.set(k, v)
         if save:
             shared.opts.save(shared.config_filename)
+        if callback:
+            callback()
         return
 
     comp.change(on_change, inputs=[comp], show_progress=False)
@@ -59,7 +61,7 @@ def make_checkpoint_manager_ui():
     bind_to_opts(ui_clip_skip, 'CLIP_stop_at_last_layers', save=False)
 
     ui_forge_unet_storage_dtype_options = gr.Radio(label="Diffusion in FP8", value='None', choices=list(forge_unet_storage_dtype_options.keys()))
-    bind_to_opts(ui_forge_unet_storage_dtype_options, 'forge_unet_storage_dtype', save=True)
+    bind_to_opts(ui_forge_unet_storage_dtype_options, 'forge_unet_storage_dtype', save=True, callback=lambda: main_thread.async_run(model_load_entry))
 
     return
 

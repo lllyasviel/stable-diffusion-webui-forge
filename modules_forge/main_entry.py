@@ -1,6 +1,7 @@
 import gradio as gr
 
-from modules import shared_items, shared, ui_common
+from modules import shared_items, shared, ui_common, sd_models
+from modules_forge import main_thread
 
 
 sd_model_checkpoint: gr.Dropdown = None
@@ -19,6 +20,12 @@ def make_checkpoint_manager_ui():
     return
 
 
+def checkpoint_change(ckpt_name):
+    a = 0
+    # sd_models.reload_model_weights()
+    return
+
+
 def forge_main_entry():
-    sd_model_checkpoint.change(lambda x: print(x), inputs=[sd_model_checkpoint])
+    sd_model_checkpoint.change(main_thread.run_and_wait_result(checkpoint_change), inputs=[sd_model_checkpoint])
     return

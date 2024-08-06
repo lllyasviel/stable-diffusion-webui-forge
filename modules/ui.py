@@ -26,7 +26,7 @@ import modules.shared as shared
 from modules import prompt_parser
 from modules.infotext_utils import image_from_url_text, PasteField
 from modules_forge.forge_canvas.canvas import ForgeCanvas, canvas_head
-from modules_forge.main_entry import forge_main_entry
+from modules_forge import main_entry
 
 
 create_setting_component = ui_settings.create_setting_component
@@ -942,9 +942,9 @@ def create_ui():
         settings.text_settings.change(fn=update_image_cfg_scale_visibility, inputs=[], outputs=[image_cfg_scale])
         demo.load(fn=update_image_cfg_scale_visibility, inputs=[], outputs=[image_cfg_scale])
 
-        modelmerger_ui.setup_ui(dummy_component=dummy_component, sd_model_checkpoint_component=settings.component_dict['sd_model_checkpoint'])
+        modelmerger_ui.setup_ui(dummy_component=dummy_component, sd_model_checkpoint_component=main_entry.sd_model_checkpoint)
 
-        forge_main_entry()
+        main_entry.forge_main_entry()
 
     if ui_settings_from_file != loadsave.ui_settings:
         loadsave.dump_defaults()

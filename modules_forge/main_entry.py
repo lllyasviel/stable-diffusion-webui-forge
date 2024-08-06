@@ -66,4 +66,7 @@ def forge_main_entry():
     ui_checkpoint.change(lambda x: main_thread.async_run(checkpoint_change, x), inputs=[ui_checkpoint], show_progress=False)
     ui_vae.change(lambda x: main_thread.async_run(vae_change, x), inputs=[ui_vae], show_progress=False)
     ui_clip_skip.change(lambda x: main_thread.async_run(clip_skip_change, x), inputs=[ui_clip_skip], show_progress=False)
+
+    # Load Model
+    main_thread.async_run(sd_models.load_model)
     return

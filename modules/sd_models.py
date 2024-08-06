@@ -380,25 +380,10 @@ class SdModelData:
         self.sd_model = None
         self.loaded_sd_models = []
         self.was_loaded_at_least_once = False
-        self.lock = threading.Lock()
 
     def get_sd_model(self):
-        if self.was_loaded_at_least_once:
-            return self.sd_model
-
         if self.sd_model is None:
-            with self.lock:
-                if self.sd_model is not None or self.was_loaded_at_least_once:
-                    return self.sd_model
-
-                try:
-                    load_model()
-
-                except Exception as e:
-                    errors.display(e, "loading stable diffusion model", full_traceback=True)
-                    print("", file=sys.stderr)
-                    print("Stable diffusion model failed to load", file=sys.stderr)
-                    self.sd_model = None
+            raise ValueError('Something went wrong! Model is not loaded yet ...')
 
         return self.sd_model
 

@@ -10,6 +10,18 @@ ui_vae: gr.Dropdown = None
 ui_clip_skip: gr.Slider = None
 
 
+def bind_to_opts(comp, k, save=False):
+    def on_change(v):
+        print(f'Setting Changed: {k} = {v}')
+        shared.opts.set(k, v)
+        if save:
+            shared.opts.save(shared.config_filename)
+        return
+
+    comp.change(on_change, inputs=[comp], show_progress=False)
+    return
+
+
 def make_checkpoint_manager_ui():
     global ui_checkpoint, ui_vae, ui_clip_skip
 
@@ -36,6 +48,7 @@ def make_checkpoint_manager_ui():
     ui_common.create_refresh_button(ui_vae, shared_items.refresh_vae_list, sd_vae_args, f"forge_refresh_vae")
 
     ui_clip_skip = gr.Slider(label="Clip skip", value=shared.opts.CLIP_stop_at_last_layers, **{"minimum": 1, "maximum": 12, "step": 1})
+    bind_to_opts(ui_clip_skip, 'CLIP_stop_at_last_layers', save=False)
 
     return
 
@@ -61,16 +74,9 @@ def vae_change(vae_name):
     return
 
 
-def clip_skip_change(clip_skip):
-    print(f'CLIP SKIP Selected: {clip_skip}')
-    shared.opts.set('CLIP_stop_at_last_layers', clip_skip)
-    return
-
-
 def forge_main_entry():
     ui_checkpoint.change(lambda x: main_thread.async_run(checkpoint_change, x), inputs=[ui_checkpoint], show_progress=False)
     ui_vae.change(lambda x: main_thread.async_run(vae_change, x), inputs=[ui_vae], show_progress=False)
-    ui_clip_skip.change(lambda x: main_thread.async_run(clip_skip_change, x), inputs=[ui_clip_skip], show_progress=False)
 
     # Load Model
     main_thread.async_run(model_load_entry)

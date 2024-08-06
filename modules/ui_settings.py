@@ -320,9 +320,19 @@ class UiSettings:
                     show_progress=False,
                 )
 
+        def button_set_checkpoint_change(value, dummy):
+            opts.set('sd_model_checkpoint', value)
+
+            if value is None or not opts.set(key, value):
+                return gr.update(value=getattr(opts, key)), opts.dumpjson()
+
+            opts.save(shared.config_filename)
+
+            return get_value_for_setting(key), opts.dumpjson()
+
         button_set_checkpoint = gr.Button('Change checkpoint', elem_id='change_checkpoint', visible=False)
         button_set_checkpoint.click(
-            fn=lambda value, _: self.run_settings_single(value, key='sd_model_checkpoint'),
+            fn=button_set_checkpoint_change,
             _js="function(v){ var res = desiredCheckpointName; desiredCheckpointName = ''; return [res || v, null]; }",
             inputs=[main_entry.sd_model_checkpoint, self.dummy_component],
             outputs=[main_entry.sd_model_checkpoint, self.text_settings],

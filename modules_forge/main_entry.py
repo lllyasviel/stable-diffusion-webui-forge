@@ -53,7 +53,8 @@ def make_checkpoint_manager_ui():
     ui_vae = gr.Dropdown(
         value="Automatic",
         label="VAE",
-        **sd_vae_args(), elem_classes=['forge_vae_selection']
+        elem_classes=['forge_vae_selection'],
+        **sd_vae_args()
     )
     ui_common.create_refresh_button(ui_vae, shared_items.refresh_vae_list, sd_vae_args, f"forge_refresh_vae")
 

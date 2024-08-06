@@ -329,7 +329,7 @@ class UiSettings:
         button_set_checkpoint = gr.Button('Change checkpoint', elem_id='change_checkpoint', visible=False)
         button_set_checkpoint.click(
             fn=button_set_checkpoint_change,
-            _js="function(v){ var res = desiredCheckpointName; desiredCheckpointName = ''; return [res || v, null]; }",
+            js="function(v){ var res = desiredCheckpointName; desiredCheckpointName = ''; return [res || v, null]; }",
             inputs=[main_entry.ui_checkpoint, self.dummy_component],
             outputs=[main_entry.ui_checkpoint, self.text_settings],
         )

@@ -54,12 +54,14 @@ def checkpoint_change(ckpt_name):
 
 
 def vae_change(vae_name):
+    print(f'VAE Selected: {vae_name}')
     shared.opts.set('sd_vae', vae_name)
     sd_vae_module.reload_vae_weights()
     return
 
 
 def clip_skip_change(clip_skip):
+    print(f'CLIP SKIP Selected: {clip_skip}')
     shared.opts.set('CLIP_stop_at_last_layers', clip_skip)
     return
 
@@ -67,5 +69,5 @@ def clip_skip_change(clip_skip):
 def forge_main_entry():
     sd_model_checkpoint.change(lambda x: main_thread.async_run(checkpoint_change, x), inputs=[sd_model_checkpoint])
     sd_vae.change(lambda x: main_thread.async_run(vae_change, x), inputs=[sd_vae])
-    CLIP_stop_at_last_layers.change(lambda x: main_thread.async_run(vae_change, x), inputs=[CLIP_stop_at_last_layers])
+    CLIP_stop_at_last_layers.change(lambda x: main_thread.async_run(clip_skip_change, x), inputs=[CLIP_stop_at_last_layers])
     return

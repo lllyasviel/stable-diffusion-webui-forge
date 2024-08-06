@@ -4,6 +4,7 @@ import gradio as gr
 from modules import shared_items, shared, ui_common, sd_models
 from modules import sd_vae as sd_vae_module
 from modules_forge import main_thread
+from backend import args as backend_args
 
 
 ui_checkpoint: gr.Dropdown = None
@@ -64,6 +65,10 @@ def make_checkpoint_manager_ui():
 
 
 def model_load_entry():
+    backend_args.dynamic_args.update(dict(
+        forge_unet_storage_dtype=forge_unet_storage_dtype_options[shared.opts.forge_unet_storage_dtype]
+    ))
+
     sd_models.load_model()
     return
 

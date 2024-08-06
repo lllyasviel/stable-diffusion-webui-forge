@@ -2,6 +2,8 @@ import os
 import torch
 import logging
 import importlib
+
+import backend.args
 import huggingface_guess
 
 from diffusers import DiffusionPipeline
@@ -57,9 +59,16 @@ def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_p
 
             return model
         if cls_name == 'UNet2DConditionModel':
+            unet_config = guess.unet_config.copy()
+
+            unet_storage_dtype = backend.args.dynamic_args.get('forge_unet_storage_dtype')
+
+            if unet_storage_dtype is not None:
+                unet_config['dtype'] = unet_storage_dtype
+
             with using_forge_operations():
-                model = IntegratedUNet2DConditionModel.from_config(guess.unet_config)
-                model._internal_dict = guess.unet_config
+                model = IntegratedUNet2DConditionModel.from_config(unet_config)
+                model._internal_dict = unet_config
 
             load_state_dict(model, state_dict)
             return model

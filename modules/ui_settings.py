@@ -7,6 +7,7 @@ from modules.shared import opts
 from modules.ui_components import FormRow
 from modules.ui_gradio_extensions import reload_javascript
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from modules_forge.main_entry import make_checkpoint_manager_ui
 
 
 def get_value_for_setting(key):
@@ -125,7 +126,7 @@ class UiSettings:
 
             self.result = gr.HTML(elem_id="settings_result")
 
-            self.quicksettings_names = opts.quicksettings_list
+            self.quicksettings_names = opts.quick_setting_list
             self.quicksettings_names = {x: i for i, x in enumerate(self.quicksettings_names) if x != 'quicksettings'}
 
             self.quicksettings_list = []
@@ -289,6 +290,7 @@ class UiSettings:
 
     def add_quicksettings(self):
         with gr.Row(elem_id="quicksettings", variant="compact"):
+            make_checkpoint_manager_ui()
             for _i, k, _item in sorted(self.quicksettings_list, key=lambda x: self.quicksettings_names.get(x[1], x[0])):
                 component = create_setting_component(k, is_quicksettings=True)
                 self.component_dict[k] = component

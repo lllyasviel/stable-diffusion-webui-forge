@@ -1658,3 +1658,7 @@ body.resizing .resize-handle {
     visibility: visible;
     width: auto;
 }
+
+.forge_vae_selection {
+    min-width: unset !important;
+}

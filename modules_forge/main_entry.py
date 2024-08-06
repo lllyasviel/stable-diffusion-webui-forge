@@ -5,7 +5,7 @@ from modules_forge import main_thread
 
 
 sd_model_checkpoint: gr.Dropdown = None
-sd_model_checkpoint_current_selection: str = shared.opts.sd_model_checkpoint_default
+sd_model_checkpoint_current_selection: str = shared.opts.sd_model_checkpoint
 if sd_model_checkpoint_current_selection is None:
     sd_models.list_models()
     if len(sd_models.checkpoints_list) > 0:
@@ -30,7 +30,7 @@ def checkpoint_change(ckpt_name):
     sd_model_checkpoint_current_selection = ckpt_name
 
     print(f'Checkpoint Selected: {ckpt_name}')
-    shared.opts.set('sd_model_checkpoint_default', ckpt_name)
+    shared.opts.set('sd_model_checkpoint', ckpt_name)
     shared.opts.save(shared.config_filename)
 
     sd_models.load_model(checkpoint_name=ckpt_name)

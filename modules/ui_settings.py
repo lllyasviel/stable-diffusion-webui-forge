@@ -42,6 +42,9 @@ def create_setting_component(key, is_quicksettings=False):
 
     elem_id = f"setting_{key}"
 
+    if comp == gr.State:
+        return gr.State(fun())
+
     if info.refresh is not None:
         if is_quicksettings:
             res = comp(label=info.label, value=fun(), elem_id=elem_id, **(args or {}))

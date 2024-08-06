@@ -41,9 +41,6 @@ def make_checkpoint_manager_ui():
 
 
 def checkpoint_change(ckpt_name):
-    global sd_model_checkpoint_current_selection
-    sd_model_checkpoint_current_selection = ckpt_name
-
     print(f'Checkpoint Selected: {ckpt_name}')
     shared.opts.set('sd_model_checkpoint', ckpt_name)
     shared.opts.save(shared.config_filename)

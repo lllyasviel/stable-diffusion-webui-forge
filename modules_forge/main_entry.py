@@ -32,7 +32,7 @@ def make_checkpoint_manager_ui():
         label="VAE",
         **sd_vae_args()
     )
-    ui_common.create_refresh_button(sd_model_checkpoint, shared_items.refresh_vae_list, sd_vae_args, f"forge_refresh_vae")
+    ui_common.create_refresh_button(sd_vae, shared_items.refresh_vae_list, sd_vae_args, f"forge_refresh_vae")
 
     return
 

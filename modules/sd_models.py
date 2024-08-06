@@ -132,13 +132,13 @@ class CheckpointInfo:
         return self.shorthash
 
 
-try:
-    # this silences the annoying "Some weights of the model checkpoint were not used when initializing..." message at start.
-    from transformers import logging, CLIPModel  # noqa: F401
-
-    logging.set_verbosity_error()
-except Exception:
-    pass
+# try:
+#     # this silences the annoying "Some weights of the model checkpoint were not used when initializing..." message at start.
+#     from transformers import logging, CLIPModel  # noqa: F401
+#
+#     logging.set_verbosity_error()
+# except Exception:
+#     pass
 
 
 def setup_model():

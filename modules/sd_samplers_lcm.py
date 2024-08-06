@@ -13,7 +13,7 @@ class LCMCompVisDenoiser(DiscreteEpsDDPMDenoiser):
         original_timesteps = 50     # LCM Original Timesteps (default=50, for current version of LCM)
         self.skip_steps = timesteps // original_timesteps
 
-        alphas_cumprod_valid = torch.zeros((original_timesteps), dtype=torch.float32, device=model.device)
+        alphas_cumprod_valid = torch.zeros((original_timesteps), dtype=torch.float32)
         for x in range(original_timesteps):
             alphas_cumprod_valid[original_timesteps - 1 - x] = model.alphas_cumprod[timesteps - 1 - x * self.skip_steps]
 

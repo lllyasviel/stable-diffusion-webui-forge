@@ -301,7 +301,7 @@ def sampling_function_inner(model, x, timestep, uncond, cond, cond_scale, model_
 
 
 def sampling_function(self, denoiser_params, cond_scale, cond_composition):
-    unet_patcher = self.inner_model.forge_objects.unet
+    unet_patcher = self.inner_model.inner_model.forge_objects.unet
     model = unet_patcher.model
     control = unet_patcher.controlnet_linked_list
     extra_concat_condition = unet_patcher.extra_concat_condition

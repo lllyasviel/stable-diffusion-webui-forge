@@ -53,6 +53,7 @@ class StableDiffusion(ForgeDiffusionEngine):
         # WebUI Legacy
         self.is_sd1 = True
         self.first_stage_model = vae.first_stage_model
+        self.alphas_cumprod = unet.model.predictor.alphas_cumprod
 
     def set_clip_skip(self, clip_skip):
         self.text_processing_engine.clip_skip = clip_skip

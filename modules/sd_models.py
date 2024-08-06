@@ -607,7 +607,7 @@ def reload_model_weights(sd_model=None, info=None, forced_reload=False):
 
 
 def unload_model_weights(sd_model=None, info=None):
-    return sd_model
+    pass
 
 
 def apply_token_merging(sd_model, token_merging_ratio):

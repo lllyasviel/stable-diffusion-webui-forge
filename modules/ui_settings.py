@@ -330,8 +330,8 @@ class UiSettings:
         button_set_checkpoint.click(
             fn=button_set_checkpoint_change,
             _js="function(v){ var res = desiredCheckpointName; desiredCheckpointName = ''; return [res || v, null]; }",
-            inputs=[main_entry.sd_model_checkpoint, self.dummy_component],
-            outputs=[main_entry.sd_model_checkpoint, self.text_settings],
+            inputs=[main_entry.ui_checkpoint, self.dummy_component],
+            outputs=[main_entry.ui_checkpoint, self.text_settings],
         )
 
         component_keys = [k for k in opts.data_labels.keys() if k in self.component_dict]

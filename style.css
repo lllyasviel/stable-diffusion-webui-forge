@@ -438,7 +438,8 @@ div.toprow-compact-tools{
     box-shadow: none;
     background: none;
 }
-#quicksettings > div.gradio-dropdown{
+
+#quicksettings > div.model_selection{
     min-width: 24em !important;
 }
 

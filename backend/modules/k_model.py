@@ -1,6 +1,6 @@
 import torch
 
-from backend import memory_management, attention
+from backend import memory_management, attention, operations
 from backend.modules.k_prediction import k_prediction_from_diffusers_scheduler
 
 
@@ -10,6 +10,11 @@ class KModel(torch.nn.Module):
 
         self.storage_dtype = storage_dtype
         self.computation_dtype = computation_dtype
+
+        need_manual_cast = self.storage_dtype != self.computation_dtype
+        operations.shift_manual_cast(model, enabled=need_manual_cast)
+
+        print(f'K-Model Created: {dict(storage_dtype=storage_dtype, computation_dtype=computation_dtype, manual_cast=need_manual_cast)}')
 
         self.diffusion_model = model
         self.predictor = k_prediction_from_diffusers_scheduler(diffusers_scheduler)

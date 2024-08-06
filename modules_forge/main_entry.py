@@ -6,13 +6,6 @@ from modules_forge import main_thread
 
 
 sd_model_checkpoint: gr.Dropdown = None
-sd_model_checkpoint_current_selection: str = shared.opts.sd_model_checkpoint
-if sd_model_checkpoint_current_selection is None:
-    sd_models.list_models()
-    if len(sd_models.checkpoints_list) > 0:
-        sd_model_checkpoint_current_selection = next(iter(sd_models.checkpoints_list.keys()))
-
-
 sd_vae: gr.Dropdown = None
 CLIP_stop_at_last_layers: gr.Slider = None
 
@@ -20,9 +13,15 @@ CLIP_stop_at_last_layers: gr.Slider = None
 def make_checkpoint_manager_ui():
     global sd_model_checkpoint, sd_vae, CLIP_stop_at_last_layers
 
+    if shared.opts.sd_model_checkpoint in [None, 'None', 'none', '']:
+        if len(sd_models.checkpoints_list) == 0:
+            sd_models.list_models()
+        if len(sd_models.checkpoints_list) > 0:
+            shared.opts.set('sd_model_checkpoint', next(iter(sd_models.checkpoints_list.keys())))
+
     sd_model_checkpoint_args = lambda: {"choices": shared_items.list_checkpoint_tiles(shared.opts.sd_checkpoint_dropdown_use_short)}
     sd_model_checkpoint = gr.Dropdown(
-        value=sd_model_checkpoint_current_selection,
+        value=shared.opts.sd_model_checkpoint,
         label="Checkpoint",
         **sd_model_checkpoint_args()
     )

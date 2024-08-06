@@ -48,7 +48,7 @@ def checkpoint_change(ckpt_name):
     shared.opts.set('sd_model_checkpoint', ckpt_name)
     shared.opts.save(shared.config_filename)
 
-    sd_models.load_model(checkpoint_name=ckpt_name)
+    sd_models.load_model()
     return
 
 

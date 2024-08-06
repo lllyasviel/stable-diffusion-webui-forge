@@ -943,12 +943,12 @@ def create_ui():
         demo.load(fn=update_image_cfg_scale_visibility, inputs=[], outputs=[image_cfg_scale])
 
         modelmerger_ui.setup_ui(dummy_component=dummy_component, sd_model_checkpoint_component=settings.component_dict['sd_model_checkpoint'])
+        
+        forge_main_entry()
 
     if ui_settings_from_file != loadsave.ui_settings:
         loadsave.dump_defaults()
     demo.ui_loadsave = loadsave
-
-    forge_main_entry()
 
     return demo
 

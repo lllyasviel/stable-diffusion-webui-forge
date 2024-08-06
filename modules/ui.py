@@ -24,7 +24,6 @@ from modules.shared import opts, cmd_opts
 import modules.infotext_utils as parameters_copypaste
 import modules.shared as shared
 from modules import prompt_parser
-from modules.sd_hijack import model_hijack
 from modules.infotext_utils import image_from_url_text, PasteField
 from modules_forge.forge_canvas.canvas import ForgeCanvas, canvas_head
 

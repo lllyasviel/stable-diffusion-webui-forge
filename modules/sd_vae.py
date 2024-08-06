@@ -262,11 +262,11 @@ def reload_vae_weights(sd_model=None, vae_file=unspecified):
     if loaded_vae_file == vae_file:
         return
 
-    sd_hijack.model_hijack.undo_hijack(sd_model)
+    # sd_hijack.model_hijack.undo_hijack(sd_model)
 
     load_vae(sd_model, vae_file, vae_source)
 
-    sd_hijack.model_hijack.hijack(sd_model)
+    # sd_hijack.model_hijack.hijack(sd_model)
 
     script_callbacks.model_loaded_callback(sd_model)
 

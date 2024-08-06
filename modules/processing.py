@@ -18,7 +18,6 @@ from typing import Any
 import modules.sd_hijack
 from modules import devices, prompt_parser, masking, sd_samplers, lowvram, infotext_utils, extra_networks, sd_vae_approx, scripts, sd_samplers_common, sd_unet, errors, rng, profiling
 from modules.rng import slerp # noqa: F401
-from modules.sd_hijack import model_hijack
 from modules.sd_samplers_common import images_tensor_to_samples, decode_first_stage, approximation_indexes
 from modules.shared import opts, cmd_opts, state
 import modules.shared as shared
@@ -451,7 +450,7 @@ class StableDiffusionProcessing:
         for cache in caches:
             if cache[0] is not None and cached_params == cache[0]:
                 if len(cache) > 2:
-                    modules.sd_hijack.model_hijack.extra_generation_params.update(cache[2])
+                    shared.sd_model.extra_generation_params.update(cache[2])
                 return cache[1]
 
         cache = caches[0]
@@ -465,7 +464,7 @@ class StableDiffusionProcessing:
 
             last_extra_generation_params = backend.text_processing.classic_engine.last_extra_generation_params.copy()
 
-            modules.sd_hijack.model_hijack.extra_generation_params.update(last_extra_generation_params)
+            shared.sd_model.extra_generation_params.update(last_extra_generation_params)
 
             if len(cache) > 2:
                 cache[2] = last_extra_generation_params
@@ -835,7 +834,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     p.sd_vae_hash = sd_vae.get_loaded_vae_hash()
 
     apply_circular_forge(p.sd_model, p.tiling)
-    modules.sd_hijack.model_hijack.clear_comments()
+    p.sd_model.comments = []
+    p.sd_model.extra_generation_params = {}
 
     p.fill_fields_from_opts()
     p.setup_prompts()
@@ -911,7 +911,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
             p.setup_conds()
 
-            p.extra_generation_params.update(model_hijack.extra_generation_params)
+            p.extra_generation_params.update(p.sd_model.extra_generation_params)
 
             # params.txt should be saved after scripts.process_batch, since the
             # infotext could be modified by that callback
@@ -922,7 +922,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     processed = Processed(p, [])
                     file.write(processed.infotext(p, 0))
 
-            for comment in model_hijack.comments:
+            for comment in p.sd_model.comments:
                 p.comment(comment)
 
             if p.n_iter > 1:
@@ -1628,7 +1628,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
                     self.mask_for_overlay = None
                     self.inpaint_full_res = False
                     massage = 'Unable to perform "Inpaint Only mask" because mask is blank, switch to img2img mode.'
-                    model_hijack.comments.append(massage)
+                    self.sd_model.comments.append(massage)
                     logging.info(massage)
             else:
                 image_mask = images.resize_image(self.resize_mode, image_mask, self.width, self.height)

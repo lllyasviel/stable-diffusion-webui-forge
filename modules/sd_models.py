@@ -562,6 +562,8 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     sd_model = forge_loader(state_dict)
     timer.record("forge model load")
 
+    sd_model.extra_generation_params = {}
+    sd_model.comments = []
     sd_model.sd_checkpoint_info = checkpoint_info
     sd_model.filename = checkpoint_info.filename
     sd_model.sd_model_hash = checkpoint_info.calculate_shorthash()

@@ -8,7 +8,7 @@ import platform
 
 from enum import Enum
 from backend import stream
-from backend.args import args
+from backend.args import args, dynamic_args
 
 
 class VRAMState(Enum):
@@ -566,7 +566,7 @@ def unet_inital_load_device(parameters, dtype):
 
 
 def unet_dtype(device=None, model_params=0, supported_dtypes=[torch.float16, torch.bfloat16, torch.float32]):
-    unet_storage_dtype_overwrite = args.dynamic_args.get('forge_unet_storage_dtype')
+    unet_storage_dtype_overwrite = dynamic_args.get('forge_unet_storage_dtype')
 
     if unet_storage_dtype_overwrite is not None:
         return unet_storage_dtype_overwrite

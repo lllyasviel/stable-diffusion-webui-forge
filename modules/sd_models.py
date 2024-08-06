@@ -531,7 +531,6 @@ def get_obj_from_str(string, reload=False):
 
 @torch.no_grad()
 def load_model(checkpoint_info=None, already_loaded_state_dict=None):
-    from modules import sd_hijack
     checkpoint_info = checkpoint_info or select_checkpoint()
 
     timer = Timer()

@@ -438,7 +438,8 @@ div.toprow-compact-tools{
     box-shadow: none;
     background: none;
 }
-#quicksettings > div.gradio-dropdown{
+
+#quicksettings > div.model_selection{
     min-width: 24em !important;
 }
 
@@ -1657,8 +1658,4 @@ body.resizing .resize-handle {
 .extra-network-tree .tree-list-content:hover .button-row {
     visibility: visible;
     width: auto;
-}
-
-.forge_vae_selection {
-    min-width: unset !important;
 }

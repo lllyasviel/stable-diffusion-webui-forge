@@ -955,8 +955,8 @@
   "pre_tokenizer": {
     "type": "Metaspace",
     "replacement": "▁",
-    "prepend_scheme": "always",
-    "split": true
+    "add_prefix_space": true,
+    "prepend_scheme": "first"
   },
   "post_processor": {
     "type": "TemplateProcessing",
@@ -1015,8 +1015,8 @@
   "decoder": {
     "type": "Metaspace",
     "replacement": "▁",
-    "prepend_scheme": "always",
-    "split": true
+    "add_prefix_space": true,
+    "prepend_scheme": "always"
   },
   "model": {
     "type": "Unigram",

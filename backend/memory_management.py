@@ -11,6 +11,9 @@ from backend import stream
 from backend.args import args, dynamic_args
 
 
+cpu = torch.device('cpu')
+
+
 class VRAMState(Enum):
     DISABLED = 0  # No vram present: no need to move models to vram
     NO_VRAM = 1  # Very low vram: enable all the options to save vram

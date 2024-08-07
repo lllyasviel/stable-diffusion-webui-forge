@@ -62,8 +62,8 @@ def initialize_forge():
 
     from modules_forge.shared import diffusers_dir
 
-    if 'TRANSFORMERS_CACHE' not in os.environ:
-        os.environ['TRANSFORMERS_CACHE'] = diffusers_dir
+    # if 'TRANSFORMERS_CACHE' not in os.environ:
+    #     os.environ['TRANSFORMERS_CACHE'] = diffusers_dir
 
     if 'HF_HOME' not in os.environ:
         os.environ['HF_HOME'] = diffusers_dir

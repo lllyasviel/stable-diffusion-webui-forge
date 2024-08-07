@@ -5,7 +5,7 @@ from backend.misc import image_resize
 from backend import memory_management, state_dict, utils
 from backend.nn.cnets import cldm, t2i_adapter
 from backend.patcher.base import ModelPatcher
-from backend.operations import using_forge_operations, ForgeOperationsWithManualCast, main_stream_worker, weights_manual_cast
+from backend.operations import using_forge_operations, ForgeOperations, main_stream_worker, weights_manual_cast
 
 
 def compute_controlnet_weighting(control, cnet):
@@ -282,7 +282,7 @@ class ControlNet(ControlBase):
         super().cleanup()
 
 
-class ControlLoraOps(ForgeOperationsWithManualCast):
+class ControlLoraOps(ForgeOperations):
     class Linear(torch.nn.Module):
         def __init__(self, in_features: int, out_features: int, bias: bool = True, device=None, dtype=None) -> None:
             super().__init__()

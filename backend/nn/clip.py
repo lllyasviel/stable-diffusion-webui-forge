@@ -1,12 +1,13 @@
 import torch
 
-from transformers import CLIPTextModel, CLIPTextConfig
-
 
 class IntegratedCLIP(torch.nn.Module):
-    def __init__(self, config: CLIPTextConfig):
+    def __init__(self, cls, config, add_text_projection=False):
         super().__init__()
-        self.transformer = CLIPTextModel(config)
-        embed_dim = config.hidden_size
-        self.transformer.text_projection = torch.nn.Linear(embed_dim, embed_dim, bias=False)
-        self.transformer.text_projection.weight.copy_(torch.eye(embed_dim))
+        self.transformer = cls(config)
+        self.logit_scale = torch.nn.Parameter(torch.tensor(4.6055))
+
+        if add_text_projection:
+            embed_dim = config.hidden_size
+            self.transformer.text_projection = torch.nn.Linear(embed_dim, embed_dim, bias=False)
+            self.transformer.text_projection.weight.copy_(torch.eye(embed_dim))

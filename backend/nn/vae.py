@@ -4,11 +4,14 @@ from backend.attention import attention_function_single_head_spatial
 from diffusers.configuration_utils import ConfigMixin, register_to_config
 from torch import nn
 
+
 def nonlinearity(x):
     return x * torch.sigmoid(x)
 
+
 def Normalize(in_channels, num_groups=32):
     return nn.GroupNorm(num_groups=num_groups, num_channels=in_channels, eps=1e-6, affine=True)
+
 
 class DiagonalGaussianDistribution:
     def __init__(self, parameters, deterministic=False):
@@ -27,6 +30,7 @@ class DiagonalGaussianDistribution:
 
     def mode(self):
         return self.mean
+
 
 class Upsample(nn.Module):
     def __init__(self, in_channels, with_conv):
@@ -52,6 +56,7 @@ class Upsample(nn.Module):
             x = self.conv(x)
         return x
 
+
 class Downsample(nn.Module):
     def __init__(self, in_channels, with_conv):
         super().__init__()
@@ -68,8 +73,9 @@ class Downsample(nn.Module):
             x = torch.nn.functional.avg_pool2d(x, kernel_size=2, stride=2)
         return x
 
+
 class ResnetBlock(nn.Module):
-    def __init__(self, in_channels, out_channels=None, conv_shortcut=False, dropout, temb_channels=512):
+    def __init__(self, *, in_channels, out_channels=None, conv_shortcut=False, dropout, temb_channels=512):
         super().__init__()
         self.in_channels = in_channels
         out_channels = in_channels if out_channels is None else out_channels
@@ -108,6 +114,7 @@ class ResnetBlock(nn.Module):
                 x = self.nin_shortcut(x)
         return x + h
 
+
 class AttnBlock(nn.Module):
     def __init__(self, in_channels):
         super().__init__()
@@ -129,8 +136,9 @@ class AttnBlock(nn.Module):
         h_ = self.proj_out(h_)
         return x + h_
 
+
 class Encoder(nn.Module):
-    def __init__(self, ch, out_ch, ch_mult=(1, 2, 4, 8), num_res_blocks, attn_resolutions, dropout=0.0, resamp_with_conv=True, in_channels, resolution, z_channels, double_z=True, use_linear_attn=False, attn_type="vanilla", **kwargs):
+    def __init__(self, *, ch, out_ch, ch_mult=(1, 2, 4, 8), num_res_blocks, attn_resolutions, dropout=0.0, resamp_with_conv=True, in_channels, resolution, z_channels, double_z=True, use_linear_attn=False, attn_type="vanilla", **kwargs):
         super().__init__()
         self.ch = ch
         self.temb_ch = 0
@@ -191,8 +199,9 @@ class Encoder(nn.Module):
         h = self.conv_out(h)
         return h
 
+
 class Decoder(nn.Module):
-    def __init__(self, ch, out_ch, ch_mult=(1, 2, 4, 8), num_res_blocks, attn_resolutions, dropout=0.0, resamp_with_conv=True, in_channels, resolution, z_channels, give_pre_end=False, tanh_out=False, use_linear_attn=False, **kwargs):
+    def __init__(self, *, ch, out_ch, ch_mult=(1, 2, 4, 8), num_res_blocks, attn_resolutions, dropout=0.0, resamp_with_conv=True, in_channels, resolution, z_channels, give_pre_end=False, tanh_out=False, use_linear_attn=False, **kwargs):
         super().__init__()
         self.ch = ch
         self.temb_ch = 0
@@ -260,6 +269,7 @@ class Decoder(nn.Module):
         if self.tanh_out:
             h = torch.tanh(h)
         return h
+
 
 class IntegratedAutoencoderKL(nn.Module, ConfigMixin):
     config_name = 'config.json'

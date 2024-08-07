@@ -110,6 +110,9 @@ def compile_conditions(cond):
         )
     )
 
+    if 'guidance' in cond:
+        result['model_conds']['guidance'] = Condition(cond['guidance'])
+
     return [result, ]
 
 

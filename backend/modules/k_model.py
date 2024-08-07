@@ -5,7 +5,7 @@ from backend.modules.k_prediction import k_prediction_from_diffusers_scheduler
 
 
 class KModel(torch.nn.Module):
-    def __init__(self, model, diffusers_scheduler, storage_dtype, computation_dtype):
+    def __init__(self, model, diffusers_scheduler, storage_dtype, computation_dtype, k_predictor=None):
         super().__init__()
 
         self.storage_dtype = storage_dtype
@@ -17,7 +17,11 @@ class KModel(torch.nn.Module):
         print(f'K-Model Created: {dict(storage_dtype=storage_dtype, computation_dtype=computation_dtype, manual_cast=need_manual_cast)}')
 
         self.diffusion_model = model
-        self.predictor = k_prediction_from_diffusers_scheduler(diffusers_scheduler)
+
+        if k_predictor is None:
+            self.predictor = k_prediction_from_diffusers_scheduler(diffusers_scheduler)
+        else:
+            self.predictor = k_predictor
 
     def apply_model(self, x, t, c_concat=None, c_crossattn=None, control=None, transformer_options={}, **kwargs):
         sigma = t

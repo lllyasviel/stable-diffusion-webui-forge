@@ -228,7 +228,7 @@ class PredictionFlow(AbstractPrediction):
 
 
 class PredictionFlux(AbstractPrediction):
-    def __init__(self, sigma_data=1.0, prediction_type='eps', shift=1.0, timesteps=10000):
+    def __init__(self, sigma_data=1.0, prediction_type='const', shift=1.15, timesteps=10000):
         super().__init__(sigma_data=sigma_data, prediction_type=prediction_type)
         self.shift = shift
         ts = self.sigma((torch.arange(1, timesteps + 1, 1) / timesteps))

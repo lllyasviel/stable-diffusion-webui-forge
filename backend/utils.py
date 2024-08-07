@@ -1,6 +1,20 @@
 import torch
+import os
+import json
 import safetensors.torch
 import backend.misc.checkpoint_pickle
+
+
+def read_arbitrary_config(directory):
+    config_path = os.path.join(directory, 'config.json')
+
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"No config.json file found in the directory: {directory}")
+
+    with open(config_path, 'rt', encoding='utf-8') as file:
+        config_data = json.load(file)
+
+    return config_data
 
 
 def load_torch_file(ckpt, safe_load=False, device=None):

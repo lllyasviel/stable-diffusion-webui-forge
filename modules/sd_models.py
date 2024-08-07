@@ -11,6 +11,7 @@ import safetensors.torch
 from omegaconf import OmegaConf, ListConfig
 from urllib import request
 import gc
+import contextlib
 
 from modules import paths, shared, modelloader, devices, script_callbacks, sd_vae, sd_disable_initialization, errors, hashes, sd_models_config, sd_unet, sd_models_xl, cache, extra_networks, processing, lowvram, sd_hijack, patches
 from modules.shared import opts, cmd_opts
@@ -301,8 +302,8 @@ def get_checkpoint_state_dict(checkpoint_info: CheckpointInfo, timer):
     return res
 
 
-class SkipWritingToConfig:
-    pass
+def SkipWritingToConfig():
+    return contextlib.nullcontext()
 
 
 def check_fp8(model):

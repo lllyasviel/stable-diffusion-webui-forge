@@ -89,12 +89,10 @@ def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_p
             state_dict_size = memory_management.state_dict_size(state_dict)
             ini_dtype = memory_management.unet_dtype(model_params=state_dict_size)
             ini_device = memory_management.unet_inital_load_device(parameters=state_dict_size, dtype=ini_dtype)
+            to_args = dict(device=ini_device, dtype=ini_dtype)
 
-            unet_config['dtype'] = ini_dtype
-            unet_config['device'] = ini_device
-
-            with using_forge_operations(device=ini_device, dtype=ini_dtype):
-                model = IntegratedUNet2DConditionModel.from_config(unet_config)
+            with using_forge_operations(**to_args):
+                model = IntegratedUNet2DConditionModel.from_config(unet_config).to(**to_args)
                 model._internal_dict = unet_config
 
             load_state_dict(model, state_dict)

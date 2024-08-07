@@ -1,6 +1,5 @@
 import math
 import torch
-
 from torch import nn
 from einops import rearrange, repeat
 from backend.attention import attention_function
@@ -56,12 +55,9 @@ def apply_control(h, control, name):
 def timestep_embedding(timesteps, dim, max_period=10000, repeat_only=False):
     # Consistent with Kohya to reduce differences between model training and inference.
     # Will be 0.005% slower than ComfyUI but Forge outweigh image quality than speed.
-
     if not repeat_only:
         half = dim // 2
-        freqs = torch.exp(
-            -math.log(max_period) * torch.arange(start=0, end=half, dtype=torch.float32) / half
-        ).to(device=timesteps.device)
+        freqs = torch.exp(-math.log(max_period) * torch.arange(start=0, end=half, dtype=torch.float32) / half).to(device=timesteps.device)
         args = timesteps[:, None].float() * freqs[None]
         embedding = torch.cat([torch.cos(args), torch.sin(args)], dim=-1)
         if dim % 2:
@@ -78,11 +74,9 @@ class TimestepBlock(nn.Module):
 class TimestepEmbedSequential(nn.Sequential, TimestepBlock):
     def forward(self, x, emb, context=None, transformer_options={}, output_shape=None):
         block_inner_modifiers = transformer_options.get("block_inner_modifiers", [])
-
         for layer_index, layer in enumerate(self):
             for modifier in block_inner_modifiers:
                 x = modifier(x, 'before', layer, layer_index, self, transformer_options)
-
             if isinstance(layer, TimestepBlock):
                 x = layer(x, emb, transformer_options)
             elif isinstance(layer, SpatialTransformer):
@@ -93,7 +87,6 @@ class TimestepEmbedSequential(nn.Sequential, TimestepBlock):
                 x = layer(x, output_shape=output_shape)
             else:
                 x = layer(x)
-
             for modifier in block_inner_modifiers:
                 x = modifier(x, 'after', layer, layer_index, self, transformer_options)
         return x
@@ -109,9 +102,9 @@ class Timestep(nn.Module):
 
 
 class GEGLU(nn.Module):
-    def __init__(self, dim_in, dim_out, dtype=None, device=None):
+    def __init__(self, dim_in, dim_out):
         super().__init__()
-        self.proj = nn.Linear(dim_in, dim_out * 2, dtype=dtype, device=device)
+        self.proj = nn.Linear(dim_in, dim_out * 2)
 
     def forward(self, x):
         x, gate = self.proj(x).chunk(2, dim=-1)
@@ -119,19 +112,18 @@ class GEGLU(nn.Module):
 
 
 class FeedForward(nn.Module):
-    def __init__(self, dim, dim_out=None, mult=4, glu=False, dropout=0., dtype=None, device=None):
+    def __init__(self, dim, dim_out=None, mult=4, glu=False, dropout=0.):
         super().__init__()
         inner_dim = int(dim * mult)
         dim_out = default(dim_out, dim)
         project_in = nn.Sequential(
-            nn.Linear(dim, inner_dim, dtype=dtype, device=device),
+            nn.Linear(dim, inner_dim),
             nn.GELU()
-        ) if not glu else GEGLU(dim, inner_dim, dtype=dtype, device=device)
-
+        ) if not glu else GEGLU(dim, inner_dim)
         self.net = nn.Sequential(
             project_in,
             nn.Dropout(dropout),
-            nn.Linear(inner_dim, dim_out, dtype=dtype, device=device)
+            nn.Linear(inner_dim, dim_out)
         )
 
     def forward(self, x):
@@ -139,62 +131,48 @@ class FeedForward(nn.Module):
 
 
 class CrossAttention(nn.Module):
-    def __init__(self, query_dim, context_dim=None, heads=8, dim_head=64, dropout=0., dtype=None, device=None):
+    def __init__(self, query_dim, context_dim=None, heads=8, dim_head=64, dropout=0.):
         super().__init__()
         inner_dim = dim_head * heads
         context_dim = default(context_dim, query_dim)
-
         self.heads = heads
         self.dim_head = dim_head
-
-        self.to_q = nn.Linear(query_dim, inner_dim, bias=False, dtype=dtype, device=device)
-        self.to_k = nn.Linear(context_dim, inner_dim, bias=False, dtype=dtype, device=device)
-        self.to_v = nn.Linear(context_dim, inner_dim, bias=False, dtype=dtype, device=device)
-        self.to_out = nn.Sequential(nn.Linear(inner_dim, query_dim, dtype=dtype, device=device), nn.Dropout(dropout))
+        self.to_q = nn.Linear(query_dim, inner_dim, bias=False)
+        self.to_k = nn.Linear(context_dim, inner_dim, bias=False)
+        self.to_v = nn.Linear(context_dim, inner_dim, bias=False)
+        self.to_out = nn.Sequential(nn.Linear(inner_dim, query_dim), nn.Dropout(dropout))
 
     def forward(self, x, context=None, value=None, mask=None, transformer_options={}):
         q = self.to_q(x)
         context = default(context, x)
         k = self.to_k(context)
-
         if value is not None:
             v = self.to_v(value)
             del value
         else:
             v = self.to_v(context)
-
         out = attention_function(q, k, v, self.heads, mask)
         return self.to_out(out)
 
 
 class BasicTransformerBlock(nn.Module):
     def __init__(self, dim, n_heads, d_head, dropout=0., context_dim=None, gated_ff=True, checkpoint=True, ff_in=False,
-                 inner_dim=None, disable_self_attn=False, dtype=None, device=None):
+                 inner_dim=None, disable_self_attn=False):
         super().__init__()
-
         self.ff_in = ff_in or inner_dim is not None
-
         if inner_dim is None:
             inner_dim = dim
-
         self.is_res = inner_dim == dim
-
         if self.ff_in:
-            self.norm_in = nn.LayerNorm(dim, dtype=dtype, device=device)
-            self.ff_in = FeedForward(dim, dim_out=inner_dim, dropout=dropout, glu=gated_ff, dtype=dtype, device=device)
-
+            self.norm_in = nn.LayerNorm(dim)
+            self.ff_in = FeedForward(dim, dim_out=inner_dim, dropout=dropout, glu=gated_ff)
         self.disable_self_attn = disable_self_attn
-        self.attn1 = CrossAttention(query_dim=inner_dim, heads=n_heads, dim_head=d_head, dropout=dropout,
-                                    context_dim=context_dim if self.disable_self_attn else None, dtype=dtype,
-                                    device=device)
-        self.norm1 = nn.LayerNorm(inner_dim, dtype=dtype, device=device)
-
-        self.attn2 = CrossAttention(query_dim=inner_dim, context_dim=context_dim,
-                                    heads=n_heads, dim_head=d_head, dropout=dropout, dtype=dtype, device=device)
-        self.norm2 = nn.LayerNorm(inner_dim, dtype=dtype, device=device)
-
-        self.ff = FeedForward(inner_dim, dim_out=dim, dropout=dropout, glu=gated_ff, dtype=dtype, device=device)
-        self.norm3 = nn.LayerNorm(inner_dim, dtype=dtype, device=device)
+        self.attn1 = CrossAttention(query_dim=inner_dim, heads=n_heads, dim_head=d_head, dropout=dropout, context_dim=context_dim if self.disable_self_attn else None)
+        self.norm1 = nn.LayerNorm(inner_dim)
+        self.attn2 = CrossAttention(query_dim=inner_dim, context_dim=context_dim, heads=n_heads, dim_head=d_head, dropout=dropout)
+        self.norm2 = nn.LayerNorm(inner_dim)
+        self.ff = FeedForward(inner_dim, dim_out=dim, dropout=dropout, glu=gated_ff)
+        self.norm3 = nn.LayerNorm(inner_dim)
         self.checkpoint = checkpoint
         self.n_heads = n_heads
         self.d_head = d_head
@@ -204,13 +182,11 @@ class BasicTransformerBlock(nn.Module):
 
     def _forward(self, x, context=None, transformer_options={}):
         # Stolen from ComfyUI with some modifications
-
         extra_options = {}
         block = transformer_options.get("block", None)
         block_index = transformer_options.get("block_index", 0)
         transformer_patches = {}
         transformer_patches_replace = {}
-
         for k in transformer_options:
             if k == "patches":
                 transformer_patches = transformer_options[k]
@@ -218,23 +194,19 @@ class BasicTransformerBlock(nn.Module):
                 transformer_patches_replace = transformer_options[k]
             else:
                 extra_options[k] = transformer_options[k]
-
         extra_options["n_heads"] = self.n_heads
         extra_options["dim_head"] = self.d_head
-
         if self.ff_in:
             x_skip = x
             x = self.ff_in(self.norm_in(x))
             if self.is_res:
                 x += x_skip
-
         n = self.norm1(x)
         if self.disable_self_attn:
             context_attn1 = context
         else:
             context_attn1 = None
         value_attn1 = None
-
         if "attn1_patch" in transformer_patches:
             patch = transformer_patches["attn1_patch"]
             if context_attn1 is None:
@@ -242,7 +214,6 @@ class BasicTransformerBlock(nn.Module):
             value_attn1 = context_attn1
             for p in patch:
                 n, context_attn1, value_attn1 = p(n, context_attn1, value_attn1, extra_options)
-
         if block is not None:
             transformer_block = (block[0], block[1], block_index)
         else:
@@ -251,7 +222,6 @@ class BasicTransformerBlock(nn.Module):
         block_attn1 = transformer_block
         if block_attn1 not in attn1_replace_patch:
             block_attn1 = block
-
         if block_attn1 in attn1_replace_patch:
             if context_attn1 is None:
                 context_attn1 = n
@@ -263,18 +233,15 @@ class BasicTransformerBlock(nn.Module):
             n = self.attn1.to_out(n)
         else:
             n = self.attn1(n, context=context_attn1, value=value_attn1, transformer_options=extra_options)
-
         if "attn1_output_patch" in transformer_patches:
             patch = transformer_patches["attn1_output_patch"]
             for p in patch:
                 n = p(n, extra_options)
-
         x += n
         if "middle_patch" in transformer_patches:
             patch = transformer_patches["middle_patch"]
             for p in patch:
                 x = p(x, extra_options)
-
         if self.attn2 is not None:
             n = self.norm2(x)
             context_attn2 = context
@@ -284,12 +251,10 @@ class BasicTransformerBlock(nn.Module):
                 value_attn2 = context_attn2
                 for p in patch:
                     n, context_attn2, value_attn2 = p(n, context_attn2, value_attn2, extra_options)
-
             attn2_replace_patch = transformer_patches_replace.get("attn2", {})
             block_attn2 = transformer_block
             if block_attn2 not in attn2_replace_patch:
                 block_attn2 = block
-
             if block_attn2 in attn2_replace_patch:
                 if value_attn2 is None:
                     value_attn2 = context_attn2
@@ -300,21 +265,17 @@ class BasicTransformerBlock(nn.Module):
                 n = self.attn2.to_out(n)
             else:
                 n = self.attn2(n, context=context_attn2, value=value_attn2, transformer_options=extra_options)
-
         if "attn2_output_patch" in transformer_patches:
             patch = transformer_patches["attn2_output_patch"]
             for p in patch:
                 n = p(n, extra_options)
-
         x += n
         x_skip = 0
-
         if self.is_res:
             x_skip = x
         x = self.ff(self.norm3(x))
         if self.is_res:
             x += x_skip
-
         return x
 
 
@@ -322,40 +283,29 @@ class SpatialTransformer(nn.Module):
     def __init__(self, in_channels, n_heads, d_head,
                  depth=1, dropout=0., context_dim=None,
                  disable_self_attn=False, use_linear=False,
-                 use_checkpoint=True, dtype=None, device=None):
+                 use_checkpoint=True):
         super().__init__()
         if exists(context_dim) and not isinstance(context_dim, list):
             context_dim = [context_dim] * depth
         self.in_channels = in_channels
         inner_dim = n_heads * d_head
-        self.norm = nn.GroupNorm(num_groups=32, num_channels=in_channels, eps=1e-6, affine=True, dtype=dtype,
-                                 device=device)
+        self.norm = nn.GroupNorm(num_groups=32, num_channels=in_channels, eps=1e-6, affine=True)
         if not use_linear:
-            self.proj_in = nn.Conv2d(in_channels,
-                                     inner_dim,
-                                     kernel_size=1,
-                                     stride=1,
-                                     padding=0, dtype=dtype, device=device)
+            self.proj_in = nn.Conv2d(in_channels, inner_dim, kernel_size=1, stride=1, padding=0)
         else:
-            self.proj_in = nn.Linear(in_channels, inner_dim, dtype=dtype, device=device)
-
+            self.proj_in = nn.Linear(in_channels, inner_dim)
         self.transformer_blocks = nn.ModuleList(
             [BasicTransformerBlock(inner_dim, n_heads, d_head, dropout=dropout, context_dim=context_dim[d],
-                                   disable_self_attn=disable_self_attn, checkpoint=use_checkpoint, dtype=dtype,
-                                   device=device)
+                                   disable_self_attn=disable_self_attn, checkpoint=use_checkpoint)
              for d in range(depth)]
         )
         if not use_linear:
-            self.proj_out = nn.Conv2d(inner_dim, in_channels,
-                                      kernel_size=1,
-                                      stride=1,
-                                      padding=0, dtype=dtype, device=device)
+            self.proj_out = nn.Conv2d(inner_dim, in_channels, kernel_size=1, stride=1, padding=0)
         else:
-            self.proj_out = nn.Linear(in_channels, inner_dim, dtype=dtype, device=device)
+            self.proj_out = nn.Linear(in_channels, inner_dim)
         self.use_linear = use_linear
 
     def forward(self, x, context=None, transformer_options={}):
-        # note: if no context is given, cross-attention defaults to self-attention
         if not isinstance(context, list):
             context = [context] * len(self.transformer_blocks)
         b, c, h, w = x.shape
@@ -378,14 +328,14 @@ class SpatialTransformer(nn.Module):
 
 
 class Upsample(nn.Module):
-    def __init__(self, channels, use_conv, dims=2, out_channels=None, padding=1, dtype=None, device=None):
+    def __init__(self, channels, use_conv, dims=2, out_channels=None, padding=1):
         super().__init__()
         self.channels = channels
         self.out_channels = out_channels or channels
         self.use_conv = use_conv
         self.dims = dims
         if use_conv:
-            self.conv = conv_nd(dims, self.channels, self.out_channels, 3, padding=padding, dtype=dtype, device=device)
+            self.conv = conv_nd(dims, self.channels, self.out_channels, 3, padding=padding)
 
     def forward(self, x, output_shape=None):
         assert x.shape[1] == self.channels
@@ -399,7 +349,6 @@ class Upsample(nn.Module):
             if output_shape is not None:
                 shape[0] = output_shape[2]
                 shape[1] = output_shape[3]
-
         x = torch.nn.functional.interpolate(x, size=shape, mode="nearest")
         if self.use_conv:
             x = self.conv(x)
@@ -407,7 +356,7 @@ class Upsample(nn.Module):
 
 
 class Downsample(nn.Module):
-    def __init__(self, channels, use_conv, dims=2, out_channels=None, padding=1, dtype=None, device=None):
+    def __init__(self, channels, use_conv, dims=2, out_channels=None, padding=1):
         super().__init__()
         self.channels = channels
         self.out_channels = out_channels or channels
@@ -415,9 +364,7 @@ class Downsample(nn.Module):
         self.dims = dims
         stride = 2 if dims != 3 else (1, 2, 2)
         if use_conv:
-            self.op = conv_nd(
-                dims, self.channels, self.out_channels, 3, stride=stride, padding=padding, dtype=dtype, device=device
-            )
+            self.op = conv_nd(dims, self.channels, self.out_channels, 3, stride=stride, padding=padding)
         else:
             assert self.channels == self.out_channels
             self.op = avg_pool_nd(dims, kernel_size=stride, stride=stride)
@@ -428,24 +375,9 @@ class Downsample(nn.Module):
 
 
 class ResBlock(TimestepBlock):
-    def __init__(
-            self,
-            channels,
-            emb_channels,
-            dropout,
-            out_channels=None,
-            use_conv=False,
-            use_scale_shift_norm=False,
-            dims=2,
-            use_checkpoint=False,
-            up=False,
-            down=False,
-            kernel_size=3,
-            exchange_temb_dims=False,
-            skip_t_emb=False,
-            dtype=None,
-            device=None,
-    ):
+    def __init__(self, channels, emb_channels, dropout, out_channels=None, use_conv=False, use_scale_shift_norm=False,
+                 dims=2, use_checkpoint=False, up=False, down=False, kernel_size=3, exchange_temb_dims=False,
+                 skip_t_emb=False):
         super().__init__()
         self.channels = channels
         self.emb_channels = emb_channels
@@ -455,29 +387,24 @@ class ResBlock(TimestepBlock):
         self.use_checkpoint = use_checkpoint
         self.use_scale_shift_norm = use_scale_shift_norm
         self.exchange_temb_dims = exchange_temb_dims
-
         if isinstance(kernel_size, list):
             padding = [k // 2 for k in kernel_size]
         else:
             padding = kernel_size // 2
-
         self.in_layers = nn.Sequential(
-            nn.GroupNorm(32, channels, dtype=dtype, device=device),
+            nn.GroupNorm(32, channels),
             nn.SiLU(),
-            conv_nd(dims, channels, self.out_channels, kernel_size, padding=padding, dtype=dtype, device=device),
+            conv_nd(dims, channels, self.out_channels, kernel_size, padding=padding),
         )
-
         self.updown = up or down
-
         if up:
-            self.h_upd = Upsample(channels, False, dims, dtype=dtype, device=device)
-            self.x_upd = Upsample(channels, False, dims, dtype=dtype, device=device)
+            self.h_upd = Upsample(channels, False, dims)
+            self.x_upd = Upsample(channels, False, dims)
         elif down:
-            self.h_upd = Downsample(channels, False, dims, dtype=dtype, device=device)
-            self.x_upd = Downsample(channels, False, dims, dtype=dtype, device=device)
+            self.h_upd = Downsample(channels, False, dims)
+            self.x_upd = Downsample(channels, False, dims)
         else:
             self.h_upd = self.x_upd = nn.Identity()
-
         self.skip_t_emb = skip_t_emb
         if self.skip_t_emb:
             self.emb_layers = None
@@ -485,28 +412,20 @@ class ResBlock(TimestepBlock):
         else:
             self.emb_layers = nn.Sequential(
                 nn.SiLU(),
-                nn.Linear(
-                    emb_channels,
-                    2 * self.out_channels if use_scale_shift_norm else self.out_channels, dtype=dtype, device=device
-                ),
+                nn.Linear(emb_channels, 2 * self.out_channels if use_scale_shift_norm else self.out_channels),
             )
         self.out_layers = nn.Sequential(
-            nn.GroupNorm(32, self.out_channels, dtype=dtype, device=device),
+            nn.GroupNorm(32, self.out_channels),
             nn.SiLU(),
             nn.Dropout(p=dropout),
-            conv_nd(dims, self.out_channels, self.out_channels, kernel_size, padding=padding, dtype=dtype,
-                    device=device)
-            ,
+            conv_nd(dims, self.out_channels, self.out_channels, kernel_size, padding=padding)
         )
-
         if self.out_channels == channels:
             self.skip_connection = nn.Identity()
         elif use_conv:
-            self.skip_connection = conv_nd(
-                dims, channels, self.out_channels, kernel_size, padding=padding, dtype=dtype, device=device
-            )
+            self.skip_connection = conv_nd(dims, channels, self.out_channels, kernel_size, padding=padding)
         else:
-            self.skip_connection = conv_nd(dims, channels, self.out_channels, 1, dtype=dtype, device=device)
+            self.skip_connection = conv_nd(dims, channels, self.out_channels, 1)
 
     def forward(self, x, emb, transformer_options={}):
         return checkpoint(self._forward, (x, emb, transformer_options), None, self.use_checkpoint)
@@ -530,7 +449,6 @@ class ResBlock(TimestepBlock):
                 h = self.in_layers[1:](h)
             else:
                 h = self.in_layers(x)
-
         emb_out = None
         if not self.skip_t_emb:
             emb_out = self.emb_layers(emb).type(h.dtype)
@@ -564,64 +482,32 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
     config_name = 'config.json'
 
     @register_to_config
-    def __init__(
-            self,
-            in_channels,
-            model_channels,
-            out_channels,
-            num_res_blocks,
-            dropout=0,
-            channel_mult=(1, 2, 4, 8),
-            conv_resample=True,
-            dims=2,
-            num_classes=None,
-            use_checkpoint=False,
-            num_heads=-1,
-            num_head_channels=-1,
-            use_scale_shift_norm=False,
-            resblock_updown=False,
-            use_spatial_transformer=False,
-            transformer_depth=1,
-            context_dim=None,
-            disable_self_attentions=None,
-            num_attention_blocks=None,
-            disable_middle_self_attn=False,
-            use_linear_in_transformer=False,
-            adm_in_channels=None,
-            transformer_depth_middle=None,
-            transformer_depth_output=None,
-            dtype=None,
-            device=None,
-    ):
+    def __init__(self, in_channels, model_channels, out_channels, num_res_blocks, dropout=0, channel_mult=(1, 2, 4, 8),
+                 conv_resample=True, dims=2, num_classes=None, use_checkpoint=False, num_heads=-1, num_head_channels=-1,
+                 use_scale_shift_norm=False, resblock_updown=False, use_spatial_transformer=False, transformer_depth=1,
+                 context_dim=None, disable_self_attentions=None, num_attention_blocks=None,
+                 disable_middle_self_attn=False, use_linear_in_transformer=False, adm_in_channels=None,
+                 transformer_depth_middle=None, transformer_depth_output=None):
         super().__init__()
-
         if context_dim is not None:
             assert use_spatial_transformer
-
         if num_heads == -1:
             assert num_head_channels != -1
-
         if num_head_channels == -1:
             assert num_heads != -1
-
         self.in_channels = in_channels
         self.model_channels = model_channels
         self.out_channels = out_channels
-
         if isinstance(num_res_blocks, int):
             self.num_res_blocks = len(channel_mult) * [num_res_blocks]
         else:
             self.num_res_blocks = num_res_blocks
-
         if disable_self_attentions is not None:
             assert len(disable_self_attentions) == len(channel_mult)
-
         if num_attention_blocks is not None:
             assert len(num_attention_blocks) == len(self.num_res_blocks)
-
         transformer_depth = transformer_depth[:]
         transformer_depth_output = transformer_depth_output[:]
-
         self.dropout = dropout
         self.channel_mult = channel_mult
         self.conv_resample = conv_resample
@@ -629,44 +515,35 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
         self.use_checkpoint = use_checkpoint
         self.num_heads = num_heads
         self.num_head_channels = num_head_channels
-
         time_embed_dim = model_channels * 4
         self.time_embed = nn.Sequential(
-            nn.Linear(model_channels, time_embed_dim, dtype=dtype, device=device),
+            nn.Linear(model_channels, time_embed_dim),
             nn.SiLU(),
-            nn.Linear(time_embed_dim, time_embed_dim, dtype=dtype, device=device),
+            nn.Linear(time_embed_dim, time_embed_dim),
         )
-
         if self.num_classes is not None:
             if isinstance(self.num_classes, int):
-                self.label_emb = nn.Embedding(num_classes, time_embed_dim, dtype=dtype, device=device)
+                self.label_emb = nn.Embedding(num_classes, time_embed_dim)
             elif self.num_classes == "continuous":
                 self.label_emb = nn.Linear(1, time_embed_dim)
             elif self.num_classes == "sequential":
                 assert adm_in_channels is not None
                 self.label_emb = nn.Sequential(
                     nn.Sequential(
-                        nn.Linear(adm_in_channels, time_embed_dim, dtype=dtype, device=device),
+                        nn.Linear(adm_in_channels, time_embed_dim),
                         nn.SiLU(),
-                        nn.Linear(time_embed_dim, time_embed_dim, dtype=dtype, device=device),
+                        nn.Linear(time_embed_dim, time_embed_dim),
                     )
                 )
             else:
                 raise ValueError('Bad ADM')
-
         self.input_blocks = nn.ModuleList(
-            [
-                TimestepEmbedSequential(
-                    conv_nd(dims, in_channels, model_channels, 3, padding=1, dtype=dtype, device=device)
-                )
-            ]
+            [TimestepEmbedSequential(conv_nd(dims, in_channels, model_channels, 3, padding=1))]
         )
-
         self._feature_size = model_channels
         input_block_chans = [model_channels]
         ch = model_channels
         ds = 1
-
         for level, mult in enumerate(channel_mult):
             for nr in range(self.num_res_blocks[level]):
                 layers = [
@@ -678,8 +555,6 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
                         dims=dims,
                         use_checkpoint=use_checkpoint,
                         use_scale_shift_norm=use_scale_shift_norm,
-                        dtype=dtype,
-                        device=device,
                     )
                 ]
                 ch = mult * model_channels
@@ -694,12 +569,11 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
                         disabled_sa = disable_self_attentions[level]
                     else:
                         disabled_sa = False
-
                     if not exists(num_attention_blocks) or nr < num_attention_blocks[level]:
                         layers.append(SpatialTransformer(
                             ch, num_heads, dim_head, depth=num_transformers, context_dim=context_dim,
                             disable_self_attn=disabled_sa, use_checkpoint=use_checkpoint,
-                            use_linear=use_linear_in_transformer, dtype=dtype, device=device)
+                            use_linear=use_linear_in_transformer)
                         )
                 self.input_blocks.append(TimestepEmbedSequential(*layers))
                 self._feature_size += ch
@@ -717,26 +591,21 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
                             use_checkpoint=use_checkpoint,
                             use_scale_shift_norm=use_scale_shift_norm,
                             down=True,
-                            dtype=dtype,
-                            device=device,
                         )
                         if resblock_updown
                         else Downsample(
-                            ch, conv_resample, dims=dims, out_channels=out_ch, dtype=dtype, device=device,
-                        )
+                            ch, conv_resample, dims=dims, out_channels=out_ch)
                     )
                 )
                 ch = out_ch
                 input_block_chans.append(ch)
                 ds *= 2
                 self._feature_size += ch
-
         if num_head_channels == -1:
             dim_head = ch // num_heads
         else:
             num_heads = ch // num_head_channels
             dim_head = num_head_channels
-
         mid_block = [
             ResBlock(
                 channels=ch,
@@ -746,16 +615,13 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
                 dims=dims,
                 use_checkpoint=use_checkpoint,
                 use_scale_shift_norm=use_scale_shift_norm,
-                dtype=dtype,
-                device=device,
             )]
         if transformer_depth_middle >= 0:
             mid_block += [
                 SpatialTransformer(
                     ch, num_heads, dim_head, depth=transformer_depth_middle, context_dim=context_dim,
                     disable_self_attn=disable_middle_self_attn, use_checkpoint=use_checkpoint,
-                    use_linear=use_linear_in_transformer, dtype=dtype, device=device
-                ),
+                    use_linear=use_linear_in_transformer),
                 ResBlock(
                     channels=ch,
                     emb_channels=time_embed_dim,
@@ -764,12 +630,9 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
                     dims=dims,
                     use_checkpoint=use_checkpoint,
                     use_scale_shift_norm=use_scale_shift_norm,
-                    dtype=dtype,
-                    device=device,
                 )]
         self.middle_block = TimestepEmbedSequential(*mid_block)
         self._feature_size += ch
-
         self.output_blocks = nn.ModuleList([])
         for level, mult in list(enumerate(channel_mult))[::-1]:
             for i in range(self.num_res_blocks[level] + 1):
@@ -783,8 +646,6 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
                         dims=dims,
                         use_checkpoint=use_checkpoint,
                         use_scale_shift_norm=use_scale_shift_norm,
-                        dtype=dtype,
-                        device=device,
                     )
                 ]
                 ch = model_channels * mult
@@ -795,18 +656,16 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
                     else:
                         num_heads = ch // num_head_channels
                         dim_head = num_head_channels
-
                     if exists(disable_self_attentions):
                         disabled_sa = disable_self_attentions[level]
                     else:
                         disabled_sa = False
-
                     if not exists(num_attention_blocks) or i < num_attention_blocks[level]:
                         layers.append(
                             SpatialTransformer(
                                 ch, num_heads, dim_head, depth=num_transformers, context_dim=context_dim,
                                 disable_self_attn=disabled_sa, use_checkpoint=use_checkpoint,
-                                use_linear=use_linear_in_transformer, dtype=dtype, device=device
+                                use_linear=use_linear_in_transformer
                             )
                         )
                 if level and i == self.num_res_blocks[level]:
@@ -821,21 +680,17 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
                             use_checkpoint=use_checkpoint,
                             use_scale_shift_norm=use_scale_shift_norm,
                             up=True,
-                            dtype=dtype,
-                            device=device,
                         )
                         if resblock_updown
-                        else Upsample(ch, conv_resample, dims=dims, out_channels=out_ch, dtype=dtype,
-                                      device=device)
+                        else Upsample(ch, conv_resample, dims=dims, out_channels=out_ch)
                     )
                     ds //= 2
                 self.output_blocks.append(TimestepEmbedSequential(*layers))
                 self._feature_size += ch
-
         self.out = nn.Sequential(
-            nn.GroupNorm(32, ch, dtype=dtype, device=device),
+            nn.GroupNorm(32, ch),
             nn.SiLU(),
-            conv_nd(dims, model_channels, out_channels, 3, padding=1, dtype=dtype, device=device),
+            conv_nd(dims, model_channels, out_channels, 3, padding=1),
         )
 
     def forward(self, x, timesteps=None, context=None, y=None, control=None, transformer_options={}, **kwargs):
@@ -843,90 +698,66 @@ class IntegratedUNet2DConditionModel(nn.Module, ConfigMixin):
         transformer_options["transformer_index"] = 0
         transformer_patches = transformer_options.get("patches", {})
         block_modifiers = transformer_options.get("block_modifiers", [])
-
         assert (y is not None) == (self.num_classes is not None)
-
         hs = []
         t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False).to(x.dtype)
         emb = self.time_embed(t_emb)
-
         if self.num_classes is not None:
             assert y.shape[0] == x.shape[0]
             emb = emb + self.label_emb(y)
-
         h = x
         for id, module in enumerate(self.input_blocks):
             transformer_options["block"] = ("input", id)
-
             for block_modifier in block_modifiers:
                 h = block_modifier(h, 'before', transformer_options)
-
             h = module(h, emb, context, transformer_options)
             h = apply_control(h, control, 'input')
-
             for block_modifier in block_modifiers:
                 h = block_modifier(h, 'after', transformer_options)
-
             if "input_block_patch" in transformer_patches:
                 patch = transformer_patches["input_block_patch"]
                 for p in patch:
                     h = p(h, transformer_options)
-
             hs.append(h)
             if "input_block_patch_after_skip" in transformer_patches:
                 patch = transformer_patches["input_block_patch_after_skip"]
                 for p in patch:
                     h = p(h, transformer_options)
-
         transformer_options["block"] = ("middle", 0)
-
         for block_modifier in block_modifiers:
             h = block_modifier(h, 'before', transformer_options)
-
         h = self.middle_block(h, emb, context, transformer_options)
         h = apply_control(h, control, 'middle')
-
         for block_modifier in block_modifiers:
             h = block_modifier(h, 'after', transformer_options)
-
         for id, module in enumerate(self.output_blocks):
             transformer_options["block"] = ("output", id)
             hsp = hs.pop()
             hsp = apply_control(hsp, control, 'output')
-
             if "output_block_patch" in transformer_patches:
                 patch = transformer_patches["output_block_patch"]
                 for p in patch:
                     h, hsp = p(h, hsp, transformer_options)
-
             h = torch.cat([h, hsp], dim=1)
             del hsp
             if len(hs) > 0:
                 output_shape = hs[-1].shape
             else:
                 output_shape = None
-
             for block_modifier in block_modifiers:
                 h = block_modifier(h, 'before', transformer_options)
-
             h = module(h, emb, context, transformer_options, output_shape)
-
             for block_modifier in block_modifiers:
                 h = block_modifier(h, 'after', transformer_options)
-
         transformer_options["block"] = ("last", 0)
-
         for block_modifier in block_modifiers:
             h = block_modifier(h, 'before', transformer_options)
-
         if "groupnorm_wrapper" in transformer_options:
             out_norm, out_rest = self.out[0], self.out[1:]
             h = transformer_options["groupnorm_wrapper"](out_norm, h, transformer_options)
             h = out_rest(h)
         else:
             h = self.out(h)
-
         for block_modifier in block_modifiers:
             h = block_modifier(h, 'after', transformer_options)
-
         return h.type(x.dtype)

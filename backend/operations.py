@@ -22,14 +22,16 @@ def weights_manual_cast(layer, x, skip_dtype=False):
 
     if stream.using_stream:
         with stream.stream_context()(stream.mover_stream):
+            if layer.weight is not None:
+                weight = layer.weight.to(device=target_device, dtype=target_dtype, non_blocking=non_blocking)
             if layer.bias is not None:
                 bias = layer.bias.to(device=target_device, dtype=target_dtype, non_blocking=non_blocking)
-            weight = layer.weight.to(device=target_device, dtype=target_dtype, non_blocking=non_blocking)
             signal = stream.mover_stream.record_event()
     else:
+        if layer.weight is not None:
+            weight = layer.weight.to(device=target_device, dtype=target_dtype, non_blocking=non_blocking)
         if layer.bias is not None:
             bias = layer.bias.to(device=target_device, dtype=target_dtype, non_blocking=non_blocking)
-        weight = layer.weight.to(device=target_device, dtype=target_dtype, non_blocking=non_blocking)
 
     return weight, bias, signal
 

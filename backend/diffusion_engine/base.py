@@ -39,8 +39,6 @@ class ForgeDiffusionEngine:
         self.is_sd2 = False
         self.is_sdxl = False
         self.is_sd3 = False
-        self.parameterization = 'eps'
-        self.alphas_cumprod = None
 
     def set_clip_skip(self, clip_skip):
         pass

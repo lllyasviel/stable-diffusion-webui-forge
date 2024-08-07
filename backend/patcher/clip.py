@@ -10,11 +10,9 @@ class CLIP:
 
         load_device = memory_management.text_encoder_device()
         offload_device = memory_management.text_encoder_offload_device()
-        text_encoder_dtype = memory_management.text_encoder_dtype(load_device)
 
         self.cond_stage_model = ModuleDict(model_dict)
         self.tokenizer = ObjectDict(tokenizer_dict)
-        self.cond_stage_model.to(dtype=text_encoder_dtype, device=offload_device)
         self.patcher = ModelPatcher(self.cond_stage_model, load_device=load_device, offload_device=offload_device)
 
     def clone(self):

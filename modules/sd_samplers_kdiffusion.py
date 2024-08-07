@@ -1,6 +1,7 @@
 import torch
 import inspect
 import k_diffusion.sampling
+import k_diffusion.external
 from modules import sd_samplers_common, sd_samplers_extra, sd_samplers_cfg_denoiser, sd_schedulers, devices
 from modules.sd_samplers_cfg_denoiser import CFGDenoiser  # noqa: F401
 from modules.script_callbacks import ExtraNoiseParams, extra_noise_callback
@@ -55,13 +56,11 @@ class CFGDenoiserKDiffusion(sd_samplers_cfg_denoiser.CFGDenoiser):
     @property
     def inner_model(self):
         if self.model_wrap is None:
-            denoiser_constructor = getattr(shared.sd_model, 'create_denoiser', None)
-
-            if denoiser_constructor is not None:
-                self.model_wrap = denoiser_constructor()
-            else:
-                denoiser = k_diffusion.external.CompVisVDenoiser if shared.sd_model.parameterization == "v" else k_diffusion.external.CompVisDenoiser
-                self.model_wrap = denoiser(shared.sd_model, quantize=shared.opts.enable_quantization)
+            self.model_wrap = k_diffusion.external.DiscreteSchedule(
+                sigmas=shared.sd_model.forge_objects.unet.model.predictor.sigmas,
+                quantize=shared.opts.enable_quantization
+            )
+            self.model_wrap.inner_model = shared.sd_model
 
         return self.model_wrap
 

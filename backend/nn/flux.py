@@ -102,10 +102,10 @@ class RMSNorm(nn.Module):
         self.scale = nn.Parameter(torch.ones(dim))
 
     def forward(self, x):
-        x_dtype = x.dtype
+        to_args = dict(device=x.device, dtype=x.dtype)
         x = x.float()
         rrms = torch.rsqrt(torch.mean(x ** 2, dim=-1, keepdim=True) + 1e-6)
-        return (x * rrms).to(dtype=x_dtype) * self.scale
+        return (x * rrms.to(x) * self.scale.to(x)).to(**to_args)
 
 
 class QKNorm(nn.Module):

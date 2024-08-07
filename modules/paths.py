@@ -9,7 +9,7 @@ sd_path = os.path.dirname(__file__)
 
 path_dirs = [
     (os.path.join(sd_path, '../repositories/BLIP'), 'models/blip.py', 'BLIP', []),
-    (os.path.join(sd_path, '../repositories/k-diffusion'), 'k_diffusion/sampling.py', 'k_diffusion', ["atstart"]),
+    # (os.path.join(sd_path, '../repositories/k-diffusion'), 'k_diffusion/sampling.py', 'k_diffusion', ["atstart"]),
     (os.path.join(sd_path, '../repositories/huggingface_guess'), 'huggingface_guess/detection.py', 'huggingface_guess', []),
 ]
 

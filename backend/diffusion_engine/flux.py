@@ -77,7 +77,7 @@ class Flux(ForgeDiffusionEngine):
         cond = dict(
             crossattn=cond_t5,
             vector=pooled_l,
-            guidance=torch.FloatTensor([[3.5]] * len(prompt))
+            guidance=torch.FloatTensor([3.5] * len(prompt))
         )
 
         return cond

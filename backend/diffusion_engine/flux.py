@@ -7,7 +7,7 @@ from backend.patcher.vae import VAE
 from backend.patcher.unet import UnetPatcher
 from backend.text_processing.classic_engine import ClassicTextProcessingEngine
 from backend.text_processing.t5_engine import T5TextProcessingEngine
-from backend.args import dynamic_args
+from backend.args import dynamic_args, args
 from backend.modules.k_prediction import PredictionFlux
 from backend import memory_management
 
@@ -16,6 +16,9 @@ class Flux(ForgeDiffusionEngine):
     matched_guesses = [model_list.Flux]
 
     def __init__(self, estimated_config, huggingface_components):
+        if not args.i_am_lllyasviel:
+            raise NotImplementedError('Flux is not implemented yet!')
+
         super().__init__(estimated_config, huggingface_components)
         self.is_inpaint = False
 

@@ -38,7 +38,7 @@ class Flux(ForgeDiffusionEngine):
         unet = UnetPatcher.from_model(
             model=huggingface_components['transformer'],
             diffusers_scheduler=None,
-            k_predictor=PredictionFlux(sigma_data=1.0, prediction_type='const', shift=1.0, timesteps=10000)
+            k_predictor=PredictionFlux(sigma_data=1.0, prediction_type='const', shift=1.15, timesteps=10000)
         )
 
         self.text_processing_engine_l = ClassicTextProcessingEngine(

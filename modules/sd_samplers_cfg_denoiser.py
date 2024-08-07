@@ -181,6 +181,9 @@ class CFGDenoiser(torch.nn.Module):
 
         denoised = sampling_function(self, denoiser_params=denoiser_params, cond_scale=cond_scale, cond_composition=cond_composition)
 
+        if self.need_last_noise_uncond:
+            self.last_noise_uncond = torch.clone(x_out[-uncond.shape[0]:])
+
         if self.mask is not None:
             blended_latent = denoised * self.nmask + self.init_latent * self.mask
 

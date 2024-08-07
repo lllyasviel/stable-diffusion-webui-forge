@@ -59,6 +59,9 @@ class CFGDenoiser(torch.nn.Module):
         self.model_wrap = None
         self.p = None
 
+        self.need_last_noise_uncond = False
+        self.last_noise_uncond = None
+
         # Backward Compatibility
         self.mask_before_denoising = False
 
@@ -179,10 +182,10 @@ class CFGDenoiser(torch.nn.Module):
         denoiser_params = CFGDenoiserParams(x, image_cond, sigma, state.sampling_step, state.sampling_steps, cond, uncond, self)
         cfg_denoiser_callback(denoiser_params)
 
-        denoised = sampling_function(self, denoiser_params=denoiser_params, cond_scale=cond_scale, cond_composition=cond_composition)
+        denoised, cond_pred, uncond_pred = sampling_function(self, denoiser_params=denoiser_params, cond_scale=cond_scale, cond_composition=cond_composition)
 
         if self.need_last_noise_uncond:
-            self.last_noise_uncond = torch.clone(x_out[-uncond.shape[0]:])
+            self.last_noise_uncond = uncond_pred.clone()
 
         if self.mask is not None:
             blended_latent = denoised * self.nmask + self.init_latent * self.mask

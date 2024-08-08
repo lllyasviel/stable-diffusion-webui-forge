@@ -485,7 +485,7 @@ class StableDiffusionProcessing:
 
         if self.cfg_scale == 1:
             self.uc = None
-            print('Skipping unconditional conditioning when CFG = 1')
+            print('Skipping unconditional conditioning when CFG = 1. Negative Prompts are ignored.')
         else:
             self.uc = self.get_conds_with_caching(prompt_parser.get_learned_conditioning, negative_prompts, total_steps, [self.cached_uc], self.extra_network_data)
 

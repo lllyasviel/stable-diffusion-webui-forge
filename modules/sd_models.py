@@ -379,8 +379,8 @@ def apply_alpha_schedule_override(sd_model, p=None):
 class SdModelData:
     def __init__(self):
         self.sd_model = None
-        self.loaded_sd_models = []
-        self.was_loaded_at_least_once = False
+        self.forge_loading_parameters = {}
+        self.forge_hash = ''
 
     def get_sd_model(self):
         if self.sd_model is None:
@@ -388,12 +388,8 @@ class SdModelData:
 
         return self.sd_model
 
-    def set_sd_model(self, v, already_loaded=False):
+    def set_sd_model(self, v):
         self.sd_model = v
-        if already_loaded:
-            sd_vae.base_vae = getattr(v, "base_vae", None)
-            sd_vae.loaded_vae_file = getattr(v, "loaded_vae_file", None)
-            sd_vae.checkpoint_info = v.sd_checkpoint_info
 
 
 model_data = SdModelData()
@@ -467,7 +463,6 @@ def forge_model_reload():
 
     if model_data.sd_model:
         model_data.sd_model = None
-        model_data.loaded_sd_models = []
         memory_management.unload_all_models()
         memory_management.soft_empty_cache()
         gc.collect()
@@ -507,7 +502,6 @@ def forge_model_reload():
     timer.record("load VAE")
 
     model_data.set_sd_model(sd_model)
-    model_data.was_loaded_at_least_once = True
 
     script_callbacks.model_loaded_callback(sd_model)
 

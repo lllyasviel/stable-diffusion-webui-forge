@@ -120,7 +120,7 @@ class ClassicTextProcessingEngine:
         return tokenized
 
     def encode_with_transformers(self, tokens):
-        target_device = memory_management.get_torch_device()
+        target_device = self.text_encoder.transformer.text_model.embeddings.token_embedding.weight.device
         self.text_encoder.transformer.text_model.embeddings.position_ids = self.text_encoder.transformer.text_model.embeddings.position_ids.to(device=target_device)
         tokens = tokens.to(target_device)
 

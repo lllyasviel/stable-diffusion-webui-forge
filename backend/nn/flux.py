@@ -1,12 +1,13 @@
-# Single File Implementation of Flux, by Forge
+# Single File Implementation of Flux with aggressive optimizations, copyright Forge 2024
+# If used outside Forge, only non-commercial use is allowed.
 # See also https://github.com/black-forest-labs/flux
 
 
 import math
 import torch
-from einops import rearrange, repeat
+
 from torch import nn
-from dataclasses import dataclass
+from einops import rearrange, repeat
 from backend.attention import attention_function
 
 
@@ -30,6 +31,7 @@ def apply_rope(xq, xk, freqs_cis):
     xk_ = xk.float().reshape(*xk.shape[:-1], -1, 1, 2)
     xq_out = freqs_cis[..., 0] * xq_[..., 0] + freqs_cis[..., 1] * xq_[..., 1]
     xk_out = freqs_cis[..., 0] * xk_[..., 0] + freqs_cis[..., 1] * xk_[..., 1]
+    del xq_, xk_
     return xq_out.reshape(*xq.shape).type_as(xq), xk_out.reshape(*xk.shape).type_as(xk)
 
 
@@ -38,35 +40,14 @@ def timestep_embedding(t, dim, max_period=10000, time_factor=1000.0):
     half = dim // 2
     freqs = torch.exp(-math.log(max_period) * torch.arange(start=0, end=half, dtype=torch.float32) / half).to(t.device)
     args = t[:, None].float() * freqs[None]
+    del freqs
     embedding = torch.cat([torch.cos(args), torch.sin(args)], dim=-1)
+    del args
     if dim % 2:
         embedding = torch.cat([embedding, torch.zeros_like(embedding[:, :1])], dim=-1)
     if torch.is_floating_point(t):
         embedding = embedding.to(t)
     return embedding
-
-
-@dataclass
-class ModulationOut:
-    shift: torch.Tensor
-    scale: torch.Tensor
-    gate: torch.Tensor
-
-
-@dataclass
-class FluxParams:
-    in_channels: int
-    vec_in_dim: int
-    context_in_dim: int
-    hidden_size: int
-    mlp_ratio: float
-    num_heads: int
-    depth: int
-    depth_single_blocks: int
-    axes_dim: list[int]
-    theta: int
-    qkv_bias: bool
-    guidance_embed: bool
 
 
 class EmbedND(nn.Module):
@@ -82,6 +63,7 @@ class EmbedND(nn.Module):
             [rope(ids[..., i], self.axes_dim[i], self.theta) for i in range(n_axes)],
             dim=-3,
         )
+        del ids, n_axes
         return emb.unsqueeze(1)
 
 
@@ -93,7 +75,8 @@ class MLPEmbedder(nn.Module):
         self.out_layer = nn.Linear(hidden_dim, hidden_dim, bias=True)
 
     def forward(self, x):
-        return self.out_layer(self.silu(self.in_layer(x)))
+        x = self.silu(self.in_layer(x))
+        return self.out_layer(x)
 
 
 class RMSNorm(nn.Module):
@@ -117,7 +100,8 @@ class QKNorm(nn.Module):
     def forward(self, q, k, v):
         q = self.query_norm(q)
         k = self.key_norm(k)
-        return q.to(v), k.to(v)
+        del v
+        return q.to(k), k.to(q)
 
 
 class SelfAttention(nn.Module):
@@ -132,8 +116,10 @@ class SelfAttention(nn.Module):
     def forward(self, x, pe):
         qkv = self.qkv(x)
         q, k, v = rearrange(qkv, "B L (K H D) -> K B H L D", K=3, H=self.num_heads)
+        del qkv
         q, k = self.norm(q, k, v)
         x = attention(q, k, v, pe=pe)
+        del q, k, v
         x = self.proj(x)
         return x
 
@@ -147,10 +133,10 @@ class Modulation(nn.Module):
 
     def forward(self, vec):
         out = self.lin(nn.functional.silu(vec))[:, None, :].chunk(self.multiplier, dim=-1)
-        return (
-            ModulationOut(*out[:3]),
-            ModulationOut(*out[3:]) if self.is_double else None,
-        )
+        if self.is_double:
+            return out[0], out[1], out[2], out[3], out[4], out[5],
+        else:
+            return out[0], out[1], out[2]
 
 
 class DoubleStreamBlock(nn.Module):
@@ -179,27 +165,48 @@ class DoubleStreamBlock(nn.Module):
         )
 
     def forward(self, img, txt, vec, pe):
-        img_mod1, img_mod2 = self.img_mod(vec)
-        txt_mod1, txt_mod2 = self.txt_mod(vec)
+        img_mod1_shift, img_mod1_scale, img_mod1_gate, img_mod2_shift, img_mod2_scale, img_mod2_gate = self.img_mod(vec)
+        txt_mod1_shift, txt_mod1_scale, txt_mod1_gate, txt_mod2_shift, txt_mod2_scale, txt_mod2_gate = self.txt_mod(vec)
+
         img_modulated = self.img_norm1(img)
-        img_modulated = (1 + img_mod1.scale) * img_modulated + img_mod1.shift
+        img_modulated = (1 + img_mod1_scale) * img_modulated + img_mod1_shift
+        del img_mod1_shift, img_mod1_scale
         img_qkv = self.img_attn.qkv(img_modulated)
+        del img_modulated
         img_q, img_k, img_v = rearrange(img_qkv, "B L (K H D) -> K B H L D", K=3, H=self.num_heads)
+        del img_qkv
         img_q, img_k = self.img_attn.norm(img_q, img_k, img_v)
+
         txt_modulated = self.txt_norm1(txt)
-        txt_modulated = (1 + txt_mod1.scale) * txt_modulated + txt_mod1.shift
+        txt_modulated = (1 + txt_mod1_scale) * txt_modulated + txt_mod1_shift
+        del txt_mod1_shift, txt_mod1_scale
         txt_qkv = self.txt_attn.qkv(txt_modulated)
+        del txt_modulated
         txt_q, txt_k, txt_v = rearrange(txt_qkv, "B L (K H D) -> K B H L D", K=3, H=self.num_heads)
+        del txt_qkv
         txt_q, txt_k = self.txt_attn.norm(txt_q, txt_k, txt_v)
+
         q = torch.cat((txt_q, img_q), dim=2)
+        del txt_q, img_q
         k = torch.cat((txt_k, img_k), dim=2)
+        del txt_k, img_k
         v = torch.cat((txt_v, img_v), dim=2)
+        del txt_v, img_v
+
         attn = attention(q, k, v, pe=pe)
         txt_attn, img_attn = attn[:, : txt.shape[1]], attn[:, txt.shape[1]:]
-        img = img + img_mod1.gate * self.img_attn.proj(img_attn)
-        img = img + img_mod2.gate * self.img_mlp((1 + img_mod2.scale) * self.img_norm2(img) + img_mod2.shift)
-        txt = txt + txt_mod1.gate * self.txt_attn.proj(txt_attn)
-        txt = txt + txt_mod2.gate * self.txt_mlp((1 + txt_mod2.scale) * self.txt_norm2(txt) + txt_mod2.shift)
+        del attn
+
+        img = img + img_mod1_gate * self.img_attn.proj(img_attn)
+        del img_attn, img_mod1_gate
+        img = img + img_mod2_gate * self.img_mlp((1 + img_mod2_scale) * self.img_norm2(img) + img_mod2_shift)
+        del img_mod2_gate, img_mod2_scale, img_mod2_shift
+
+        txt = txt + txt_mod1_gate * self.txt_attn.proj(txt_attn)
+        del txt_attn, txt_mod1_gate
+        txt = txt + txt_mod2_gate * self.txt_mlp((1 + txt_mod2_scale) * self.txt_norm2(txt) + txt_mod2_shift)
+        del txt_mod2_gate, txt_mod2_scale, txt_mod2_shift
+
         return img, txt
 
 
@@ -220,14 +227,20 @@ class SingleStreamBlock(nn.Module):
         self.modulation = Modulation(hidden_size, double=False)
 
     def forward(self, x, vec, pe):
-        mod, _ = self.modulation(vec)
-        x_mod = (1 + mod.scale) * self.pre_norm(x) + mod.shift
+        mod_shift, mod_scale, mod_gate = self.modulation(vec)
+        del vec
+        x_mod = (1 + mod_scale) * self.pre_norm(x) + mod_shift
+        del mod_shift, mod_scale
         qkv, mlp = torch.split(self.linear1(x_mod), [3 * self.hidden_size, self.mlp_hidden_dim], dim=-1)
+        del x_mod
         q, k, v = rearrange(qkv, "B L (K H D) -> K B H L D", K=3, H=self.num_heads)
+        del qkv
         q, k = self.norm(q, k, v)
         attn = attention(q, k, v, pe=pe)
+        del q, k, v, pe
         output = self.linear2(torch.cat((attn, self.mlp_act(mlp)), 2))
-        return x + mod.gate * output
+        del attn, mlp
+        return x + mod_gate * output
 
 
 class LastLayer(nn.Module):
@@ -239,48 +252,56 @@ class LastLayer(nn.Module):
 
     def forward(self, x, vec):
         shift, scale = self.adaLN_modulation(vec).chunk(2, dim=1)
+        del vec
         x = (1 + scale[:, None, :]) * self.norm_final(x) + shift[:, None, :]
+        del scale, shift
         x = self.linear(x)
         return x
 
 
 class IntegratedFluxTransformer2DModel(nn.Module):
-    def __init__(self, **kwargs):
+    def __init__(self, in_channels: int, vec_in_dim: int, context_in_dim: int, hidden_size: int, mlp_ratio: float, num_heads: int, depth: int, depth_single_blocks: int, axes_dim: list[int], theta: int, qkv_bias: bool, guidance_embed: bool):
         super().__init__()
-        params = FluxParams(**kwargs)
-        self.params = params
-        self.in_channels = params.in_channels * 4
+
+        self.in_channels = in_channels * 4
         self.out_channels = self.in_channels
-        if params.hidden_size % params.num_heads != 0:
-            raise ValueError(f"Hidden size {params.hidden_size} must be divisible by num_heads {params.num_heads}")
-        pe_dim = params.hidden_size // params.num_heads
-        if sum(params.axes_dim) != pe_dim:
-            raise ValueError(f"Got {params.axes_dim} but expected positional dim {pe_dim}")
-        self.hidden_size = params.hidden_size
-        self.num_heads = params.num_heads
-        self.pe_embedder = EmbedND(dim=pe_dim, theta=params.theta, axes_dim=params.axes_dim)
+
+        if hidden_size % num_heads != 0:
+            raise ValueError(f"Hidden size {hidden_size} must be divisible by num_heads {num_heads}")
+
+        pe_dim = hidden_size // num_heads
+        if sum(axes_dim) != pe_dim:
+            raise ValueError(f"Got {axes_dim} but expected positional dim {pe_dim}")
+
+        self.hidden_size = hidden_size
+        self.num_heads = num_heads
+
+        self.pe_embedder = EmbedND(dim=pe_dim, theta=theta, axes_dim=axes_dim)
         self.img_in = nn.Linear(self.in_channels, self.hidden_size, bias=True)
         self.time_in = MLPEmbedder(in_dim=256, hidden_dim=self.hidden_size)
-        self.vector_in = MLPEmbedder(params.vec_in_dim, self.hidden_size)
-        self.guidance_in = MLPEmbedder(in_dim=256, hidden_dim=self.hidden_size) if params.guidance_embed else nn.Identity()
-        self.txt_in = nn.Linear(params.context_in_dim, self.hidden_size)
+        self.vector_in = MLPEmbedder(vec_in_dim, self.hidden_size)
+        self.guidance_in = MLPEmbedder(in_dim=256, hidden_dim=self.hidden_size) if guidance_embed else nn.Identity()
+        self.txt_in = nn.Linear(context_in_dim, self.hidden_size)
+
         self.double_blocks = nn.ModuleList(
             [
                 DoubleStreamBlock(
                     self.hidden_size,
                     self.num_heads,
-                    mlp_ratio=params.mlp_ratio,
-                    qkv_bias=params.qkv_bias,
+                    mlp_ratio=mlp_ratio,
+                    qkv_bias=qkv_bias,
                 )
-                for _ in range(params.depth)
+                for _ in range(depth)
             ]
         )
+
         self.single_blocks = nn.ModuleList(
             [
-                SingleStreamBlock(self.hidden_size, self.num_heads, mlp_ratio=params.mlp_ratio)
-                for _ in range(params.depth_single_blocks)
+                SingleStreamBlock(self.hidden_size, self.num_heads, mlp_ratio=mlp_ratio)
+                for _ in range(depth_single_blocks)
             ]
         )
+
         self.final_layer = LastLayer(self.hidden_size, 1, self.out_channels)
 
     def inner_forward(self, img, img_ids, txt, txt_ids, timesteps, y, guidance=None):
@@ -294,15 +315,21 @@ class IntegratedFluxTransformer2DModel(nn.Module):
             vec = vec + self.guidance_in(timestep_embedding(guidance, 256).to(img.dtype))
         vec = vec + self.vector_in(y)
         txt = self.txt_in(txt)
+        del y, guidance
         ids = torch.cat((txt_ids, img_ids), dim=1)
+        del txt_ids, img_ids
         pe = self.pe_embedder(ids)
+        del ids
         for block in self.double_blocks:
             img, txt = block(img=img, txt=txt, vec=vec, pe=pe)
         img = torch.cat((txt, img), 1)
         for block in self.single_blocks:
             img = block(img, vec=vec, pe=pe)
+        del pe
         img = img[:, txt.shape[1]:, ...]
+        del txt
         img = self.final_layer(img, vec)
+        del vec
         return img
 
     def forward(self, x, timestep, context, y, guidance, **kwargs):
@@ -314,6 +341,7 @@ class IntegratedFluxTransformer2DModel(nn.Module):
         pad_w = (patch_size - x.shape[-1] % patch_size) % patch_size
         x = torch.nn.functional.pad(x, (0, pad_w, 0, pad_h), mode="circular")
         img = rearrange(x, "b c (h ph) (w pw) -> b (h w) (c ph pw)", ph=patch_size, pw=patch_size)
+        del x, pad_h, pad_w
         h_len = ((h + (patch_size // 2)) // patch_size)
         w_len = ((w + (patch_size // 2)) // patch_size)
         img_ids = torch.zeros((h_len, w_len, 3), device=input_device, dtype=input_dtype)
@@ -321,6 +349,9 @@ class IntegratedFluxTransformer2DModel(nn.Module):
         img_ids[..., 2] = img_ids[..., 2] + torch.linspace(0, w_len - 1, steps=w_len, device=input_device, dtype=input_dtype)[None, :]
         img_ids = repeat(img_ids, "h w c -> b (h w) c", b=bs)
         txt_ids = torch.zeros((bs, context.shape[1], 3), device=input_device, dtype=input_dtype)
+        del input_device, input_dtype
         out = self.inner_forward(img, img_ids, context, txt_ids, timestep, y, guidance)
+        del img, img_ids, txt_ids, timestep, context
         out = rearrange(out, "b (h w) (c ph pw) -> b c (h ph) (w pw)", h=h_len, w=w_len, ph=2, pw=2)[:, :, :h, :w]
+        del h_len, w_len, bs
         return out

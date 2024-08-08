@@ -218,7 +218,7 @@ class DoubleStreamBlock(nn.Module):
         del txt_v, img_v
 
         attn = attention(q, k, v, pe=pe)
-        txt_attn, img_attn = attn[:, :, :txt.shape[1], :], attn[:, :, txt.shape[1]:, :]
+        txt_attn, img_attn = attn[:, :txt.shape[1]], attn[:, txt.shape[1]:]
         del attn
 
         img = img + img_mod1_gate * self.img_attn.proj(img_attn)

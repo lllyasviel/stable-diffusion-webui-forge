@@ -32,7 +32,8 @@ class StableDiffusionXL(ForgeDiffusionEngine):
 
         unet = UnetPatcher.from_model(
             model=huggingface_components['unet'],
-            diffusers_scheduler=huggingface_components['scheduler']
+            diffusers_scheduler=huggingface_components['scheduler'],
+            config=estimated_config
         )
 
         self.text_processing_engine_l = ClassicTextProcessingEngine(

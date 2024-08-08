@@ -28,17 +28,20 @@ def apply_circular_forge(model, tiling_enabled=False):
     print(f'Tiling: {tiling_enabled}')
     model.tiling_enabled = tiling_enabled
 
-    def flatten(el):
-        flattened = [flatten(children) for children in el.children()]
-        res = [el]
-        for c in flattened:
-            res += c
-        return res
+    # def flatten(el):
+    #     flattened = [flatten(children) for children in el.children()]
+    #     res = [el]
+    #     for c in flattened:
+    #         res += c
+    #     return res
+    #
+    # layers = flatten(model)
+    #
+    # for layer in [layer for layer in layers if 'Conv' in type(layer).__name__]:
+    #     layer.padding_mode = 'circular' if tiling_enabled else 'zeros'
 
-    layers = flatten(model)
+    print(f'Tiling is currently under maintenance and unavailable. Sorry for the inconvenience.')
 
-    for layer in [layer for layer in layers if 'Conv' in type(layer).__name__]:
-        layer.padding_mode = 'circular' if tiling_enabled else 'zeros'
     return
 
 

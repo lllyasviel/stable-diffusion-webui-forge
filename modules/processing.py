@@ -774,7 +774,7 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
 
 
 def process_images(p: StableDiffusionProcessing) -> Processed:
-    forge_model_reload()
+    p.sd_model = forge_model_reload()
 
     if p.scripts is not None:
         p.scripts.before_process(p)

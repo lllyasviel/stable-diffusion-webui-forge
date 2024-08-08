@@ -3,7 +3,6 @@ import gradio as gr
 
 from modules import shared_items, shared, ui_common, sd_models
 from modules import sd_vae as sd_vae_module
-from backend import args as backend_args
 
 
 ui_checkpoint: gr.Dropdown = None
@@ -19,7 +18,6 @@ forge_unet_storage_dtype_options = {
 
 def bind_to_opts(comp, k, save=False, callback=None):
     def on_change(v):
-        print(f'Setting Changed: {k} = {v}')
         shared.opts.set(k, v)
         if save:
             shared.opts.save(shared.config_filename)
@@ -51,7 +49,7 @@ def make_checkpoint_manager_ui():
 
     sd_vae_args = lambda: {"choices": shared_items.sd_vae_items()}
     ui_vae = gr.Dropdown(
-        value="Automatic",
+        value=shared.opts.sd_vae,
         label="VAE",
         **sd_vae_args()
     )
@@ -78,11 +76,12 @@ def refresh_model_loading_parameters():
         unet_storage_dtype=forge_unet_storage_dtype_options[shared.opts.forge_unet_storage_dtype]
     )
 
+    print(f'Loading parameters: {model_data.forge_loading_parameters}')
+
     return
 
 
 def checkpoint_change(ckpt_name):
-    print(f'Checkpoint Selected: {ckpt_name}')
     shared.opts.set('sd_model_checkpoint', ckpt_name)
     shared.opts.save(shared.config_filename)
 
@@ -91,7 +90,6 @@ def checkpoint_change(ckpt_name):
 
 
 def vae_change(vae_name):
-    print(f'VAE Selected: {vae_name}')
     shared.opts.set('sd_vae', vae_name)
 
     refresh_model_loading_parameters()

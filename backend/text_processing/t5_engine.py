@@ -58,7 +58,7 @@ class T5TextProcessingEngine:
         return tokenized
 
     def encode_with_transformers(self, tokens):
-        device = memory_management.get_torch_device()
+        device = memory_management.text_encoder_device()
         tokens = tokens.to(device)
         self.text_encoder.shared.to(device=device, dtype=torch.float32)
 

@@ -117,6 +117,9 @@ def split_state_dict(sd, sd_vae=None):
     guess = huggingface_guess.guess(sd)
     guess.clip_target = guess.clip_target(sd)
 
+    if sd_vae is not None:
+        print(f'Using external VAE state dict: {len(sd_vae)}')
+
     state_dict = {
         guess.unet_target: try_filter_state_dict(sd, guess.unet_key_prefix),
         guess.vae_target: try_filter_state_dict(sd, guess.vae_key_prefix) if sd_vae is None else sd_vae

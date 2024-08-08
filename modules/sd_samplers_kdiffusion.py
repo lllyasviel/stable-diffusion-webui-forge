@@ -56,10 +56,7 @@ class CFGDenoiserKDiffusion(sd_samplers_cfg_denoiser.CFGDenoiser):
     @property
     def inner_model(self):
         if self.model_wrap is None:
-            self.model_wrap = k_diffusion.external.DiscreteSchedule(
-                sigmas=shared.sd_model.forge_objects.unet.model.predictor.sigmas,
-                quantize=shared.opts.enable_quantization
-            )
+            self.model_wrap = k_diffusion.external.ForgeScheduleLinker(shared.sd_model.forge_objects.unet.model.predictor)
             self.model_wrap.inner_model = shared.sd_model
 
         return self.model_wrap
@@ -136,8 +133,7 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 
-        self.model_wrap.log_sigmas = self.model_wrap.log_sigmas.to(x.device)
-        self.model_wrap.sigmas = self.model_wrap.sigmas.to(x.device)
+        self.model_wrap.predictor.to(x.device)
 
         steps, t_enc = sd_samplers_common.setup_img2img_steps(p, steps)
 
@@ -198,8 +194,7 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 
-        self.model_wrap.log_sigmas = self.model_wrap.log_sigmas.to(x.device)
-        self.model_wrap.sigmas = self.model_wrap.sigmas.to(x.device)
+        self.model_wrap.predictor.to(x.device)
 
         steps = steps or p.steps
 

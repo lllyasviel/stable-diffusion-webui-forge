@@ -132,6 +132,12 @@ class CheckpointInfo:
 
         return self.shorthash
 
+    def __str__(self):
+        return str(dict(filename=self.filename, hash=self.hash))
+
+    def __repr__(self):
+        return str(dict(filename=self.filename, hash=self.hash))
+
 
 # try:
 #     # this silences the annoying "Some weights of the model checkpoint were not used when initializing..." message at start.
@@ -457,7 +463,12 @@ def apply_token_merging(sd_model, token_merging_ratio):
 
 @torch.no_grad()
 def forge_model_reload():
-    checkpoint_info = select_checkpoint()
+    current_hash = str(model_data.forge_loading_parameters)
+
+    if model_data.forge_hash == current_hash:
+        return model_data.sd_model
+
+    print('Loading Model: ' + str(model_data.forge_loading_parameters))
 
     timer = Timer()
 
@@ -469,15 +480,28 @@ def forge_model_reload():
 
     timer.record("unload existing model")
 
-    state_dict = get_checkpoint_state_dict(checkpoint_info, timer)
+    checkpoint_info = model_data.forge_loading_parameters['checkpoint_info']
+    state_dict = load_torch_file(checkpoint_info.filename)
+    timer.record("load state dict")
+
+    state_dict_vae = model_data.forge_loading_parameters.get('vae_filename', None)
+
+    if state_dict_vae is not None:
+        state_dict_vae = load_torch_file(state_dict_vae)
+
+    timer.record("load vae state dict")
 
     if shared.opts.sd_checkpoint_cache > 0:
         # cache newly loaded model
         checkpoints_loaded[checkpoint_info] = state_dict.copy()
 
+    timer.record("cache state dict")
+
+    dynamic_args['forge_unet_storage_dtype'] = model_data.forge_loading_parameters.get('unet_storage_dtype', None)
     dynamic_args['embedding_dir'] = cmd_opts.embeddings_dir
     dynamic_args['emphasis_name'] = opts.emphasis
-    sd_model = forge_loader(state_dict)
+    sd_model = forge_loader(state_dict, sd_vae=state_dict_vae)
+    del state_dict
     timer.record("forge model load")
 
     sd_model.extra_generation_params = {}
@@ -487,19 +511,11 @@ def forge_model_reload():
     sd_model.sd_model_hash = checkpoint_info.calculate_shorthash()
     timer.record("calculate hash")
 
-    del state_dict
-
     # clean up cache if limit is reached
     while len(checkpoints_loaded) > shared.opts.sd_checkpoint_cache:
         checkpoints_loaded.popitem(last=False)
 
     shared.opts.data["sd_checkpoint_hash"] = checkpoint_info.sha256
-
-    sd_vae.delete_base_vae()
-    sd_vae.clear_loaded_vae()
-    vae_file, vae_source = sd_vae.resolve_vae(checkpoint_info.filename).tuple()
-    sd_vae.load_vae(sd_model, vae_file, vae_source)
-    timer.record("load VAE")
 
     model_data.set_sd_model(sd_model)
 
@@ -508,5 +524,7 @@ def forge_model_reload():
     timer.record("scripts callbacks")
 
     print(f"Model loaded in {timer.summary()}.")
+
+    model_data.forge_hash = current_hash
 
     return sd_model

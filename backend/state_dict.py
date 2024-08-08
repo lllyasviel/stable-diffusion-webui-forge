@@ -1,10 +1,15 @@
 import torch
 
 
-def load_state_dict(model, sd, ignore_errors=[], log_name=None):
+def load_state_dict(model, sd, ignore_errors=[], log_name=None, ignore_start=None):
     missing, unexpected = model.load_state_dict(sd, strict=False)
     missing = [x for x in missing if x not in ignore_errors]
     unexpected = [x for x in unexpected if x not in ignore_errors]
+
+    if isinstance(ignore_start, str):
+        missing = [x for x in missing if not x.startswith(ignore_start)]
+        unexpected = [x for x in unexpected if not x.startswith(ignore_start)]
+
     log_name = log_name or type(model).__name__
     if len(missing) > 0:
         print(f'{log_name} Missing: {missing}')

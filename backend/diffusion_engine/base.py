@@ -29,19 +29,8 @@ class ForgeDiffusionEngine:
         self.forge_objects_after_applying_lora = None
 
         self.current_lora_hash = str([])
-        self.tiling_enabled = False
 
-        self.first_stage_model = None  # set this so that you can change VAE in UI
-        self.use_distilled_cfg_scale = False
-
-        # WebUI Dirty Legacy
-        self.is_sd1 = False
-        self.is_sd2 = False
-        self.is_sdxl = False
-        self.is_sd3 = False
-
-    def is_webui_legacy_model(self):
-        return self.is_sd1 or self.is_sd2 or self.is_sdxl or self.is_sd3
+        self.fix_for_webui_backward_compatibility()
 
     def set_clip_skip(self, clip_skip):
         pass
@@ -59,4 +48,18 @@ class ForgeDiffusionEngine:
         pass
 
     def get_prompt_lengths_on_ui(self, prompt):
-        pass
+        return 0, 75
+
+    def is_webui_legacy_model(self):
+        return self.is_sd1 or self.is_sd2 or self.is_sdxl or self.is_sd3
+
+    def fix_for_webui_backward_compatibility(self):
+        self.tiling_enabled = False
+        self.first_stage_model = None
+        self.cond_stage_model = None
+        self.use_distilled_cfg_scale = False
+        self.is_sd1 = False
+        self.is_sd2 = False
+        self.is_sdxl = False
+        self.is_sd3 = False
+        return

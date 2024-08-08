@@ -95,6 +95,9 @@ def download_model(model_path, model_url):
 
 
 def decoder_model():
+    if not shared.sd_model.is_webui_legacy_model():
+        return None
+
     if shared.sd_model.is_sd3:
         model_name = "taesd3_decoder.pth"
     elif shared.sd_model.is_sdxl:

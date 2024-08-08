@@ -40,6 +40,9 @@ def download_model(model_path, model_url):
 
 
 def model():
+    if not shared.sd_model.is_webui_legacy_model():
+        return None
+
     if shared.sd_model.is_sd3:
         model_name = "vaeapprox-sd3.pt"
     elif shared.sd_model.is_sdxl:
@@ -68,36 +71,4 @@ def model():
 
 
 def cheap_approximation(sample):
-    # https://discuss.huggingface.co/t/decoding-latents-to-rgb-without-upscaling/23204/2
-
-    if shared.sd_model.is_sd3:
-        coeffs = [
-            [-0.0645,  0.0177,  0.1052], [ 0.0028,  0.0312,  0.0650],
-            [ 0.1848,  0.0762,  0.0360], [ 0.0944,  0.0360,  0.0889],
-            [ 0.0897,  0.0506, -0.0364], [-0.0020,  0.1203,  0.0284],
-            [ 0.0855,  0.0118,  0.0283], [-0.0539,  0.0658,  0.1047],
-            [-0.0057,  0.0116,  0.0700], [-0.0412,  0.0281, -0.0039],
-            [ 0.1106,  0.1171,  0.1220], [-0.0248,  0.0682, -0.0481],
-            [ 0.0815,  0.0846,  0.1207], [-0.0120, -0.0055, -0.0867],
-            [-0.0749, -0.0634, -0.0456], [-0.1418, -0.1457, -0.1259],
-        ]
-    elif shared.sd_model.is_sdxl:
-        coeffs = [
-            [ 0.3448,  0.4168,  0.4395],
-            [-0.1953, -0.0290,  0.0250],
-            [ 0.1074,  0.0886, -0.0163],
-            [-0.3730, -0.2499, -0.2088],
-        ]
-    else:
-        coeffs = [
-            [ 0.298,  0.207,  0.208],
-            [ 0.187,  0.286,  0.173],
-            [-0.158,  0.189,  0.264],
-            [-0.184, -0.271, -0.473],
-        ]
-
-    coefs = torch.tensor(coeffs).to(sample.device)
-
-    x_sample = torch.einsum("...lxy,lr -> ...rxy", sample, coefs)
-
-    return x_sample
+    return torch.einsum("...lxy,lr -> ...rxy", sample, torch.tensor(shared.sd_model.model_config.latent_format.latent_rgb_factors).to(sample.device))

@@ -39,6 +39,9 @@ class ForgeDiffusionEngine:
         self.is_sdxl = False
         self.is_sd3 = False
 
+    def is_webui_legacy_model(self):
+        return self.is_sd1 or self.is_sd2 or self.is_sdxl or self.is_sd3
+
     def set_clip_skip(self, clip_skip):
         pass
 

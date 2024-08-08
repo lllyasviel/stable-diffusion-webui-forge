@@ -47,10 +47,18 @@ def samples_to_images_tensor(sample, approximation=None, model=None):
     if approximation == 2:
         x_sample = sd_vae_approx.cheap_approximation(sample)
     elif approximation == 1:
-        x_sample = sd_vae_approx.model()(sample.to(devices.device, devices.dtype)).detach()
+        m = sd_vae_approx.model()
+        if m is None:
+            x_sample = sd_vae_approx.cheap_approximation(sample)
+        else:
+            x_sample = m(sample.to(devices.device, devices.dtype)).detach()
     elif approximation == 3:
-        x_sample = sd_vae_taesd.decoder_model()(sample.to(devices.device, devices.dtype)).detach()
-        x_sample = x_sample * 2 - 1
+        m = sd_vae_taesd.decoder_model()
+        if m is None:
+            x_sample = sd_vae_approx.cheap_approximation(sample)
+        else:
+            x_sample = m(sample.to(devices.device, devices.dtype)).detach()
+            x_sample = x_sample * 2 - 1
     else:
         if model is None:
             model = shared.sd_model

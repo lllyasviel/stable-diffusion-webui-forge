@@ -13,10 +13,9 @@ class UnetPatcher(ModelPatcher):
         unet_dtype = memory_management.unet_dtype(model_params=parameters)
         load_device = memory_management.get_torch_device()
         initial_load_device = memory_management.unet_inital_load_device(parameters, unet_dtype)
-        manual_cast_dtype = memory_management.unet_manual_cast(unet_dtype, load_device, supported_dtypes=config.supported_inference_dtypes)
-        manual_cast_dtype = unet_dtype if manual_cast_dtype is None else manual_cast_dtype
+        computation_dtype = memory_management.get_computation_dtype(load_device, supported_dtypes=config.supported_inference_dtypes)
         model.to(device=initial_load_device, dtype=unet_dtype)
-        model = KModel(model=model, diffusers_scheduler=diffusers_scheduler, k_predictor=k_predictor, storage_dtype=unet_dtype, computation_dtype=manual_cast_dtype)
+        model = KModel(model=model, diffusers_scheduler=diffusers_scheduler, k_predictor=k_predictor, storage_dtype=unet_dtype, computation_dtype=computation_dtype)
         return UnetPatcher(model, load_device=load_device, offload_device=memory_management.unet_offload_device(), current_device=initial_load_device)
 
     def __init__(self, *args, **kwargs):

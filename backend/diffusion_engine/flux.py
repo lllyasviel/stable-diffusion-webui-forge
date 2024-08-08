@@ -66,6 +66,8 @@ class Flux(ForgeDiffusionEngine):
         self.forge_objects_original = self.forge_objects.shallow_copy()
         self.forge_objects_after_applying_lora = self.forge_objects.shallow_copy()
 
+        self.use_distilled_cfg_scale = True
+
         # WebUI Legacy
         self.first_stage_model = vae.first_stage_model
 

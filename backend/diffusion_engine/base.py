@@ -32,6 +32,7 @@ class ForgeDiffusionEngine:
         self.tiling_enabled = False
 
         self.first_stage_model = None  # set this so that you can change VAE in UI
+        self.use_distilled_cfg_scale = False
 
         # WebUI Dirty Legacy
         self.is_sd1 = False

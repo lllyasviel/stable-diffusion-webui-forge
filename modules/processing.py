@@ -722,7 +722,13 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
         "Steps": p.steps,
         "Sampler": p.sampler_name,
         "Schedule type": p.scheduler,
-        "CFG scale": p.cfg_scale,
+        "CFG scale": p.cfg_scale
+    }
+
+    if p.sd_model.use_distilled_cfg_scale:
+        generation_params['Distilled CFG Scale'] = p.distilled_cfg_scale
+
+    generation_params.update({
         "Image CFG scale": getattr(p, 'image_cfg_scale', None),
         "Seed": p.all_seeds[0] if use_main_prompt else all_seeds[index],
         "Face restoration": opts.face_restoration_model if p.restore_faces else None,
@@ -748,7 +754,7 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
         **p.extra_generation_params,
         "Version": program_version() if opts.add_version_to_infotext else None,
         "User": p.user if opts.add_user_name_to_info else None,
-    }
+    })
 
     for key, value in generation_params.items():
         try:

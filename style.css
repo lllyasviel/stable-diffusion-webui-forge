@@ -1659,3 +1659,7 @@ body.resizing .resize-handle {
     visibility: visible;
     width: auto;
 }
+
+.prompt textarea[disabled] {
+    opacity: 0.25 !important;
+}

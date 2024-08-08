@@ -38,20 +38,7 @@ class CFGDenoiserTimesteps(CFGDenoiser):
 
     def __init__(self, sampler):
         super().__init__(sampler)
-
-        self.alphas = 1.0 / (shared.sd_model.forge_objects.unet.model.predictor.sigmas ** 2.0 + 1.0)
         self.classic_ddim_eps_estimation = True
-
-    def get_pred_x0(self, x_in, x_out, sigma):
-        ts = sigma.to(dtype=int)
-        self.alphas = self.alphas.to(ts.device)
-
-        a_t = self.alphas[ts][:, None, None, None]
-        sqrt_one_minus_at = (1 - a_t).sqrt()
-
-        pred_x0 = (x_in - sqrt_one_minus_at * x_out) / a_t.sqrt()
-
-        return pred_x0
 
     @property
     def inner_model(self):

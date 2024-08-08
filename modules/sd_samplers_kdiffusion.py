@@ -133,8 +133,6 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 
-        self.model_wrap.predictor.to(x.device)
-
         steps, t_enc = sd_samplers_common.setup_img2img_steps(p, steps)
 
         sigmas = self.get_sigmas(p, steps).to(x.device)
@@ -193,8 +191,6 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
-
-        self.model_wrap.predictor.to(x.device)
 
         steps = steps or p.steps
 

@@ -89,6 +89,9 @@ class ConditionConstant(Condition):
 
 
 def compile_conditions(cond):
+    if cond is None:
+        return None
+
     if isinstance(cond, torch.Tensor):
         result = dict(
             cross_attn=cond,

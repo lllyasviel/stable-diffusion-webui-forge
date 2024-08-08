@@ -136,6 +136,7 @@ class StableDiffusionProcessing:
     n_iter: int = 1
     steps: int = 50
     cfg_scale: float = 7.0
+    distilled_cfg_scale: float = 3.5
     width: int = 512
     height: int = 512
     restore_faces: bool = None
@@ -475,8 +476,8 @@ class StableDiffusionProcessing:
         return cache[1]
 
     def setup_conds(self):
-        prompts = prompt_parser.SdConditioning(self.prompts, width=self.width, height=self.height)
-        negative_prompts = prompt_parser.SdConditioning(self.negative_prompts, width=self.width, height=self.height, is_negative_prompt=True)
+        prompts = prompt_parser.SdConditioning(self.prompts, width=self.width, height=self.height, distilled_cfg_scale=self.distilled_cfg_scale)
+        negative_prompts = prompt_parser.SdConditioning(self.negative_prompts, width=self.width, height=self.height, is_negative_prompt=True, distilled_cfg_scale=self.distilled_cfg_scale)
 
         sampler_config = sd_samplers.find_sampler_config(self.sampler_name)
         total_steps = sampler_config.total_steps(self.steps) if sampler_config else self.steps

@@ -78,10 +78,13 @@ class Flux(ForgeDiffusionEngine):
         cond_l, pooled_l = self.text_processing_engine_l(prompt)
         cond_t5 = self.text_processing_engine_t5(prompt)
 
+        distilled_cfg_scale = getattr(prompt, 'distilled_cfg_scale', 3.5) or 3.5
+        print(f'distilled_cfg_scale = {distilled_cfg_scale}')
+
         cond = dict(
             crossattn=cond_t5,
             vector=pooled_l,
-            guidance=torch.FloatTensor([3.5] * len(prompt))
+            guidance=torch.FloatTensor([distilled_cfg_scale] * len(prompt))
         )
 
         return cond

@@ -13,7 +13,7 @@
 import contextlib
 
 from annotator.util import HWC3
-from modules_forge.ops import automatic_memory_management
+from backend.operations import automatic_memory_management
 from legacy_preprocessors.preprocessor_compiled import legacy_preprocessors
 from modules_forge.supported_preprocessor import Preprocessor, PreprocessorParameter
 from modules_forge.shared import add_supported_preprocessor

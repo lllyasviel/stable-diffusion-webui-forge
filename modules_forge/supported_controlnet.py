@@ -6,8 +6,7 @@ from huggingface_guess.utils import unet_to_diffusers
 from backend import memory_management
 from backend.operations import using_forge_operations
 from backend.nn.cnets import cldm
-from backend.patcher.controlnet import ControlLora, ControlNet, load_t2i_adapter
-from modules_forge.controlnet import apply_controlnet_advanced
+from backend.patcher.controlnet import ControlLora, ControlNet, load_t2i_adapter, apply_controlnet_advanced
 from modules_forge.shared import add_supported_control_model
 
 

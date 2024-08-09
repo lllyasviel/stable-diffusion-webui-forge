@@ -2,6 +2,7 @@ import collections
 import importlib
 import os
 import sys
+import math
 import threading
 import enum
 
@@ -386,10 +387,11 @@ def apply_alpha_schedule_override(sd_model, p=None):
 class FakeInitialModel:
     def __init__(self):
         self.cond_stage_model = None
+        self.chunk_length = 75
 
     def get_prompt_lengths_on_ui(self, prompt):
         r = len(prompt.strip('!,. ').replace(' ', ',').replace('.', ',').replace('!', ',').replace(',,', ',').replace(',,', ',').replace(',,', ',').replace(',,', ',').split(','))
-        return r, r
+        return r, math.ceil(max(r, 1) / self.chunk_length) * self.chunk_length
 
 
 class SdModelData:

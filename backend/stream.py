@@ -52,11 +52,10 @@ def get_new_stream():
         return None
 
 
-current_stream = None
-mover_stream = None
-using_stream = False
+def should_use_stream():
+    return stream_activated and current_stream is not None and mover_stream is not None
 
-if args.cuda_stream:
-    current_stream = get_current_stream()
-    mover_stream = get_new_stream()
-    using_stream = current_stream is not None and mover_stream is not None
+
+current_stream = get_current_stream()
+mover_stream = get_new_stream()
+stream_activated = args.cuda_stream

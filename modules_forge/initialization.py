@@ -58,7 +58,7 @@ def initialize_forge():
     modules_forge.patch_basic.patch_all_basics()
 
     from backend import stream
-    print('CUDA Stream Activated: ', stream.using_stream)
+    print('CUDA Using Stream:', stream.should_use_stream())
 
     from modules_forge.shared import diffusers_dir
 

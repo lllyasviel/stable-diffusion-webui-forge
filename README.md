@@ -4,6 +4,8 @@ WebUI Forge is under a week of major revision right now between 2024 Aug 1 and A
 
 **Current Progress (2024 Aug 7):** Backend Rewrite is 90% finished - remaining 48 hours to begin making it stable; remaining 72 hours to begin supporting many new things.
 
+Update Aug 8: Hey forgers, I have some other things tomorrow - So lets pause one day! See you later!
+
 For downloading previous versions, see [Previous Versions](https://github.com/lllyasviel/stable-diffusion-webui-forge/discussions/849).
 
 # Stable Diffusion WebUI Forge

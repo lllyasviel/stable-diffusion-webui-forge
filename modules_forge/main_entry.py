@@ -3,6 +3,7 @@ import gradio as gr
 
 from modules import shared_items, shared, ui_common, sd_models
 from modules import sd_vae as sd_vae_module
+from backend import memory_management, stream
 
 
 ui_checkpoint: gr.Dropdown = None
@@ -58,9 +59,27 @@ def make_checkpoint_manager_ui():
     ui_forge_unet_storage_dtype_options = gr.Radio(label="Diffusion in FP8", value=shared.opts.forge_unet_storage_dtype, choices=list(forge_unet_storage_dtype_options.keys()))
     bind_to_opts(ui_forge_unet_storage_dtype_options, 'forge_unet_storage_dtype', save=True, callback=refresh_model_loading_parameters)
 
+    from backend.args import args as backend_args
+
+    ui_forge_inference_memory = gr.Slider(label="Inference Memory (MB)", value=shared.opts.forge_inference_memory, minimum=0, maximum=int(memory_management.total_vram), step=128, visible=backend_args.i_am_lllyasviel)
+    bind_to_opts(ui_forge_inference_memory, 'forge_inference_memory', save=False, callback=refresh_memory_management_settings)
+
+    ui_forge_async_loading = gr.Checkbox(label="Async Loader", value=shared.opts.forge_async_loading, visible=backend_args.i_am_lllyasviel)
+    bind_to_opts(ui_forge_async_loading, 'forge_async_loading', save=False, callback=refresh_memory_management_settings)
+
     ui_clip_skip = gr.Slider(label="Clip skip", value=shared.opts.CLIP_stop_at_last_layers, **{"minimum": 1, "maximum": 12, "step": 1})
     bind_to_opts(ui_clip_skip, 'CLIP_stop_at_last_layers', save=False)
 
+    return
+
+
+def refresh_memory_management_settings():
+    stream.stream_activated = shared.opts.forge_async_loading
+    memory_management.current_inference_memory = shared.opts.forge_inference_memory * 1024 * 1024
+
+    print(f'Stream Set to: {stream.stream_activated}')
+    print(f'Stream Used by CUDA: {stream.should_use_stream()}')
+    print(f'Current Inference Memory: {memory_management.minimum_inference_memory() / (1024 * 1024):.2f} MB')
     return
 
 

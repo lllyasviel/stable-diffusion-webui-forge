@@ -1663,3 +1663,7 @@ body.resizing .resize-handle {
 .prompt textarea[disabled] {
     opacity: 0.25 !important;
 }
+
+#quicksettings .gradio-slider span {
+    padding-right: 5px;
+}

@@ -4,4 +4,5 @@ def register(options_templates, options_section, OptionInfo):
         "forge_unet_storage_dtype": OptionInfo('None'),
         "forge_inference_memory": OptionInfo(1024),
         "forge_async_loading": OptionInfo(False),
+        "forge_pin_shared_memory": OptionInfo(False),
     }))

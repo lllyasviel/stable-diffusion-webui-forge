@@ -6,6 +6,8 @@ from modules import sd_vae as sd_vae_module
 from backend import memory_management, stream
 
 
+total_vram = int(memory_management.total_vram)
+
 ui_checkpoint: gr.Dropdown = None
 ui_vae: gr.Dropdown = None
 ui_clip_skip: gr.Slider = None
@@ -61,11 +63,15 @@ def make_checkpoint_manager_ui():
 
     from backend.args import args as backend_args
 
-    ui_forge_inference_memory = gr.Slider(label="Inference Memory (MB)", value=shared.opts.forge_inference_memory, minimum=0, maximum=int(memory_management.total_vram), step=128, visible=backend_args.i_am_lllyasviel)
-    bind_to_opts(ui_forge_inference_memory, 'forge_inference_memory', save=False, callback=refresh_memory_management_settings)
-
+    ui_forge_inference_memory = gr.Slider(label="Model Memory (MB)", value=total_vram - shared.opts.forge_inference_memory, minimum=0, maximum=int(memory_management.total_vram), step=1, visible=backend_args.i_am_lllyasviel)
     ui_forge_async_loading = gr.Checkbox(label="Async Loader", value=shared.opts.forge_async_loading, visible=backend_args.i_am_lllyasviel)
-    bind_to_opts(ui_forge_async_loading, 'forge_async_loading', save=False, callback=refresh_memory_management_settings)
+    ui_forge_pin_shared_memory = gr.Checkbox(label="Offload to Shared Memory", value=shared.opts.forge_pin_shared_memory, visible=backend_args.i_am_lllyasviel)
+
+    mem_comps = [ui_forge_inference_memory, ui_forge_async_loading, ui_forge_pin_shared_memory]
+
+    ui_forge_inference_memory.change(refresh_memory_management_settings, inputs=mem_comps)
+    ui_forge_async_loading.change(refresh_memory_management_settings, inputs=mem_comps)
+    ui_forge_pin_shared_memory.change(refresh_memory_management_settings, inputs=mem_comps)
 
     ui_clip_skip = gr.Slider(label="Clip skip", value=shared.opts.CLIP_stop_at_last_layers, **{"minimum": 1, "maximum": 12, "step": 1})
     bind_to_opts(ui_clip_skip, 'CLIP_stop_at_last_layers', save=False)
@@ -73,13 +79,21 @@ def make_checkpoint_manager_ui():
     return
 
 
-def refresh_memory_management_settings():
-    stream.stream_activated = shared.opts.forge_async_loading
-    memory_management.current_inference_memory = shared.opts.forge_inference_memory * 1024 * 1024
+def refresh_memory_management_settings(model_memory, async_loading, pin_shared_memory):
+    inference_memory = total_vram - model_memory
+
+    shared.opts.set('forge_async_loading', async_loading)
+    shared.opts.set('forge_inference_memory', inference_memory)
+    shared.opts.set('forge_pin_shared_memory', pin_shared_memory)
+
+    stream.stream_activated = async_loading
+    memory_management.current_inference_memory = inference_memory * 1024 * 1024
+    memory_management.PIN_SHARED_MEMORY = pin_shared_memory
 
     print(f'Stream Set to: {stream.stream_activated}')
     print(f'Stream Used by CUDA: {stream.should_use_stream()}')
     print(f'Current Inference Memory: {memory_management.minimum_inference_memory() / (1024 * 1024):.2f} MB')
+    print(f'PIN Shared Memory: {pin_shared_memory}')
     return
 
 

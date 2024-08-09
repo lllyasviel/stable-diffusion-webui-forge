@@ -1,7 +1,7 @@
 import torch
 import gradio as gr
 
-from modules import shared_items, shared, ui_common, sd_models
+from modules import shared_items, shared, ui_common, sd_models, processing
 from modules import sd_vae as sd_vae_module
 from backend import memory_management, stream
 
@@ -94,6 +94,8 @@ def refresh_memory_management_settings(model_memory, async_loading, pin_shared_m
     print(f'Stream Used by CUDA: {stream.should_use_stream()}')
     print(f'Current Inference Memory: {memory_management.minimum_inference_memory() / (1024 * 1024):.2f} MB')
     print(f'PIN Shared Memory: {pin_shared_memory}')
+
+    processing.need_global_unload = True
     return
 
 

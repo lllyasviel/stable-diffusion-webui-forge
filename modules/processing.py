@@ -32,6 +32,7 @@ from einops import repeat, rearrange
 from blendmodes.blend import blendLayers, BlendType
 from modules.sd_models import apply_token_merging, forge_model_reload
 from modules_forge.utils import apply_circular_forge
+from backend import memory_management
 
 
 # some of those options should not be changed at all because they would break the model, so I removed them from options.
@@ -773,7 +774,16 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
     return f"{prompt_text}{negative_prompt_text}\n{generation_params_text}".strip()
 
 
+need_global_unload = False
+
+
 def process_images(p: StableDiffusionProcessing) -> Processed:
+    global need_global_unload
+
+    if need_global_unload:
+        need_global_unload = False
+        memory_management.unload_all_models()
+
     p.sd_model = forge_model_reload()
 
     if p.scripts is not None:

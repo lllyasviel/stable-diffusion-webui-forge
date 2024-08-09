@@ -382,16 +382,23 @@ def apply_alpha_schedule_override(sd_model, p=None):
         sd_model.alphas_cumprod = rescale_zero_terminal_snr_abar(sd_model.alphas_cumprod).to(shared.device)
 
 
+# This is a dummy class for backward compatibility when model is not load - for extensions like prompt all in one.
+class FakeInitialModel:
+    def __init__(self):
+        self.cond_stage_model = None
+
+    def get_prompt_lengths_on_ui(self, prompt):
+        r = len(prompt.strip('!,. ').replace(' ', ',').replace('.', ',').replace('!', ',').replace(',,', ',').replace(',,', ',').replace(',,', ',').replace(',,', ',').split(','))
+        return r, r
+
+
 class SdModelData:
     def __init__(self):
-        self.sd_model = None
+        self.sd_model = FakeInitialModel()
         self.forge_loading_parameters = {}
         self.forge_hash = ''
 
     def get_sd_model(self):
-        if self.sd_model is None:
-            raise ValueError('Something went wrong! Model is not loaded yet ...')
-
         return self.sd_model
 
     def set_sd_model(self, v):

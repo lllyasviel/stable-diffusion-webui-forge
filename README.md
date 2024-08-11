@@ -30,8 +30,6 @@ Some other CUDA/Torch Versions:
 
 [Forge with CUDA 12.1 + Pytorch 2.1](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu121_torch21.7z) <- the previously used old environments
 
-If your device does not support CUDA 12.4 (if you get error "Torch is not able to use GPU"), here is [the CUDA 12.1 version](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu121_torch21.7z).
-
 After you download, you uncompress, use `update.bat` to update, and use `run.bat` to run.
 
 Note that running `update.bat` is important, otherwise you may be using a previous version with potential bugs unfixed.

@@ -4,6 +4,8 @@ WebUI Forge is under a week of major revision right now between 2024 Aug 1 and A
 
 **Current Progress (2024 Aug 10):** Backend Rewrite is 95% finished.
 
+Update Aug 11: Hey everyone it seems that xformers are somewhat broken now - if you see "NoneType object is not iterable", just uninstall xformers. I will find a fix later when I get more free time.
+
 # Stable Diffusion WebUI Forge
 
 Stable Diffusion WebUI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) (based on [Gradio](https://www.gradio.app/)) to make development easier, optimize resource management, speed up inference, and study experimental features.

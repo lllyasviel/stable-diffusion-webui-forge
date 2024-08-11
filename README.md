@@ -20,7 +20,9 @@ If you know what you are doing, you can install Forge using same method as SD-We
 
 **Or you can just use this one-click installation package (with git and python included).**
 
-[>>> Click Here to Download One-Click Package <<<](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu124_torch24.7z)
+[>>> Click Here to Download One-Click Package (CUDA 12.4) <<<](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu124_torch24.7z)
+
+If your device does not support CUDA 12.4, here is [the CUDA 12.1 version](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu121_torch21.7z).
 
 After you download, you uncompress, use `update.bat` to update, and use `run.bat` to run.
 

@@ -2,11 +2,7 @@
 
 WebUI Forge is under a week of major revision right now between 2024 Aug 1 and Aug 10. To join the test, just update to the latest unstable version.
 
-**Current Progress (2024 Aug 7):** Backend Rewrite is 90% finished - remaining 48 hours to begin making it stable; remaining 72 hours to begin supporting many new things.
-
-Update Aug 8: Hey forgers, I have some other things tomorrow - So lets pause one day! See you later!
-
-For downloading previous versions, see [Previous Versions](https://github.com/lllyasviel/stable-diffusion-webui-forge/discussions/849).
+**Current Progress (2024 Aug 10):** Backend Rewrite is 95% finished.
 
 # Stable Diffusion WebUI Forge
 
@@ -24,7 +20,7 @@ If you know what you are doing, you can install Forge using same method as SD-We
 
 **Or you can just use this one-click installation package (with git and python included).**
 
-[>>> Click Here to Download One-Click Package <<<](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu121_torch21.7z)
+[>>> Click Here to Download One-Click Package <<<](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu124_torch24.7z)
 
 After you download, you uncompress, use `update.bat` to update, and use `run.bat` to run.
 

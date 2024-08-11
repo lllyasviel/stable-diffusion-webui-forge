@@ -4,8 +4,6 @@ WebUI Forge is under a week of major revision right now between 2024 Aug 1 and A
 
 **Current Progress (2024 Aug 10):** Backend Rewrite is 95% finished.
 
-Update Aug 11: Hey everyone it seems that xformers are somewhat broken now - if you see "NoneType object is not iterable", just uninstall xformers. I will find a fix later when I get more free time.
-
 # Stable Diffusion WebUI Forge
 
 Stable Diffusion WebUI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) (based on [Gradio](https://www.gradio.app/)) to make development easier, optimize resource management, speed up inference, and study experimental features.
@@ -22,7 +20,13 @@ If you know what you are doing, you can install Forge using same method as SD-We
 
 **Or you can just use this one-click installation package (with git and python included).**
 
-[>>> Click Here to Download One-Click Package (CUDA 12.4) <<<](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu124_torch24.7z)
+[>>> Click Here to Download One-Click Package (CUDA 12.1 + Pytorch 2.3.1) <<<](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu124_torch24.7z)
+
+Some other CUDA/Torch Versions:
+
+[Forge with CUDA 12.4 + Pytorch 2.4](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu124_torch24.7z) <- faster, but MSVC may be broken, xformers may not work
+
+[Forge with CUDA 12.1 + Pytorch 2.1](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu121_torch21.7z) <- the previously used old environments
 
 If your device does not support CUDA 12.4 (if you get error "Torch is not able to use GPU"), here is [the CUDA 12.1 version](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu121_torch21.7z).
 

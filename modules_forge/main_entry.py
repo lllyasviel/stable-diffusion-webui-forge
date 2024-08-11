@@ -126,7 +126,7 @@ def refresh_model_loading_parameters():
     model_data.forge_loading_parameters = dict(
         checkpoint_info=checkpoint_info,
         vae_filename=vae_resolution.vae,
-        unet_storage_dtype=forge_unet_storage_dtype_options[shared.opts.forge_unet_storage_dtype]
+        unet_storage_dtype=forge_unet_storage_dtype_options.get(shared.opts.forge_unet_storage_dtype, None)
     )
 
     print(f'Model selected: {model_data.forge_loading_parameters}')

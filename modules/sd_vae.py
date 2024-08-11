@@ -191,7 +191,7 @@ def load_vae_dict(filename, map_location):
 
 
 def load_vae(model, vae_file=None, vae_source="from unknown source"):
-    raise NotImplementedError('Forge does not use this!')
+    pass
 
 
 # don't call this from outside
@@ -207,4 +207,4 @@ unspecified = object()
 
 
 def reload_vae_weights(sd_model=None, vae_file=unspecified):
-    raise NotImplementedError('Forge does not use this!')
+    pass

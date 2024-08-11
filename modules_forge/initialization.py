@@ -54,6 +54,10 @@ def initialize_forge():
     torch.zeros((1, 1)).to(device, torch.float32)
     memory_management.soft_empty_cache()
 
+    if memory_management.can_install_bnb():
+        from modules_forge.bnb_installer import try_install_bnb
+        try_install_bnb()
+
     import modules_forge.patch_basic
     modules_forge.patch_basic.patch_all_basics()
 

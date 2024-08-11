@@ -1,9 +1,7 @@
-import math
 import torch
 
 from collections import namedtuple
 from backend.text_processing import parsing, emphasis
-from backend.text_processing.textual_inversion import EmbeddingDatabase
 from backend import memory_management
 
 
@@ -49,9 +47,6 @@ class T5TextProcessingEngine:
 
             if mult != 1.0:
                 self.token_mults[ident] = mult
-
-    def get_target_prompt_token_count(self, token_count):
-        return token_count
 
     def tokenize(self, texts):
         tokenized = self.tokenizer(texts, truncation=False, add_special_tokens=False)["input_ids"]
@@ -112,45 +107,33 @@ class T5TextProcessingEngine:
 
         return chunks, token_count
 
-    def process_texts(self, texts):
-        token_count = 0
-
+    def __call__(self, texts):
+        zs = []
         cache = {}
-        batch_chunks = []
+
         for line in texts:
             if line in cache:
-                chunks = cache[line]
+                line_z_values = cache[line]
             else:
-                chunks, current_token_count = self.tokenize_line(line)
-                token_count = max(current_token_count, token_count)
+                chunks, token_count = self.tokenize_line(line)
+                line_z_values = []
+                for chunk in chunks:
+                    tokens = chunk.tokens
+                    multipliers = chunk.multipliers
+                    z = self.process_tokens([tokens], [multipliers])[0]
+                    line_z_values.append(z)
+                cache[line] = line_z_values
 
-                cache[line] = chunks
+            zs.extend(line_z_values)
 
-            batch_chunks.append(chunks)
+        return torch.stack(zs)
 
-        return batch_chunks, token_count
-
-    def __call__(self, texts):
-        batch_chunks, token_count = self.process_texts(texts)
-        chunk_count = max([len(x) for x in batch_chunks])
-
-        zs = []
-
-        for i in range(chunk_count):
-            batch_chunk = [chunks[i] for chunks in batch_chunks]
-            tokens = [x.tokens for x in batch_chunk]
-            multipliers = [x.multipliers for x in batch_chunk]
-            z = self.process_tokens(tokens, multipliers)
-            zs.append(z)
-
-        return torch.hstack(zs)
-
-    def process_tokens(self, remade_batch_tokens, batch_multipliers):
-        tokens = torch.asarray(remade_batch_tokens)
+    def process_tokens(self, batch_tokens, batch_multipliers):
+        tokens = torch.asarray(batch_tokens)
 
         z = self.encode_with_transformers(tokens)
 
-        self.emphasis.tokens = remade_batch_tokens
+        self.emphasis.tokens = batch_tokens
         self.emphasis.multipliers = torch.asarray(batch_multipliers).to(z)
         self.emphasis.z = z
         self.emphasis.after_transformers()

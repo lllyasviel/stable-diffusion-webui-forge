@@ -7,7 +7,7 @@ from backend.patcher.vae import VAE
 from backend.patcher.unet import UnetPatcher
 from backend.text_processing.classic_engine import ClassicTextProcessingEngine
 from backend.text_processing.t5_engine import T5TextProcessingEngine
-from backend.args import dynamic_args, args
+from backend.args import dynamic_args
 from backend.modules.k_prediction import PredictionFlux
 from backend import memory_management
 
@@ -16,9 +16,6 @@ class Flux(ForgeDiffusionEngine):
     matched_guesses = [model_list.Flux]
 
     def __init__(self, estimated_config, huggingface_components):
-        if not args.i_am_lllyasviel:
-            raise NotImplementedError('Flux is not implemented yet!')
-
         super().__init__(estimated_config, huggingface_components)
         self.is_inpaint = False
 
@@ -68,9 +65,6 @@ class Flux(ForgeDiffusionEngine):
 
         self.use_distilled_cfg_scale = True
 
-        # WebUI Legacy
-        self.first_stage_model = vae.first_stage_model
-
     def set_clip_skip(self, clip_skip):
         self.text_processing_engine_l.clip_skip = clip_skip
 
@@ -93,7 +87,7 @@ class Flux(ForgeDiffusionEngine):
 
     @torch.inference_mode()
     def get_prompt_lengths_on_ui(self, prompt):
-        _, token_count = self.text_processing_engine_t5.process_texts([prompt])
+        token_count = len(self.text_processing_engine_t5.tokenize([prompt])[0])
         return token_count, max(255, token_count)
 
     @torch.inference_mode()

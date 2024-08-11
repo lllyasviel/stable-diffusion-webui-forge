@@ -428,11 +428,17 @@ class ControlLora(ControlNet):
         controlnet_config = model.diffusion_model.config.copy()
         controlnet_config.pop("out_channels")
         controlnet_config["hint_channels"] = self.control_weights["input_hint_block.0.weight"].shape[1]
-        controlnet_config["dtype"] = dtype = model.storage_dtype
+
+        dtype = model.storage_dtype
+
+        if dtype in ['nf4', 'fp4']:
+            dtype = torch.float16
+
+        controlnet_config["dtype"] = dtype
 
         self.manual_cast_dtype = model.computation_dtype
 
-        with using_forge_operations(operations=ControlLoraOps):
+        with using_forge_operations(operations=ControlLoraOps, dtype=dtype):
             self.control_model = cldm.ControlNet(**controlnet_config)
 
         self.control_model.to(device=memory_management.get_torch_device(), dtype=dtype)

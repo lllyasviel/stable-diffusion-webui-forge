@@ -780,11 +780,12 @@ need_global_unload = False
 def process_images(p: StableDiffusionProcessing) -> Processed:
     global need_global_unload
 
-    if need_global_unload:
-        need_global_unload = False
+    p.sd_model, just_reloaded = forge_model_reload()
+
+    if need_global_unload and not just_reloaded:
         memory_management.unload_all_models()
 
-    p.sd_model = forge_model_reload()
+    need_global_unload = False
 
     if p.scripts is not None:
         p.scripts.before_process(p)

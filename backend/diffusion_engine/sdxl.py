@@ -72,7 +72,6 @@ class StableDiffusionXL(ForgeDiffusionEngine):
 
         # WebUI Legacy
         self.is_sdxl = True
-        self.first_stage_model = vae.first_stage_model
 
     def set_clip_skip(self, clip_skip):
         self.text_processing_engine_l.clip_skip = clip_skip

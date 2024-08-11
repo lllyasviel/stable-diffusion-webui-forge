@@ -159,7 +159,7 @@ def setup_model():
 
 
 def checkpoint_tiles(use_short=False):
-    return [x.short_title if use_short else x.title for x in checkpoints_list.values()]
+    return [x.short_title if use_short else x.name for x in checkpoints_list.values()]
 
 
 def list_models():
@@ -475,7 +475,7 @@ def forge_model_reload():
     current_hash = str(model_data.forge_loading_parameters)
 
     if model_data.forge_hash == current_hash:
-        return model_data.sd_model
+        return model_data.sd_model, False
 
     print('Loading Model: ' + str(model_data.forge_loading_parameters))
 
@@ -536,4 +536,4 @@ def forge_model_reload():
 
     model_data.forge_hash = current_hash
 
-    return sd_model
+    return sd_model, True

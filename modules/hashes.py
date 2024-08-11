@@ -8,7 +8,7 @@ dump_cache = modules.cache.dump_cache
 cache = modules.cache.cache
 
 
-def calculate_sha256(filename):
+def calculate_sha256_real(filename):
     hash_sha256 = hashlib.sha256()
     blksize = 1024 * 1024
 
@@ -16,6 +16,17 @@ def calculate_sha256(filename):
         for chunk in iter(lambda: f.read(blksize), b""):
             hash_sha256.update(chunk)
 
+    return hash_sha256.hexdigest()
+
+
+def calculate_sha256(filename):
+    return forge_fake_calculate_sha256(filename)
+
+
+def forge_fake_calculate_sha256(filename):
+    basename = os.path.basename(filename)
+    hash_sha256 = hashlib.sha256()
+    hash_sha256.update(basename.encode('utf-8'))
     return hash_sha256.hexdigest()
 
 
@@ -49,11 +60,7 @@ def sha256(filename, title, use_addnet_hash=False):
         return None
 
     print(f"Calculating sha256 for {filename}: ", end='')
-    if use_addnet_hash:
-        with open(filename, "rb") as file:
-            sha256_value = addnet_hash_safetensors(file)
-    else:
-        sha256_value = calculate_sha256(filename)
+    sha256_value = forge_fake_calculate_sha256(filename)
     print(f"{sha256_value}")
 
     hashes[title] = {

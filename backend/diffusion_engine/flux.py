@@ -77,14 +77,12 @@ class Flux(ForgeDiffusionEngine):
         memory_management.load_model_gpu(self.forge_objects.clip.patcher)
         cond_l, pooled_l = self.text_processing_engine_l(prompt)
         cond_t5 = self.text_processing_engine_t5(prompt)
-
-        distilled_cfg_scale = getattr(prompt, 'distilled_cfg_scale', 3.5) or 3.5
-        print(f'distilled_cfg_scale = {distilled_cfg_scale}')
-
         cond = dict(crossattn=cond_t5, vector=pooled_l)
 
         if self.use_distilled_cfg_scale:
+            distilled_cfg_scale = getattr(prompt, 'distilled_cfg_scale', 3.5) or 3.5
             cond['guidance'] = torch.FloatTensor([distilled_cfg_scale] * len(prompt))
+            print(f'Distilled CFG Scale: {distilled_cfg_scale}')
         else:
             print('Distilled CFG Scale will be ignored for Schnell')
 

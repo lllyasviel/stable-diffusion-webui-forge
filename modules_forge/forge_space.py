@@ -23,6 +23,9 @@ def open_another():
     while not stop_event.is_set():
         stop_event.wait(0.1)  # Checks every 100ms if the event is set
 
+    demo.close()
+    print('ended')
+
 
 def main_ui():
     btn = gr.Button('Run')

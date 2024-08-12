@@ -2,7 +2,7 @@
 
 WebUI Forge is under a week of major revision right now between 2024 Aug 1 and Aug 10. To join the test, just update to the latest unstable version.
 
-**Current Progress (2024 Aug 10):** Backend Rewrite is 95% finished.
+**Current Progress (2024 Aug 10):** Backend Rewrite is 95.5% finished.
 
 # Stable Diffusion WebUI Forge
 

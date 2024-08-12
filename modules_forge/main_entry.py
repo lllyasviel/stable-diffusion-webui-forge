@@ -217,7 +217,7 @@ def on_preset_change(preset=None):
             gr.update(value=512),  # ui_txt2img_width
             gr.update(value=512),  # ui_img2img_width
             gr.update(value=640),  # ui_txt2img_height
-            gr.update(value=640),  # ui_img2img_height
+            gr.update(value=512),  # ui_img2img_height
             gr.update(value=7),  # ui_txt2img_cfg
             gr.update(value=7),  # ui_img2img_cfg
             gr.update(visible=False, value=3.5),  # ui_txt2img_distilled_cfg
@@ -238,9 +238,9 @@ def on_preset_change(preset=None):
             gr.update(visible=False, value='CPU'),  # ui_forge_pin_shared_memory
             gr.update(visible=False, value=total_vram - 1024),  # ui_forge_inference_memory
             gr.update(value=896),  # ui_txt2img_width
-            gr.update(value=896),  # ui_img2img_width
+            gr.update(value=1024),  # ui_img2img_width
             gr.update(value=1152),  # ui_txt2img_height
-            gr.update(value=1152),  # ui_img2img_height
+            gr.update(value=1024),  # ui_img2img_height
             gr.update(value=5),  # ui_txt2img_cfg
             gr.update(value=5),  # ui_img2img_cfg
             gr.update(visible=False, value=3.5),  # ui_txt2img_distilled_cfg
@@ -261,9 +261,9 @@ def on_preset_change(preset=None):
             gr.update(visible=True, value='CPU'),  # ui_forge_pin_shared_memory
             gr.update(visible=True, value=total_vram - 1024),  # ui_forge_inference_memory
             gr.update(value=896),  # ui_txt2img_width
-            gr.update(value=896),  # ui_img2img_width
+            gr.update(value=1024),  # ui_img2img_width
             gr.update(value=1152),  # ui_txt2img_height
-            gr.update(value=1152),  # ui_img2img_height
+            gr.update(value=1024),  # ui_img2img_height
             gr.update(value=1),  # ui_txt2img_cfg
             gr.update(value=1),  # ui_img2img_cfg
             gr.update(visible=True, value=3.5),  # ui_txt2img_distilled_cfg
@@ -283,9 +283,9 @@ def on_preset_change(preset=None):
         gr.update(visible=True, value='CPU'),  # ui_forge_pin_shared_memory
         gr.update(visible=True, value=total_vram - 1024),  # ui_forge_inference_memory
         gr.update(value=896),  # ui_txt2img_width
-        gr.update(value=896),  # ui_img2img_width
+        gr.update(value=1024),  # ui_img2img_width
         gr.update(value=1152),  # ui_txt2img_height
-        gr.update(value=1152),  # ui_img2img_height
+        gr.update(value=1024),  # ui_img2img_height
         gr.update(value=7),  # ui_txt2img_cfg
         gr.update(value=7),  # ui_img2img_cfg
         gr.update(visible=True, value=3.5),  # ui_txt2img_distilled_cfg

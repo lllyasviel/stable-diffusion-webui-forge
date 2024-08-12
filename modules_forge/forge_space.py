@@ -19,5 +19,6 @@ def open_another():
 
 def main_ui():
     btn = gr.Button('Hello')
-    btn.click(lambda: Thread(target=open_another).start())
+    thread = Thread(target=open_another)
+    btn.click(thread.start)
     return

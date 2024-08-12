@@ -1,5 +1,8 @@
 import gradio as gr
-from threading import Thread
+from threading import Thread, Event
+
+# Event to signal the thread to stop
+stop_event = Event()
 
 
 def open_another():
@@ -14,11 +17,17 @@ def open_another():
         btn = gr.Button("Run")
         btn.click(fn=update, inputs=inp, outputs=out)
 
-    demo.launch(inbrowser=True)
+    metas = demo.launch(inbrowser=True, prevent_thread_lock=True)
+
+    # Loop to keep the UI open
+    while not stop_event.is_set():
+        stop_event.wait(0.1)  # Checks every 100ms if the event is set
 
 
 def main_ui():
-    btn = gr.Button('Hello')
+    btn = gr.Button('Run')
     thread = Thread(target=open_another)
     btn.click(thread.start)
-    return
+
+    btn2 = gr.Button('Close')
+    btn2.click(fn=stop_event.set)  # Signal the thread to stop

@@ -3,14 +3,21 @@ from threading import Thread
 
 
 def open_another():
-    def greet(name):
-        return "Hello " + name + "!"
+    def update(name):
+        return f"Welcome to Gradio, {name}!"
 
-    demo = gr.Interface(fn=greet, inputs="text", outputs="text")
+    with gr.Blocks() as demo:
+        gr.Markdown("Start typing below and then click **Run** to see the output.")
+        with gr.Row():
+            inp = gr.Textbox(placeholder="What is your name?")
+            out = gr.Textbox()
+        btn = gr.Button("Run")
+        btn.click(fn=update, inputs=inp, outputs=out)
+
     demo.launch(inbrowser=True)
 
 
 def main_ui():
     btn = gr.Button('Hello')
-    btn.click(lambda: Thread(open_another).start())
+    btn.click(lambda: Thread(target=open_another).start())
     return

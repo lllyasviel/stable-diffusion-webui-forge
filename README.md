@@ -178,6 +178,8 @@ class FreeUForForge(scripts.Script):
         return
 ```
 
+See also [Forge's Unet Implementation](https://github.com/lllyasviel/stable-diffusion-webui-forge/blob/main/backend/nn/unet.py).
+
 # Under Construction
 
 This Readme is under construction ... more docs/wiki coming soon ...

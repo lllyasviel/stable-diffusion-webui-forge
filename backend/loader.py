@@ -177,7 +177,11 @@ def split_state_dict(sd, sd_vae=None):
 
 @torch.no_grad()
 def forge_loader(sd, sd_vae=None):
-    state_dicts, estimated_config = split_state_dict(sd, sd_vae=sd_vae)
+    try:
+        state_dicts, estimated_config = split_state_dict(sd, sd_vae=sd_vae)
+    except:
+        raise ValueError('Failed to recognize model type!')
+    
     repo_name = estimated_config.huggingface_repo
 
     local_path = os.path.join(dir_path, 'huggingface', repo_name)

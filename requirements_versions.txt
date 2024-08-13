@@ -36,3 +36,4 @@ pillow-avif-plugin==1.4.3
 basicsr==1.4.2
 diffusers==0.29.2
 gradio_rangeslider==0.0.6
+tqdm==4.66.1

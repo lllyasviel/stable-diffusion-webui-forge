@@ -8,7 +8,7 @@ from backend.patcher.base import ModelPatcher
 class UnetPatcher(ModelPatcher):
     @classmethod
     def from_model(cls, model, diffusers_scheduler, config, k_predictor=None):
-        model = KModel(model=model, diffusers_scheduler=diffusers_scheduler, k_predictor=k_predictor)
+        model = KModel(model=model, diffusers_scheduler=diffusers_scheduler, k_predictor=k_predictor, config=config)
         return UnetPatcher(
             model,
             load_device=model.diffusion_model.load_device,

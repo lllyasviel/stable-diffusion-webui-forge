@@ -251,7 +251,7 @@ class ModelPatcher:
             weight = model_state_dict[key]
 
             if weight.dtype == torch.uint8:
-                raise NotImplementedError('LoRAs for NF4/FP4 models are under construction is not available now.\nSorry for the inconvenience!')
+                raise NotImplementedError('LoRAs for NF4/FP4 models are under construction and not available now.\nSorry for the inconvenience!')
 
             inplace_update = self.weight_inplace_update
 

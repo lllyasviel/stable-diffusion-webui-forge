@@ -26,10 +26,10 @@ class Task:
 
     def work(self):
         global last_exception
-        self.exception = None
-        last_exception = None
         try:
             self.result = self.func(*self.args, **self.kwargs)
+            self.exception = None
+            last_exception = None
         except Exception as e:
             traceback.print_exc()
             print(e)

@@ -384,6 +384,7 @@ class LoadedModel:
         if not do_not_need_cpu_swap:
             memory_in_swap = 0
             mem_counter = 0
+            mem_cannot_cast = 0
             for m in self.real_model.modules():
                 if hasattr(m, "parameters_manual_cast"):
                     m.prev_parameters_manual_cast = m.parameters_manual_cast
@@ -399,8 +400,12 @@ class LoadedModel:
                             m._apply(lambda x: x.pin_memory())
                 elif hasattr(m, "weight"):
                     m.to(self.device)
-                    mem_counter += module_size(m)
-                    print(f"[Memory Management] Swap disabled for", type(m).__name__)
+                    module_mem = module_size(m)
+                    mem_counter += module_mem
+                    mem_cannot_cast += module_mem
+
+            if mem_cannot_cast > 0:
+                print(f"[Memory Management] Loaded to GPU for backward capability: {mem_cannot_cast / (1024 * 1024):.2f} MB")
 
             swap_flag = 'Shared' if PIN_SHARED_MEMORY else 'CPU'
             method_flag = 'asynchronous' if stream.should_use_stream() else 'blocked'

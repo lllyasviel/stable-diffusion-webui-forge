@@ -440,7 +440,13 @@ div.toprow-compact-tools{
 }
 
 #quicksettings > div.model_selection{
-    min-width: 24em !important;
+    min-width: 20em !important;
+}
+
+#quicksettings .subdued{
+    display: block;
+    margin-left: auto;
+    width: 30px;
 }
 
 #settings{

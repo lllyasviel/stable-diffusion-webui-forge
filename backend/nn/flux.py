@@ -228,7 +228,7 @@ class DoubleStreamBlock(nn.Module):
         del txt_v, img_v
 
         attn = attention(q, k, v, pe=pe)
-        del pe
+        del pe, q, k, v
         txt_attn, img_attn = attn[:, :txt.shape[1]], attn[:, txt.shape[1]:]
         del attn
 

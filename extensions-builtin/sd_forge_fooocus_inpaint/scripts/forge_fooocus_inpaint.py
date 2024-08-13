@@ -1,7 +1,7 @@
 import os
 import torch
 import copy
-import backend.patcher.base
+import backend.patcher.lora
 
 from modules_forge.shared import add_supported_control_model
 from modules_forge.supported_controlnet import ControlModelPatcher
@@ -127,5 +127,5 @@ class FooocusInpaintPatcher(ControlModelPatcher):
         return
 
 
-backend.patcher.base.extra_weight_calculators['fooocus'] = calculate_weight_fooocus
+backend.patcher.lora.extra_weight_calculators['fooocus'] = calculate_weight_fooocus
 add_supported_control_model(FooocusInpaintPatcher)

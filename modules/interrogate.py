@@ -178,7 +178,7 @@ class InterrogateModels:
         ])(pil_image).unsqueeze(0).type(self.dtype).to(self.load_device)
 
         with torch.no_grad():
-            caption = self.blip_model.generate(gpu_image, sample=False, num_beams=shared.opts.interrogate_clip_num_beams, min_length=shared.opts.interrogate_clip_min_length, max_length=shared.opts.interrogate_clip_max_length)
+            caption = self.blip_model.generate(gpu_image, sample=False, num_beams=int(shared.opts.interrogate_clip_num_beams), min_length=int(shared.opts.interrogate_clip_min_length), max_length=shared.opts.interrogate_clip_max_length)
 
         return caption[0]
 

@@ -1,9 +1,3 @@
-# Under Construction
-
-WebUI Forge is under a week of major revision right now between 2024 Aug 1 and Aug 10. To join the test, just update to the latest unstable version.
-
-**Current Progress (2024 Aug 10):** Backend Rewrite is 95.5% finished.
-
 # Stable Diffusion WebUI Forge
 
 Stable Diffusion WebUI Forge is a platform on top of [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) (based on [Gradio](https://www.gradio.app/) <a href='https://github.com/gradio-app/gradio'><img src='https://img.shields.io/github/stars/gradio-app/gradio'></a>) to make development easier, optimize resource management, speed up inference, and study experimental features.
@@ -182,4 +176,4 @@ See also [Forge's Unet Implementation](https://github.com/lllyasviel/stable-diff
 
 # Under Construction
 
-This Readme is under construction ... more docs/wiki coming soon ...
+WebUI Forge is now under some constructions, and docs / UI / functionality may change with updates.

@@ -105,7 +105,8 @@ class ForgeLoader4Bit(torch.nn.Module):
                 self.weight = ForgeParams4bit(
                     state_dict[prefix + 'weight'].to(self.dummy),
                     requires_grad=False,
-                    compress_statistics=True,
+                    compress_statistics=False,
+                    blocksize=64,
                     quant_type=self.quant_type,
                     quant_storage=torch.uint8,
                     module=self,

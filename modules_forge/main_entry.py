@@ -22,10 +22,10 @@ ui_forge_inference_memory: gr.Slider = None
 
 forge_unet_storage_dtype_options = {
     'Auto': None,
-    'nf4': 'nf4',
-    'fp8e4': torch.float8_e4m3fn,
-    'fp4': 'fp4',
-    'fp8e5': torch.float8_e5m2,
+    'bnb-nf4': 'nf4',
+    'float8-e4m3fn': torch.float8_e4m3fn,
+    'bnb-fp4': 'fp4',
+    'float8-e5m2': torch.float8_e5m2,
 }
 
 module_list = {}
@@ -94,7 +94,7 @@ def make_checkpoint_manager_ui():
 
     ui_vae.render()
 
-    ui_forge_unet_storage_dtype_options = gr.Radio(label="Diffusion with Low Bits", value=lambda: shared.opts.forge_unet_storage_dtype, choices=list(forge_unet_storage_dtype_options.keys()))
+    ui_forge_unet_storage_dtype_options = gr.Dropdown(label="Diffusion in Low Bits", value=lambda: shared.opts.forge_unet_storage_dtype, choices=list(forge_unet_storage_dtype_options.keys()))
     bind_to_opts(ui_forge_unet_storage_dtype_options, 'forge_unet_storage_dtype', save=True, callback=refresh_model_loading_parameters)
 
     ui_forge_async_loading = gr.Radio(label="Swap Method", value=lambda: shared.opts.forge_async_loading, choices=['Queue', 'Async'])

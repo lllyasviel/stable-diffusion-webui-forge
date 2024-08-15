@@ -25,6 +25,8 @@ def monitor_module_moving():
 
 
 def initialize_forge():
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'packages_3rdparty'))
+
     bad_list = ['--lowvram', '--medvram', '--medvram-sdxl']
 
     for bad in bad_list:

@@ -278,6 +278,9 @@ class ModelPatcher:
                     else:
                         weight = weight.data
 
+            if hasattr(weight, 'is_gguf'):
+                raise NotImplementedError('LoRAs for GGUF model are under construction!')
+
             weight_original_dtype = weight.dtype
             to_args = dict(dtype=torch.float32)
 

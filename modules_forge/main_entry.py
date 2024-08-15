@@ -133,17 +133,21 @@ def refresh_models():
     shared_items.refresh_checkpoints()
     ckpt_list = shared_items.list_checkpoint_tiles(shared.opts.sd_checkpoint_dropdown_use_short)
 
-    vae_path = os.path.abspath(os.path.join(paths.models_path, "VAE"))
-    text_encoder_path = os.path.abspath(os.path.join(paths.models_path, "text_encoder"))
     file_extensions = ['ckpt', 'pt', 'bin', 'safetensors']
 
     module_list.clear()
+    
+    module_paths = [
+        os.path.abspath(os.path.join(paths.models_path, "VAE")),
+        os.path.abspath(os.path.join(paths.models_path, "text_encoder")),
+    ]
 
-    vae_files = find_files_with_extensions(vae_path, file_extensions)
-    module_list.update(vae_files)
+    if isinstance(shared.cmd_opts.vae_dir, str):
+        module_paths.append(os.path.abspath(shared.cmd_opts.vae_dir))
 
-    text_encoder_files = find_files_with_extensions(text_encoder_path, file_extensions)
-    module_list.update(text_encoder_files)
+    for vae_path in module_paths:
+        vae_files = find_files_with_extensions(vae_path, file_extensions)
+        module_list.update(vae_files)
 
     return ckpt_list, module_list.keys()
 

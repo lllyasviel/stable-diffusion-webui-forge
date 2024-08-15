@@ -10,6 +10,7 @@ from torch import nn
 from einops import rearrange, repeat
 from backend.attention import attention_function
 from backend.utils import fp16_fix
+from backend import memory_management
 
 
 def attention(q, k, v, pe):
@@ -19,11 +20,16 @@ def attention(q, k, v, pe):
 
 
 def rope(pos, dim, theta):
-    scale = torch.arange(0, dim, 2, dtype=torch.float64, device=pos.device) / dim
+    if memory_management.is_device_mps(pos.device) or memory_management.is_intel_xpu():
+        device = torch.device("cpu")
+    else:
+        device = pos.device
+
+    scale = torch.arange(0, dim, 2, dtype=torch.float64, device=device) / dim
     omega = 1.0 / (theta ** scale)
 
     # out = torch.einsum("...n,d->...nd", pos, omega)
-    out = pos.unsqueeze(-1) * omega.unsqueeze(0)
+    out = pos.unsqueeze(-1).to(device) * omega.unsqueeze(0)
 
     cos_out = torch.cos(out)
     sin_out = torch.sin(out)
@@ -34,7 +40,7 @@ def rope(pos, dim, theta):
     b, n, d, _ = out.shape
     out = out.view(b, n, d, 2, 2)
 
-    return out.float()
+    return out.float().to(pos.device)
 
 
 def apply_rope(xq, xk, freqs_cis):

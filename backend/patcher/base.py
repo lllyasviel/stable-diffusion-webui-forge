@@ -255,9 +255,23 @@ class ModelPatcher:
             if key not in self.backup:
                 self.backup[key] = weight.to(device=self.offload_device)
 
+            bnb_layer = None
+
             if operations.bnb_avaliable:
                 if hasattr(weight, 'bnb_quantized'):
-                    raise NotImplementedError('LoRAs for NF4/FP4 models are under construction and not available now.\nSorry for the inconvenience!')
+                    assert weight.module is not None, 'BNB bad weight without parent layer!'
+                    bnb_layer = weight.module
+                    if weight.bnb_quantized:
+                        if device_to is not None:
+                            assert device_to.type == 'cuda', 'BNB Must use CUDA!'
+                            weight = weight.to(device_to)
+                        else:
+                            weight = weight.cuda()
+
+                        from backend.operations_bnb import functional_dequantize_4bit
+                        weight = functional_dequantize_4bit(weight)
+                    else:
+                        weight = weight.data
 
             to_args = dict(dtype=torch.float32)
 
@@ -268,6 +282,10 @@ class ModelPatcher:
             temp_weight = weight.to(**to_args)
 
             out_weight = merge_lora_to_model_weight(current_patches, temp_weight, key).to(weight.dtype)
+
+            if bnb_layer is not None:
+                bnb_layer.reload_weight(out_weight)
+                continue
 
             utils.set_attr_raw(self.model, key, torch.nn.Parameter(out_weight, requires_grad=False))
 

@@ -45,14 +45,6 @@ def dequantize(data, qtype, oshape):
     return blocks.reshape(oshape)
 
 
-def to_uint32(x):
-    # (c) City96 || Apache-2.0 (apache.org/licenses/LICENSE-2.0)
-
-    # no uint32 :(
-    x = x.view(torch.uint8).to(torch.int32)
-    return (x[:, 0] | x[:, 1] << 8 | x[:, 2] << 16 | x[:, 3] << 24).unsqueeze(1)
-
-
 def dequantize_blocks_Q8_0(blocks, block_size, type_size):
     # (c) City96 || Apache-2.0 (apache.org/licenses/LICENSE-2.0)
 
@@ -63,6 +55,10 @@ def dequantize_blocks_Q8_0(blocks, block_size, type_size):
 
 def dequantize_blocks_Q5_0(blocks, block_size, type_size):
     # (c) City96 || Apache-2.0 (apache.org/licenses/LICENSE-2.0)
+
+    def to_uint32(x):
+        x = x.view(torch.uint8).to(torch.int32)
+        return (x[:, 0] | x[:, 1] << 8 | x[:, 2] << 16 | x[:, 3] << 24).unsqueeze(1)
 
     n_blocks = blocks.shape[0]
 

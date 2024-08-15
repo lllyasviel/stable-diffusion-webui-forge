@@ -75,3 +75,13 @@ def calculate_parameters(sd, prefix=""):
         if k.startswith(prefix):
             params += sd[k].nelement()
     return params
+
+
+def fp16_fix(x):
+    # An interesting trick to avoid fp16 overflow
+    # Source: https://github.com/lllyasviel/stable-diffusion-webui-forge/issues/1114
+    # Related: https://github.com/comfyanonymous/ComfyUI/blob/f1d6cef71c70719cc3ed45a2455a4e5ac910cd5e/comfy/ldm/flux/layers.py#L180
+
+    if x.dtype == torch.float16:
+        return x.clip(-16384.0, 16384.0)
+    return x

@@ -262,6 +262,8 @@ class ModelPatcher:
                     assert weight.module is not None, 'BNB bad weight without parent layer!'
                     bnb_layer = weight.module
                     if weight.bnb_quantized:
+                        weight_original_device = weight.device
+
                         if device_to is not None:
                             assert device_to.type == 'cuda', 'BNB Must use CUDA!'
                             weight = weight.to(device_to)
@@ -270,6 +272,9 @@ class ModelPatcher:
 
                         from backend.operations_bnb import functional_dequantize_4bit
                         weight = functional_dequantize_4bit(weight)
+
+                        if device_to is None:
+                            weight = weight.to(device=weight_original_device)
                     else:
                         weight = weight.data
 

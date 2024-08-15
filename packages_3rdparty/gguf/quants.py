@@ -125,8 +125,17 @@ class __Quant(ABC):
         cls.grid = grid.reshape((1, 1, *cls.grid_shape))
 
     @classmethod
-    def quantize_pytorch(cls, data: torch.Tensor) -> torch.Tensor:
-        return cls.quantize_blocks_pytorch(data)
+    def quantize_pytorch(cls, data: torch.Tensor, original_shape) -> torch.Tensor:
+        # Copyright Forge 2024, AGPL V3 + CC-BY SA
+
+        original_shape = [x for x in original_shape]
+        original_shape[-1] = -1
+        original_shape = tuple(original_shape)
+
+        block_size, type_size = GGML_QUANT_SIZES[cls.qtype]
+        blocks = data.reshape(-1, block_size)
+        blocks = cls.quantize_blocks_pytorch(blocks, block_size, type_size)
+        return blocks.reshape(original_shape)
 
     @classmethod
     def dequantize_pytorch(cls, data: torch.Tensor, original_shape) -> torch.Tensor:
@@ -145,7 +154,7 @@ class __Quant(ABC):
 
     @classmethod
     @abstractmethod
-    def quantize_blocks_pytorch(cls, blocks) -> torch.Tensor:
+    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
         raise NotImplementedError
 
     @classmethod
@@ -287,6 +296,27 @@ class Q4_0(__Quant, qtype=GGMLQuantizationType.Q4_0):
         qs = (qs & 0x0F).reshape((n_blocks, -1)).to(torch.int8) - 8
         return d * qs
 
+    @classmethod
+    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
+        # Copyright Forge 2024, AGPL V3 + CC-BY SA
+
+        n_blocks = blocks.shape[0]
+
+        imax = torch.abs(blocks).argmax(dim=-1, keepdim=True)
+        max_vals = torch.gather(blocks, -1, imax)
+
+        d = max_vals / -8
+        id = torch.where(d == 0, torch.tensor(0.0, device=d.device), 1.0 / d)
+
+        qs = torch.trunc((blocks * id) + 8.5).clip(0, 15).to(torch.uint8)
+
+        qs = qs.reshape((n_blocks, 2, block_size // 2))
+        qs = qs[:, 0, :] | (qs[:, 1, :] << 4)
+
+        d = d.to(torch.float16).view(torch.uint8)
+
+        return torch.cat([d, qs], dim=-1)
+
 
 class Q4_1(__Quant, qtype=GGMLQuantizationType.Q4_1):
     @classmethod
@@ -392,6 +422,42 @@ class Q5_0(__Quant, qtype=GGMLQuantizationType.Q5_0):
         qs = (ql | (qh << 4)).to(torch.int8) - 16
         return d * qs
 
+    @classmethod
+    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
+        # Copyright Forge 2024, AGPL V3 + CC-BY SA
+
+        n_blocks = blocks.shape[0]
+
+        imax = torch.abs(blocks).argmax(dim=-1, keepdim=True)
+        max_val = torch.gather(blocks, dim=-1, index=imax)
+
+        d = max_val / -16
+        id = torch.where(d == 0, torch.tensor(0.0, device=d.device), 1.0 / d)
+
+        q = torch.trunc((blocks.float() * id.float()) + 16.5).clamp(0, 31).to(torch.uint8)
+
+        qs = q.view(n_blocks, 2, block_size // 2)
+        qs = (qs[..., 0, :] & 0x0F) | (qs[..., 1, :] << 4)
+
+        qh = q.view(n_blocks, 32)
+        qh_packed = torch.zeros((n_blocks, 4), dtype=torch.uint8, device=qh.device)
+
+        for i in range(4):
+            qh_packed[:, i] = (
+                    (qh[:, i * 8 + 0] >> 4) |
+                    (qh[:, i * 8 + 1] >> 3 & 0x02) |
+                    (qh[:, i * 8 + 2] >> 2 & 0x04) |
+                    (qh[:, i * 8 + 3] >> 1 & 0x08) |
+                    (qh[:, i * 8 + 4] << 0 & 0x10) |
+                    (qh[:, i * 8 + 5] << 1 & 0x20) |
+                    (qh[:, i * 8 + 6] << 2 & 0x40) |
+                    (qh[:, i * 8 + 7] << 3 & 0x80)
+            )
+
+        d = d.to(torch.float16).view(torch.uint8)
+
+        return torch.cat([d, qh_packed, qs], dim=-1)
+
 
 class Q5_1(__Quant, qtype=GGMLQuantizationType.Q5_1):
     @classmethod
@@ -468,6 +534,16 @@ class Q8_0(__Quant, qtype=GGMLQuantizationType.Q8_0):
         d = blocks[:, :2].view(torch.float16)
         x = blocks[:, 2:].view(torch.int8).to(torch.float16)
         return x * d
+
+    @classmethod
+    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
+        # Copyright Forge 2024, AGPL V3 + CC-BY SA
+        d = torch.abs(blocks).max(dim=1, keepdim=True).values / 127
+        ids = torch.where(d == 0, torch.zeros_like(d), 1 / d)
+        qs = torch.round(blocks * ids)
+        d = d.to(torch.float16).view(torch.uint8)
+        qs = qs.to(torch.int8).view(torch.uint8)
+        return torch.cat([d, qs], dim=1)
 
 
 class Q2_K(__Quant, qtype=GGMLQuantizationType.Q2_K):

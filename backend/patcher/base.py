@@ -1,6 +1,8 @@
-# Model Patching API Template Extracted From ComfyUI
-# The actual implementation for those APIs are from Forge, implemented from scratch (after forge-v1.0.1),
-# and may have certain level of differences.
+# Model Patching System, Copyright Forge 2024
+
+# API Templates partially extracted From ComfyUI, the actual implementation for those APIs
+# are from Forge, implemented from scratch (after forge-v1.0.1), and may have
+# certain level of differences.
 
 import torch
 import copy

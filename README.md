@@ -6,6 +6,12 @@ The name "Forge" is inspired from "Minecraft Forge". This project is aimed at be
 
 Forge is currently based on SD-WebUI 1.10.1 at [this commit](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/82a973c04367123ae98bd9abdf80d9eda9b910e2). (Because original SD-WebUI is almost static now, Forge will sync with original WebUI every 90 days, or when important fixes.)
 
+# News
+
+Aug 15: Flux BNB NF4 / GGUF Q8/Q5/Q4 are all **natively** supported with **perfect GPU weight slider** and **Quene/Async Swap toggle** and **swap location toggle**. (And no, no other software has these - 2024 Aug 15)
+
+Aug 15: All Flux BNB NF4 / GGUF Q8/Q5/Q4 have perfect **native** LoRA support. (And no, no other software has these - 2024 Aug 15)
+
 # Installing Forge
 
 If you are proficient in Git and you want to install Forge as another branch of SD-WebUI, please see [here](https://github.com/continue-revolution/sd-webui-animatediff/blob/forge/master/docs/how-to-use.md#you-have-a1111-and-you-know-git). In this way, you can reuse all SD checkpoints and all extensions you installed previously in your OG SD-WebUI, but you should know what you are doing.

@@ -58,7 +58,7 @@ def dequantize_blocks_Q8_0(blocks, block_size, type_size):
 
     d = blocks[:, :2].view(torch.float16)
     x = blocks[:, 2:].view(torch.int8).to(torch.float16)
-    return (x * d)
+    return x * d
 
 
 def dequantize_blocks_Q5_0(blocks, block_size, type_size):
@@ -80,7 +80,7 @@ def dequantize_blocks_Q5_0(blocks, block_size, type_size):
     ql = (ql & 0x0F).reshape(n_blocks, -1)
 
     qs = (ql | (qh << 4)).to(torch.int8) - 16
-    return (d * qs)
+    return d * qs
 
 
 def dequantize_blocks_Q4_0(blocks, block_size, type_size):
@@ -93,7 +93,7 @@ def dequantize_blocks_Q4_0(blocks, block_size, type_size):
 
     qs = qs.reshape((n_blocks, -1, 1, block_size // 2)) >> torch.tensor([0, 4], device=d.device, dtype=torch.uint8).reshape((1, 1, 2, 1))
     qs = (qs & 0x0F).reshape((n_blocks, -1)).to(torch.int8) - 8
-    return (d * qs)
+    return d * qs
 
 
 dequantize_functions = {

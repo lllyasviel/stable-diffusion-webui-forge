@@ -123,6 +123,22 @@ def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_p
                     if state_dict_dtype in ['nf4', 'fp4', 'gguf']:
                         print(f'Using pre-quant state dict!')
 
+                        if state_dict_dtype in ['gguf']:
+                            from gguf.constants import GGMLQuantizationType
+
+                            type_counts = {}
+
+                            for k, v in state_dict.items():
+                                gguf_type = getattr(v, 'gguf_type', None)
+                                if gguf_type is not None:
+                                    type_name = GGMLQuantizationType(gguf_type).name
+                                    if type_name in type_counts:
+                                        type_counts[type_name] += 1
+                                    else:
+                                        type_counts[type_name] = 1
+
+                            print(f'Using GGUF state dict: {type_counts}')
+
             load_device = memory_management.get_torch_device()
             computation_dtype = memory_management.get_computation_dtype(load_device, supported_dtypes=guess.supported_inference_dtypes)
             offload_device = memory_management.unet_offload_device()

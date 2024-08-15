@@ -302,7 +302,9 @@ def state_dict_size(sd, exclude_device=None):
 
 
 def state_dict_dtype(state_dict):
-    for k in state_dict.keys():
+    for k, v in state_dict.items():
+        if hasattr(v, 'is_gguf'):
+            return 'gguf'
         if 'bitsandbytes__nf4' in k:
             return 'nf4'
         if 'bitsandbytes__fp4' in k:

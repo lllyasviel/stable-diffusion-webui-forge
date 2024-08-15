@@ -117,17 +117,17 @@ def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_p
             if unet_storage_dtype_overwrite is not None:
                 storage_dtype = unet_storage_dtype_overwrite
             else:
-                if state_dict_dtype in [torch.float8_e4m3fn, torch.float8_e5m2, 'nf4', 'fp4']:
+                if state_dict_dtype in [torch.float8_e4m3fn, torch.float8_e5m2, 'nf4', 'fp4', 'gguf']:
                     print(f'Using Detected UNet Type: {state_dict_dtype}')
                     storage_dtype = state_dict_dtype
-                    if state_dict_dtype in ['nf4', 'fp4']:
+                    if state_dict_dtype in ['nf4', 'fp4', 'gguf']:
                         print(f'Using pre-quant state dict!')
 
             load_device = memory_management.get_torch_device()
             computation_dtype = memory_management.get_computation_dtype(load_device, supported_dtypes=guess.supported_inference_dtypes)
             offload_device = memory_management.unet_offload_device()
 
-            if storage_dtype in ['nf4', 'fp4']:
+            if storage_dtype in ['nf4', 'fp4', 'gguf']:
                 initial_device = memory_management.unet_inital_load_device(parameters=state_dict_size, dtype=computation_dtype)
                 with using_forge_operations(device=initial_device, dtype=computation_dtype, manual_cast_enabled=False, bnb_dtype=storage_dtype):
                     model = model_loader(unet_config)

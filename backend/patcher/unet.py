@@ -24,8 +24,7 @@ class UnetPatcher(ModelPatcher):
         self.extra_concat_condition = None
 
     def clone(self):
-        n = UnetPatcher(self.model, self.load_device, self.offload_device, self.size, self.current_device,
-                        weight_inplace_update=self.weight_inplace_update)
+        n = UnetPatcher(self.model, self.load_device, self.offload_device, self.size, self.current_device)
 
         n.patches = {}
         for k in self.patches:

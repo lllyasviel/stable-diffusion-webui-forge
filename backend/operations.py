@@ -350,7 +350,10 @@ class ForgeOperationsGGUF(ForgeOperations):
                     self.bias = state_dict[prefix + 'bias'].to(device=self.dummy.device)
                 del self.dummy
             else:
-                super()._load_from_state_dict(state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs)
+                if prefix + 'weight' in state_dict:
+                    self.weight = state_dict[prefix + 'weight']
+                if prefix + 'bias' in state_dict:
+                    self.bias = state_dict[prefix + 'bias']
 
         def _apply(self, fn, recurse=True):
             if self.weight is not None:

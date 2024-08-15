@@ -249,7 +249,7 @@ class ModelPatcher:
 
             utils.set_attr_raw(self.model, k, item)
 
-        for key, current_patches in (tqdm(self.patches.items(), desc='Patching LoRAs to Diffusion Model') if len(self.patches) > 0 else self.patches):
+        for key, current_patches in (tqdm(self.patches.items(), desc='Patching LoRAs') if len(self.patches) > 0 else self.patches):
             try:
                 weight = utils.get_attr(self.model, key)
                 assert isinstance(weight, torch.nn.Parameter)

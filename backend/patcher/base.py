@@ -306,7 +306,7 @@ class ModelPatcher:
                 continue
 
             if gguf_cls is not None:
-                from backend.utils import ParameterGGUF
+                from backend.operations_gguf import ParameterGGUF
                 weight = gguf_cls.quantize_pytorch(weight, gguf_real_shape)
                 utils.set_attr_raw(self.model, key, ParameterGGUF.make(
                     data=weight,

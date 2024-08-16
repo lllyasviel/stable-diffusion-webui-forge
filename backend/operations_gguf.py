@@ -4,7 +4,9 @@ import torch
 
 quants_mapping = {
     gguf.GGMLQuantizationType.Q4_0: gguf.Q4_0,
+    gguf.GGMLQuantizationType.Q4_1: gguf.Q4_1,
     gguf.GGMLQuantizationType.Q5_0: gguf.Q5_0,
+    gguf.GGMLQuantizationType.Q5_1: gguf.Q5_1,
     gguf.GGMLQuantizationType.Q8_0: gguf.Q8_0,
 }
 

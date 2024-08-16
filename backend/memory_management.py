@@ -476,7 +476,7 @@ def free_memory(memory_required, device, keep_loaded=[]):
         if shift_model.device == device:
             if shift_model not in keep_loaded:
                 m = current_loaded_models.pop(i)
-                print(f"[Unload] Unload model {m.model.__class__.__name__}")
+                print(f"[Unload] Unload model {m.real_model.__class__.__name__}")
                 m.model_unload()
                 del m
                 unloaded_model = True

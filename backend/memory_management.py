@@ -462,7 +462,7 @@ def unload_model_clones(model):
 
 
 def free_memory(memory_required, device, keep_loaded=[]):
-    print(memory_required / 1024*1024)
+    print(memory_required / (1024*1024))
     print(keep_loaded)
     print(device)
 

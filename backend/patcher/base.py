@@ -11,7 +11,7 @@ import inspect
 
 from tqdm import tqdm
 from backend import memory_management, utils, operations
-from backend.patcher.lora import merge_lora_to_model_weight
+from backend.patcher.lora import merge_lora_to_model_weight, LoraLoader
 
 
 def set_model_options_patch_replace(model_options, patch, name, block_name, number, transformer_index=None):
@@ -54,14 +54,18 @@ class ModelPatcher:
     def __init__(self, model, load_device, offload_device, size=0, current_device=None, **kwargs):
         self.size = size
         self.model = model
-        self.patches = {}
-        self.backup = {}
         self.object_patches = {}
         self.object_patches_backup = {}
         self.model_options = {"transformer_options": {}}
         self.model_size()
         self.load_device = load_device
         self.offload_device = offload_device
+
+        if not hasattr(model, 'lora_loader'):
+            model.lora_loader = LoraLoader(model)
+
+        self.lora_loader: LoraLoader = model.lora_loader
+
         if current_device is None:
             self.current_device = self.offload_device
         else:
@@ -75,10 +79,6 @@ class ModelPatcher:
 
     def clone(self):
         n = ModelPatcher(self.model, self.load_device, self.offload_device, self.size, self.current_device)
-        n.patches = {}
-        for k in self.patches:
-            n.patches[k] = self.patches[k][:]
-
         n.object_patches = self.object_patches.copy()
         n.model_options = copy.deepcopy(self.model_options)
         return n
@@ -193,28 +193,6 @@ class ModelPatcher:
         if hasattr(self.model, "get_dtype"):
             return self.model.get_dtype()
 
-    def add_patches(self, patches, strength_patch=1.0, strength_model=1.0):
-        p = set()
-        model_sd = self.model.state_dict()
-        for k in patches:
-            offset = None
-            function = None
-            if isinstance(k, str):
-                key = k
-            else:
-                offset = k[1]
-                key = k[0]
-                if len(k) > 2:
-                    function = k[2]
-
-            if key in model_sd:
-                p.add(k)
-                current_patches = self.patches.get(key, [])
-                current_patches.append((strength_patch, patches[k], strength_model, offset, function))
-                self.patches[key] = current_patches
-
-        return list(p)
-
     def get_key_patches(self, filter_prefix=None):
         memory_management.unload_model_clones(self)
         model_sd = self.model_state_dict()
@@ -239,8 +217,6 @@ class ModelPatcher:
         return sd
 
     def forge_patch_model(self, target_device=None):
-        execution_start_time = time.perf_counter()
-
         for k, item in self.object_patches.items():
             old = utils.get_attr(self.model, k)
 
@@ -249,102 +225,21 @@ class ModelPatcher:
 
             utils.set_attr_raw(self.model, k, item)
 
-        for key, current_patches in (tqdm(self.patches.items(), desc='Patching LoRAs') if len(self.patches) > 0 else self.patches):
-            try:
-                weight = utils.get_attr(self.model, key)
-                assert isinstance(weight, torch.nn.Parameter)
-            except:
-                raise ValueError(f"Wrong LoRA Key: {key}")
-
-            if key not in self.backup:
-                self.backup[key] = weight.to(device=self.offload_device)
-
-            bnb_layer = None
-
-            if operations.bnb_avaliable:
-                if hasattr(weight, 'bnb_quantized'):
-                    assert weight.module is not None, 'BNB bad weight without parent layer!'
-                    bnb_layer = weight.module
-                    if weight.bnb_quantized:
-                        weight_original_device = weight.device
-
-                        if target_device is not None:
-                            assert target_device.type == 'cuda', 'BNB Must use CUDA!'
-                            weight = weight.to(target_device)
-                        else:
-                            weight = weight.cuda()
-
-                        from backend.operations_bnb import functional_dequantize_4bit
-                        weight = functional_dequantize_4bit(weight)
-
-                        if target_device is None:
-                            weight = weight.to(device=weight_original_device)
-                    else:
-                        weight = weight.data
-
-            if target_device is not None:
-                weight = weight.to(device=target_device)
-
-            gguf_cls, gguf_type, gguf_real_shape = None, None, None
-
-            if hasattr(weight, 'is_gguf'):
-                from backend.operations_gguf import dequantize_tensor
-                gguf_cls = weight.gguf_cls
-                gguf_type = weight.gguf_type
-                gguf_real_shape = weight.gguf_real_shape
-                weight = dequantize_tensor(weight)
-
-            weight_original_dtype = weight.dtype
-            weight = weight.to(dtype=torch.float32)
-            weight = merge_lora_to_model_weight(current_patches, weight, key).to(dtype=weight_original_dtype)
-
-            if bnb_layer is not None:
-                bnb_layer.reload_weight(weight)
-                continue
-
-            if gguf_cls is not None:
-                from backend.operations_gguf import ParameterGGUF
-                weight = gguf_cls.quantize_pytorch(weight, gguf_real_shape)
-                utils.set_attr_raw(self.model, key, ParameterGGUF.make(
-                    data=weight,
-                    gguf_type=gguf_type,
-                    gguf_cls=gguf_cls,
-                    gguf_real_shape=gguf_real_shape
-                ))
-                continue
-
-            utils.set_attr_raw(self.model, key, torch.nn.Parameter(weight, requires_grad=False))
+        self.lora_loader.refresh(target_device=target_device, offload_device=self.offload_device)
 
         if target_device is not None:
             self.model.to(target_device)
             self.current_device = target_device
 
-        moving_time = time.perf_counter() - execution_start_time
-
-        if moving_time > 0.1:
-            print(f'LoRA patching has taken {moving_time:.2f} seconds')
-
         return self.model
 
     def forge_unpatch_model(self, target_device=None):
-        keys = list(self.backup.keys())
-
-        for k in keys:
-            w = self.backup[k]
-
-            if not isinstance(w, torch.nn.Parameter):
-                # In very few cases
-                w = torch.nn.Parameter(w, requires_grad=False)
-
-            utils.set_attr_raw(self.model, k, w)
-
-        self.backup = {}
-
         if target_device is not None:
             self.model.to(target_device)
             self.current_device = target_device
 
         keys = list(self.object_patches_backup.keys())
+
         for k in keys:
             utils.set_attr_raw(self.model, k, self.object_patches_backup[k])
 

@@ -493,11 +493,10 @@ def free_memory(memory_required, device, keep_loaded=[]):
 def compute_model_gpu_memory_when_using_cpu_swap(current_free_mem, inference_memory):
     maximum_memory_available = current_free_mem - inference_memory
 
-    k_1GB = float(inference_memory / (1024 * 1024 * 1024))
-    k_1GB = max(0.0, min(1.0, k_1GB))
-
-    adaptive_safe_factor = 1.0 - 0.23 * k_1GB
-    suggestion = max(maximum_memory_available * adaptive_safe_factor, maximum_memory_available - 1024 * 1024 * 1024 * 1.25)
+    suggestion = max(
+        maximum_memory_available / 1.3,
+        maximum_memory_available - 1024 * 1024 * 1024 * 1.25
+    )
 
     return int(max(0, suggestion))
 

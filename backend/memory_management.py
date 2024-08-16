@@ -496,7 +496,7 @@ def compute_model_gpu_memory_when_using_cpu_swap(current_free_mem, inference_mem
     k_1GB = max(0.0, min(1.0, k_1GB))
 
     adaptive_safe_factor = 1.0 - 0.23 * k_1GB
-    suggestion = maximum_memory_available * adaptive_safe_factor
+    suggestion = max(maximum_memory_available * adaptive_safe_factor, maximum_memory_available - 1024 * 1024 * 1024 * 2)
 
     return int(max(0, suggestion))
 

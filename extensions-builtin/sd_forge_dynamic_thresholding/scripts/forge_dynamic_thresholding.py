@@ -39,8 +39,49 @@ class DynamicThresholdingForForge(scripts.Script):
             variability_measure = gr.Radio(label='Variability Measure', choices=['AD', 'STD'], value='AD')
             interpolate_phi = gr.Slider(label='Interpolate Phi', minimum=0.0, maximum=1.0, step=0.01, value=1.0)
 
+        self.infotext_fields = [
+            (enabled, lambda d: d.get("dynthres_enabled", False)),
+            (mimic_scale, "dynthres_mimic_scale"),
+            (threshold_percentile, "dynthres_threshold_percentile"),
+            (mimic_mode, "dynthres_mimic_mode"),
+            (mimic_scale_min, "dynthres_mimic_scale_min"),
+            (cfg_mode, "dynthres_cfg_mode"),
+            (cfg_scale_min, "dynthres_cfg_scale_min"),
+            (sched_val, "dynthres_sched_val"),
+            (separate_feature_channels, "dynthres_separate_feature_channels"),
+            (scaling_startpoint, "dynthres_scaling_startpoint"),
+            (variability_measure, "dynthres_variability_measure"),
+            (interpolate_phi, "dynthres_interpolate_phi"),
+        ]
+
         return enabled, mimic_scale, threshold_percentile, mimic_mode, mimic_scale_min, cfg_mode, cfg_scale_min, \
             sched_val, separate_feature_channels, scaling_startpoint, variability_measure, interpolate_phi
+
+
+    def process(self, p, *script_args, **kwargs):
+        enabled, mimic_scale, threshold_percentile, mimic_mode, mimic_scale_min, cfg_mode, cfg_scale_min, \
+            sched_val, separate_feature_channels, scaling_startpoint, variability_measure, \
+            interpolate_phi = script_args
+
+        if enabled:
+            # Below codes will add some logs to the texts below the image outputs on UI.
+            # The extra_generation_params does not influence results.
+            p.extra_generation_params.update(dict(
+                dynthres_enabled=enabled,
+                dynthres_mimic_scale=mimic_scale,
+                dynthres_threshold_percentile=threshold_percentile,
+                dynthres_mimic_mode=mimic_mode,
+                dynthres_mimic_scale_min=mimic_scale_min,
+                dynthres_cfg_mode=cfg_mode,
+                dynthres_cfg_scale_min=cfg_scale_min,
+                dynthres_sched_val=sched_val,
+                dynthres_separate_feature_channels=separate_feature_channels,
+                dynthres_scaling_startpoint=scaling_startpoint,
+                dynthres_variability_measure=variability_measure,
+                dynthres_interpolate_phi=interpolate_phi,
+            ))
+
+        return
 
     def process_before_every_sampling(self, p, *script_args, **kwargs):
         # This will be called before every sampling.
@@ -50,32 +91,11 @@ class DynamicThresholdingForForge(scripts.Script):
             sched_val, separate_feature_channels, scaling_startpoint, variability_measure, \
             interpolate_phi = script_args
 
-        if not enabled:
-            return
-
-        unet = p.sd_model.forge_objects.unet
-
-        unet = opDynamicThresholdingNode(unet, mimic_scale, threshold_percentile, mimic_mode, mimic_scale_min,
-                                         cfg_mode, cfg_scale_min, sched_val, separate_feature_channels,
-                                         scaling_startpoint, variability_measure, interpolate_phi)[0]
-
-        p.sd_model.forge_objects.unet = unet
-
-        # Below codes will add some logs to the texts below the image outputs on UI.
-        # The extra_generation_params does not influence results.
-        p.extra_generation_params.update(dict(
-            dynthres_enabled=enabled,
-            dynthres_mimic_scale=mimic_scale,
-            dynthres_threshold_percentile=threshold_percentile,
-            dynthres_mimic_mode=mimic_mode,
-            dynthres_mimic_scale_min=mimic_scale_min,
-            dynthres_cfg_mode=cfg_mode,
-            dynthres_cfg_scale_min=cfg_scale_min,
-            dynthres_sched_val=sched_val,
-            dynthres_separate_feature_channels=separate_feature_channels,
-            dynthres_scaling_startpoint=scaling_startpoint,
-            dynthres_variability_measure=variability_measure,
-            dynthres_interpolate_phi=interpolate_phi,
-        ))
+        if enabled:
+            unet = p.sd_model.forge_objects.unet
+            unet = opDynamicThresholdingNode(unet, mimic_scale, threshold_percentile, mimic_mode, mimic_scale_min,
+                                             cfg_mode, cfg_scale_min, sched_val, separate_feature_channels,
+                                             scaling_startpoint, variability_measure, interpolate_phi)[0]
+            p.sd_model.forge_objects.unet = unet
 
         return

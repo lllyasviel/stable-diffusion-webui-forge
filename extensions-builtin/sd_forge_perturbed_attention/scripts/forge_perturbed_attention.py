@@ -19,39 +19,48 @@ class PerturbedAttentionGuidanceForForge(scripts.Script):
             enabled = gr.Checkbox(label='Enabled', value=False)
             scale = gr.Slider(label='Scale', minimum=0.0, maximum=100.0, step=0.1, value=3.0)
 
+        self.infotext_fields = [
+            (enabled, lambda d: d.get("PerturbedAttentionGuidance_enabled", False)),
+            (scale, "PerturbedAttentionGuidance_scale"),
+        ]
+
         return enabled, scale
+
+    def process(self, p, *script_args, **kwargs):
+        enabled, scale = script_args
+
+        if enabled:
+            p.extra_generation_params.update(dict(
+                PerturbedAttentionGuidance_enabled=enabled,
+                PerturbedAttentionGuidance_scale=scale,
+            ))
+
+        return
+
 
     def process_before_every_sampling(self, p, *script_args, **kwargs):
         enabled, scale = script_args
 
-        if not enabled:
-            return
+        if enabled:
+            unet = p.sd_model.forge_objects.unet.clone()
 
-        unet = p.sd_model.forge_objects.unet.clone()
+            def attn_proc(q, k, v, to):
+                return v
 
-        def attn_proc(q, k, v, to):
-            return v
+            def post_cfg_function(args):
+                model, cond_denoised, cond, denoised, sigma, x = \
+                    args["model"], args["cond_denoised"], args["cond"], args["denoised"], args["sigma"], args["input"]
 
-        def post_cfg_function(args):
-            model, cond_denoised, cond, denoised, sigma, x = \
-                args["model"], args["cond_denoised"], args["cond"], args["denoised"], args["sigma"], args["input"]
+                new_options = set_model_options_patch_replace(args["model_options"], attn_proc, "attn1", "middle", 0)
 
-            new_options = set_model_options_patch_replace(args["model_options"], attn_proc, "attn1", "middle", 0)
+                if scale == 0:
+                    return denoised
 
-            if scale == 0:
-                return denoised
+                degraded, _ = calc_cond_uncond_batch(model, cond, None, x, sigma, new_options)
 
-            degraded, _ = calc_cond_uncond_batch(model, cond, None, x, sigma, new_options)
+                return denoised + (cond_denoised - degraded) * scale
 
-            return denoised + (cond_denoised - degraded) * scale
-
-        unet.set_model_sampler_post_cfg_function(post_cfg_function)
-
-        p.sd_model.forge_objects.unet = unet
-
-        p.extra_generation_params.update(dict(
-            PerturbedAttentionGuidance_enabled=enabled,
-            PerturbedAttentionGuidance_scale=scale,
-        ))
+            unet.set_model_sampler_post_cfg_function(post_cfg_function)
+            p.sd_model.forge_objects.unet = unet
 
         return

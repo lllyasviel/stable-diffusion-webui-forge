@@ -54,30 +54,43 @@ class KohyaHRFixForForge(scripts.Script):
             downscale_method = gr.Radio(label='Downscale Method', choices=upscale_methods, value=upscale_methods[0])
             upscale_method = gr.Radio(label='Upscale Method', choices=upscale_methods, value=upscale_methods[0])
 
+        self.infotext_fields = [
+            (enabled, lambda d: d.get("kohya_hrfix_enabled", False)),
+            (block_number, "kohya_hrfix_block_number"),
+            (downscale_factor, "kohya_hrfix_downscale_factor"),
+            (start_percent, "kohya_hrfix_start_percent"),
+            (end_percent, "kohya_hrfix_end_percent"),
+            (downscale_after_skip, "kohya_hrfix_downscale_after_skip"),
+            (downscale_method, "kohya_hrfix_downscale_method"),
+            (upscale_method, "kohya_hrfix_upscale_method"),
+        ]
+
         return enabled, block_number, downscale_factor, start_percent, end_percent, downscale_after_skip, downscale_method, upscale_method
+
+    def process(self, p, *script_args, **kwargs):
+        enabled, block_number, downscale_factor, start_percent, end_percent, downscale_after_skip, downscale_method, upscale_method = script_args
+        block_number = int(block_number)
+
+        if enabled:
+            p.extra_generation_params.update(dict(
+                kohya_hrfix_enabled=enabled,
+                kohya_hrfix_block_number=block_number,
+                kohya_hrfix_downscale_factor=downscale_factor,
+                kohya_hrfix_start_percent=start_percent,
+                kohya_hrfix_end_percent=end_percent,
+                kohya_hrfix_downscale_after_skip=downscale_after_skip,
+                kohya_hrfix_downscale_method=downscale_method,
+                kohya_hrfix_upscale_method=upscale_method,
+            ))
+        return
 
     def process_before_every_sampling(self, p, *script_args, **kwargs):
         enabled, block_number, downscale_factor, start_percent, end_percent, downscale_after_skip, downscale_method, upscale_method = script_args
         block_number = int(block_number)
 
-        if not enabled:
-            return
-
-        unet = p.sd_model.forge_objects.unet
-
-        unet = opPatchModelAddDownscale.patch(unet, block_number, downscale_factor, start_percent, end_percent, downscale_after_skip, downscale_method, upscale_method)[0]
-
-        p.sd_model.forge_objects.unet = unet
-
-        p.extra_generation_params.update(dict(
-            kohya_hrfix_enabled=enabled,
-            kohya_hrfix_block_number=block_number,
-            kohya_hrfix_downscale_factor=downscale_factor,
-            kohya_hrfix_start_percent=start_percent,
-            kohya_hrfix_end_percent=end_percent,
-            kohya_hrfix_downscale_after_skip=downscale_after_skip,
-            kohya_hrfix_downscale_method=downscale_method,
-            kohya_hrfix_upscale_method=upscale_method,
-        ))
+        if enabled:
+            unet = p.sd_model.forge_objects.unet
+            unet = opPatchModelAddDownscale.patch(unet, block_number, downscale_factor, start_percent, end_percent, downscale_after_skip, downscale_method, upscale_method)[0]
+            p.sd_model.forge_objects.unet = unet
 
         return

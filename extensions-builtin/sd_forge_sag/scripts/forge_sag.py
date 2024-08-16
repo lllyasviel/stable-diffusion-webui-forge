@@ -174,24 +174,32 @@ class SAGForForge(scripts.Script):
             scale = gr.Slider(label='Scale', minimum=-2.0, maximum=5.0, step=0.01, value=0.5)
             blur_sigma = gr.Slider(label='Blur Sigma', minimum=0.0, maximum=10.0, step=0.01, value=2.0)
 
+        self.infotext_fields = [
+            (enabled, lambda d: d.get("sag_enabled", False)),
+            (scale, "sag_scale"),
+            (blur_sigma, "sag_blur_sigma"),
+        ]
+
         return enabled, scale, blur_sigma
+
+    def process(self, p, *script_args, **kwargs):
+        enabled, scale, blur_sigma = script_args
+
+        if enabled:
+            p.extra_generation_params.update(dict(
+                sag_enabled=enabled,
+                sag_scale=scale,
+                sag_blur_sigma=blur_sigma
+            ))
+
+        return
 
     def process_before_every_sampling(self, p, *script_args, **kwargs):
         enabled, scale, blur_sigma = script_args
 
-        if not enabled:
-            return
-
-        unet = p.sd_model.forge_objects.unet
-
-        unet = opSelfAttentionGuidance.patch(unet, scale, blur_sigma)[0]
-
-        p.sd_model.forge_objects.unet = unet
-
-        p.extra_generation_params.update(dict(
-            sag_enabled=enabled,
-            sag_scale=scale,
-            sag_blur_sigma=blur_sigma
-        ))
+        if enabled:
+            unet = p.sd_model.forge_objects.unet
+            unet = opSelfAttentionGuidance.patch(unet, scale, blur_sigma)[0]
+            p.sd_model.forge_objects.unet = unet
 
         return

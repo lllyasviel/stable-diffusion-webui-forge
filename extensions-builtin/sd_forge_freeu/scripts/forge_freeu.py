@@ -70,13 +70,66 @@ class FreeUForForge(scripts.Script):
         with gr.Accordion(open=False, label=self.title(),
                           elem_id="extensions-freeu",
                           elem_classes=["extensions-freeu"]):
-            freeu_enabled = gr.Checkbox(label='Enabled', value=False)
-            freeu_b1 = gr.Slider(label='B1', minimum=0, maximum=2, step=0.01, value=1.01)
-            freeu_b2 = gr.Slider(label='B2', minimum=0, maximum=2, step=0.01, value=1.02)
-            freeu_s1 = gr.Slider(label='S1', minimum=0, maximum=4, step=0.01, value=0.99)
-            freeu_s2 = gr.Slider(label='S2', minimum=0, maximum=4, step=0.01, value=0.95)
+            with gr.Row(equal_height=True):
+                freeu_enabled = gr.Checkbox(label='Enabled', value=False)
+                freeu_preset = gr.Dropdown(['sd1.4', 'sd1.5', 'sd2.1', 'sdxl'], value='sd1.5', type='value', label='Presets', allow_custom_value=True)
+            with gr.Row():
+                freeu_b1 = gr.Slider(label='B1', minimum=0, maximum=2, step=0.01, value=1.5)
+                freeu_b2 = gr.Slider(label='B2', minimum=0, maximum=2, step=0.01, value=1.6)
+            with gr.Row():
+                freeu_s1 = gr.Slider(label='S1', minimum=0, maximum=4, step=0.01, value=0.9)
+                freeu_s2 = gr.Slider(label='S2', minimum=0, maximum=4, step=0.01, value=0.2)
+
+        self.infotext_fields = [
+            (freeu_enabled, lambda d: d.get("freeu_enabled", False)),
+            # note: 'freeu_preset is NOT written to infotext, loaded values always considered to be custom
+            (freeu_preset, lambda d: d.get("freeu_preset", 'custom')),
+            (freeu_b1, "freeu_b1"),
+            (freeu_b2, "freeu_b2"),
+            (freeu_s1, "freeu_s1"),
+            (freeu_s2, "freeu_s2"),
+        ]
+
+        def setPresetText ():
+            return 'custom'
+
+        def setPresetValues (preset):
+            # these values from: https://github.com/ChenyangSi/FreeU
+            match preset:
+                case 'sdxl':
+                    return 1.3, 1.4, 0.9, 0.2
+                case 'sd2.1':
+                    return 1.4, 1.6, 0.9, 0.2
+                case 'sd1.5':
+                    return 1.5, 1.6, 0.9, 0.2
+                case 'sd1.4':
+                    return 1.3, 1.4, 0.9, 0.2
+                case _:
+                    return 1.0, 1.0, 1.0, 1.0
+
+        freeu_preset.select (fn=setPresetValues, inputs=[freeu_preset], outputs=[freeu_b1, freeu_b2, freeu_s1, freeu_s2])
+        freeu_b1.input (fn=setPresetText, inputs=[], outputs=[freeu_preset], show_progress='hidden')
+        freeu_b2.input (fn=setPresetText, inputs=[], outputs=[freeu_preset], show_progress='hidden')
+        freeu_s1.input (fn=setPresetText, inputs=[], outputs=[freeu_preset], show_progress='hidden')
+        freeu_s2.input (fn=setPresetText, inputs=[], outputs=[freeu_preset], show_progress='hidden')
 
         return freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2
+
+    def process(self, p, *script_args, **kwargs):
+        freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2 = script_args
+
+        if freeu_enabled:
+            # Below codes will add some logs to the texts below the image outputs on UI.
+            # The extra_generation_params does not influence results.
+            p.extra_generation_params.update(dict(
+                freeu_enabled=freeu_enabled,
+                freeu_b1=freeu_b1,
+                freeu_b2=freeu_b2,
+                freeu_s1=freeu_s1,
+                freeu_s2=freeu_s2,
+            ))
+
+        return
 
     def process_before_every_sampling(self, p, *script_args, **kwargs):
         # This will be called before every sampling.
@@ -84,23 +137,9 @@ class FreeUForForge(scripts.Script):
 
         freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2 = script_args
 
-        if not freeu_enabled:
-            return
-
-        unet = p.sd_model.forge_objects.unet
-
-        unet = patch_freeu_v2(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)
-
-        p.sd_model.forge_objects.unet = unet
-
-        # Below codes will add some logs to the texts below the image outputs on UI.
-        # The extra_generation_params does not influence results.
-        p.extra_generation_params.update(dict(
-            freeu_enabled=freeu_enabled,
-            freeu_b1=freeu_b1,
-            freeu_b2=freeu_b2,
-            freeu_s1=freeu_s1,
-            freeu_s2=freeu_s2,
-        ))
+        if freeu_enabled:
+            unet = p.sd_model.forge_objects.unet
+            unet = patch_freeu_v2(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)
+            p.sd_model.forge_objects.unet = unet
 
         return

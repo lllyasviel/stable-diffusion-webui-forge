@@ -89,45 +89,49 @@ class LatentModifierForForge(scripts.Script):
             self.paste_field_names.append(field.api)
         return enabled, sharpness_multiplier, sharpness_method, tonemap_multiplier, tonemap_method, tonemap_percentile, contrast_multiplier, combat_method, combat_cfg_drift, rescale_cfg_phi, extra_noise_type, extra_noise_method, extra_noise_multiplier, extra_noise_lowpass, divisive_norm_size, divisive_norm_multiplier, spectral_mod_mode, spectral_mod_percentile, spectral_mod_multiplier, affect_uncond, dyn_cfg_augmentation
 
+
+    def process(self, p, *script_args, **kwargs):
+        enabled, sharpness_multiplier, sharpness_method, tonemap_multiplier, tonemap_method, tonemap_percentile, contrast_multiplier, combat_method, combat_cfg_drift, rescale_cfg_phi, extra_noise_type, extra_noise_method, extra_noise_multiplier, extra_noise_lowpass, divisive_norm_size, divisive_norm_multiplier, spectral_mod_mode, spectral_mod_percentile, spectral_mod_multiplier, affect_uncond, dyn_cfg_augmentation = script_args
+
+        if enabled:
+            # Below codes will add some logs to the texts below the image outputs on UI.
+            # The extra_generation_params does not influence results.
+            p.extra_generation_params.update(dict(
+                latent_modifier_enabled=enabled,
+                latent_modifier_sharpness_multiplier=sharpness_multiplier,
+                latent_modifier_sharpness_method=sharpness_method,
+                latent_modifier_tonemap_multiplier=tonemap_multiplier,
+                latent_modifier_tonemap_method=tonemap_method,
+                latent_modifier_tonemap_percentile=tonemap_percentile,
+                latent_modifier_contrast_multiplier=contrast_multiplier,
+                latent_modifier_combat_method=combat_method,
+                latent_modifier_combat_cfg_drift=combat_cfg_drift,
+                latent_modifier_rescale_cfg_phi=rescale_cfg_phi,
+                latent_modifier_extra_noise_type=extra_noise_type,
+                latent_modifier_extra_noise_method=extra_noise_method,
+                latent_modifier_extra_noise_multiplier=extra_noise_multiplier,
+                latent_modifier_extra_noise_lowpass=extra_noise_lowpass,
+                latent_modifier_divisive_norm_size=divisive_norm_size,
+                latent_modifier_divisive_norm_multiplier=divisive_norm_multiplier,
+                latent_modifier_spectral_mod_mode=spectral_mod_mode,
+                latent_modifier_spectral_mod_percentile=spectral_mod_percentile,
+                latent_modifier_spectral_mod_multiplier=spectral_mod_multiplier,
+                latent_modifier_affect_uncond=affect_uncond,
+                latent_modifier_dyn_cfg_augmentation=dyn_cfg_augmentation,
+            ))
+
+        return
+
+
     def process_before_every_sampling(self, p, *script_args, **kwargs):
         # This will be called before every sampling.
         # If you use highres fix, this will be called twice.
 
         enabled, sharpness_multiplier, sharpness_method, tonemap_multiplier, tonemap_method, tonemap_percentile, contrast_multiplier, combat_method, combat_cfg_drift, rescale_cfg_phi, extra_noise_type, extra_noise_method, extra_noise_multiplier, extra_noise_lowpass, divisive_norm_size, divisive_norm_multiplier, spectral_mod_mode, spectral_mod_percentile, spectral_mod_multiplier, affect_uncond, dyn_cfg_augmentation = script_args
 
-        if not enabled:
-            return
-
-        unet = p.sd_model.forge_objects.unet
-
-        unet = opModelSamplerLatentMegaModifier(unet, sharpness_multiplier, sharpness_method, tonemap_multiplier, tonemap_method, tonemap_percentile, contrast_multiplier, combat_method, combat_cfg_drift, rescale_cfg_phi, extra_noise_type, extra_noise_method, extra_noise_multiplier, extra_noise_lowpass, divisive_norm_size, divisive_norm_multiplier, spectral_mod_mode, spectral_mod_percentile, spectral_mod_multiplier, affect_uncond, dyn_cfg_augmentation, seed=p.seeds[0])[0]
-
-        p.sd_model.forge_objects.unet = unet
-
-        # Below codes will add some logs to the texts below the image outputs on UI.
-        # The extra_generation_params does not influence results.
-        p.extra_generation_params.update(dict(
-            latent_modifier_enabled=enabled,
-            latent_modifier_sharpness_multiplier=sharpness_multiplier,
-            latent_modifier_sharpness_method=sharpness_method,
-            latent_modifier_tonemap_multiplier=tonemap_multiplier,
-            latent_modifier_tonemap_method=tonemap_method,
-            latent_modifier_tonemap_percentile=tonemap_percentile,
-            latent_modifier_contrast_multiplier=contrast_multiplier,
-            latent_modifier_combat_method=combat_method,
-            latent_modifier_combat_cfg_drift=combat_cfg_drift,
-            latent_modifier_rescale_cfg_phi=rescale_cfg_phi,
-            latent_modifier_extra_noise_type=extra_noise_type,
-            latent_modifier_extra_noise_method=extra_noise_method,
-            latent_modifier_extra_noise_multiplier=extra_noise_multiplier,
-            latent_modifier_extra_noise_lowpass=extra_noise_lowpass,
-            latent_modifier_divisive_norm_size=divisive_norm_size,
-            latent_modifier_divisive_norm_multiplier=divisive_norm_multiplier,
-            latent_modifier_spectral_mod_mode=spectral_mod_mode,
-            latent_modifier_spectral_mod_percentile=spectral_mod_percentile,
-            latent_modifier_spectral_mod_multiplier=spectral_mod_multiplier,
-            latent_modifier_affect_uncond=affect_uncond,
-            latent_modifier_dyn_cfg_augmentation=dyn_cfg_augmentation,
-        ))
+        if enabled:
+            unet = p.sd_model.forge_objects.unet
+            unet = opModelSamplerLatentMegaModifier(unet, sharpness_multiplier, sharpness_method, tonemap_multiplier, tonemap_method, tonemap_percentile, contrast_multiplier, combat_method, combat_cfg_drift, rescale_cfg_phi, extra_noise_type, extra_noise_method, extra_noise_multiplier, extra_noise_lowpass, divisive_norm_size, divisive_norm_multiplier, spectral_mod_mode, spectral_mod_percentile, spectral_mod_multiplier, affect_uncond, dyn_cfg_augmentation, seed=p.seeds[0])[0]
+            p.sd_model.forge_objects.unet = unet
 
         return

@@ -27,7 +27,33 @@ class MultiDiffusionForForge(scripts.Script):
             tile_overlap = gr.Slider(label='Tile Overlap', minimum=0, maximum=2048, step=32, value=64)
             tile_batch_size = gr.Slider(label='Tile Batch Size', minimum=1, maximum=8192, step=1, value=4)
 
+        self.infotext_fields = [
+            (enabled, lambda d: d.get("multidiffusion_enabled", False)),
+            (method, "multidiffusion_method"),
+            (tile_width, "multidiffusion_tile_width"),
+            (tile_height, "multidiffusion_tile_height"),
+            (tile_overlap, "multidiffusion_tile_overlap"),
+            (tile_batch_size, "multidiffusion_tile_batch_size"),
+        ]
+
         return enabled, method, tile_width, tile_height, tile_overlap, tile_batch_size
+
+    def process(self, p, *script_args, **kwargs):
+        enabled, method, tile_width, tile_height, tile_overlap, tile_batch_size = script_args
+
+        if enabled:
+        # Below codes will add some logs to the texts below the image outputs on UI.
+        # The extra_generation_params does not influence results.
+            p.extra_generation_params.update(dict(
+                multidiffusion_enabled=enabled,
+                multidiffusion_method=method,
+                multidiffusion_tile_width=tile_width,
+                multidiffusion_tile_height=tile_height,
+                multidiffusion_tile_overlap=tile_overlap,
+                multidiffusion_tile_batch_size=tile_batch_size,
+            ))
+
+        return
 
     def process_before_every_sampling(self, p, *script_args, **kwargs):
         # This will be called before every sampling.
@@ -35,24 +61,9 @@ class MultiDiffusionForForge(scripts.Script):
 
         enabled, method, tile_width, tile_height, tile_overlap, tile_batch_size = script_args
 
-        if not enabled:
-            return
-
-        unet = p.sd_model.forge_objects.unet
-
-        unet = opTiledDiffusion(unet, method, tile_width, tile_height, tile_overlap, tile_batch_size)[0]
-
-        p.sd_model.forge_objects.unet = unet
-
-        # Below codes will add some logs to the texts below the image outputs on UI.
-        # The extra_generation_params does not influence results.
-        p.extra_generation_params.update(dict(
-            multidiffusion_enabled=enabled,
-            multidiffusion_method=method,
-            multidiffusion_tile_width=tile_width,
-            multidiffusion_tile_height=tile_height,
-            multidiffusion_tile_overlap=tile_overlap,
-            multidiffusion_tile_batch_size=tile_batch_size,
-        ))
+        if enabled:
+            unet = p.sd_model.forge_objects.unet
+            unet = opTiledDiffusion(unet, method, tile_width, tile_height, tile_overlap, tile_batch_size)[0]
+            p.sd_model.forge_objects.unet = unet
 
         return

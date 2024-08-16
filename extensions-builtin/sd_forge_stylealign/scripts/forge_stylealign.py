@@ -23,7 +23,23 @@ class StyleAlignForForge(scripts.Script):
         with gr.Accordion(open=False, label=self.title()):
             shared_attention = gr.Checkbox(label='Share attention in batch', value=False)
 
+        self.infotext_fields = [
+            (shared_attention, lambda d: d.get("stylealign_enabled", False)),
+        ]
+
         return [shared_attention]
+
+    def process(self, p, *script_args, **kwargs):
+        shared_attention = script_args[0]
+
+        if shared_attention:
+            # Below codes will add some logs to the texts below the image outputs on UI.
+            # The extra_generation_params does not influence results.
+            p.extra_generation_params.update(dict(
+                stylealign_enabled=shared_attention,
+            ))
+
+        return
 
     def process_before_every_sampling(self, p, *script_args, **kwargs):
         # This will be called before every sampling.
@@ -70,11 +86,5 @@ class StyleAlignForForge(scripts.Script):
         unet.set_model_replace_all(attn1_proc, 'attn1')
 
         p.sd_model.forge_objects.unet = unet
-
-        # Below codes will add some logs to the texts below the image outputs on UI.
-        # The extra_generation_params does not influence results.
-        p.extra_generation_params.update(dict(
-            stylealign_enabled=shared_attention,
-        ))
 
         return

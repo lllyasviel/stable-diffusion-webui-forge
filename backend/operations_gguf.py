@@ -37,6 +37,13 @@ class ParameterGGUF(torch.nn.Parameter):
         new.gguf_cls = self.gguf_cls
         return new
 
+    def pin_memory(self, device=None):
+        new = ParameterGGUF(torch.Tensor.pin_memory(self, device=device), no_init=True)
+        new.gguf_type = self.gguf_type
+        new.gguf_real_shape = self.gguf_real_shape
+        new.gguf_cls = self.gguf_cls
+        return new
+
     @classmethod
     def make(cls, data, gguf_type, gguf_cls, gguf_real_shape):
         new = ParameterGGUF(data, no_init=True)

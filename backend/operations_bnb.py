@@ -65,6 +65,18 @@ class ForgeParams4bit(Params4bit):
                 bnb_quantized=self.bnb_quantized,
             )
 
+    def pin_memory(self, device=None):
+        return ForgeParams4bit(
+            torch.Tensor.pin_memory(self, device=device),
+            requires_grad=self.requires_grad,
+            quant_state=self.quant_state,
+            blocksize=self.blocksize,
+            compress_statistics=self.compress_statistics,
+            quant_type=self.quant_type,
+            quant_storage=self.quant_storage,
+            bnb_quantized=self.bnb_quantized,
+        )
+
 
 class ForgeLoader4Bit(torch.nn.Module):
     def __init__(self, *, device, dtype, quant_type, **kwargs):

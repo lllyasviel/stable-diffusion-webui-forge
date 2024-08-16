@@ -462,16 +462,21 @@ def unload_model_clones(model):
 
 
 def free_memory(memory_required, device, keep_loaded=[]):
+    print(f"[Unload] Trying to free {memory_required / (1024 * 1024):.2f} MB for {device} with {len(keep_loaded)} models keep loaded ...")
+
     offload_everything = ALWAYS_VRAM_OFFLOAD or vram_state == VRAMState.NO_VRAM
     unloaded_model = False
     for i in range(len(current_loaded_models) - 1, -1, -1):
         if not offload_everything:
-            if get_free_memory(device) > memory_required:
+            free_memory = get_free_memory(device)
+            print(f"[Unload] Current free memory is {free_memory / (1024 * 1024):.2f} MB ... ")
+            if free_memory > memory_required:
                 break
         shift_model = current_loaded_models[i]
         if shift_model.device == device:
             if shift_model not in keep_loaded:
                 m = current_loaded_models.pop(i)
+                print(f"[Unload] Unload model {m.model.model.__class__.__name__}")
                 m.model_unload()
                 del m
                 unloaded_model = True
@@ -492,7 +497,7 @@ def compute_model_gpu_memory_when_using_cpu_swap(current_free_mem, inference_mem
     k_1GB = max(0.0, min(1.0, k_1GB))
 
     adaptive_safe_factor = 1.0 - 0.23 * k_1GB
-    suggestion = maximum_memory_available * adaptive_safe_factor
+    suggestion = max(maximum_memory_available * adaptive_safe_factor, maximum_memory_available - 1024 * 1024 * 1024 * 2)
 
     return int(max(0, suggestion))
 

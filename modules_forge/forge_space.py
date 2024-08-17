@@ -21,7 +21,7 @@ def build_html(title, installed=False, url=None):
     if isinstance(url, str):
         return f'<div>{title}</div><div>Currently Running: <a href="{url}" style="color: green;" target="_blank">{url}</a></div>'
     else:
-        return f'<div>{title}</div><div style="color: grey;">Ready to Launch</div>'
+        return f'<div>{title}</div><div style="color: grey;">Installed, Ready to Launch</div>'
 
 
 class ForgeSpace:

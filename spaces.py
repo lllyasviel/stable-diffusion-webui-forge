@@ -9,6 +9,9 @@ import inspect
 from backend import memory_management
 
 
+gpu = memory_management.get_torch_device()
+
+
 class GPUObject:
     def __init__(self):
         self.module_list = []
@@ -43,7 +46,7 @@ class GPUObject:
         return self
 
     def gpu(self):
-        self.to(device=memory_management.get_torch_device())
+        self.to(device=gpu)
         return self
 
 

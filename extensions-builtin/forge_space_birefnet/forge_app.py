@@ -32,7 +32,7 @@ def fn(image):
     image_size = im.size
     origin = im.copy()
     image = load_img(im)
-    input_images = transform_image(image).unsqueeze(0).to("cuda")
+    input_images = transform_image(image).unsqueeze(0).to(spaces.gpu)
     # Prediction
     with torch.no_grad():
         preds = birefnet(input_images)[-1].sigmoid().cpu()

@@ -11,7 +11,7 @@ spaces = []
 
 def build_html(title, url=None):
     if isinstance(url, str):
-        return f'<div>{title}</div><div>Currently Running: <a href="{url}" style="color: green;">{url}</a></div>'
+        return f'<div>{title}</div><div>Currently Running: <a href="{url}" style="color: green;" target="_blank">{url}</a></div>'
     else:
         return f'<div>{title}</div><div style="color: grey;">Currently Offline</div>'
 
@@ -19,6 +19,7 @@ def build_html(title, url=None):
 class ForgeSpace:
     def __init__(self, root_path, title, **kwargs):
         self.title = title
+        self.installed = False
         self.root_path = root_path
         self.is_running = False
         self.gradio_metas = None
@@ -33,6 +34,20 @@ class ForgeSpace:
         self.btn_terminate.click(self.terminate, inputs=[], outputs=[self.label])
 
         return
+
+    def refresh_gradio(self):
+        results = []
+
+        if isinstance(self.gradio_metas, list):
+            results.append(build_html(title=self.title, url=self.gradio_metas[1]))
+        else:
+            results.append(build_html(title=self.title, url=None))
+
+        results.append(gr.update(interactive=not self.installed))
+        results.append(gr.update(interactive=self.installed))
+        results.append(gr.update(interactive=not self.is_running))
+        results.append(gr.update(interactive=self.is_running))
+        return results
 
     def terminate(self):
         self.is_running = False

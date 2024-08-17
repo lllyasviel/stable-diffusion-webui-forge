@@ -1,12 +1,15 @@
 import os
 import inspect
 
+from backend import memory_management
+
 
 def GPU(func, **kwargs):
     def wrapper():
-        print("Something is happening before the function is called.")
+        print("Entering Forge Space GPU ...")
+        memory_management.unload_all_models()
         func()
-        print("Something is happening after the function is called.")
+        print("Quiting Forge Space GPU ...")
     return wrapper
 
 

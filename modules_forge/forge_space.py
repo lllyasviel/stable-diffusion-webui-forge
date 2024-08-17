@@ -88,6 +88,7 @@ class ForgeSpace:
 
     def uninstall(self):
         shutil.rmtree(self.hf_path)
+        print(f'Deleted: {self.hf_path}')
         return self.refresh_gradio()
 
     def terminate(self):

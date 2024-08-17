@@ -136,3 +136,5 @@ def main_entry():
                 with gr.Row(equal_height=True):
                     space = ForgeSpace(root_path=ex.path, **ex.space_meta)
                     spaces.append(space)
+
+    return

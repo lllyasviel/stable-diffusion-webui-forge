@@ -45,7 +45,7 @@ image = gr.Image(label="Upload an image")
 text = gr.Textbox(label="Paste an image URL")
 
 
-chameleon = load_img("chameleon.jpg", output_type="pil")
+chameleon = load_img(spaces.convert_root_path() + "chameleon.jpg", output_type="pil")
 
 url = "https://hips.hearstapps.com/hmg-prod/images/gettyimages-1229892983-square.jpg"
 tab1 = gr.Interface(

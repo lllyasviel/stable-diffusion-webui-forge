@@ -58,7 +58,7 @@ def GPU(gpu_objects=None, manual_load=False):
                 for o in gpu_objects:
                     o.gpu()
             result = func(*args, **kwargs)
-            print("Quiting Forge Space GPU ...")
+            print("Cleaning Forge Space GPU ...")
             for o in gpu_objects:
                 o.to(device=torch.device('cpu'))
             memory_management.soft_empty_cache()

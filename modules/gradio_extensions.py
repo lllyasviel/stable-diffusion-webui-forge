@@ -118,6 +118,7 @@ class EventWrapper:
     def __call__(self, *args, **kwargs):
         if '_js' in kwargs:
             kwargs['js'] = kwargs['_js']
+            del kwargs['_js']
         return self.replaced_event(*args, **kwargs)
 
     @property

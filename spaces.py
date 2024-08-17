@@ -40,9 +40,10 @@ class GPUObject:
         memory_management.soft_empty_cache()
         return
 
-    def to(self, *args, **kwargs):
+    def to(self, device):
         for module in self.module_list:
-            module.to(*args, **kwargs)
+            module.to(device)
+        print(f'Forge Space: Moved {len(self.module_list)} Modules to {device}.')
         return self
 
     def gpu(self):

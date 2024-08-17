@@ -1,4 +1,7 @@
+import os
 import gradio as gr
+import importlib.util
+
 from threading import Thread, Event
 
 # Event to signal the thread to stop
@@ -6,16 +9,18 @@ stop_event = Event()
 
 
 def open_another():
-    def update(name):
-        return f"Welcome to Gradio, {name}!"
+    # Define the path to the app.py file
+    file_path = os.path.join('extensions-builtin', 'forge_space_test', 'app.py')
 
-    with gr.Blocks() as demo:
-        gr.Markdown("Start typing below and then click **Run** to see the output.")
-        with gr.Row():
-            inp = gr.Textbox(placeholder="What is your name?")
-            out = gr.Textbox()
-        btn = gr.Button("Run")
-        btn.click(fn=update, inputs=inp, outputs=out)
+    # Specify the module name (this can be anything you want)
+    module_name = 'app'
+
+    # Load the module
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    demo = getattr(module, 'demo')
 
     metas = demo.launch(inbrowser=True, prevent_thread_lock=True)
 

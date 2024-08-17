@@ -70,12 +70,20 @@ class ForgeSpace:
         return results
 
     def install(self):
-        if self.hf_repo is None:
-            os.makedirs(self.hf_path, exist_ok=True)
+        os.makedirs(self.hf_path, exist_ok=True)
+
+        if self.repo_id is None:
             return self.refresh_gradio()
 
-        print('here')
+        downloaded = snapshot_download(
+            repo_id=self.repo_id,
+            repo_type=self.repo_type,
+            revision=self.revision,
+            local_dir=self.hf_path,
+            force_download=True,
+        )
 
+        print(f'Downloaded: {downloaded}')
         return self.refresh_gradio()
 
     def uninstall(self):

@@ -1,4 +1,6 @@
 import os
+import sys
+import uuid
 import time
 import gradio as gr
 import importlib.util
@@ -61,7 +63,7 @@ class ForgeSpace:
         results.append(gr.update(interactive=not installed))
         results.append(gr.update(interactive=installed))
         results.append(gr.update(interactive=installed and not self.is_running))
-        results.append(gr.update(interactive=self.is_running))
+        results.append(gr.update(interactive=installed and self.is_running))
         return results
 
     def install(self):
@@ -92,7 +94,7 @@ class ForgeSpace:
 
     def gradio_worker(self):
         file_path = os.path.join(self.root_path, 'app.py')
-        module_name = 'app'
+        module_name = 'forge_space_' + str(uuid.uuid4()).replace('-', '_')
         spec = importlib.util.spec_from_file_location(module_name, file_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
@@ -105,6 +107,10 @@ class ForgeSpace:
 
         demo.close()
         self.gradio_metas = None
+
+        if module_name in sys.modules:
+            del sys.modules[module_name]
+
         return
 
 

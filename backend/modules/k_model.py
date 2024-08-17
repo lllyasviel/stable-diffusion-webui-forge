@@ -1,12 +1,14 @@
 import torch
 
-from backend import memory_management, attention, operations
+from backend import memory_management, attention
 from backend.modules.k_prediction import k_prediction_from_diffusers_scheduler
 
 
 class KModel(torch.nn.Module):
-    def __init__(self, model, diffusers_scheduler, k_predictor=None):
+    def __init__(self, model, diffusers_scheduler, k_predictor=None, config=None):
         super().__init__()
+
+        self.config = config
 
         self.storage_dtype = model.storage_dtype
         self.computation_dtype = model.computation_dtype

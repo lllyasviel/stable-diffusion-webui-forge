@@ -740,8 +740,8 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
         "Model": p.sd_model_name if opts.add_model_name_to_info else None,
         "FP8 weight": opts.fp8_storage if devices.fp8 else None,
         "Cache FP16 weight for LoRA": opts.cache_fp16_weight if devices.fp8 else None,
-        "VAE hash": p.sd_vae_hash if opts.add_vae_hash_to_info else None,
-        "VAE": p.sd_vae_name if opts.add_vae_name_to_info else None,
+        # "VAE hash": p.sd_vae_hash if opts.add_vae_hash_to_info else None,
+        # "VAE": p.sd_vae_name if opts.add_vae_name_to_info else None,
         "Variation seed": (None if p.subseed_strength == 0 else (p.all_subseeds[0] if use_main_prompt else all_subseeds[index])),
         "Variation seed strength": (None if p.subseed_strength == 0 else p.subseed_strength),
         "Seed resize from": (None if p.seed_resize_from_w <= 0 or p.seed_resize_from_h <= 0 else f"{p.seed_resize_from_w}x{p.seed_resize_from_h}"),
@@ -758,6 +758,10 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
         "Version": program_version() if opts.add_version_to_infotext else None,
         "User": p.user if opts.add_user_name_to_info else None,
     })
+
+    if isinstance(shared.opts.forge_additional_modules, list) and len(shared.opts.forge_additional_modules) > 0:
+        for i, m in enumerate(shared.opts.forge_additional_modules):
+            generation_params[f'Module {i+1}'] = os.path.splitext(os.path.basename(m))[0]
 
     for key, value in generation_params.items():
         try:
@@ -786,6 +790,12 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 
     if need_global_unload and not just_reloaded:
         memory_management.unload_all_models()
+
+    if need_global_unload:
+        StableDiffusionProcessing.cached_c = [None, None, None]
+        StableDiffusionProcessing.cached_uc = [None, None, None]
+        p.cached_c = [None, None, None]
+        p.cached_uc = [None, None, None]
 
     need_global_unload = False
 

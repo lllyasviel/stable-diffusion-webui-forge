@@ -302,7 +302,9 @@ def state_dict_size(sd, exclude_device=None):
 
 
 def state_dict_dtype(state_dict):
-    for k in state_dict.keys():
+    for k, v in state_dict.items():
+        if hasattr(v, 'is_gguf'):
+            return 'gguf'
         if 'bitsandbytes__nf4' in k:
             return 'nf4'
         if 'bitsandbytes__fp4' in k:
@@ -361,7 +363,7 @@ class LoadedModel:
     def model_memory(self):
         return self.model.model_size()
 
-    def model_memory_required(self, device):
+    def model_memory_required(self, device=None):
         return module_size(self.model.model, exclude_device=device)
 
     def model_load(self, model_gpu_memory_when_using_cpu_swap=-1):
@@ -375,15 +377,16 @@ class LoadedModel:
         self.model.model_patches_to(self.model.model_dtype())
 
         try:
-            self.real_model = self.model.patch_model(device_to=patch_model_to)
+            self.real_model = self.model.forge_patch_model(patch_model_to)
         except Exception as e:
-            self.model.unpatch_model(self.model.offload_device)
+            self.model.forge_unpatch_model(self.model.offload_device)
             self.model_unload()
             raise e
 
         if not do_not_need_cpu_swap:
-            real_async_memory = 0
+            memory_in_swap = 0
             mem_counter = 0
+            mem_cannot_cast = 0
             for m in self.real_model.modules():
                 if hasattr(m, "parameters_manual_cast"):
                     m.prev_parameters_manual_cast = m.parameters_manual_cast
@@ -393,20 +396,22 @@ class LoadedModel:
                         m.to(self.device)
                         mem_counter += module_mem
                     else:
-                        real_async_memory += module_mem
+                        memory_in_swap += module_mem
                         m.to(self.model.offload_device)
                         if PIN_SHARED_MEMORY and is_device_cpu(self.model.offload_device):
                             m._apply(lambda x: x.pin_memory())
                 elif hasattr(m, "weight"):
                     m.to(self.device)
-                    mem_counter += module_size(m)
-                    print(f"[Memory Management] Swap disabled for", type(m).__name__)
+                    module_mem = module_size(m)
+                    mem_counter += module_mem
+                    mem_cannot_cast += module_mem
 
-            if stream.should_use_stream():
-                print(f"[Memory Management] Loaded to CPU Swap: {real_async_memory / (1024 * 1024):.2f} MB (asynchronous method)")
-            else:
-                print(f"[Memory Management] Loaded to CPU Swap: {real_async_memory / (1024 * 1024):.2f} MB (blocked method)")
+            if mem_cannot_cast > 0:
+                print(f"[Memory Management] Loaded to GPU for backward capability: {mem_cannot_cast / (1024 * 1024):.2f} MB")
 
+            swap_flag = 'Shared' if PIN_SHARED_MEMORY else 'CPU'
+            method_flag = 'asynchronous' if stream.should_use_stream() else 'blocked'
+            print(f"[Memory Management] Loaded to {swap_flag} Swap: {memory_in_swap / (1024 * 1024):.2f} MB ({method_flag} method)")
             print(f"[Memory Management] Loaded to GPU: {mem_counter / (1024 * 1024):.2f} MB")
 
             self.model_accelerated = True
@@ -426,9 +431,9 @@ class LoadedModel:
             self.model_accelerated = False
 
         if avoid_model_moving:
-            self.model.unpatch_model()
+            self.model.forge_unpatch_model()
         else:
-            self.model.unpatch_model(self.model.offload_device)
+            self.model.forge_unpatch_model(self.model.offload_device)
             self.model.model_patches_to(self.model.offload_device)
 
     def __eq__(self, other):
@@ -457,16 +462,21 @@ def unload_model_clones(model):
 
 
 def free_memory(memory_required, device, keep_loaded=[]):
+    print(f"[Unload] Trying to free {memory_required / (1024 * 1024):.2f} MB for {device} with {len(keep_loaded)} models keep loaded ...")
+
     offload_everything = ALWAYS_VRAM_OFFLOAD or vram_state == VRAMState.NO_VRAM
     unloaded_model = False
     for i in range(len(current_loaded_models) - 1, -1, -1):
         if not offload_everything:
-            if get_free_memory(device) > memory_required:
+            free_memory = get_free_memory(device)
+            print(f"[Unload] Current free memory is {free_memory / (1024 * 1024):.2f} MB ... ")
+            if free_memory > memory_required:
                 break
         shift_model = current_loaded_models[i]
         if shift_model.device == device:
             if shift_model not in keep_loaded:
                 m = current_loaded_models.pop(i)
+                print(f"[Unload] Unload model {m.model.model.__class__.__name__}")
                 m.model_unload()
                 del m
                 unloaded_model = True
@@ -483,11 +493,10 @@ def free_memory(memory_required, device, keep_loaded=[]):
 def compute_model_gpu_memory_when_using_cpu_swap(current_free_mem, inference_memory):
     maximum_memory_available = current_free_mem - inference_memory
 
-    k_1GB = float(inference_memory / (1024 * 1024 * 1024))
-    k_1GB = max(0.0, min(1.0, k_1GB))
-
-    adaptive_safe_factor = 1.0 - 0.23 * k_1GB
-    suggestion = maximum_memory_available * adaptive_safe_factor
+    suggestion = max(
+        maximum_memory_available / 1.3,
+        maximum_memory_available - 1024 * 1024 * 1024 * 1.25
+    )
 
     return int(max(0, suggestion))
 
@@ -529,7 +538,7 @@ def load_models_gpu(models, memory_required=0):
     total_memory_required = {}
     for loaded_model in models_to_load:
         unload_model_clones(loaded_model.model)
-        total_memory_required[loaded_model.device] = total_memory_required.get(loaded_model.device, 0) + loaded_model.model_memory_required(loaded_model.device)
+        total_memory_required[loaded_model.device] = total_memory_required.get(loaded_model.device, 0) + loaded_model.model_memory_required()
 
     for device in total_memory_required:
         if device != torch.device("cpu"):
@@ -641,13 +650,13 @@ def unet_dtype(device=None, model_params=0, supported_dtypes=[torch.float16, tor
     if args.unet_in_fp8_e5m2:
         return torch.float8_e5m2
 
-    if should_use_fp16(device=device, model_params=model_params, manual_cast=True):
-        if torch.float16 in supported_dtypes:
-            return torch.float16
-
-    if should_use_bf16(device, model_params=model_params, manual_cast=True):
-        if torch.bfloat16 in supported_dtypes:
-            return torch.bfloat16
+    for candidate in supported_dtypes:
+        if candidate == torch.float16:
+            if should_use_fp16(device=device, model_params=model_params, manual_cast=True):
+                return candidate
+        if candidate == torch.bfloat16:
+            if should_use_bf16(device, model_params=model_params, manual_cast=True):
+                return candidate
 
     return torch.float32
 

@@ -173,7 +173,7 @@ def list_models():
     else:
         model_url = "https://huggingface.co/lllyasviel/fav_models/resolve/main/fav/realisticVisionV51_v51VAE.safetensors"
 
-    model_list = modelloader.load_models(model_path=model_path, model_url=model_url, command_path=shared.cmd_opts.ckpt_dir, ext_filter=[".ckpt", ".safetensors"], download_name="realisticVisionV51_v51VAE.safetensors", ext_blacklist=[".vae.ckpt", ".vae.safetensors"])
+    model_list = modelloader.load_models(model_path=model_path, model_url=model_url, command_path=shared.cmd_opts.ckpt_dir, ext_filter=[".ckpt", ".safetensors", ".gguf"], download_name="realisticVisionV51_v51VAE.safetensors", ext_blacklist=[".vae.ckpt", ".vae.safetensors"])
 
     if os.path.exists(cmd_ckpt):
         checkpoint_info = CheckpointInfo(cmd_ckpt)
@@ -490,27 +490,15 @@ def forge_model_reload():
     timer.record("unload existing model")
 
     checkpoint_info = model_data.forge_loading_parameters['checkpoint_info']
-    state_dict = load_torch_file(checkpoint_info.filename)
-    timer.record("load state dict")
-
-    state_dict_vae = model_data.forge_loading_parameters.get('vae_filename', None)
-
-    if state_dict_vae is not None:
-        state_dict_vae = load_torch_file(state_dict_vae)
-
-    timer.record("load vae state dict")
-
-    if shared.opts.sd_checkpoint_cache > 0:
-        # cache newly loaded model
-        checkpoints_loaded[checkpoint_info] = state_dict.copy()
+    state_dict = checkpoint_info.filename
+    additional_state_dicts = model_data.forge_loading_parameters.get('additional_modules', [])
 
     timer.record("cache state dict")
 
     dynamic_args['forge_unet_storage_dtype'] = model_data.forge_loading_parameters.get('unet_storage_dtype', None)
     dynamic_args['embedding_dir'] = cmd_opts.embeddings_dir
     dynamic_args['emphasis_name'] = opts.emphasis
-    sd_model = forge_loader(state_dict, sd_vae=state_dict_vae)
-    del state_dict
+    sd_model = forge_loader(state_dict, additional_state_dicts=additional_state_dicts)
     timer.record("forge model load")
 
     sd_model.extra_generation_params = {}
@@ -519,10 +507,6 @@ def forge_model_reload():
     sd_model.filename = checkpoint_info.filename
     sd_model.sd_model_hash = checkpoint_info.calculate_shorthash()
     timer.record("calculate hash")
-
-    # clean up cache if limit is reached
-    while len(checkpoints_loaded) > shared.opts.sd_checkpoint_cache:
-        checkpoints_loaded.popitem(last=False)
 
     shared.opts.data["sd_checkpoint_hash"] = checkpoint_info.sha256
 

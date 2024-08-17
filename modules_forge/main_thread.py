@@ -12,6 +12,7 @@ lock = threading.Lock()
 last_id = 0
 waiting_list = []
 finished_list = []
+last_exception = None
 
 
 class Task:
@@ -21,9 +22,19 @@ class Task:
         self.args = args
         self.kwargs = kwargs
         self.result = None
+        self.exception = None
 
     def work(self):
-        self.result = self.func(*self.args, **self.kwargs)
+        global last_exception
+        try:
+            self.result = self.func(*self.args, **self.kwargs)
+            self.exception = None
+            last_exception = None
+        except Exception as e:
+            traceback.print_exc()
+            print(e)
+            self.exception = e
+            last_exception = e
 
 
 def loop():
@@ -33,11 +44,9 @@ def loop():
         if len(waiting_list) > 0:
             with lock:
                 task = waiting_list.pop(0)
-            try:
-                task.work()
-            except Exception as e:
-                traceback.print_exc()
-                print(e)
+
+            task.work()
+
             with lock:
                 finished_list.append(task)
 

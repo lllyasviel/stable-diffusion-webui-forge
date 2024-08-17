@@ -23,72 +23,41 @@ def Fourier_filter(x, threshold, scale):
     return x_filtered.to(x.dtype)
 
 
-class FreeU:
-    def patch(self, model, b1, b2, s1, s2):
-        model_channels = model.model.model_config.unet_config["model_channels"]
-        scale_dict = {model_channels * 4: (b1, s1), model_channels * 2: (b2, s2)}
-        on_cpu_devices = {}
+def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
+    model_channels = unet_patcher.model.diffusion_model.config["model_channels"]
+    scale_dict = {model_channels * 4: (b1, s1), model_channels * 2: (b2, s2)}
+    on_cpu_devices = {}
 
-        def output_block_patch(h, hsp, transformer_options):
-            scale = scale_dict.get(h.shape[1], None)
-            if scale is not None:
-                h[:, :h.shape[1] // 2] = h[:, :h.shape[1] // 2] * scale[0]
-                if hsp.device not in on_cpu_devices:
-                    try:
-                        hsp = Fourier_filter(hsp, threshold=1, scale=scale[1])
-                    except:
-                        print("Device", hsp.device, "does not support the torch.fft functions used in the FreeU node, switching to CPU.")
-                        on_cpu_devices[hsp.device] = True
-                        hsp = Fourier_filter(hsp.cpu(), threshold=1, scale=scale[1]).to(hsp.device)
-                else:
+    def output_block_patch(h, hsp, transformer_options):
+        scale = scale_dict.get(h.shape[1], None)
+        if scale is not None:
+            hidden_mean = h.mean(1).unsqueeze(1)
+            B = hidden_mean.shape[0]
+            hidden_max, _ = torch.max(hidden_mean.view(B, -1), dim=-1, keepdim=True)
+            hidden_min, _ = torch.min(hidden_mean.view(B, -1), dim=-1, keepdim=True)
+            hidden_mean = (hidden_mean - hidden_min.unsqueeze(2).unsqueeze(3)) / (hidden_max - hidden_min).unsqueeze(2).unsqueeze(3)
+
+            h[:, :h.shape[1] // 2] = h[:, :h.shape[1] // 2] * ((scale[0] - 1) * hidden_mean + 1)
+
+            if hsp.device not in on_cpu_devices:
+                try:
+                    hsp = Fourier_filter(hsp, threshold=1, scale=scale[1])
+                except:
+                    print("Device", hsp.device, "does not support the torch.fft functions used in the FreeU node, switching to CPU.")
+                    on_cpu_devices[hsp.device] = True
                     hsp = Fourier_filter(hsp.cpu(), threshold=1, scale=scale[1]).to(hsp.device)
+            else:
+                hsp = Fourier_filter(hsp.cpu(), threshold=1, scale=scale[1]).to(hsp.device)
 
-            return h, hsp
+        return h, hsp
 
-        m = model.clone()
-        m.set_model_output_block_patch(output_block_patch)
-        return (m,)
-
-
-class FreeU_V2:
-    def patch(self, model, b1, b2, s1, s2):
-        model_channels = model.model.diffusion_model.config["model_channels"]
-        scale_dict = {model_channels * 4: (b1, s1), model_channels * 2: (b2, s2)}
-        on_cpu_devices = {}
-
-        def output_block_patch(h, hsp, transformer_options):
-            scale = scale_dict.get(h.shape[1], None)
-            if scale is not None:
-                hidden_mean = h.mean(1).unsqueeze(1)
-                B = hidden_mean.shape[0]
-                hidden_max, _ = torch.max(hidden_mean.view(B, -1), dim=-1, keepdim=True)
-                hidden_min, _ = torch.min(hidden_mean.view(B, -1), dim=-1, keepdim=True)
-                hidden_mean = (hidden_mean - hidden_min.unsqueeze(2).unsqueeze(3)) / (hidden_max - hidden_min).unsqueeze(2).unsqueeze(3)
-
-                h[:, :h.shape[1] // 2] = h[:, :h.shape[1] // 2] * ((scale[0] - 1) * hidden_mean + 1)
-
-                if hsp.device not in on_cpu_devices:
-                    try:
-                        hsp = Fourier_filter(hsp, threshold=1, scale=scale[1])
-                    except:
-                        print("Device", hsp.device, "does not support the torch.fft functions used in the FreeU node, switching to CPU.")
-                        on_cpu_devices[hsp.device] = True
-                        hsp = Fourier_filter(hsp.cpu(), threshold=1, scale=scale[1]).to(hsp.device)
-                else:
-                    hsp = Fourier_filter(hsp.cpu(), threshold=1, scale=scale[1]).to(hsp.device)
-
-            return h, hsp
-
-        m = model.clone()
-        m.set_model_output_block_patch(output_block_patch)
-        return (m,)
-
-
-opFreeU_V2 = FreeU_V2()
+    m = unet_patcher.clone()
+    m.set_model_output_block_patch(output_block_patch)
+    return m
 
 
 class FreeUForForge(scripts.Script):
-    sorting_priority = 12
+    sorting_priority = 12  # It will be the 12th item on UI.
 
     def title(self):
         return "FreeU Integrated"
@@ -98,7 +67,8 @@ class FreeUForForge(scripts.Script):
         return scripts.AlwaysVisible
 
     def ui(self, *args, **kwargs):
-        with gr.Accordion(open=False, label=self.title(), elem_id="extensions-freeu",
+        with gr.Accordion(open=False, label=self.title(),
+                          elem_id="extensions-freeu",
                           elem_classes=["extensions-freeu"]):
             freeu_enabled = gr.Checkbox(label='Enabled', value=False)
             freeu_b1 = gr.Slider(label='B1', minimum=0, maximum=2, step=0.01, value=1.01)
@@ -119,8 +89,7 @@ class FreeUForForge(scripts.Script):
 
         unet = p.sd_model.forge_objects.unet
 
-        # unet = set_freeu_v2_patch(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)
-        unet = opFreeU_V2.patch(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)[0]
+        unet = patch_freeu_v2(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)
 
         p.sd_model.forge_objects.unet = unet
 

@@ -431,7 +431,7 @@ class ControlLora(ControlNet):
 
         dtype = model.storage_dtype
 
-        if dtype in ['nf4', 'fp4']:
+        if dtype in ['nf4', 'fp4', 'gguf']:
             dtype = torch.float16
 
         controlnet_config["dtype"] = dtype

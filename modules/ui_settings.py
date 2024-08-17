@@ -324,7 +324,7 @@ class UiSettings:
                 )
 
         def button_set_checkpoint_change(value, dummy):
-            return value, opts.dumpjson()
+            return value.split(' [')[0], opts.dumpjson()
 
         button_set_checkpoint = gr.Button('Change checkpoint', elem_id='change_checkpoint', visible=False)
         button_set_checkpoint.click(

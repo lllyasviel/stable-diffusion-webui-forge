@@ -1,7 +1,7 @@
 import os
 import torch
 import copy
-import backend.patcher.base
+import backend.patcher.lora
 
 from modules_forge.shared import add_supported_control_model
 from modules_forge.supported_controlnet import ControlModelPatcher
@@ -95,7 +95,7 @@ class FooocusInpaintPatcher(ControlModelPatcher):
         lora_keys.update({x: x for x in unet.model.state_dict().keys()})
         loaded_lora = load_fooocus_patch(self.state_dict, lora_keys)
 
-        patched = unet.add_patches(loaded_lora, 1.0)
+        patched = unet.lora_loader.add_patches(loaded_lora, 1.0)
 
         not_patched_count = sum(1 for x in loaded_lora if x not in patched)
 
@@ -127,5 +127,5 @@ class FooocusInpaintPatcher(ControlModelPatcher):
         return
 
 
-backend.patcher.base.extra_weight_calculators['fooocus'] = calculate_weight_fooocus
+backend.patcher.lora.extra_weight_calculators['fooocus'] = calculate_weight_fooocus
 add_supported_control_model(FooocusInpaintPatcher)

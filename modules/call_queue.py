@@ -2,7 +2,9 @@ import os.path
 from functools import wraps
 import html
 import time
+import traceback
 
+from modules_forge import main_thread
 from modules import shared, progress, errors, devices, fifo_lock, profiling
 
 queue_lock = fifo_lock.FIFOLock()
@@ -73,14 +75,11 @@ def wrap_gradio_call_no_job(func, extra_outputs=None, add_stats=False):
         try:
             res = list(func(*args, **kwargs))
         except Exception as e:
-            # When printing out our debug argument list,
-            # do not print out more than a 100 KB of text
-            max_debug_str_len = 131072
-            message = "Error completing request"
-            arg_str = f"Arguments: {args} {kwargs}"[:max_debug_str_len]
-            if len(arg_str) > max_debug_str_len:
-                arg_str += f" (Argument list truncated at {max_debug_str_len}/{len(arg_str)} characters)"
-            errors.report(f"{message}\n{arg_str}", exc_info=True)
+            if main_thread.last_exception is not None:
+                e = main_thread.last_exception
+            else:
+                traceback.print_exc()
+                print(e)
 
             if extra_outputs_array is None:
                 extra_outputs_array = [None, '']

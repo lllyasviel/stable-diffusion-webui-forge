@@ -1,8 +1,10 @@
+import gguf
 import torch
 import os
 import json
 import safetensors.torch
 import backend.misc.checkpoint_pickle
+from backend.operations_gguf import ParameterGGUF
 
 
 def read_arbitrary_config(directory):
@@ -22,6 +24,11 @@ def load_torch_file(ckpt, safe_load=False, device=None):
         device = torch.device("cpu")
     if ckpt.lower().endswith(".safetensors"):
         sd = safetensors.torch.load_file(ckpt, device=device.type)
+    elif ckpt.lower().endswith(".gguf"):
+        reader = gguf.GGUFReader(ckpt)
+        sd = {}
+        for tensor in reader.tensors:
+            sd[str(tensor.name)] = ParameterGGUF(tensor)
     else:
         if safe_load:
             if not 'weights_only' in torch.load.__code__.co_varnames:
@@ -69,9 +76,35 @@ def get_attr(obj, attr):
     return obj
 
 
+def get_attr_with_parent(obj, attr):
+    attrs = attr.split(".")
+    parent = obj
+    for name in attrs:
+        parent = obj
+        obj = getattr(obj, name)
+    return parent, obj
+
+
 def calculate_parameters(sd, prefix=""):
     params = 0
     for k in sd.keys():
         if k.startswith(prefix):
             params += sd[k].nelement()
     return params
+
+
+def tensor2parameter(x):
+    if isinstance(x, torch.nn.Parameter):
+        return x
+    else:
+        return torch.nn.Parameter(x, requires_grad=False)
+
+
+def fp16_fix(x):
+    # An interesting trick to avoid fp16 overflow
+    # Source: https://github.com/lllyasviel/stable-diffusion-webui-forge/issues/1114
+    # Related: https://github.com/comfyanonymous/ComfyUI/blob/f1d6cef71c70719cc3ed45a2455a4e5ac910cd5e/comfy/ldm/flux/layers.py#L180
+
+    if x.dtype in [torch.float16]:
+        return x.clip(-32768.0, 32768.0)
+    return x

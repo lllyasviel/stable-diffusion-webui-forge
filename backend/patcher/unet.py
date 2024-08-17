@@ -8,7 +8,7 @@ from backend.patcher.base import ModelPatcher
 class UnetPatcher(ModelPatcher):
     @classmethod
     def from_model(cls, model, diffusers_scheduler, config, k_predictor=None):
-        model = KModel(model=model, diffusers_scheduler=diffusers_scheduler, k_predictor=k_predictor)
+        model = KModel(model=model, diffusers_scheduler=diffusers_scheduler, k_predictor=k_predictor, config=config)
         return UnetPatcher(
             model,
             load_device=model.diffusion_model.load_device,
@@ -24,13 +24,7 @@ class UnetPatcher(ModelPatcher):
         self.extra_concat_condition = None
 
     def clone(self):
-        n = UnetPatcher(self.model, self.load_device, self.offload_device, self.size, self.current_device,
-                        weight_inplace_update=self.weight_inplace_update)
-
-        n.patches = {}
-        for k in self.patches:
-            n.patches[k] = self.patches[k][:]
-
+        n = UnetPatcher(self.model, self.load_device, self.offload_device, self.size, self.current_device)
         n.object_patches = self.object_patches.copy()
         n.model_options = copy.deepcopy(self.model_options)
         n.controlnet_linked_list = self.controlnet_linked_list
@@ -197,5 +191,6 @@ class UnetPatcher(ModelPatcher):
             for patch_type, weight_list in v.items():
                 patch_flat[model_key] = (patch_type, weight_list)
 
-        self.add_patches(patches=patch_flat, strength_patch=float(strength), strength_model=1.0)
+        self.lora_loader.clear_patches()
+        self.lora_loader.add_patches(patches=patch_flat, strength_patch=float(strength), strength_model=1.0)
         return

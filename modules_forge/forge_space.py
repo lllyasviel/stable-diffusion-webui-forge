@@ -18,19 +18,29 @@ def build_html(title, url=None):
 
 class ForgeSpace:
     def __init__(self, root_path, title, **kwargs):
+        self.title = title
         self.root_path = root_path
+        self.is_running = False
+        self.gradio_metas = None
+
         self.label = gr.HTML(build_html(title=title, url=None), elem_classes=['forge_space_label'])
         self.btn_install = gr.Button('Install', elem_classes=['forge_space_btn'])
         self.btn_uninstall = gr.Button('Uninstall', elem_classes=['forge_space_btn'])
         self.btn_launch = gr.Button('Launch', elem_classes=['forge_space_btn'])
         self.btn_terminate = gr.Button('Terminate', elem_classes=['forge_space_btn'])
-        self.is_running = False
-        self.gradio_metas = None
+
+        self.btn_launch.click(self.run, inputs=[], outputs=[self.label])
+
         return
 
     def run(self):
         self.is_running = True
         Thread(target=self.gradio_worker).start()
+        while self.gradio_metas is None:
+            time.sleep(0.1)
+
+        html = build_html(title=self.title, url=self.gradio_metas[1])
+        return html
 
     def gradio_worker(self):
         file_path = os.path.join(self.root_path, 'app.py')

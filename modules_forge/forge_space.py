@@ -109,6 +109,7 @@ class ForgeSpace:
         return self.refresh_gradio()
 
     def gradio_worker(self):
+        sys.path.insert(0, self.hf_path)
         file_path = os.path.join(self.root_path, 'forge_app.py')
         module_name = 'forge_space_' + str(uuid.uuid4()).replace('-', '_')
         spec = importlib.util.spec_from_file_location(module_name, file_path)

@@ -40,7 +40,11 @@ class GPUObject:
     def to(self, *args, **kwargs):
         for module in self.module_list:
             module.to(*args, **kwargs)
-        return
+        return self
+
+    def gpu(self):
+        self.to(device=memory_management.get_torch_device())
+        return self
 
 
 def GPU(func, gpu_objects=[]):

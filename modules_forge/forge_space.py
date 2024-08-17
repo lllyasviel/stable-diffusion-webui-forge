@@ -36,6 +36,15 @@ def open_another():
 
 
 def main_ui():
+    with gr.Accordion('hhh'):
+        with gr.Row():
+            gr.HTML('Apple', elem_classes=['forge_space_label'])
+            gr.Button('a')
+            gr.Button('a')
+            gr.Button('a')
+            gr.Button('a')
+
+
     btn = gr.Button('Run')
     thread = Thread(target=open_another)
     btn.click(thread.start)

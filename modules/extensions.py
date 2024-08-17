@@ -128,7 +128,7 @@ class Extension:
         self.is_forge_space = False
         self.space_meta = None
 
-        if os.path.exists(os.path.join(self.path, 'space_meta.json')) and os.path.exists(os.path.join(self.path, 'app.py')):
+        if os.path.exists(os.path.join(self.path, 'space_meta.json')) and os.path.exists(os.path.join(self.path, 'forge_app.py')):
             self.is_forge_space = True
             self.space_meta = json.load(open(os.path.join(self.path, 'space_meta.json'), 'rt', encoding='utf-8'))
 

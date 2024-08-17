@@ -305,7 +305,7 @@ class LoraLoader:
 
         for key, current_patches in (tqdm(self.patches.items(), desc='Patching LoRAs') if len(self.patches) > 0 else self.patches):
             try:
-                weight = utils.get_attr(self.model, key)
+                parent_layer, weight = utils.get_attr_with_parent(self.model, key)
                 assert isinstance(weight, torch.nn.Parameter)
             except:
                 raise ValueError(f"Wrong LoRA Key: {key}")
@@ -317,8 +317,7 @@ class LoraLoader:
 
             if operations.bnb_avaliable:
                 if hasattr(weight, 'bnb_quantized'):
-                    assert weight.module is not None, 'BNB bad weight without parent layer!'
-                    bnb_layer = weight.module
+                    bnb_layer = parent_layer
                     if weight.bnb_quantized:
                         weight_original_device = weight.device
 

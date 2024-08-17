@@ -76,6 +76,15 @@ def get_attr(obj, attr):
     return obj
 
 
+def get_attr_with_parent(obj, attr):
+    attrs = attr.split(".")
+    parent = obj
+    for name in attrs:
+        parent = obj
+        obj = getattr(obj, name)
+    return parent, obj
+
+
 def calculate_parameters(sd, prefix=""):
     params = 0
     for k in sd.keys():

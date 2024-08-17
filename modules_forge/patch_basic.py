@@ -59,6 +59,8 @@ def build_loaded(module, loader_name):
 
 def always_show_tqdm(*args, **kwargs):
     kwargs['disable'] = False
+    if 'name' in kwargs:
+        del kwargs['name']
     return tqdm(*args, **kwargs)
 
 

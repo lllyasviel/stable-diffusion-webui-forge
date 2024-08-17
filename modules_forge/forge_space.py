@@ -10,22 +10,18 @@ spaces = []
 
 def build_html(title, url=None):
     if isinstance(url, str):
-        return f'<div>{title}</div><div>Currently Running: <a href="{url}">{url}</a></div>'
+        return f'<div>{title}</div><div>Currently Running: <a href="{url}" style="color: green;">{url}</a></div>'
     else:
-        return f'<div>{title}</div><div>Currently Offline.</div>'
+        return f'<div>{title}</div><div style="color: grey;">Currently Offline</div>'
 
 
 class ForgeSpace:
     def __init__(self, root_path, title, **kwargs):
-        with gr.Accordion('hhh'):
-            with gr.Row(equal_height=True):
-                with gr.Row():
-                    label = gr.HTML(build_html(title=title, url=None), elem_classes=['forge_space_label'])
-                    btn_install = gr.Button('Install', elem_classes=['forge_space_btn'])
-                    btn_uninstall = gr.Button('Uninstall', elem_classes=['forge_space_btn'])
-                    btn_launch = gr.Button('Launch', elem_classes=['forge_space_btn'])
-                    btn_terminate = gr.Button('Terminate', elem_classes=['forge_space_btn'])
-
+        label = gr.HTML(build_html(title=title, url=None), elem_classes=['forge_space_label'])
+        btn_install = gr.Button('Install', elem_classes=['forge_space_btn'])
+        btn_uninstall = gr.Button('Uninstall', elem_classes=['forge_space_btn'])
+        btn_launch = gr.Button('Launch', elem_classes=['forge_space_btn'])
+        btn_terminate = gr.Button('Terminate', elem_classes=['forge_space_btn'])
         return
 
 
@@ -76,8 +72,9 @@ def main_entry():
     for tag, exs in tagged_extensions.items():
         with gr.Accordion(tag):
             for ex in exs:
-                space = ForgeSpace(root_path=ex.path, **ex.space_meta)
-                spaces.append(space)
+                with gr.Row(equal_height=True):
+                    space = ForgeSpace(root_path=ex.path, **ex.space_meta)
+                    spaces.append(space)
 
     # space = ForgeSpace(root_path=ex.path, **ex.space_meta)
 

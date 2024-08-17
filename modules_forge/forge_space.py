@@ -14,11 +14,14 @@ from huggingface_hub import snapshot_download
 spaces = []
 
 
-def build_html(title, url=None):
+def build_html(title, installed=False, url=None):
+    if not installed:
+        return f'<div>{title}</div><div style="color: grey;">Not Installed</div>'
+
     if isinstance(url, str):
         return f'<div>{title}</div><div>Currently Running: <a href="{url}" style="color: green;" target="_blank">{url}</a></div>'
     else:
-        return f'<div>{title}</div><div style="color: grey;">Currently Offline</div>'
+        return f'<div>{title}</div><div style="color: grey;">Ready to Launch</div>'
 
 
 class ForgeSpace:
@@ -57,12 +60,13 @@ class ForgeSpace:
     def refresh_gradio(self):
         results = []
 
-        if isinstance(self.gradio_metas, tuple):
-            results.append(build_html(title=self.title, url=self.gradio_metas[1]))
-        else:
-            results.append(build_html(title=self.title, url=None))
-
         installed = os.path.exists(self.hf_path)
+
+        if isinstance(self.gradio_metas, tuple):
+            results.append(build_html(title=self.title, installed=installed, url=self.gradio_metas[1]))
+        else:
+            results.append(build_html(title=self.title, installed=installed, url=None))
+
         results.append(gr.update(interactive=not installed))
         results.append(gr.update(interactive=installed))
         results.append(gr.update(interactive=installed and not self.is_running))

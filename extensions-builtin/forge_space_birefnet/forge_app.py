@@ -15,7 +15,6 @@ with spaces.GPUObject() as birefnet_gpu_obj:
     birefnet = AutoModelForImageSegmentation.from_pretrained(
         "ZhengPeng7/BiRefNet", trust_remote_code=True
     )
-    birefnet.to("cuda")
 
 transform_image = transforms.Compose(
     [
@@ -26,7 +25,7 @@ transform_image = transforms.Compose(
 )
 
 
-@spaces.GPU
+@spaces.GPU(gpu_objects=[birefnet_gpu_obj])
 def fn(image):
     im = load_img(image, output_type="pil")
     im = im.convert("RGB")

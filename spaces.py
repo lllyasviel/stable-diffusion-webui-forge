@@ -47,17 +47,19 @@ class GPUObject:
         return self
 
 
-def GPU(func, gpu_objects=[]):
-    def wrapper(*args, **kwargs):
-        print("Entering Forge Space GPU ...")
-        memory_management.unload_all_models()
-        result = func(*args, **kwargs)
-        print("Quiting Forge Space GPU ...")
-        for o in gpu_objects:
-            o.to(device=torch.device('cpu'))
-        memory_management.soft_empty_cache()
-        return result
-    return wrapper
+def GPU(gpu_objects=[]):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            print("Entering Forge Space GPU ...")
+            memory_management.unload_all_models()
+            result = func(*args, **kwargs)
+            print("Quiting Forge Space GPU ...")
+            for o in gpu_objects:
+                o.to(device=torch.device('cpu'))
+            memory_management.soft_empty_cache()
+            return result
+        return wrapper
+    return decorator
 
 
 def convert_root_path():

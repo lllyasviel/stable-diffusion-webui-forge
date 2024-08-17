@@ -48,6 +48,8 @@ def GPU(func, gpu_objects=[]):
         memory_management.unload_all_models()
         result = func(*args, **kwargs)
         print("Quiting Forge Space GPU ...")
+        for o in gpu_objects:
+            o.to(device=torch.device('cpu'))
         return result
     return wrapper
 

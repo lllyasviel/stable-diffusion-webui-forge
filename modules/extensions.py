@@ -5,6 +5,7 @@ import dataclasses
 import os
 import threading
 import re
+import json
 
 from modules import shared, errors, cache, scripts
 from modules.gitpython_hack import Repo
@@ -123,6 +124,13 @@ class Extension:
         self.have_info_from_repo = False
         self.metadata = metadata if metadata else ExtensionMetadata(self.path, name.lower())
         self.canonical_name = metadata.canonical_name
+
+        self.is_forge_space = False
+        self.space_meta = None
+
+        if os.path.exists(os.path.join(self.path, 'space_meta.json')) and os.path.exists(os.path.join(self.path, 'forge_app.py')):
+            self.is_forge_space = True
+            self.space_meta = json.load(open(os.path.join(self.path, 'space_meta.json'), 'rt', encoding='utf-8'))
 
     def to_dict(self):
         return {x: getattr(self, x) for x in self.cached_fields}

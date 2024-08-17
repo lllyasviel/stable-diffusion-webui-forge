@@ -1,4 +1,5 @@
 import inspect
+import types
 import warnings
 from functools import wraps
 
@@ -106,6 +107,25 @@ gradio_component_meta_create_or_modify_pyi_original = patches.patch(__file__, gr
 # this function is broken and does not seem to do anything useful
 gradio.component_meta.updateable = lambda x: x
 
+
+class EventWrapper:
+    def __init__(self, replaced_event):
+        self.replaced_event = replaced_event
+        self.has_trigger = replaced_event.has_trigger
+        self.event_name = replaced_event.event_name
+        self.callback = replaced_event.callback
+
+    def __call__(self, *args, **kwargs):
+        if '_js' in kwargs:
+            kwargs['js'] = kwargs['_js']
+            del kwargs['_js']
+        return self.replaced_event(*args, **kwargs)
+
+    @property
+    def __self__(self):
+        return self.replaced_event.__self__
+
+
 def repair(grclass):
     if not getattr(grclass, 'EVENTS', None):
         return
@@ -129,13 +149,7 @@ def repair(grclass):
 
         for event in self.EVENTS:
             replaced_event = getattr(self, str(event))
-
-            def fun(*xargs, _js=None, replaced_event=replaced_event, **xkwargs):
-                if _js:
-                    xkwargs['js'] = _js
-
-                return replaced_event(*xargs, **xkwargs)
-
+            fun = EventWrapper(replaced_event)
             setattr(self, str(event), fun)
 
     grclass.__init__ = __repaired_init__

@@ -1673,3 +1673,17 @@ body.resizing .resize-handle {
 #quicksettings .gradio-slider span {
     padding-right: 5px;
 }
+
+.forge_space_label{
+    padding: 10px;
+    min-width: 60% !important;
+    margin: 1px;
+    border-width: 1px;
+    border-radius: 8px;
+    border-style: solid;
+    border-color: #6f6f6f;
+}
+
+.forge_space_btn{
+    min-width: 0 !important;
+}

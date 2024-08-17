@@ -35,4 +35,6 @@ httpx==0.24.1
 pillow-avif-plugin==1.4.3
 diffusers==0.29.2
 gradio_rangeslider==0.0.6
+gradio_imageslider==0.0.20
+loadimg==0.1.2
 tqdm==4.66.1

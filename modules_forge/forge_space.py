@@ -20,7 +20,7 @@ def build_html(title, installed=False, url=None):
         return f'<div>{title}</div><div style="color: grey;">Not Installed</div>'
 
     if isinstance(url, str):
-        return f'<div>{title}</div><div>Currently Running: <a href="{url}" style="color: green;" target="_blank">{url}</a></div>'
+        return f'<div>{title}</div><div style="color: green;">Currently Running: <a href="{url}" style="color: blue;" target="_blank">{url}</a></div>'
     else:
         return f'<div>{title}</div><div style="color: grey;">Installed, Ready to Launch</div>'
 
@@ -130,6 +130,7 @@ class ForgeSpace:
         if module_name in sys.modules:
             del sys.modules[module_name]
 
+        sys.path.remove(self.hf_path)
         return
 
 

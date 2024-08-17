@@ -8,16 +8,23 @@ from threading import Thread, Event
 spaces = []
 
 
+def build_html(title, url=None):
+    if isinstance(url, str):
+        return f'<div>{title}</div><div>Currently Running: <a href="{url}">{url}</a></div>'
+    else:
+        return f'<div>{title}</div><div>Currently Offline.</div>'
+
+
 class ForgeSpace:
     def __init__(self, root_path, title):
         with gr.Accordion('hhh'):
             with gr.Row(equal_height=True):
                 with gr.Row():
-                    gr.HTML('<div>Apple</div><div>Pie Currently on: <a href="https://www.google.com">https://www.google.com</a></div>', elem_classes=['forge_space_label'])
-                    gr.Button('a', elem_classes=['forge_space_btn'])
-                    gr.Button('a', elem_classes=['forge_space_btn'])
-                    gr.Button('a', elem_classes=['forge_space_btn'])
-                    gr.Button('a', elem_classes=['forge_space_btn'])
+                    label = gr.HTML(build_html(title=title, url=None), elem_classes=['forge_space_label'])
+                    btn_install = gr.Button('Install', elem_classes=['forge_space_btn'])
+                    btn_uninstall = gr.Button('Uninstall', elem_classes=['forge_space_btn'])
+                    btn_launch = gr.Button('Launch', elem_classes=['forge_space_btn'])
+                    btn_terminate = gr.Button('Terminate', elem_classes=['forge_space_btn'])
 
         return
 

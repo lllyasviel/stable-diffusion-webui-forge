@@ -191,5 +191,6 @@ class UnetPatcher(ModelPatcher):
             for patch_type, weight_list in v.items():
                 patch_flat[model_key] = (patch_type, weight_list)
 
+        self.lora_loader.clear_patches()
         self.lora_loader.add_patches(patches=patch_flat, strength_patch=float(strength), strength_model=1.0)
         return

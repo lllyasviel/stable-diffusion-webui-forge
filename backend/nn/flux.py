@@ -19,7 +19,8 @@ def attention(q, k, v, pe):
 
 
 def rope(pos, dim, theta):
-    scale = torch.arange(0, dim, 2, dtype=torch.float64, device=pos.device) / dim
+    dtype = torch.float32 if str(pos.device).startswith("mps") else torch.float64
+    scale = torch.arange(0, dim, 2, dtype=dtype, device=pos.device) / dim
     omega = 1.0 / (theta ** scale)
 
     # out = torch.einsum("...n,d->...nd", pos, omega)

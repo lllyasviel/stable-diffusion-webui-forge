@@ -40,10 +40,10 @@ def main_ui():
         with gr.Row(equal_height=True):
             with gr.Row():
                 gr.HTML('<div>Apple</div><div>Pie</div>', elem_classes=['forge_space_label'])
-                gr.Button('a')
-                gr.Button('a')
-                gr.Button('a')
-                gr.Button('a')
+                gr.Button('a', elem_classes=['forge_space_btn'])
+                gr.Button('a', elem_classes=['forge_space_btn'])
+                gr.Button('a', elem_classes=['forge_space_btn'])
+                gr.Button('a', elem_classes=['forge_space_btn'])
 
     # btn = gr.Button('Run')
     # thread = Thread(target=open_another)

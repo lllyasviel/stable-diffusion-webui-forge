@@ -16,7 +16,7 @@ def build_html(title, url=None):
 
 
 class ForgeSpace:
-    def __init__(self, root_path, title):
+    def __init__(self, root_path, title, **kwargs):
         with gr.Accordion('hhh'):
             with gr.Row(equal_height=True):
                 with gr.Row():

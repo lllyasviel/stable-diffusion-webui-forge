@@ -136,6 +136,10 @@ def repair(grclass):
 
                 return replaced_event(*xargs, **xkwargs)
 
+            fun.has_trigger = replaced_event.has_trigger
+            fun.event_name = replaced_event.event_name
+            fun.callback = replaced_event.callback
+
             setattr(self, str(event), fun)
 
     grclass.__init__ = __repaired_init__

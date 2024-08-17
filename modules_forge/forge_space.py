@@ -2,10 +2,25 @@ import os
 import gradio as gr
 import importlib.util
 
-from modules import extensions as a1111_extensions
 from threading import Thread, Event
 
-a = 0
+
+spaces = []
+
+
+class ForgeSpace:
+    def __init__(self, root_path, meta):
+        with gr.Accordion('hhh'):
+            with gr.Row(equal_height=True):
+                with gr.Row():
+                    gr.HTML('<div>Apple</div><div>Pie Currently on: <a href="https://www.google.com">https://www.google.com</a></div>', elem_classes=['forge_space_label'])
+                    gr.Button('a', elem_classes=['forge_space_btn'])
+                    gr.Button('a', elem_classes=['forge_space_btn'])
+                    gr.Button('a', elem_classes=['forge_space_btn'])
+                    gr.Button('a', elem_classes=['forge_space_btn'])
+
+        return
+
 
 # Event to signal the thread to stop
 stop_event = Event()
@@ -35,15 +50,15 @@ def open_another():
     print('ended')
 
 
-def main_ui():
-    with gr.Accordion('hhh'):
-        with gr.Row(equal_height=True):
-            with gr.Row():
-                gr.HTML('<div>Apple</div><div>Pie Currently on: <a href="https://www.google.com">https://www.google.com</a></div>', elem_classes=['forge_space_label'])
-                gr.Button('a', elem_classes=['forge_space_btn'])
-                gr.Button('a', elem_classes=['forge_space_btn'])
-                gr.Button('a', elem_classes=['forge_space_btn'])
-                gr.Button('a', elem_classes=['forge_space_btn'])
+def main_entry():
+    global spaces
+
+    from modules.extensions import extensions
+
+    for ex in extensions:
+        if ex.enabled and ex.is_forge_space:
+            space = ForgeSpace(root_path=ex.path, meta=ex.space_meta)
+            spaces.append(space)
 
     # btn = gr.Button('Run')
     # thread = Thread(target=open_another)

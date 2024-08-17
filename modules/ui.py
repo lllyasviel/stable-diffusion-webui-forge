@@ -854,7 +854,7 @@ def create_ui():
         extra_tabs.__exit__()
 
     with gr.Blocks(analytics_enabled=False, head=canvas_head) as space_interface:
-        forge_space.main_ui()
+        forge_space.main_entry()
 
     scripts.scripts_current = None
 

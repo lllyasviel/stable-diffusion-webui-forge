@@ -39,7 +39,7 @@ def main_ui():
     with gr.Accordion('hhh'):
         with gr.Row(equal_height=True):
             with gr.Row():
-                gr.HTML('<div>Apple</div><div>Pie</div>', elem_classes=['forge_space_label'])
+                gr.HTML('<div>Apple</div><div>Pie Currently on: <a href="https://www.google.com">https://www.google.com</a></div>', elem_classes=['forge_space_label'])
                 gr.Button('a', elem_classes=['forge_space_btn'])
                 gr.Button('a', elem_classes=['forge_space_btn'])
                 gr.Button('a', elem_classes=['forge_space_btn'])

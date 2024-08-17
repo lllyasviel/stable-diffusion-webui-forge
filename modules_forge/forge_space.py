@@ -9,6 +9,7 @@ import shutil
 from gradio.context import Context
 from threading import Thread
 from huggingface_hub import snapshot_download
+from backend import memory_management
 
 
 spaces = []
@@ -109,6 +110,7 @@ class ForgeSpace:
         return self.refresh_gradio()
 
     def gradio_worker(self):
+        memory_management.unload_all_models()
         sys.path.insert(0, self.hf_path)
         file_path = os.path.join(self.root_path, 'forge_app.py')
         module_name = 'forge_space_' + str(uuid.uuid4()).replace('-', '_')

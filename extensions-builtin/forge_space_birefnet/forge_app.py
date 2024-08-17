@@ -1,3 +1,4 @@
+import os
 import gradio as gr
 from gradio_imageslider import ImageSlider
 from loadimg import load_img
@@ -7,6 +8,8 @@ import torch
 from torchvision import transforms
 
 torch.set_float32_matmul_precision(["high", "highest"][0])
+
+os.environ['HOME'] = spaces.convert_root_path() + 'home'
 
 birefnet = AutoModelForImageSegmentation.from_pretrained(
     "ZhengPeng7/BiRefNet", trust_remote_code=True

@@ -37,17 +37,17 @@ def open_another():
 
 def main_ui():
     with gr.Accordion('hhh'):
-        with gr.Row():
-            gr.HTML('Apple', elem_classes=['forge_space_label'])
-            gr.Button('a')
-            gr.Button('a')
-            gr.Button('a')
-            gr.Button('a')
+        with gr.Row(equal_height=True):
+            with gr.Row():
+                gr.HTML('<div>Apple</div><div>Pie</div>', elem_classes=['forge_space_label'])
+                gr.Button('a')
+                gr.Button('a')
+                gr.Button('a')
+                gr.Button('a')
 
-
-    btn = gr.Button('Run')
-    thread = Thread(target=open_another)
-    btn.click(thread.start)
-
-    btn2 = gr.Button('Close')
-    btn2.click(fn=stop_event.set)  # Signal the thread to stop
+    # btn = gr.Button('Run')
+    # thread = Thread(target=open_another)
+    # btn.click(thread.start)
+    #
+    # btn2 = gr.Button('Close')
+    # btn2.click(fn=stop_event.set)  # Signal the thread to stop

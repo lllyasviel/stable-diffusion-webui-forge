@@ -1670,7 +1670,7 @@ body.resizing .resize-handle {
 
 .forge_space_label{
     padding: 10px;
-    min-width: 61.8%;
+    min-width: 61.8% !important;
     margin: 1px;
     border-width: 1px;
     border-radius: 8px;

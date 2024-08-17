@@ -53,10 +53,10 @@ chameleon = load_img(spaces.convert_root_path() + "chameleon.jpg", output_type="
 
 url = "https://hips.hearstapps.com/hmg-prod/images/gettyimages-1229892983-square.jpg"
 tab1 = gr.Interface(
-    fn, inputs=image, outputs=slider1, examples=[chameleon], api_name="image"
+    fn, inputs=image, outputs=slider1, examples=[chameleon], api_name="image", allow_flagging="never"
 )
 
-tab2 = gr.Interface(fn, inputs=text, outputs=slider2, examples=[url], api_name="text")
+tab2 = gr.Interface(fn, inputs=text, outputs=slider2, examples=[url], api_name="text", allow_flagging="never")
 
 
 demo = gr.TabbedInterface(

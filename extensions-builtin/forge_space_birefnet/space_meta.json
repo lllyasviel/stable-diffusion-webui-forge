@@ -1,5 +1,5 @@
 {
-  "tag": "Image Processing",
+  "tag": "Image Processing: Matting, Saliency, and Background Removal",
   "title": "BiRefNet for Background Removal",
   "repo_id": "not-lain/background-removal"
 }

@@ -47,13 +47,16 @@ class GPUObject:
         return self
 
 
-def GPU(gpu_objects=None):
+def GPU(gpu_objects=None, manual_load=False):
     gpu_objects = gpu_objects or []
 
     def decorator(func):
         def wrapper(*args, **kwargs):
             print("Entering Forge Space GPU ...")
             memory_management.unload_all_models()
+            if not manual_load:
+                for o in gpu_objects:
+                    o.gpu()
             result = func(*args, **kwargs)
             print("Quiting Forge Space GPU ...")
             for o in gpu_objects:

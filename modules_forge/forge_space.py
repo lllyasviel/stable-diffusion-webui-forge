@@ -9,7 +9,7 @@ spaces = []
 
 
 class ForgeSpace:
-    def __init__(self, root_path, meta):
+    def __init__(self, root_path, title):
         with gr.Accordion('hhh'):
             with gr.Row(equal_height=True):
                 with gr.Row():
@@ -57,7 +57,7 @@ def main_entry():
 
     for ex in extensions:
         if ex.enabled and ex.is_forge_space:
-            space = ForgeSpace(root_path=ex.path, meta=ex.space_meta)
+            space = ForgeSpace(root_path=ex.path, **ex.space_meta)
             spaces.append(space)
 
     # btn = gr.Button('Run')

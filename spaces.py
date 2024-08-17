@@ -34,6 +34,7 @@ class GPUObject:
         torch.nn.Module.to = self.original_to
         self.module_list = set(self.module_list)
         self.to(device=torch.device('cpu'))
+        memory_management.soft_empty_cache()
         return
 
     def to(self, *args, **kwargs):
@@ -50,6 +51,7 @@ def GPU(func, gpu_objects=[]):
         print("Quiting Forge Space GPU ...")
         for o in gpu_objects:
             o.to(device=torch.device('cpu'))
+        memory_management.soft_empty_cache()
         return result
     return wrapper
 

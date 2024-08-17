@@ -150,7 +150,7 @@ def main_entry():
             tagged_extensions[tag].append(ex)
 
     for tag, exs in tagged_extensions.items():
-        with gr.Accordion(tag):
+        with gr.Accordion(tag, open=True):
             for ex in exs:
                 with gr.Row(equal_height=True):
                     space = ForgeSpace(root_path=ex.path, **ex.space_meta)

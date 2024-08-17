@@ -47,7 +47,9 @@ class GPUObject:
         return self
 
 
-def GPU(gpu_objects=[]):
+def GPU(gpu_objects=None):
+    gpu_objects = gpu_objects or []
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             print("Entering Forge Space GPU ...")

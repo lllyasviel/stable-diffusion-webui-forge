@@ -22,7 +22,7 @@ def build_html(title, url=None):
 
 
 class ForgeSpace:
-    def __init__(self, root_path, title, repo_id=None, repo_type=None, revision=None, **kwargs):
+    def __init__(self, root_path, title, repo_id=None, repo_type='space', revision=None, **kwargs):
         self.title = title
         self.root_path = root_path
         self.hf_path = os.path.join(root_path, 'huggingface_space_mirror')

@@ -65,8 +65,12 @@ def always_show_tqdm(*args, **kwargs):
 
 
 def patch_all_basics():
+    import logging
     from huggingface_hub import file_download
     file_download.tqdm = always_show_tqdm
+    from transformers.dynamic_module_utils import logger
+    logger.setLevel(logging.ERROR)
+
     gradio.networking.url_ok = gradio_url_ok_fix
     build_loaded(safetensors.torch, 'load_file')
     build_loaded(torch, 'load')

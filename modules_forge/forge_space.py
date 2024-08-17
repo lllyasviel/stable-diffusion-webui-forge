@@ -2,7 +2,10 @@ import os
 import gradio as gr
 import importlib.util
 
+from modules import extensions as a1111_extensions
 from threading import Thread, Event
+
+a = 0
 
 # Event to signal the thread to stop
 stop_event = Event()

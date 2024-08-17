@@ -26,7 +26,7 @@ onAfterUiUpdate(function() {
     lastHeadImg = headImg;
 
     // play notification sound if available
-    const notificationAudio = gradioApp().querySelector('#audio_notification audio');
+    const notificationAudio = gradioApp().querySelector('#audio_notification #waveform > div')?.shadowRoot?.querySelector('audio');
     if (notificationAudio) {
         notificationAudio.volume = opts.notification_volume / 100.0 || 1.0;
         notificationAudio.play();

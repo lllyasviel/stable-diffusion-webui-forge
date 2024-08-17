@@ -6,6 +6,8 @@ import warnings
 import gradio.networking
 import safetensors.torch
 
+from tqdm import tqdm
+
 
 def gradio_url_ok_fix(url: str) -> bool:
     try:
@@ -55,7 +57,14 @@ def build_loaded(module, loader_name):
     return
 
 
+def always_show_tqdm(*args, **kwargs):
+    kwargs['disable'] = False
+    return tqdm(*args, **kwargs)
+
+
 def patch_all_basics():
+    from huggingface_hub import file_download
+    file_download.tqdm = always_show_tqdm
     gradio.networking.url_ok = gradio_url_ok_fix
     build_loaded(safetensors.torch, 'load_file')
     build_loaded(torch, 'load')

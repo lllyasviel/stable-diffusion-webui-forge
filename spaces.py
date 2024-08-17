@@ -8,12 +8,13 @@ import inspect
 from backend import memory_management
 
 
-def GPU(func, **kwargs):
-    def wrapper():
+def GPU(func, models=[]):
+    def wrapper(*args, **kwargs):
         print("Entering Forge Space GPU ...")
         memory_management.unload_all_models()
-        func()
+        result = func(*args, **kwargs)
         print("Quiting Forge Space GPU ...")
+        return result
     return wrapper
 
 

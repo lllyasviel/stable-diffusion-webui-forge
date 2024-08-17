@@ -1,4 +1,4 @@
-def GPU(func):
+def GPU(func, **kwargs):
     def wrapper():
         print("Something is happening before the function is called.")
         func()

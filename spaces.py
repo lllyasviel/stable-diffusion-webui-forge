@@ -43,7 +43,7 @@ class GPUObject:
     def to(self, device):
         for module in self.module_list:
             module.to(device)
-        print(f'Forge Space: Moved {len(self.module_list)} Modules to {device}.')
+        print(f'Forge Space: Moved {len(self.module_list)} Modules to {device}')
         return self
 
     def gpu(self):

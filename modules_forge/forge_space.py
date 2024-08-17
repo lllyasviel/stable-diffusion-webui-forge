@@ -19,10 +19,11 @@ def build_html(title, url=None):
 
 
 class ForgeSpace:
-    def __init__(self, root_path, title, **kwargs):
+    def __init__(self, root_path, title, hf_repo, **kwargs):
         self.title = title
         self.root_path = root_path
         self.hf_path = os.path.join(root_path, 'huggingface_space_mirror')
+        self.hf_repo = hf_repo
         self.is_running = False
         self.gradio_metas = None
 
@@ -64,7 +65,12 @@ class ForgeSpace:
         return results
 
     def install(self):
-        os.makedirs(self.hf_path, exist_ok=True)
+        if self.hf_repo is None:
+            os.makedirs(self.hf_path, exist_ok=True)
+            return self.refresh_gradio()
+
+        print('here')
+
         return self.refresh_gradio()
 
     def uninstall(self):

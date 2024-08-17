@@ -68,8 +68,8 @@ class ForgeSpace:
         else:
             results.append(build_html(title=self.title, installed=installed, url=None))
 
-        results.append(gr.update(interactive=not installed))
-        results.append(gr.update(interactive=installed))
+        results.append(gr.update(interactive=not self.is_running and not installed))
+        results.append(gr.update(interactive=not self.is_running and installed))
         results.append(gr.update(interactive=installed and not self.is_running))
         results.append(gr.update(interactive=installed and self.is_running))
         return results

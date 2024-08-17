@@ -279,7 +279,7 @@ class LoraLoader:
         self.dirty = True
         return list(p)
 
-    def refresh(self, target_device=None, offload_device=torch.cpu):
+    def refresh(self, target_device=None, offload_device=torch.device('cpu')):
         if not self.dirty:
             return
 

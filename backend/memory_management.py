@@ -363,7 +363,7 @@ class LoadedModel:
     def model_memory(self):
         return self.model.model_size()
 
-    def model_memory_required(self, device):
+    def model_memory_required(self, device=None):
         return module_size(self.model.model, exclude_device=device)
 
     def model_load(self, model_gpu_memory_when_using_cpu_swap=-1):
@@ -538,7 +538,7 @@ def load_models_gpu(models, memory_required=0):
     total_memory_required = {}
     for loaded_model in models_to_load:
         unload_model_clones(loaded_model.model)
-        total_memory_required[loaded_model.device] = total_memory_required.get(loaded_model.device, 0) + loaded_model.model_memory_required(loaded_model.device)
+        total_memory_required[loaded_model.device] = total_memory_required.get(loaded_model.device, 0) + loaded_model.model_memory_required()
 
     for device in total_memory_required:
         if device != torch.device("cpu"):

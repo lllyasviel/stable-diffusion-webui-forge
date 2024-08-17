@@ -62,10 +62,24 @@ def main_entry():
 
     from modules.extensions import extensions
 
+    tagged_extensions = {}
+
     for ex in extensions:
         if ex.enabled and ex.is_forge_space:
-            space = ForgeSpace(root_path=ex.path, **ex.space_meta)
-            spaces.append(space)
+            tag = ex.space_meta['tag']
+
+            if tag not in tagged_extensions:
+                tagged_extensions[tag] = []
+
+            tagged_extensions[tag].append(ex)
+
+    for tag, exs in tagged_extensions.items():
+        with gr.Accordion(tag):
+            for ex in exs:
+                space = ForgeSpace(root_path=ex.path, **ex.space_meta)
+                spaces.append(space)
+
+    # space = ForgeSpace(root_path=ex.path, **ex.space_meta)
 
     # btn = gr.Button('Run')
     # thread = Thread(target=open_another)

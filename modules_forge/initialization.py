@@ -58,9 +58,6 @@ def initialize_forge():
         from modules_forge.bnb_installer import try_install_bnb
         try_install_bnb()
 
-    import modules_forge.patch_basic
-    modules_forge.patch_basic.patch_all_basics()
-
     from backend import stream
     print('CUDA Using Stream:', stream.should_use_stream())
 
@@ -83,4 +80,8 @@ def initialize_forge():
 
     if 'HF_HUB_CACHE' not in os.environ:
         os.environ['HF_HUB_CACHE'] = diffusers_dir
+
+    import modules_forge.patch_basic
+    modules_forge.patch_basic.patch_all_basics()
+
     return

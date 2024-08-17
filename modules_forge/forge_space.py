@@ -1,4 +1,5 @@
 import os
+import time
 import gradio as gr
 import importlib.util
 
@@ -17,11 +18,35 @@ def build_html(title, url=None):
 
 class ForgeSpace:
     def __init__(self, root_path, title, **kwargs):
-        label = gr.HTML(build_html(title=title, url=None), elem_classes=['forge_space_label'])
-        btn_install = gr.Button('Install', elem_classes=['forge_space_btn'])
-        btn_uninstall = gr.Button('Uninstall', elem_classes=['forge_space_btn'])
-        btn_launch = gr.Button('Launch', elem_classes=['forge_space_btn'])
-        btn_terminate = gr.Button('Terminate', elem_classes=['forge_space_btn'])
+        self.root_path = root_path
+        self.label = gr.HTML(build_html(title=title, url=None), elem_classes=['forge_space_label'])
+        self.btn_install = gr.Button('Install', elem_classes=['forge_space_btn'])
+        self.btn_uninstall = gr.Button('Uninstall', elem_classes=['forge_space_btn'])
+        self.btn_launch = gr.Button('Launch', elem_classes=['forge_space_btn'])
+        self.btn_terminate = gr.Button('Terminate', elem_classes=['forge_space_btn'])
+        self.is_running = False
+        self.gradio_metas = None
+        return
+
+    def run(self):
+        self.is_running = True
+        Thread(target=self.gradio_worker).start()
+
+    def gradio_worker(self):
+        file_path = os.path.join(self.root_path, 'app.py')
+        module_name = 'app'
+        spec = importlib.util.spec_from_file_location(module_name, file_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        demo = getattr(module, 'demo')
+
+        self.gradio_metas = demo.launch(inbrowser=True, prevent_thread_lock=True)
+
+        while self.is_running:
+            time.sleep(0.1)
+
+        demo.close()
+        self.gradio_metas = None
         return
 
 

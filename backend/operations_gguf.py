@@ -64,6 +64,9 @@ def dequantize_tensor(tensor):
     if tensor is None:
         return None
 
+    if not hasattr(tensor, 'gguf_cls'):
+        return tensor
+
     data = torch.tensor(tensor.data)
     gguf_cls = tensor.gguf_cls
     gguf_real_shape = tensor.gguf_real_shape

@@ -4,7 +4,7 @@ import time
 import torch
 import contextlib
 
-from backend import stream, memory_management
+from backend import stream, memory_management, utils
 
 
 stash = {}
@@ -355,9 +355,9 @@ class ForgeOperationsGGUF(ForgeOperations):
 
         def _apply(self, fn, recurse=True):
             if self.weight is not None:
-                self.weight = fn(self.weight)
+                self.weight = utils.tensor2parameter(fn(self.weight))
             if self.bias is not None:
-                self.bias = fn(self.bias)
+                self.bias = utils.tensor2parameter(fn(self.bias))
             return self
 
         def forward(self, x):

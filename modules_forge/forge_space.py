@@ -7,7 +7,8 @@ import importlib.util
 import shutil
 
 from gradio.context import Context
-from threading import Thread, Event
+from threading import Thread
+from huggingface_hub import snapshot_download
 
 
 spaces = []
@@ -21,11 +22,13 @@ def build_html(title, url=None):
 
 
 class ForgeSpace:
-    def __init__(self, root_path, title, hf_repo, **kwargs):
+    def __init__(self, root_path, title, repo_id=None, repo_type=None, revision=None, **kwargs):
         self.title = title
         self.root_path = root_path
         self.hf_path = os.path.join(root_path, 'huggingface_space_mirror')
-        self.hf_repo = hf_repo
+        self.repo_id = repo_id
+        self.repo_type = repo_type
+        self.revision = revision
         self.is_running = False
         self.gradio_metas = None
 

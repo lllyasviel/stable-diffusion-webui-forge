@@ -1,5 +1,5 @@
 {
   "tag": "Image Processing",
   "title": "BiRefNet for Background Removal",
-  "hf_repo": "spaces/not-lain/background-removal"
+  "repo_id": "not-lain/background-removal"
 }

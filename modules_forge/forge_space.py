@@ -2,6 +2,7 @@ import os
 import time
 import gradio as gr
 import importlib.util
+import shutil
 
 from gradio.context import Context
 from threading import Thread, Event
@@ -20,8 +21,8 @@ def build_html(title, url=None):
 class ForgeSpace:
     def __init__(self, root_path, title, **kwargs):
         self.title = title
-        self.installed = False
         self.root_path = root_path
+        self.hf_path = os.path.join(root_path, 'huggingface_space_mirror')
         self.is_running = False
         self.gradio_metas = None
 
@@ -53,11 +54,20 @@ class ForgeSpace:
         else:
             results.append(build_html(title=self.title, url=None))
 
-        results.append(gr.update(interactive=not self.installed))
-        results.append(gr.update(interactive=self.installed))
-        results.append(gr.update(interactive=not self.is_running))
+        installed = os.path.exists(self.hf_path)
+        results.append(gr.update(interactive=not installed))
+        results.append(gr.update(interactive=installed))
+        results.append(gr.update(interactive=installed and not self.is_running))
         results.append(gr.update(interactive=self.is_running))
         return results
+
+    def install(self):
+        os.makedirs(self.hf_path, exist_ok=True)
+        return self.refresh_gradio()
+
+    def uninstall(self):
+        shutil.rmtree(self.hf_path)
+        return self.refresh_gradio()
 
     def terminate(self):
         self.is_running = False

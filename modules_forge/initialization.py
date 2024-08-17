@@ -2,6 +2,7 @@ import os
 import sys
 
 
+INITIALIZED = False
 MONITOR_MODEL_MOVING = False
 
 
@@ -25,6 +26,13 @@ def monitor_module_moving():
 
 
 def initialize_forge():
+    global INITIALIZED
+
+    if INITIALIZED:
+        return
+
+    INITIALIZED = True
+
     bad_list = ['--lowvram', '--medvram', '--medvram-sdxl']
 
     for bad in bad_list:

@@ -1,8 +1,8 @@
+import spaces
 import os
 import gradio as gr
 from gradio_imageslider import ImageSlider
 from loadimg import load_img
-import spaces
 from transformers import AutoModelForImageSegmentation
 import torch
 from torchvision import transforms

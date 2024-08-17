@@ -1,4 +1,7 @@
-import os
+from modules_forge.initialization import initialize_forge
+
+initialize_forge()
+
 import inspect
 
 from backend import memory_management

@@ -42,7 +42,7 @@ class GPUObject:
         return
 
 
-def GPU(func, models=[]):
+def GPU(func, gpu_objects=[]):
     def wrapper(*args, **kwargs):
         print("Entering Forge Space GPU ...")
         memory_management.unload_all_models()

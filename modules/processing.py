@@ -413,6 +413,7 @@ class StableDiffusionProcessing:
 
         return (
             required_prompts,
+            self.distilled_cfg_scale,
             steps,
             hires_steps,
             use_old_scheduling,

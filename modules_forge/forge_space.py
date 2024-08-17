@@ -3,6 +3,7 @@ import time
 import gradio as gr
 import importlib.util
 
+from gradio.context import Context
 from threading import Thread, Event
 
 
@@ -30,8 +31,17 @@ class ForgeSpace:
         self.btn_launch = gr.Button('Launch', elem_classes=['forge_space_btn'])
         self.btn_terminate = gr.Button('Terminate', elem_classes=['forge_space_btn'])
 
-        self.btn_launch.click(self.run, inputs=[], outputs=[self.label])
-        self.btn_terminate.click(self.terminate, inputs=[], outputs=[self.label])
+        comps = [
+            self.label,
+            self.btn_install,
+            self.btn_uninstall,
+            self.btn_launch,
+            self.btn_terminate
+        ]
+
+        self.btn_launch.click(self.run, outputs=comps)
+        self.btn_terminate.click(self.terminate, outputs=comps)
+        Context.root_block.load(self.refresh_gradio, outputs=comps, queue=False, show_progress=False)
 
         return
 
@@ -53,17 +63,14 @@ class ForgeSpace:
         self.is_running = False
         while self.gradio_metas is not None:
             time.sleep(0.1)
-        html = build_html(title=self.title, url=None)
-        return html
+        return self.refresh_gradio()
 
     def run(self):
         self.is_running = True
         Thread(target=self.gradio_worker).start()
         while self.gradio_metas is None:
             time.sleep(0.1)
-
-        html = build_html(title=self.title, url=self.gradio_metas[1])
-        return html
+        return self.refresh_gradio()
 
     def gradio_worker(self):
         file_path = os.path.join(self.root_path, 'app.py')

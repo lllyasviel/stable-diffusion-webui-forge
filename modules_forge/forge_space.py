@@ -48,7 +48,7 @@ class ForgeSpace:
     def refresh_gradio(self):
         results = []
 
-        if isinstance(self.gradio_metas, list):
+        if isinstance(self.gradio_metas, tuple):
             results.append(build_html(title=self.title, url=self.gradio_metas[1]))
         else:
             results.append(build_html(title=self.title, url=None))

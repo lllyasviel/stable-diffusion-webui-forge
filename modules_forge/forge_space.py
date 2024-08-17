@@ -30,8 +30,16 @@ class ForgeSpace:
         self.btn_terminate = gr.Button('Terminate', elem_classes=['forge_space_btn'])
 
         self.btn_launch.click(self.run, inputs=[], outputs=[self.label])
+        self.btn_terminate.click(self.terminate, inputs=[], outputs=[self.label])
 
         return
+
+    def terminate(self):
+        self.is_running = False
+        while self.gradio_metas is not None:
+            time.sleep(0.1)
+        html = build_html(title=self.title, url=None)
+        return html
 
     def run(self):
         self.is_running = True

@@ -15,4 +15,4 @@ def convert_root_path():
     caller_file = frame.f_code.co_filename
     caller_file = os.path.abspath(caller_file)
     result = os.path.join(os.path.dirname(caller_file), 'huggingface_space_mirror')
-    return result
+    return result + '/'

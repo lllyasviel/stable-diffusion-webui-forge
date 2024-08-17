@@ -115,10 +115,10 @@ class EventWrapper:
         self.event_name = replaced_event.event_name
         self.callback = replaced_event.callback
 
-    def __call__(self, inner_self, *xargs, _js=None, **xkwargs):
-        if _js:
-            xkwargs['js'] = _js
-        return self.replaced_event(*xargs, **xkwargs)
+    def __call__(self, *args, **kwargs):
+        if '_js' in kwargs:
+            kwargs['js'] = kwargs['_js']
+        return self.replaced_event(*args, **kwargs)
 
     @property
     def __self__(self):

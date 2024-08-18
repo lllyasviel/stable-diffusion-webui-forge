@@ -212,6 +212,12 @@ class StableDiffusionProcessing:
     latents_after_sampling = []
     pixels_after_sampling = []
 
+    def clear_prompt_cache(self):
+        self.cached_c = [None, None, None]
+        self.cached_uc = [None, None, None]
+        StableDiffusionProcessing.cached_c = [None, None, None]
+        StableDiffusionProcessing.cached_uc = [None, None, None]
+
     def __post_init__(self):
         if self.sampler_index is not None:
             print("sampler_index argument for StableDiffusionProcessing does not do anything; use sampler_name", file=sys.stderr)
@@ -792,10 +798,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         memory_management.unload_all_models()
 
     if need_global_unload:
-        StableDiffusionProcessing.cached_c = [None, None, None]
-        StableDiffusionProcessing.cached_uc = [None, None, None]
-        p.cached_c = [None, None, None]
-        p.cached_uc = [None, None, None]
+        p.clear_prompt_cache()
 
     need_global_unload = False
 

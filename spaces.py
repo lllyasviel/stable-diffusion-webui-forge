@@ -5,6 +5,7 @@ initialize_forge()
 import os
 import torch
 import inspect
+import functools
 
 from backend import memory_management
 from diffusers.models import modeling_utils as diffusers_modeling_utils
@@ -89,6 +90,7 @@ def GPU(gpu_objects=None, manual_load=False):
     gpu_objects = gpu_objects or []
 
     def decorator(func):
+        @functools.wraps(func)
         def wrapper(*args, **kwargs):
             print("Entering Forge Space GPU ...")
             memory_management.unload_all_models()

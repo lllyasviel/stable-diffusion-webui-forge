@@ -7,7 +7,7 @@ from transformers import AutoModelForImageSegmentation
 import torch
 from torchvision import transforms
 
-torch.set_float32_matmul_precision(["high", "highest"][0])
+# torch.set_float32_matmul_precision(["high", "highest"][0])
 
 os.environ['HOME'] = spaces.convert_root_path() + 'home'
 
@@ -15,6 +15,8 @@ with spaces.GPUObject() as birefnet_gpu_obj:
     birefnet = AutoModelForImageSegmentation.from_pretrained(
         "ZhengPeng7/BiRefNet", trust_remote_code=True
     )
+
+spaces.automatically_move_to_gpu_when_forward(birefnet)
 
 transform_image = transforms.Compose(
     [
@@ -25,7 +27,7 @@ transform_image = transforms.Compose(
 )
 
 
-@spaces.GPU(gpu_objects=[birefnet_gpu_obj])
+@spaces.GPU(gpu_objects=[birefnet_gpu_obj], manual_load=True)
 def fn(image):
     im = load_img(image, output_type="pil")
     im = im.convert("RGB")

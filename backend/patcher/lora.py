@@ -343,8 +343,9 @@ class LoraLoader:
                 try:
                     weight = weight.to(device=target_device)
                 except:
-                    print('Moving layer weight failed. Retrying by offload models.')
+                    print('Moving layer weight failed. Retrying by offloading models.')
                     self.model.to(device=offload_device)
+                    memory_management.soft_empty_cache()
                     weight = weight.to(device=target_device)
 
             gguf_cls, gguf_type, gguf_real_shape = None, None, None
@@ -362,8 +363,9 @@ class LoraLoader:
                 weight = weight.to(dtype=torch.float32)
                 weight = merge_lora_to_model_weight(current_patches, weight, key).to(dtype=weight_original_dtype)
             except:
-                print('Patching LoRA weights failed. Retrying by offload models.')
+                print('Patching LoRA weights failed. Retrying by offloading models.')
                 self.model.to(device=offload_device)
+                memory_management.soft_empty_cache()
                 weight = weight.to(dtype=torch.float32)
                 weight = merge_lora_to_model_weight(current_patches, weight, key).to(dtype=weight_original_dtype)
 

@@ -2,6 +2,7 @@ import os
 import sys
 import uuid
 import time
+import socket
 import gradio as gr
 import importlib.util
 import shutil
@@ -23,6 +24,24 @@ def build_html(title, installed=False, url=None):
         return f'<div>{title}</div><div style="color: green;">Currently Running: <a href="{url}" style="color: blue;" target="_blank">{url}</a></div>'
     else:
         return f'<div>{title}</div><div style="color: grey;">Installed, Ready to Launch</div>'
+
+
+def find_free_port(server_name, start_port=None):
+    port = start_port
+
+    if port is None:
+        port = 7860
+
+    if server_name is None:
+        server_name = '127.0.0.1'
+
+    while True:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind((server_name, port))
+                return port
+            except OSError:
+                port += 1
 
 
 class ForgeSpace:
@@ -119,7 +138,18 @@ class ForgeSpace:
         spec.loader.exec_module(module)
         demo = getattr(module, 'demo')
 
-        self.gradio_metas = demo.launch(inbrowser=True, prevent_thread_lock=True)
+        from modules import initialize_util
+        from modules.shared import cmd_opts
+
+        server_name = initialize_util.gradio_server_name()
+        port = find_free_port(server_name=server_name, start_port=cmd_opts.port)
+
+        self.gradio_metas = demo.launch(
+            inbrowser=True,
+            prevent_thread_lock=True,
+            server_name=server_name,
+            server_port=port
+        )
 
         while self.is_running:
             time.sleep(0.1)

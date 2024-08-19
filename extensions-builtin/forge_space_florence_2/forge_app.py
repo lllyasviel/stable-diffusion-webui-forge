@@ -30,15 +30,15 @@ def fixed_get_imports(filename: str | os.PathLike) -> list[str]:
 with spaces.GPUObject() as gpu_object:
     with patch("transformers.dynamic_module_utils.get_imports", fixed_get_imports):
         models = {
-            'microsoft/Florence-2-large-ft': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large-ft', attn_implementation='sdpa', trust_remote_code=True).to("cuda").eval(),
-            # 'microsoft/Florence-2-large': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True).to("cuda").eval(),
+            # 'microsoft/Florence-2-large-ft': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large-ft', attn_implementation='sdpa', trust_remote_code=True).to("cuda").eval(),
+            'microsoft/Florence-2-large': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True).to("cuda").eval(),
             # 'microsoft/Florence-2-base-ft': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-base-ft', trust_remote_code=True).to("cuda").eval(),
             # 'microsoft/Florence-2-base': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-base', trust_remote_code=True).to("cuda").eval(),
         }
 
     processors = {
-        'microsoft/Florence-2-large-ft': AutoProcessor.from_pretrained('microsoft/Florence-2-large-ft', trust_remote_code=True),
-        # 'microsoft/Florence-2-large': AutoProcessor.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True),
+        # 'microsoft/Florence-2-large-ft': AutoProcessor.from_pretrained('microsoft/Florence-2-large-ft', trust_remote_code=True),
+        'microsoft/Florence-2-large': AutoProcessor.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True),
         # 'microsoft/Florence-2-base-ft': AutoProcessor.from_pretrained('microsoft/Florence-2-base-ft', trust_remote_code=True),
         # 'microsoft/Florence-2-base': AutoProcessor.from_pretrained('microsoft/Florence-2-base', trust_remote_code=True),
     }
@@ -272,7 +272,7 @@ with gr.Blocks(css=css) as demo:
                 input_img = gr.Image(label="Input Picture")
                 model_selector = gr.Dropdown(choices=list(models.keys()), label="Model", value=list(models.keys())[0])
                 task_type = gr.Radio(choices=['Single task', 'Cascased task'], label='Task type selector', value='Single task')
-                task_prompt = gr.Dropdown(choices=single_task_list, label="Task Prompt", value="Detailed Caption")
+                task_prompt = gr.Dropdown(choices=single_task_list, label="Task Prompt", value="More Detailed Caption")
                 task_type.change(fn=update_task_dropdown, inputs=task_type, outputs=task_prompt)
                 text_input = gr.Textbox(label="Text Input (optional)")
                 submit_btn = gr.Button(value="Submit")
@@ -282,7 +282,7 @@ with gr.Blocks(css=css) as demo:
 
         gr.Examples(
             examples=[
-                [spaces.convert_root_path() + "image1.jpg", "Detailed Caption"],
+                [spaces.convert_root_path() + "image1.jpg", "More Detailed Caption"],
                 [spaces.convert_root_path() + "image2.jpg", 'OCR with Region']
             ],
             inputs=[input_img, task_prompt],

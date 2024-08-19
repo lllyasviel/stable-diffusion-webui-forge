@@ -3,10 +3,15 @@ import torch
 
 
 quants_mapping = {
+    gguf.GGMLQuantizationType.Q2_K: gguf.Q2_K,
+    gguf.GGMLQuantizationType.Q3_K: gguf.Q3_K,
     gguf.GGMLQuantizationType.Q4_0: gguf.Q4_0,
+    gguf.GGMLQuantizationType.Q4_K: gguf.Q4_K,
     gguf.GGMLQuantizationType.Q4_1: gguf.Q4_1,
     gguf.GGMLQuantizationType.Q5_0: gguf.Q5_0,
     gguf.GGMLQuantizationType.Q5_1: gguf.Q5_1,
+    gguf.GGMLQuantizationType.Q5_K: gguf.Q5_K,
+    gguf.GGMLQuantizationType.Q6_K: gguf.Q6_K,
     gguf.GGMLQuantizationType.Q8_0: gguf.Q8_0,
 }
 

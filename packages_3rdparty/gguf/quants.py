@@ -12,6 +12,9 @@ from .lazy import LazyNumpyTensor
 import numpy as np
 
 
+quick_split = lambda x, p: torch.split(x, p + [x.shape[1] - sum(p)], dim=1)
+
+
 def quant_shape_to_byte_shape(shape: Sequence[int], quant_type: GGMLQuantizationType) -> tuple[int, ...]:
     block_size, type_size = GGML_QUANT_SIZES[quant_type]
     if shape[-1] % block_size != 0:
@@ -658,6 +661,26 @@ class Q2_K(__Quant, qtype=GGMLQuantizationType.Q2_K):
 
         return qs.reshape((n_blocks, -1))
 
+    @classmethod
+    def dequantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
+        # (c) City96 || Apache-2.0 (apache.org/licenses/LICENSE-2.0)
+        n_blocks = blocks.shape[0]
+        scales, qs, d, dmin = quick_split(blocks, [QK_K // 16, QK_K // 4, 2])
+        d = d.view(torch.float16)
+        dmin = dmin.view(torch.float16)
+        # (n_blocks, 16, 1)
+        dl = (d * (scales & 0xF)).reshape((n_blocks, QK_K // 16, 1))
+        ml = (dmin * (scales >> 4)).reshape((n_blocks, QK_K // 16, 1))
+        shift = torch.tensor([0, 2, 4, 6], device=d.device, dtype=torch.uint8).reshape((1, 1, 4, 1))
+        qs = (qs.reshape((n_blocks, -1, 1, 32)) >> shift) & 3
+        qs = qs.reshape((n_blocks, QK_K // 16, 16))
+        qs = dl * qs - ml
+        return qs.reshape((n_blocks, -1))
+
+    @classmethod
+    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
+        raise NotImplementedError('Not Implemented Yet')
+
 
 class Q3_K(__Quant, qtype=GGMLQuantizationType.Q3_K):
     @classmethod
@@ -702,6 +725,31 @@ class Q3_K(__Quant, qtype=GGMLQuantizationType.Q3_K):
 
         return (dl * q).reshape((n_blocks, QK_K))
 
+    @classmethod
+    def dequantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
+        # (c) City96 || Apache-2.0 (apache.org/licenses/LICENSE-2.0)
+        n_blocks = blocks.shape[0]
+        hmask, qs, scales, d = quick_split(blocks, [QK_K // 8, QK_K // 4, 12])
+        d = d.view(torch.float16)
+        lscales, hscales = scales[:, :8], scales[:, 8:]
+        lscales = lscales.reshape((n_blocks, 1, 8)) >> torch.tensor([0, 4], device=d.device, dtype=torch.uint8).reshape((1, 2, 1))
+        lscales = lscales.reshape((n_blocks, 16))
+        hscales = hscales.reshape((n_blocks, 1, 4)) >> torch.tensor([0, 2, 4, 6], device=d.device, dtype=torch.uint8).reshape((1, 4, 1))
+        hscales = hscales.reshape((n_blocks, 16))
+        scales = (lscales & 0x0F) | ((hscales & 0x03) << 4)
+        scales = (scales.to(torch.int8) - 32)
+        dl = (d * scales).reshape((n_blocks, 16, 1))
+        ql = qs.reshape((n_blocks, -1, 1, 32)) >> torch.tensor([0, 2, 4, 6], device=d.device, dtype=torch.uint8).reshape((1, 1, 4, 1))
+        qh = hmask.reshape(n_blocks, -1, 1, 32) >> torch.tensor([i for i in range(8)], device=d.device, dtype=torch.uint8).reshape((1, 1, 8, 1))
+        ql = ql.reshape((n_blocks, 16, QK_K // 16)) & 3
+        qh = (qh.reshape((n_blocks, 16, QK_K // 16)) & 1) ^ 1
+        q = (ql.to(torch.int8) - (qh << 2).to(torch.int8))
+        return (dl * q).reshape((n_blocks, QK_K))
+
+    @classmethod
+    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
+        raise NotImplementedError('Not Implemented Yet')
+
 
 class Q4_K(__Quant, qtype=GGMLQuantizationType.Q4_K):
     K_SCALE_SIZE = 12
@@ -731,6 +779,16 @@ class Q4_K(__Quant, qtype=GGMLQuantizationType.Q4_K):
 
         return (sc.reshape((n_blocks, 8)), min.reshape((n_blocks, 8)))
 
+    @staticmethod
+    def get_scale_min_pytorch(scales):
+        n_blocks = scales.shape[0]
+        scales = scales.view(torch.uint8)
+        scales = scales.reshape((n_blocks, 3, 4))
+        d, m, m_d = torch.split(scales, scales.shape[-2] // 3, dim=-2)
+        sc = torch.cat([d & 0x3F, (m_d & 0x0F) | ((d >> 2) & 0x30)], dim=-1)
+        min = torch.cat([m & 0x3F, (m_d >> 4) | ((m >> 2) & 0x30)], dim=-1)
+        return (sc.reshape((n_blocks, 8)), min.reshape((n_blocks, 8)))
+
     @classmethod
     def dequantize_blocks(cls, blocks: np.ndarray) -> np.ndarray:
         n_blocks = blocks.shape[0]
@@ -751,6 +809,26 @@ class Q4_K(__Quant, qtype=GGMLQuantizationType.Q4_K):
         qs = (qs & np.uint8(0x0F)).reshape((n_blocks, -1, 32)).astype(np.float32)
 
         return (d * qs - dm).reshape((n_blocks, QK_K))
+
+    @classmethod
+    def dequantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
+        # (c) City96 || Apache-2.0 (apache.org/licenses/LICENSE-2.0)
+        QK_K = 256
+        K_SCALE_SIZE = 12
+        n_blocks = blocks.shape[0]
+        d, dmin, scales, qs = quick_split(blocks, [2, 2, K_SCALE_SIZE])
+        d = d.view(torch.float16)
+        dmin = dmin.view(torch.float16)
+        sc, m = Q4_K.get_scale_min_pytorch(scales)
+        d = (d * sc).reshape((n_blocks, -1, 1))
+        dm = (dmin * m).reshape((n_blocks, -1, 1))
+        qs = qs.reshape((n_blocks, -1, 1, 32)) >> torch.tensor([0, 4], device=d.device, dtype=torch.uint8).reshape((1, 1, 2, 1))
+        qs = (qs & 0x0F).reshape((n_blocks, -1, 32))
+        return (d * qs - dm).reshape((n_blocks, QK_K))
+
+    @classmethod
+    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
+        raise NotImplementedError('Not Implemented Yet')
 
 
 class Q5_K(__Quant, qtype=GGMLQuantizationType.Q5_K):
@@ -779,6 +857,29 @@ class Q5_K(__Quant, qtype=GGMLQuantizationType.Q5_K):
 
         return (d * q - dm).reshape((n_blocks, QK_K))
 
+    @classmethod
+    def dequantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
+        # (c) City96 || Apache-2.0 (apache.org/licenses/LICENSE-2.0)
+        QK_K = 256
+        K_SCALE_SIZE = 12
+        n_blocks = blocks.shape[0]
+        d, dmin, scales, qh, qs = quick_split(blocks, [2, 2, K_SCALE_SIZE, QK_K // 8])
+        d = d.view(torch.float16)
+        dmin = dmin.view(torch.float16)
+        sc, m = Q4_K.get_scale_min(scales)
+        d = (d * sc).reshape((n_blocks, -1, 1))
+        dm = (dmin * m).reshape((n_blocks, -1, 1))
+        ql = qs.reshape((n_blocks, -1, 1, 32)) >> torch.tensor([0, 4], device=d.device, dtype=torch.uint8).reshape((1, 1, 2, 1))
+        qh = qh.reshape((n_blocks, -1, 1, 32)) >> torch.tensor([i for i in range(8)], device=d.device, dtype=torch.uint8).reshape((1, 1, 8, 1))
+        ql = (ql & 0x0F).reshape((n_blocks, -1, 32))
+        qh = (qh & 0x01).reshape((n_blocks, -1, 32))
+        q = (ql | (qh << 4))
+        return (d * q - dm).reshape((n_blocks, QK_K))
+
+    @classmethod
+    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
+        raise NotImplementedError('Not Implemented Yet')
+
 
 class Q6_K(__Quant, qtype=GGMLQuantizationType.Q6_K):
     @classmethod
@@ -801,6 +902,26 @@ class Q6_K(__Quant, qtype=GGMLQuantizationType.Q6_K):
         q = q.reshape((n_blocks, QK_K // 16, -1)).astype(np.float32)
 
         return (d * q).reshape((n_blocks, QK_K))
+
+    @classmethod
+    def dequantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
+        # Written by ChatGPT
+        n_blocks = blocks.shape[0]
+        ql, qh, scales, d, = quick_split(blocks, [QK_K // 2, QK_K // 4, QK_K // 16])
+        scales = scales.view(torch.int8)
+        d = d.view(torch.float16)
+        d = (d * scales).reshape((n_blocks, QK_K // 16, 1))
+        ql = ql.reshape((n_blocks, -1, 1, 64)) >> torch.tensor([0, 4], device=d.device, dtype=torch.uint8).reshape((1, 1, 2, 1))
+        ql = (ql & 0x0F).reshape((n_blocks, -1, 32))
+        qh = qh.reshape((n_blocks, -1, 1, 32)) >> torch.tensor([0, 2, 4, 6], device=d.device, dtype=torch.uint8).reshape((1, 1, 4, 1))
+        qh = (qh & 0x03).reshape((n_blocks, -1, 32))
+        q = (ql | (qh << 4)).to(torch.int8) - 32
+        q = q.reshape((n_blocks, QK_K // 16, -1))
+        return (d * q).reshape((n_blocks, QK_K))
+
+    @classmethod
+    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
+        raise NotImplementedError('Not Implemented Yet')
 
 
 class IQ2_XXS(__Quant, qtype=GGMLQuantizationType.IQ2_XXS):

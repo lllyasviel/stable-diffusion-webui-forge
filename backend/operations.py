@@ -354,7 +354,7 @@ try:
                 if self.bias is not None and self.bias.dtype != x.dtype:
                     # Maybe this can also be set to all non-bnb ops since the cost is very low.
                     # And it only invokes one time, and most linear does not have bias
-                    self.bias.data = self.bias.data.to(x.dtype)
+                    self.bias = utils.tensor2parameter(self.bias.to(x.dtype))
 
                 if not self.parameters_manual_cast:
                     return functional_linear_4bits(x, self.weight, self.bias)
@@ -409,7 +409,13 @@ class ForgeOperationsGGUF(ForgeOperations):
             return self
 
         def forward(self, x):
-            weight, bias, signal = weights_manual_cast(self, x, weight_fn=dequantize_tensor, bias_fn=dequantize_tensor)
+            if self.bias is not None and self.bias.dtype != x.dtype:
+                self.bias = utils.tensor2parameter(dequantize_tensor(self.bias).to(x.dtype))
+
+            if self.weight is not None and self.weight.dtype != x.dtype and getattr(self.weight, 'gguf_cls', None) is None:
+                self.weight = utils.tensor2parameter(self.weight.to(x.dtype))
+
+            weight, bias, signal = weights_manual_cast(self, x, weight_fn=dequantize_tensor, bias_fn=None, skip_bias_dtype=True)
             with main_stream_worker(weight, bias, signal):
                 return torch.nn.functional.linear(x, weight, bias)
 

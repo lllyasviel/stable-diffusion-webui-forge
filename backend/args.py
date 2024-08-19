@@ -56,6 +56,8 @@ parser.add_argument("--cuda-malloc", action="store_true")
 parser.add_argument("--cuda-stream", action="store_true")
 parser.add_argument("--pin-shared-memory", action="store_true")
 
+parser.add_argument("--disable-gpu-warning", action="store_true")
+
 args = parser.parse_known_args()[0]
 
 # Some dynamic args that may be changed by webui rather than cmd flags.

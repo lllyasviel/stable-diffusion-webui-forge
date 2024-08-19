@@ -158,7 +158,7 @@ class __Quant(ABC):
     @classmethod
     @abstractmethod
     def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
-        raise NotImplementedError('Low bit LoRA for this data type is not implemented yet. Please select "Automatic (fp16 LoRA)" to use this LoRA.')
+        raise NotImplementedError('Low bit LoRA for this data type is not implemented yet. Please select "Automatic (fp16 LoRA)" in "Diffusion in Low Bits" (on the top line of this page) to use this LoRA.')
 
     @classmethod
     @abstractmethod

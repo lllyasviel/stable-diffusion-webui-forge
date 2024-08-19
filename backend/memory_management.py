@@ -378,6 +378,7 @@ class LoadedModel:
 
         try:
             self.real_model = self.model.forge_patch_model(patch_model_to)
+            self.model.current_device = self.model.load_device
         except Exception as e:
             self.model.forge_unpatch_model(self.model.offload_device)
             self.model_unload()

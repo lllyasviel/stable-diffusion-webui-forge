@@ -158,7 +158,7 @@ class __Quant(ABC):
     @classmethod
     @abstractmethod
     def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
-        raise NotImplementedError
+        raise NotImplementedError('Low bit LoRA for this data type is not implemented yet. Please select "Automatic (fp16 LoRA)" to use this LoRA.')
 
     @classmethod
     @abstractmethod
@@ -370,30 +370,6 @@ class Q4_1(__Quant, qtype=GGMLQuantizationType.Q4_1):
 
         return (d * qs) + m
 
-    @classmethod
-    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
-        # WIP
-
-        raise NotImplementedError('Q4_1 Lora is under construction!')
-
-        n_blocks = blocks.shape[0]
-
-        max_vals = blocks.max(dim=-1, keepdim=True).values
-        min_vals = blocks.min(dim=-1, keepdim=True).values
-
-        d = (max_vals - min_vals) / 15
-        id = torch.where(d == 0, torch.tensor(0.0, device=d.device), 1 / d)
-
-        qs = torch.trunc((blocks - min_vals) * id + 0.5).to(torch.uint8).clip(0, 15)
-
-        qs = qs.view(n_blocks, 2, block_size // 2)
-        qs = qs[:, 0, :] | (qs[:, 1, :] << 4)
-
-        d = d.to(torch.float16).view(n_blocks, -1)
-        m = min_vals.to(torch.float16).view(n_blocks, -1)
-
-        return torch.cat([d, m, qs], dim=-1)
-
 
 class Q5_0(__Quant, qtype=GGMLQuantizationType.Q5_0):
     @classmethod
@@ -567,31 +543,6 @@ class Q5_1(__Quant, qtype=GGMLQuantizationType.Q5_1):
         qs = (ql | (qh << 4))
         return (d * qs) + m
 
-    @classmethod
-    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
-        # WIP
-
-        raise NotImplementedError('Q5_1 Lora is under construction!')
-
-        n_blocks = blocks.shape[0]
-
-        max_val = blocks.max(dim=-1, keepdim=True)[0]
-        min_val = blocks.min(dim=-1, keepdim=True)[0]
-
-        d = (max_val - min_val) / 31
-        id = torch.where(d == 0, torch.zeros_like(d), 1.0 / d)
-        q = torch.trunc((blocks - min_val) * id + 0.5).clip(0, 31).to(torch.uint8)
-
-        qs = q.view(n_blocks, 2, block_size // 2)
-        qs = (qs[..., 0, :] & 0x0F) | (qs[..., 1, :] << 4)
-
-        qh = torch.bitwise_right_shift(q.view(n_blocks, 1, 32), torch.arange(4, dtype=torch.uint8, device=blocks.device) * 8).byte()
-
-        d = d.to(torch.float16).view(-1, 2)
-        min_val = min_val.to(torch.float16).view(-1, 2)
-
-        return torch.cat([d.byte(), min_val.byte(), qh, qs], dim=-1)
-
 
 class Q8_0(__Quant, qtype=GGMLQuantizationType.Q8_0):
     @classmethod
@@ -677,10 +628,6 @@ class Q2_K(__Quant, qtype=GGMLQuantizationType.Q2_K):
         qs = dl * qs - ml
         return qs.reshape((n_blocks, -1))
 
-    @classmethod
-    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
-        raise NotImplementedError('Not Implemented Yet')
-
 
 class Q3_K(__Quant, qtype=GGMLQuantizationType.Q3_K):
     @classmethod
@@ -745,10 +692,6 @@ class Q3_K(__Quant, qtype=GGMLQuantizationType.Q3_K):
         qh = (qh.reshape((n_blocks, 16, QK_K // 16)) & 1) ^ 1
         q = (ql.to(torch.int8) - (qh << 2).to(torch.int8))
         return (dl * q).reshape((n_blocks, QK_K))
-
-    @classmethod
-    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
-        raise NotImplementedError('Not Implemented Yet')
 
 
 class Q4_K(__Quant, qtype=GGMLQuantizationType.Q4_K):
@@ -826,10 +769,6 @@ class Q4_K(__Quant, qtype=GGMLQuantizationType.Q4_K):
         qs = (qs & 0x0F).reshape((n_blocks, -1, 32))
         return (d * qs - dm).reshape((n_blocks, QK_K))
 
-    @classmethod
-    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
-        raise NotImplementedError('Not Implemented Yet')
-
 
 class Q5_K(__Quant, qtype=GGMLQuantizationType.Q5_K):
     @classmethod
@@ -876,10 +815,6 @@ class Q5_K(__Quant, qtype=GGMLQuantizationType.Q5_K):
         q = (ql | (qh << 4))
         return (d * q - dm).reshape((n_blocks, QK_K))
 
-    @classmethod
-    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
-        raise NotImplementedError('Not Implemented Yet')
-
 
 class Q6_K(__Quant, qtype=GGMLQuantizationType.Q6_K):
     @classmethod
@@ -918,10 +853,6 @@ class Q6_K(__Quant, qtype=GGMLQuantizationType.Q6_K):
         q = (ql | (qh << 4)).to(torch.int8) - 32
         q = q.reshape((n_blocks, QK_K // 16, -1))
         return (d * q).reshape((n_blocks, QK_K))
-
-    @classmethod
-    def quantize_blocks_pytorch(cls, blocks, block_size, type_size) -> torch.Tensor:
-        raise NotImplementedError('Not Implemented Yet')
 
 
 class IQ2_XXS(__Quant, qtype=GGMLQuantizationType.IQ2_XXS):

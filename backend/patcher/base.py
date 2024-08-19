@@ -4,14 +4,12 @@
 # are from Forge, implemented from scratch (after forge-v1.0.1), and may have
 # certain level of differences.
 
-import time
-import torch
+
 import copy
 import inspect
 
-from tqdm import tqdm
-from backend import memory_management, utils, operations
-from backend.patcher.lora import merge_lora_to_model_weight, LoraLoader
+from backend import memory_management, utils
+from backend.patcher.lora import LoraLoader
 
 
 def set_model_options_patch_replace(model_options, patch, name, block_name, number, transformer_index=None):
@@ -229,7 +227,6 @@ class ModelPatcher:
 
         if target_device is not None:
             self.model.to(target_device)
-            self.current_device = target_device
 
         return self.model
 

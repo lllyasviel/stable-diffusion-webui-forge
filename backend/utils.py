@@ -79,10 +79,11 @@ def get_attr(obj, attr):
 def get_attr_with_parent(obj, attr):
     attrs = attr.split(".")
     parent = obj
+    name = None
     for name in attrs:
         parent = obj
         obj = getattr(obj, name)
-    return parent, obj
+    return parent, name, obj
 
 
 def calculate_parameters(sd, prefix=""):
@@ -108,3 +109,32 @@ def fp16_fix(x):
     if x.dtype in [torch.float16]:
         return x.clip(-32768.0, 32768.0)
     return x
+
+
+def nested_compute_size(obj):
+    module_mem = 0
+
+    if isinstance(obj, dict):
+        for key in obj:
+            module_mem += nested_compute_size(obj[key])
+    elif isinstance(obj, list) or isinstance(obj, tuple):
+        for i in range(len(obj)):
+            module_mem += nested_compute_size(obj[i])
+    elif isinstance(obj, torch.Tensor):
+        module_mem += obj.nelement() * obj.element_size()
+
+    return module_mem
+
+
+def nested_move_to_device(obj, device):
+    if isinstance(obj, dict):
+        for key in obj:
+            obj[key] = nested_move_to_device(obj[key], device)
+    elif isinstance(obj, list):
+        for i in range(len(obj)):
+            obj[i] = nested_move_to_device(obj[i], device)
+    elif isinstance(obj, tuple):
+        obj = tuple(nested_move_to_device(i, device) for i in obj)
+    elif isinstance(obj, torch.Tensor):
+        return obj.to(device)
+    return obj

@@ -1,3 +1,6 @@
+# import faulthandler
+# faulthandler.enable()
+
 from modules import launch_utils
 
 args = launch_utils.args

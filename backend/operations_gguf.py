@@ -58,13 +58,6 @@ class ParameterGGUF(torch.nn.Parameter):
         return new
 
 
-def functional_linear_gguf(x, weight, bias=None):
-    target_dtype = x.dtype
-    weight = dequantize_tensor(weight).to(target_dtype)
-    bias = dequantize_tensor(bias).to(target_dtype)
-    return torch.nn.functional.linear(x, weight, bias)
-
-
 def dequantize_tensor(tensor):
     if tensor is None:
         return None

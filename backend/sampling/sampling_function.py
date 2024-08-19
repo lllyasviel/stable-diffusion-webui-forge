@@ -10,6 +10,8 @@ import collections
 from backend import memory_management
 from backend.sampling.condition import Condition, compile_conditions, compile_weighted_conditions
 from backend.operations import cleanup_cache
+from backend.args import dynamic_args
+from backend import utils
 
 
 def get_area_and_mult(conds, x_in, timestep_in):
@@ -353,9 +355,18 @@ def sampling_prepare(unet, x):
         additional_inference_memory += unet.controlnet_linked_list.inference_memory_requirements(unet.model_dtype())
         additional_model_patchers += unet.controlnet_linked_list.get_models()
 
+    if dynamic_args.get('online_lora', False):
+        lora_memory = utils.nested_compute_size(unet.lora_loader.patches)
+        additional_inference_memory += lora_memory
+
     memory_management.load_models_gpu(
         models=[unet] + additional_model_patchers,
         memory_required=unet_inference_memory + additional_inference_memory)
+
+    if dynamic_args.get('online_lora', False):
+        utils.nested_move_to_device(unet.lora_loader.patches, device=unet.current_device)
+
+    unet.lora_loader.patches = {}
 
     real_model = unet.model
 

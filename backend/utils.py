@@ -138,3 +138,16 @@ def nested_move_to_device(obj, device):
     elif isinstance(obj, torch.Tensor):
         return obj.to(device)
     return obj
+
+
+def get_state_dict_after_quant(model, prefix=''):
+    for m in model.modules():
+        if hasattr(m, 'weight') and hasattr(m.weight, 'bnb_quantized'):
+            if not m.weight.bnb_quantized:
+                original_device = m.weight.device
+                m.cuda()
+                m.to(original_device)
+
+    sd = model.state_dict()
+    sd = {(prefix + k): v.clone() for k, v in sd.items()}
+    return sd

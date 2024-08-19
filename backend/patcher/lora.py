@@ -40,6 +40,7 @@ def model_lora_keys_unet(model, key_map={}):
     return get_function('model_lora_keys_unet')(model, key_map)
 
 
+@torch.inference_mode()
 def weight_decompose(dora_scale, weight, lora_diff, alpha, strength, computation_dtype):
     # Modified from https://github.com/comfyanonymous/ComfyUI/blob/39f114c44bb99d4a221e8da451d4f2a20119c674/comfy/model_patcher.py#L33
 
@@ -63,6 +64,7 @@ def weight_decompose(dora_scale, weight, lora_diff, alpha, strength, computation
     return weight
 
 
+@torch.inference_mode()
 def merge_lora_to_weight(patches, weight, key="online_lora", computation_dtype=torch.float32):
     # Modified from https://github.com/comfyanonymous/ComfyUI/blob/39f114c44bb99d4a221e8da451d4f2a20119c674/comfy/model_patcher.py#L446
 
@@ -296,6 +298,7 @@ class LoraLoader:
         self.dirty = True
         return list(p)
 
+    @torch.inference_mode()
     def refresh(self, target_device=None, offload_device=torch.device('cpu')):
         if not self.dirty:
             return

@@ -93,7 +93,6 @@ def run_postprocessing(extras_mode, image, image_folder, input_dir, output_dir, 
 
             if opts.enable_pnginfo:
                 pp.image.info = existing_pnginfo
-                pp.image.info["postprocessing"] = infotext
 
             shared.state.assign_current_image(pp.image)
 

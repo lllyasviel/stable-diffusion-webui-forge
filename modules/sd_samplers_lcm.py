@@ -19,6 +19,7 @@ class LCMCompVisDenoiser(DiscreteEpsDDPMDenoiser):
             alphas_cumprod_valid[original_timesteps - 1 - x] = alphas_cumprod[timesteps - 1 - x * self.skip_steps]
 
         super().__init__(model, alphas_cumprod_valid, quantize=None)
+        self.predictor = model.forge_objects.unet.model.predictor
 
 
     def get_sigmas(self, n=None,):

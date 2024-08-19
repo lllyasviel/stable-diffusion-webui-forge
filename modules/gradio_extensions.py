@@ -114,6 +114,7 @@ class EventWrapper:
         self.has_trigger = getattr(replaced_event, 'has_trigger', None)
         self.event_name = getattr(replaced_event, 'event_name', None)
         self.callback = getattr(replaced_event, 'callback', None)
+        self.real_self = getattr(replaced_event, '__self__', None)
 
     def __call__(self, *args, **kwargs):
         if '_js' in kwargs:
@@ -123,7 +124,7 @@ class EventWrapper:
 
     @property
     def __self__(self):
-        return self.replaced_event.__self__
+        return self.real_self
 
 
 def repair(grclass):

@@ -8,9 +8,9 @@ Forge is currently based on SD-WebUI 1.10.1 at [this commit](https://github.com/
 
 # News
 
-Aug 15: Flux BNB NF4 / GGUF Q8/Q5/Q4 are all **natively** supported with **perfect GPU weight slider** and **Quene/Async Swap toggle** and **swap location toggle**. (And no, no other software has these - 2024 Aug 15)
+Aug 15: Flux BNB NF4 / GGUF Q8_0/Q5_0/Q5_1/Q4_0/Q4_1 are all natively supported with GPU weight slider and Quene/Async Swap toggle and swap location toggle.
 
-Aug 15: All Flux BNB NF4 / GGUF Q8/Q5/Q4 have perfect **native** LoRA support. (And no, no other software has these - 2024 Aug 15)
+Aug 15: All Flux BNB NF4 / GGUF Q8_0/Q5_0/Q4_0 have LoRA support.
 
 # Installing Forge
 

@@ -197,6 +197,7 @@ def refresh_model_loading_parameters():
     )
 
     print(f'Model selected: {model_data.forge_loading_parameters}')
+    print(f'Using online LoRAs in FP16: {lora_fp16}')
     processing.need_global_unload = True
 
     return

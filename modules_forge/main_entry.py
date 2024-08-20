@@ -139,7 +139,7 @@ def refresh_models():
     shared_items.refresh_checkpoints()
     ckpt_list = shared_items.list_checkpoint_tiles(shared.opts.sd_checkpoint_dropdown_use_short)
 
-    file_extensions = ['ckpt', 'pt', 'bin', 'safetensors']
+    file_extensions = ['ckpt', 'pt', 'bin', 'safetensors', 'gguf']
 
     module_list.clear()
     

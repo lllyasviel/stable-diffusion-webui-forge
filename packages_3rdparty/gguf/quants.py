@@ -805,7 +805,7 @@ class Q5_K(__Quant, qtype=GGMLQuantizationType.Q5_K):
         d, dmin, scales, qh, qs = quick_split(blocks, [2, 2, K_SCALE_SIZE, QK_K // 8])
         d = d.view(torch.float16)
         dmin = dmin.view(torch.float16)
-        sc, m = Q4_K.get_scale_min(scales)
+        sc, m = Q4_K.get_scale_min_pytorch(scales)
         d = (d * sc).reshape((n_blocks, -1, 1))
         dm = (dmin * m).reshape((n_blocks, -1, 1))
         ql = qs.reshape((n_blocks, -1, 1, 32)) >> torch.tensor([0, 4], device=d.device, dtype=torch.uint8).reshape((1, 1, 2, 1))

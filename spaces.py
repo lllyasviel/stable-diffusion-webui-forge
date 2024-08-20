@@ -103,6 +103,10 @@ class GPUObject:
         return self
 
 
+def capture_gpu_object():
+    return GPUObject()
+
+
 def GPU(gpu_objects=None, manual_load=False):
     gpu_objects = gpu_objects or []
 

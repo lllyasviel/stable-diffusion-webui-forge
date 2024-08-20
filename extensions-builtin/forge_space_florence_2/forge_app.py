@@ -27,7 +27,7 @@ def fixed_get_imports(filename: str | os.PathLike) -> list[str]:
     return imports
 
 
-with spaces.GPUObject() as gpu_object:
+with spaces.capture_gpu_object() as gpu_object:
     with patch("transformers.dynamic_module_utils.get_imports", fixed_get_imports):
         models = {
             # 'microsoft/Florence-2-large-ft': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large-ft', attn_implementation='sdpa', trust_remote_code=True).to("cuda").eval(),

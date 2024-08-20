@@ -11,7 +11,7 @@ from torchvision import transforms
 
 os.environ['HOME'] = spaces.convert_root_path() + 'home'
 
-with spaces.GPUObject() as birefnet_gpu_obj:
+with spaces.capture_gpu_object() as birefnet_gpu_obj:
     birefnet = AutoModelForImageSegmentation.from_pretrained(
         "ZhengPeng7/BiRefNet", trust_remote_code=True
     )

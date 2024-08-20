@@ -16,7 +16,7 @@ from enum import Enum
 # from torch.hub import download_url_to_file
 
 
-with spaces.GPUObject() as gpu_object:
+with spaces.capture_gpu_object() as gpu_object:
     # 'stablediffusionapi/realistic-vision-v51'
     # 'runwayml/stable-diffusion-v1-5'
     sd15_name = 'stablediffusionapi/realistic-vision-v51'

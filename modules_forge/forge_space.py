@@ -108,6 +108,13 @@ class ForgeSpace:
         )
 
         print(f'Downloaded: {downloaded}')
+
+        requirements_filename = os.path.abspath(os.path.realpath(os.path.join(self.root_path, 'requirements.txt')))
+
+        if os.path.exists(requirements_filename):
+            from modules.launch_utils import run_pip
+            run_pip(f'install -r "{requirements_filename}"', desc=f"space requirements for [{self.title}]")
+
         return self.refresh_gradio()
 
     def uninstall(self):

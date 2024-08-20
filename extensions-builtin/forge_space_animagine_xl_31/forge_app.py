@@ -64,7 +64,7 @@ def load_pipeline(model_name):
     return pipe
 
 
-with spaces.GPUObject() as gpu_object:
+with spaces.capture_gpu_object() as gpu_object:
     pipe = load_pipeline(MODEL)
     logger.info("Loaded on Device!")
 

@@ -28,7 +28,7 @@ from diffusers.pipelines.stable_diffusion.safety_checker import StableDiffusionS
 BASE_MODEL = "SG161222/Realistic_Vision_V5.1_noVAE"
 
 
-with spaces.GPUObject() as gpu_object:
+with spaces.capture_gpu_object() as gpu_object:
     # Initialize both pipelines
     vae = AutoencoderKL.from_pretrained("stabilityai/sd-vae-ft-mse", torch_dtype=torch.float16)
     controlnet = ControlNetModel.from_pretrained("monster-labs/control_v1p_sd15_qrcode_monster", torch_dtype=torch.float16)

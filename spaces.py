@@ -10,6 +10,7 @@ import gradio.oauth
 import gradio.routes
 
 from backend import memory_management
+from backend.operations import DynamicSwapInstaller
 from diffusers.models import modeling_utils as diffusers_modeling_utils
 from transformers import modeling_utils as transformers_modeling_utils
 from backend.attention import AttentionProcessorForge
@@ -30,6 +31,8 @@ Request.__init__ = patched_init
 gradio.oauth.attach_oauth = lambda x: None
 gradio.routes.attach_oauth = lambda x: None
 
+ALWAYS_SWAP = False
+
 module_in_gpu: torch.nn.Module = None
 gpu = memory_management.get_torch_device()
 cpu = torch.device('cpu')
@@ -44,8 +47,10 @@ def unload_module():
     if module_in_gpu is None:
         return
 
-    print(f'Moved module to CPU: {type(module_in_gpu).__name__}')
+    DynamicSwapInstaller.uninstall_model(module_in_gpu)
     module_in_gpu.to(cpu)
+    print(f'Move module to CPU: {type(module_in_gpu).__name__}')
+
     module_in_gpu = None
     memory_management.soft_empty_cache()
     return
@@ -58,9 +63,25 @@ def load_module(m):
         return
 
     unload_module()
+
+    model_memory = memory_management.module_size(m)
+    current_free_mem = memory_management.get_free_memory(gpu)
+    inference_memory = 1.5 * 1024 * 1024 * 1024  # memory_management.minimum_inference_memory() # TODO: connect to main memory system
+    estimated_remaining_memory = current_free_mem - model_memory - inference_memory
+
+    print(f"[Memory Management] Current Free GPU Memory: {current_free_mem / (1024 * 1024):.2f} MB")
+    print(f"[Memory Management] Required Model Memory: {model_memory / (1024 * 1024):.2f} MB")
+    print(f"[Memory Management] Required Inference Memory: {inference_memory / (1024 * 1024):.2f} MB")
+    print(f"[Memory Management] Estimated Remaining GPU Memory: {estimated_remaining_memory / (1024 * 1024):.2f} MB")
+
+    if ALWAYS_SWAP or estimated_remaining_memory < 0:
+        print(f'Move module to SWAP: {type(m).__name__}')
+        DynamicSwapInstaller.install_model(m, target_device=gpu)
+    else:
+        print(f'Move module to GPU: {type(m).__name__}')
+        m.to(gpu)
+
     module_in_gpu = m
-    module_in_gpu.to(gpu)
-    print(f'Moved module to GPU: {type(module_in_gpu).__name__}')
     return
 
 

@@ -25,9 +25,11 @@ forge_unet_storage_dtype_options = {
     'Automatic': (None, False),
     'Automatic (fp16 LoRA)': (None, True),
     'bnb-nf4': ('nf4', False),
+    'bnb-nf4 (fp16 LoRA)': ('nf4', True),
     'float8-e4m3fn': (torch.float8_e4m3fn, False),
     'float8-e4m3fn (fp16 LoRA)': (torch.float8_e4m3fn, True),
     'bnb-fp4': ('fp4', False),
+    'bnb-fp4 (fp16 LoRA)': ('fp4', True),
     'float8-e5m2': (torch.float8_e5m2, False),
     'float8-e5m2 (fp16 LoRA)': (torch.float8_e5m2, True),
 }
@@ -195,6 +197,7 @@ def refresh_model_loading_parameters():
     )
 
     print(f'Model selected: {model_data.forge_loading_parameters}')
+    processing.need_global_unload = True
 
     return
 

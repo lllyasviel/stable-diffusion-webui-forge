@@ -342,7 +342,7 @@ class ForgeOperations:
 
 
 try:
-    from backend.operations_bnb import ForgeLoader4Bit, ForgeParams4bit, functional_linear_4bits
+    from backend.operations_bnb import ForgeLoader4Bit, ForgeParams4bit, functional_linear_4bits, functional_dequantize_4bit
 
     class ForgeOperationsBNB4bits(ForgeOperations):
         class Linear(ForgeLoader4Bit):
@@ -355,6 +355,11 @@ try:
                     # Maybe this can also be set to all non-bnb ops since the cost is very low.
                     # And it only invokes one time, and most linear does not have bias
                     self.bias = utils.tensor2parameter(self.bias.to(x.dtype))
+
+                if hasattr(self, 'forge_online_loras'):
+                    weight, bias, signal = weights_manual_cast(self, x, weight_fn=functional_dequantize_4bit, bias_fn=None, skip_bias_dtype=True)
+                    with main_stream_worker(weight, bias, signal):
+                        return torch.nn.functional.linear(x, weight, bias)
 
                 if not self.parameters_manual_cast:
                     return functional_linear_4bits(x, self.weight, self.bias)

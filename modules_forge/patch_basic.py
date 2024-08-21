@@ -71,6 +71,14 @@ def patch_all_basics():
     from transformers.dynamic_module_utils import logger
     logger.setLevel(logging.ERROR)
 
+    from huggingface_hub.file_download import _download_to_tmp_and_move as original_download_to_tmp_and_move
+
+    def patched_download_to_tmp_and_move(incomplete_path, destination_path, url_to_download, proxies, headers, expected_size, filename, force_download):
+        print(f"Downloading [{url_to_download}] to [{destination_path}] using [{incomplete_path}] as cache position...")
+        return original_download_to_tmp_and_move(incomplete_path, destination_path, url_to_download, proxies, headers, expected_size, filename, force_download)
+
+    file_download._download_to_tmp_and_move = patched_download_to_tmp_and_move
+
     gradio.networking.url_ok = gradio_url_ok_fix
     build_loaded(safetensors.torch, 'load_file')
     build_loaded(torch, 'load')

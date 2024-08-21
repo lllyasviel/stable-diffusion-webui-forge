@@ -120,7 +120,8 @@ class ForgeSpace:
     def uninstall(self):
         def on_rm_error(func, path, exc_info):
             print(f"Error deleting {path}. Error: {exc_info[1]}")
-        
+            print(f'Something went wrong when trying to delete a folder. You may try to manually delete the folder [{self.hf_path}].')
+
         shutil.rmtree(self.hf_path, onerror=on_rm_error)
         print(f'Deleted: {self.hf_path}')
         return self.refresh_gradio()

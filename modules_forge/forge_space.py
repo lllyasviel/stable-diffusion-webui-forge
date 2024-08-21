@@ -161,8 +161,13 @@ class ForgeSpace:
         original_cwd = os.getcwd()
         os.chdir(self.hf_path)
 
-        if 'models' in sys.modules:
-            del sys.modules['models']
+        unsafe_module_prefixes = ['models', 'annotator']
+        modules_backup = {}
+
+        for module_name in list(sys.modules.keys()):
+            if any(module_name.startswith(prefix + '.') or module_name == prefix for prefix in unsafe_module_prefixes):
+                modules_backup[module_name] = sys.modules[module_name]
+                del sys.modules[module_name]
 
         memory_management.unload_all_models()
         sys.path.insert(0, self.hf_path)
@@ -187,8 +192,7 @@ class ForgeSpace:
             server_port=port
         )
 
-        if module_name in sys.modules:
-            del sys.modules[module_name]
+        sys.modules.update(modules_backup)
 
         if 'models' in sys.modules:
             del sys.modules['models']

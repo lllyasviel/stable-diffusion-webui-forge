@@ -5,7 +5,6 @@ import time
 import socket
 import gradio as gr
 import importlib.util
-from pathlib import Path
 
 from gradio.context import Context
 from threading import Thread
@@ -45,29 +44,38 @@ def find_free_port(server_name, start_port=None):
 
 
 def remove_dir(dir_path):
-    dir_path = Path(dir_path)
     for root, dirs, files in os.walk(dir_path, topdown=False):
-        root_path = Path(root)
         for name in files:
-            file_path = root_path / name
+            file_path = os.path.join(root, name)
             try:
-                file_path.unlink()
+                os.remove(file_path)
             except Exception as e:
-                print(f"Error removing file {file_path}: {e}")
+                if os.name == 'nt' and not file_path.startswith("\\\\?\\"):
+                    try:
+                        os.remove(f"\\\\?\\{file_path}")
+                    except Exception as e:
+                        print(f"Error removing file with long path {file_path}: {e}")
+                else:
+                    print(f"Error removing file {file_path}: {e}")
 
         for name in dirs:
-            dir_to_remove = root_path / name
+            dir_to_remove = os.path.join(root, name)
             try:
-                dir_to_remove.rmdir()
+                os.rmdir(dir_to_remove)
             except Exception as e:
-                print(f"Error removing directory {dir_to_remove}: {e}")
+                if os.name == 'nt' and not dir_to_remove.startswith("\\\\?\\"):
+                    try:
+                        os.rmdir(f"\\\\?\\{dir_to_remove}")
+                    except Exception as e:
+                        print(f"Error removing directory with long path {dir_to_remove}: {e}")
+                else:
+                    print(f"Error removing directory {dir_to_remove}: {e}")
 
     try:
-        dir_path.rmdir()
+        os.rmdir(dir_path)
         print(f"Deleted: {dir_path}")
     except:
-        print(f'Something went wrong when trying to delete the folder. You may try to manually delete the folder [{dir_path}].')
-
+        print(f'Something went wrong when trying to delete a folder. You may try to manually delete the folder [{dir_path}].')
     return
 
 

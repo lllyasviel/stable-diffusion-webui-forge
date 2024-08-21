@@ -10,6 +10,7 @@ import inspect
 import functools
 import gradio.oauth
 import gradio.routes
+import contextlib
 
 from backend import memory_management
 from backend.operations import DynamicSwapInstaller
@@ -126,8 +127,11 @@ class GPUObject:
         return self
 
 
-def capture_gpu_object():
-    return GPUObject()
+def capture_gpu_object(capture=True):
+    if capture:
+        return GPUObject()
+    else:
+        return contextlib.nullcontext()
 
 
 def GPU(gpu_objects=None, manual_load=False, **kwargs):

@@ -5,7 +5,6 @@ import time
 import socket
 import gradio as gr
 import importlib.util
-import shutil
 
 from gradio.context import Context
 from threading import Thread
@@ -42,6 +41,28 @@ def find_free_port(server_name, start_port=None):
                 return port
             except OSError:
                 port += 1
+
+
+def remove_dir(dir_path):
+    for root, dirs, files in os.walk(dir_path, topdown=False):
+        for name in files:
+            try:
+                os.remove(os.path.join(root, name))
+            except Exception as e:
+                print(f"Error removing file {os.path.join(root, name)}: {e}")
+
+        for name in dirs:
+            try:
+                os.rmdir(os.path.join(root, name))
+            except Exception as e:
+                print(f"Error removing directory {os.path.join(root, name)}: {e}")
+
+    try:
+        os.rmdir(dir_path)
+        print(f"Deleted: {dir_path}")
+    except:
+        print(f'Something went wrong when trying to delete a folder. You may try to manually delete the folder [{dir_path}].')
+    return
 
 
 class ForgeSpace:
@@ -118,12 +139,7 @@ class ForgeSpace:
         return self.refresh_gradio()
 
     def uninstall(self):
-        def on_rm_error(func, path, exc_info):
-            print(f"Error deleting {path}. Error: {exc_info[1]}")
-            print(f'Something went wrong when trying to delete a folder. You may try to manually delete the folder [{self.hf_path}].')
-
-        shutil.rmtree(self.hf_path, onerror=on_rm_error)
-        print(f'Deleted: {self.hf_path}')
+        remove_dir(self.hf_path)
         return self.refresh_gradio()
 
     def terminate(self):

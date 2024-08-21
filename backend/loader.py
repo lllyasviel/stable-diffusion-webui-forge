@@ -107,10 +107,10 @@ def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_p
                 model_loader = lambda c: IntegratedFluxTransformer2DModel(**c)
 
             unet_config = guess.unet_config.copy()
-            state_dict_size = memory_management.state_dict_size(state_dict)
+            state_dict_parameters = memory_management.state_dict_parameters(state_dict)
             state_dict_dtype = memory_management.state_dict_dtype(state_dict)
 
-            storage_dtype = memory_management.unet_dtype(model_params=state_dict_size, supported_dtypes=guess.supported_inference_dtypes)
+            storage_dtype = memory_management.unet_dtype(model_params=state_dict_parameters, supported_dtypes=guess.supported_inference_dtypes)
 
             unet_storage_dtype_overwrite = backend.args.dynamic_args.get('forge_unet_storage_dtype')
 
@@ -140,15 +140,15 @@ def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_p
                             print(f'Using GGUF state dict: {type_counts}')
 
             load_device = memory_management.get_torch_device()
-            computation_dtype = memory_management.get_computation_dtype(load_device, supported_dtypes=guess.supported_inference_dtypes)
+            computation_dtype = memory_management.get_computation_dtype(load_device, parameters=state_dict_parameters, supported_dtypes=guess.supported_inference_dtypes)
             offload_device = memory_management.unet_offload_device()
 
             if storage_dtype in ['nf4', 'fp4', 'gguf']:
-                initial_device = memory_management.unet_inital_load_device(parameters=state_dict_size, dtype=computation_dtype)
+                initial_device = memory_management.unet_inital_load_device(parameters=state_dict_parameters, dtype=computation_dtype)
                 with using_forge_operations(device=initial_device, dtype=computation_dtype, manual_cast_enabled=False, bnb_dtype=storage_dtype):
                     model = model_loader(unet_config)
             else:
-                initial_device = memory_management.unet_inital_load_device(parameters=state_dict_size, dtype=storage_dtype)
+                initial_device = memory_management.unet_inital_load_device(parameters=state_dict_parameters, dtype=storage_dtype)
                 need_manual_cast = storage_dtype != computation_dtype
                 to_args = dict(device=initial_device, dtype=storage_dtype)
 

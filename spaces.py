@@ -179,6 +179,7 @@ def automatically_move_to_gpu_when_forward(m: torch.nn.Module, target_model: tor
             m.forge_space_hooked_names = []
 
         if method_name in m.forge_space_hooked_names:
+            print(f'Already hooked {type(m).__name__}.{method_name}')
             return
 
         print(f'Automatic hook: {type(m).__name__}.{method_name}')

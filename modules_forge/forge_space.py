@@ -142,6 +142,7 @@ class ForgeSpace:
 
     def uninstall(self):
         remove_dir(self.hf_path)
+        print('Uninstall finished. You can also manually delete some diffusers models in "/models/diffusers" to release more spaces, but those diffusers models may be reused by other spaces or extensions. ')
         return self.refresh_gradio()
 
     def terminate(self):

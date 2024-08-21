@@ -118,7 +118,10 @@ class ForgeSpace:
         return self.refresh_gradio()
 
     def uninstall(self):
-        shutil.rmtree(self.hf_path)
+        def on_rm_error(func, path, exc_info):
+            print(f"Error deleting {path}. Error: {exc_info[1]}")
+        
+        shutil.rmtree(self.hf_path, onerror=on_rm_error)
         print(f'Deleted: {self.hf_path}')
         return self.refresh_gradio()
 

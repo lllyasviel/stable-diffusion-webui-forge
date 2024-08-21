@@ -136,6 +136,8 @@ class ForgeSpace:
             from modules.launch_utils import run_pip
             run_pip(f'install -r "{requirements_filename}"', desc=f"space requirements for [{self.title}]")
 
+        print(f'Install finished: {self.title}')
+
         return self.refresh_gradio()
 
     def uninstall(self):

@@ -71,6 +71,9 @@ def long_path_prefix(path: Path) -> Path:
     return path
 
 
+downloaded_urls = set()
+
+
 def patch_all_basics():
     import logging
     from huggingface_hub import file_download
@@ -83,7 +86,9 @@ def patch_all_basics():
     def patched_download_to_tmp_and_move(incomplete_path, destination_path, url_to_download, proxies, headers, expected_size, filename, force_download):
         incomplete_path = long_path_prefix(incomplete_path)
         destination_path = long_path_prefix(destination_path)
-        print(f"Downloading [{url_to_download}] to [{destination_path}] using [{incomplete_path}] as cache position...")
+        if url_to_download not in downloaded_urls:
+            print(f"Downloading [{url_to_download}] to [{destination_path}] using [{incomplete_path}] as cache position...")
+            downloaded_urls.add(url_to_download)
         return original_download_to_tmp_and_move(incomplete_path, destination_path, url_to_download, proxies, headers, expected_size, filename, force_download)
 
     file_download._download_to_tmp_and_move = patched_download_to_tmp_and_move

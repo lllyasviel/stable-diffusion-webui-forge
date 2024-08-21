@@ -2,6 +2,8 @@ from modules_forge.initialization import initialize_forge
 
 initialize_forge()
 
+import sys
+import types
 import os
 import torch
 import inspect
@@ -205,3 +207,20 @@ def automatically_move_pipeline_components(pipe):
 def change_attention_from_diffusers_to_forge(m):
     m.set_attn_processor(AttentionProcessorForge())
     return
+
+
+# diffusers version fix
+
+import diffusers.models
+
+diffusers.models.embeddings.PositionNet = diffusers.models.embeddings.GLIGENTextBoundingboxProjection
+
+import diffusers.models.transformers.dual_transformer_2d
+dual_transformer_2d = types.ModuleType('diffusers.models.dual_transformer_2d')
+dual_transformer_2d.__dict__.update(diffusers.models.transformers.dual_transformer_2d.__dict__)
+sys.modules['diffusers.models.dual_transformer_2d'] = dual_transformer_2d
+
+import diffusers.models.transformers.transformer_2d
+transformer_2d = types.ModuleType('diffusers.models.transformer_2d')
+transformer_2d.__dict__.update(diffusers.models.transformers.transformer_2d.__dict__)
+sys.modules['diffusers.models.transformer_2d'] = transformer_2d

@@ -43,39 +43,36 @@ def find_free_port(server_name, start_port=None):
                 port += 1
 
 
+def long_path_prefix(path):
+    if os.name == 'nt' and not path.startswith("\\\\?\\") and not os.path.exists(path):
+        return f"\\\\?\\{path}"
+    return path
+
+
 def remove_dir(dir_path):
+    dir_path = long_path_prefix(dir_path)
     for root, dirs, files in os.walk(dir_path, topdown=False):
         for name in files:
             file_path = os.path.join(root, name)
+            file_path = long_path_prefix(file_path)
             try:
                 os.remove(file_path)
             except Exception as e:
-                if os.name == 'nt' and not file_path.startswith("\\\\?\\"):
-                    try:
-                        os.remove(f"\\\\?\\{file_path}")
-                    except Exception as e:
-                        print(f"Error removing file with long path {file_path}: {e}")
-                else:
-                    print(f"Error removing file {file_path}: {e}")
+                print(f"Error removing file {file_path}: {e}")
 
         for name in dirs:
             dir_to_remove = os.path.join(root, name)
+            dir_to_remove = long_path_prefix(dir_to_remove)
             try:
                 os.rmdir(dir_to_remove)
             except Exception as e:
-                if os.name == 'nt' and not dir_to_remove.startswith("\\\\?\\"):
-                    try:
-                        os.rmdir(f"\\\\?\\{dir_to_remove}")
-                    except Exception as e:
-                        print(f"Error removing directory with long path {dir_to_remove}: {e}")
-                else:
-                    print(f"Error removing directory {dir_to_remove}: {e}")
+                print(f"Error removing directory {dir_to_remove}: {e}")
 
     try:
         os.rmdir(dir_path)
         print(f"Deleted: {dir_path}")
-    except:
-        print(f'Something went wrong when trying to delete a folder. You may try to manually delete the folder [{dir_path}].')
+    except Exception as e:
+        print(f"Error removing directory {dir_path}: {e}. You may try to manually delete the folder.")
     return
 
 

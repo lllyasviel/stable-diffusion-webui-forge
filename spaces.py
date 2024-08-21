@@ -128,7 +128,7 @@ def capture_gpu_object():
     return GPUObject()
 
 
-def GPU(gpu_objects=None, manual_load=False):
+def GPU(gpu_objects=None, manual_load=False, **kwargs):
     gpu_objects = gpu_objects or []
 
     if not isinstance(gpu_objects, (list, tuple)):

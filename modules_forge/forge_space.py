@@ -46,16 +46,30 @@ def find_free_port(server_name, start_port=None):
 def remove_dir(dir_path):
     for root, dirs, files in os.walk(dir_path, topdown=False):
         for name in files:
+            file_path = os.path.join(root, name)
             try:
-                os.remove(os.path.join(root, name))
+                os.remove(file_path)
             except Exception as e:
-                print(f"Error removing file {os.path.join(root, name)}: {e}")
+                if os.name == 'nt' and not file_path.startswith("\\\\?\\"):
+                    try:
+                        os.remove(f"\\\\?\\{file_path}")
+                    except Exception as e:
+                        print(f"Error removing file with long path {file_path}: {e}")
+                else:
+                    print(f"Error removing file {file_path}: {e}")
 
         for name in dirs:
+            dir_to_remove = os.path.join(root, name)
             try:
-                os.rmdir(os.path.join(root, name))
+                os.rmdir(dir_to_remove)
             except Exception as e:
-                print(f"Error removing directory {os.path.join(root, name)}: {e}")
+                if os.name == 'nt' and not dir_to_remove.startswith("\\\\?\\"):
+                    try:
+                        os.rmdir(f"\\\\?\\{dir_to_remove}")
+                    except Exception as e:
+                        print(f"Error removing directory with long path {dir_to_remove}: {e}")
+                else:
+                    print(f"Error removing directory {dir_to_remove}: {e}")
 
     try:
         os.rmdir(dir_path)

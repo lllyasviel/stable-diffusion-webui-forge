@@ -60,6 +60,10 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
     assert len(gallery) > 0, 'No image to upscale'
     assert 0 <= gallery_index < len(gallery), f'Bad image index: {gallery_index}'
 
+    #   catch situation where user tries to hires-fix the grid: probably a mistake, results can be bad aspect ratio - just don't do it
+    if opts.return_grid and 0 == gallery_index and len(gallery) > 1:
+        return gallery, generation_info, 'Unable to upscale the grid image.', ''
+
     p = txt2img_create_processing(id_task, request, *args, force_enable_hr=True)
     p.batch_size = 1
     p.n_iter = 1
@@ -68,7 +72,7 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
 
     geninfo = json.loads(generation_info)
 
-    image_info = gallery[gallery_index] if 0 <= gallery_index < len(gallery) else gallery[0]
+    image_info = gallery[gallery_index]
     p.firstpass_image = infotext_utils.image_from_url_text(image_info)
 
     parameters = parse_generation_parameters(geninfo.get('infotexts')[gallery_index], [])
@@ -91,9 +95,7 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
             geninfo["infotexts"][gallery_index: gallery_index+1] = processed.infotexts
             new_gallery.extend(processed.images)
         else:
-            fake_image = Image.new(mode="RGB", size=(1, 1))
-            fake_image.already_saved_as = image["name"].rsplit('?', 1)[0]
-            new_gallery.append(fake_image)
+            new_gallery.append(image)
 
     geninfo["infotexts"][gallery_index] = processed.info
 

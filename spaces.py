@@ -2,12 +2,15 @@ from modules_forge.initialization import initialize_forge
 
 initialize_forge()
 
+import sys
+import types
 import os
 import torch
 import inspect
 import functools
 import gradio.oauth
 import gradio.routes
+import contextlib
 
 from backend import memory_management
 from backend.operations import DynamicSwapInstaller
@@ -124,11 +127,14 @@ class GPUObject:
         return self
 
 
-def capture_gpu_object():
-    return GPUObject()
+def capture_gpu_object(capture=True):
+    if capture:
+        return GPUObject()
+    else:
+        return contextlib.nullcontext()
 
 
-def GPU(gpu_objects=None, manual_load=False):
+def GPU(gpu_objects=None, manual_load=False, **kwargs):
     gpu_objects = gpu_objects or []
 
     if not isinstance(gpu_objects, (list, tuple)):
@@ -173,6 +179,7 @@ def automatically_move_to_gpu_when_forward(m: torch.nn.Module, target_model: tor
             m.forge_space_hooked_names = []
 
         if method_name in m.forge_space_hooked_names:
+            print(f'Already hooked {type(m).__name__}.{method_name}')
             return
 
         print(f'Automatic hook: {type(m).__name__}.{method_name}')
@@ -205,3 +212,20 @@ def automatically_move_pipeline_components(pipe):
 def change_attention_from_diffusers_to_forge(m):
     m.set_attn_processor(AttentionProcessorForge())
     return
+
+
+# diffusers version fix
+
+import diffusers.models
+
+diffusers.models.embeddings.PositionNet = diffusers.models.embeddings.GLIGENTextBoundingboxProjection
+
+import diffusers.models.transformers.dual_transformer_2d
+dual_transformer_2d = types.ModuleType('diffusers.models.dual_transformer_2d')
+dual_transformer_2d.__dict__.update(diffusers.models.transformers.dual_transformer_2d.__dict__)
+sys.modules['diffusers.models.dual_transformer_2d'] = dual_transformer_2d
+
+import diffusers.models.transformers.transformer_2d
+transformer_2d = types.ModuleType('diffusers.models.transformer_2d')
+transformer_2d.__dict__.update(diffusers.models.transformers.transformer_2d.__dict__)
+sys.modules['diffusers.models.transformer_2d'] = transformer_2d

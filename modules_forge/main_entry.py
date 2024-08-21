@@ -109,7 +109,7 @@ def make_checkpoint_manager_ui():
 
     mem_comps = [ui_forge_inference_memory, ui_forge_async_loading, ui_forge_pin_shared_memory]
 
-    ui_forge_inference_memory.change(refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
+    ui_forge_inference_memory.release(refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
     ui_forge_async_loading.change(refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
     ui_forge_pin_shared_memory.change(refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
     Context.root_block.load(refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
@@ -177,6 +177,18 @@ def refresh_memory_management_settings(model_memory, async_loading, pin_shared_m
 
     print(f'Environment vars changed: {log_dict}')
 
+    compute_percentage = (inference_memory / total_vram) * 100.0
+
+    if compute_percentage < 5:
+        print('------------------')
+        print(f'[Low VRAM Warning] You just set Forge to use 100% GPU memory ({model_memory:.2f} MB) to load model weights.')
+        print('[Low VRAM Warning] This means you will have 0% GPU memory (0.00 MB) to do matrix computation. Computations may fallback to CPU or go Out of Memory.')
+        print('[Low VRAM Warning] In many cases, image generation will be 10x slower.')
+        print('[Low VRAM Warning] Make sure that you know what you are testing.')
+        print('------------------')
+    else:
+        print(f'[GPU Setting] You will use {(100 - compute_percentage):.2f}% GPU memory ({model_memory:.2f} MB) to load weights, and use {compute_percentage:.2f}% GPU memory ({inference_memory:.2f} MB) to do matrix computation.')
+
     processing.need_global_unload = True
     return
 
@@ -197,6 +209,7 @@ def refresh_model_loading_parameters():
     )
 
     print(f'Model selected: {model_data.forge_loading_parameters}')
+    print(f'Using online LoRAs in FP16: {lora_fp16}')
     processing.need_global_unload = True
 
     return

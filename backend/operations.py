@@ -525,7 +525,7 @@ class DynamicSwapInstaller:
                     return _buffers[name].to(target_device)
             return super(original_class, self).__getattr__(name)
 
-        module.__class__ = type('DynamicSwapInstance', (original_class,), {
+        module.__class__ = type('DynamicSwap_' + original_class.__name__, (original_class,), {
             '__getattr__': hacked_get_attr,
         })
 

@@ -438,7 +438,7 @@ class ControlLora(ControlNet):
 
         self.manual_cast_dtype = model.computation_dtype
 
-        with using_forge_operations(operations=ControlLoraOps, dtype=dtype):
+        with using_forge_operations(operations=ControlLoraOps, dtype=dtype, manual_cast_enabled=self.manual_cast_dtype != dtype):
             self.control_model = cldm.ControlNet(**controlnet_config)
 
         self.control_model.to(device=memory_management.get_torch_device(), dtype=dtype)

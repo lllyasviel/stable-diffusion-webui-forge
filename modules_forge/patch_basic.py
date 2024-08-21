@@ -6,6 +6,7 @@ import warnings
 import gradio.networking
 import safetensors.torch
 
+from pathlib import Path
 from tqdm import tqdm
 
 
@@ -64,6 +65,12 @@ def always_show_tqdm(*args, **kwargs):
     return tqdm(*args, **kwargs)
 
 
+def long_path_prefix(path: Path) -> Path:
+    if os.name == 'nt' and not str(path).startswith("\\\\?\\") and not path.exists():
+        return Path("\\\\?\\" + str(path))
+    return path
+
+
 def patch_all_basics():
     import logging
     from huggingface_hub import file_download
@@ -74,6 +81,8 @@ def patch_all_basics():
     from huggingface_hub.file_download import _download_to_tmp_and_move as original_download_to_tmp_and_move
 
     def patched_download_to_tmp_and_move(incomplete_path, destination_path, url_to_download, proxies, headers, expected_size, filename, force_download):
+        incomplete_path = long_path_prefix(incomplete_path)
+        destination_path = long_path_prefix(destination_path)
         print(f"Downloading [{url_to_download}] to [{destination_path}] using [{incomplete_path}] as cache position...")
         return original_download_to_tmp_and_move(incomplete_path, destination_path, url_to_download, proxies, headers, expected_size, filename, force_download)
 

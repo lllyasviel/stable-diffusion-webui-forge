@@ -24,7 +24,7 @@ def run_postprocessing(extras_mode, image, image_folder, input_dir, output_dir, 
                     fn = ''
                 else:
                     image = images.read(os.path.abspath(img.name))
-                    fn = os.path.splitext(img.orig_name)[0]
+                    fn = os.path.splitext(img.name)[0]
                 yield image, fn
         elif extras_mode == 2:
             assert not shared.cmd_opts.hide_ui_dir_config, '--hide-ui-dir-config option must be disabled'
@@ -93,12 +93,11 @@ def run_postprocessing(extras_mode, image, image_folder, input_dir, output_dir, 
 
             if opts.enable_pnginfo:
                 pp.image.info = existing_pnginfo
-                pp.image.info["postprocessing"] = infotext
 
             shared.state.assign_current_image(pp.image)
 
             if save_output:
-                fullfn, _ = images.save_image(pp.image, path=outpath, basename=basename, extension=opts.samples_format, info=infotext, short_filename=True, no_prompt=True, grid=False, pnginfo_section_name="extras", existing_info=existing_pnginfo, forced_filename=forced_filename, suffix=suffix)
+                fullfn, _ = images.save_image(pp.image, path=outpath, basename=basename, extension=opts.samples_format, info=infotext, short_filename=True, no_prompt=True, grid=False, pnginfo_section_name="postprocessing", existing_info=existing_pnginfo, forced_filename=forced_filename, suffix=suffix)
 
                 if pp.caption:
                     caption_filename = os.path.splitext(fullfn)[0] + ".txt"

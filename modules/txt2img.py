@@ -61,7 +61,7 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
     assert 0 <= gallery_index < len(gallery), f'Bad image index: {gallery_index}'
 
     #   catch situation where user tries to hires-fix the grid: probably a mistake, results can be bad aspect ratio - just don't do it
-    if opts.return_grid == True and 0 == gallery_index:
+    if opts.return_grid and 0 == gallery_index and len(gallery) > 1:
         return gallery, generation_info, 'Unable to upscale the grid image.', ''
 
     p = txt2img_create_processing(id_task, request, *args, force_enable_hr=True)

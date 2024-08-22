@@ -1091,7 +1091,7 @@ def can_install_bnb():
         return False
 
 
-signal_empty_cache = True
+signal_empty_cache = False
 
 
 def soft_empty_cache(force=False):

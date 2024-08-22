@@ -3,7 +3,7 @@
 import torch
 import bitsandbytes as bnb
 
-from backend import utils
+from backend import utils, memory_management
 from bitsandbytes.nn.modules import Params4bit, QuantState
 from bitsandbytes.functional import dequantize_4bit
 
@@ -50,6 +50,10 @@ def copy_quant_state(state: QuantState, device: torch.device = None) -> QuantSta
 
 
 class ForgeParams4bit(Params4bit):
+    def _quantize(self, device):
+        memory_management.signal_empty_cache = True
+        return super()._quantize(device)
+
     def to(self, *args, **kwargs):
         device, dtype, non_blocking, convert_to_format = torch._C._nn._parse_to(*args, **kwargs)
         if device is not None and device.type == "cuda" and not self.bnb_quantized:

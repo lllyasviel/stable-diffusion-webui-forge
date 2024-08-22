@@ -1091,8 +1091,11 @@ def can_install_bnb():
         return False
 
 
+signal_empty_cache = True
+
+
 def soft_empty_cache(force=False):
-    global cpu_state
+    global cpu_state, signal_empty_cache
     if cpu_state == CPUState.MPS:
         torch.mps.empty_cache()
     elif is_intel_xpu():
@@ -1101,6 +1104,8 @@ def soft_empty_cache(force=False):
         if force or is_nvidia():  # This seems to make things worse on ROCm so I only do it for cuda
             torch.cuda.empty_cache()
             torch.cuda.ipc_collect()
+    signal_empty_cache = False
+    return
 
 
 def unload_all_models():

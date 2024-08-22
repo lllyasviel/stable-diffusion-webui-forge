@@ -59,6 +59,24 @@ def unload_module():
     return
 
 
+def greedy_move_to_gpu(model, model_gpu_memory_when_using_cpu_swap):
+    mem_counter = 0
+    memory_in_swap = 0
+    for m in model.modules():
+        if hasattr(m, "weight"):
+            module_mem = memory_management.module_size(m)
+            if mem_counter + module_mem < model_gpu_memory_when_using_cpu_swap:
+                m.to(gpu)
+                mem_counter += module_mem
+            else:
+                m.to(cpu)
+                memory_in_swap += module_mem
+
+    print(f"[Memory Management] Loaded to CPU Swap: {memory_in_swap / (1024 * 1024):.2f} MB")
+    print(f"[Memory Management] Loaded to GPU: {mem_counter / (1024 * 1024):.2f} MB")
+    return
+
+
 def load_module(m):
     global module_in_gpu
 
@@ -80,6 +98,8 @@ def load_module(m):
     if ALWAYS_SWAP or estimated_remaining_memory < 0:
         print(f'Move module to SWAP: {type(m).__name__}')
         DynamicSwapInstaller.install_model(m, target_device=gpu)
+        model_gpu_memory_when_using_cpu_swap = memory_management.compute_model_gpu_memory_when_using_cpu_swap(current_free_mem, inference_memory)
+        greedy_move_to_gpu(m, model_gpu_memory_when_using_cpu_swap)
     else:
         print(f'Move module to GPU: {type(m).__name__}')
         m.to(gpu)

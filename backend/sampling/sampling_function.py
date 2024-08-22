@@ -340,14 +340,18 @@ def sampling_function(self, denoiser_params, cond_scale, cond_composition):
         if image_cond_in.shape[0] == x.shape[0] \
                 and image_cond_in.shape[2] == x.shape[2] \
                 and image_cond_in.shape[3] == x.shape[3]:
-            for i in range(len(uncond)):
-                uncond[i]['model_conds']['c_concat'] = Condition(image_cond_in)
+            if uncond is not None:
+                for i in range(len(uncond)):
+                    uncond[i]['model_conds']['c_concat'] = Condition(image_cond_in)
             for i in range(len(cond)):
                 cond[i]['model_conds']['c_concat'] = Condition(image_cond_in)
 
     if control is not None:
-        for h in cond + uncond:
+        for h in cond:
             h['control'] = control
+        if uncond is not None:
+            for h in uncond:
+                h['control'] = control
 
     for modifier in model_options.get('conditioning_modifiers', []):
         model, x, timestep, uncond, cond, cond_scale, model_options, seed = modifier(model, x, timestep, uncond, cond, cond_scale, model_options, seed)

@@ -27,6 +27,10 @@ samplers_k_diffusion = [
     ('DPM fast', 'sample_dpm_fast', ['k_dpm_fast'], {"uses_ensd": True}),
     ('DPM adaptive', 'sample_dpm_adaptive', ['k_dpm_ad'], {"uses_ensd": True}),
     ('Restart', sd_samplers_extra.restart_sampler, ['restart'], {'scheduler': 'karras', "second_order": True}),
+    ('HeunPP2', 'sample_heunpp2', ['heunpp2'], {}),
+    ('IPNDM', 'sample_ipndm', ['ipndm'], {}),
+    ('IPNDM_V', 'sample_ipndm_v', ['ipndm_v'], {}),
+    ('DEIS', 'sample_deis', ['deis'], {}),
 ]
 
 

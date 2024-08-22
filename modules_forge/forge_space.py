@@ -5,7 +5,6 @@ import time
 import socket
 import gradio as gr
 import importlib.util
-import shutil
 
 from gradio.context import Context
 from threading import Thread
@@ -42,6 +41,39 @@ def find_free_port(server_name, start_port=None):
                 return port
             except OSError:
                 port += 1
+
+
+def long_path_prefix(path):
+    if os.name == 'nt' and not path.startswith("\\\\?\\") and not os.path.exists(path):
+        return f"\\\\?\\{path}"
+    return path
+
+
+def remove_dir(dir_path):
+    dir_path = long_path_prefix(dir_path)
+    for root, dirs, files in os.walk(dir_path, topdown=False):
+        for name in files:
+            file_path = os.path.join(root, name)
+            file_path = long_path_prefix(file_path)
+            try:
+                os.remove(file_path)
+            except Exception as e:
+                print(f"Error removing file {file_path}: {e}")
+
+        for name in dirs:
+            dir_to_remove = os.path.join(root, name)
+            dir_to_remove = long_path_prefix(dir_to_remove)
+            try:
+                os.rmdir(dir_to_remove)
+            except Exception as e:
+                print(f"Error removing directory {dir_to_remove}: {e}")
+
+    try:
+        os.rmdir(dir_path)
+        print(f"Deleted: {dir_path}")
+    except Exception as e:
+        print(f"Error removing directory {dir_path}: {e}. You may try to manually delete the folder.")
+    return
 
 
 class ForgeSpace:
@@ -108,11 +140,20 @@ class ForgeSpace:
         )
 
         print(f'Downloaded: {downloaded}')
+
+        requirements_filename = os.path.abspath(os.path.realpath(os.path.join(self.root_path, 'requirements.txt')))
+
+        if os.path.exists(requirements_filename):
+            from modules.launch_utils import run_pip
+            run_pip(f'install -r "{requirements_filename}"', desc=f"space requirements for [{self.title}]")
+
+        print(f'Install finished: {self.title}')
+
         return self.refresh_gradio()
 
     def uninstall(self):
-        shutil.rmtree(self.hf_path)
-        print(f'Deleted: {self.hf_path}')
+        remove_dir(self.hf_path)
+        print('Uninstall finished. You can also manually delete some diffusers models in "/models/diffusers" to release more spaces, but those diffusers models may be reused by other spaces or extensions. ')
         return self.refresh_gradio()
 
     def terminate(self):
@@ -134,8 +175,13 @@ class ForgeSpace:
         original_cwd = os.getcwd()
         os.chdir(self.hf_path)
 
-        if 'models' in sys.modules:
-            del sys.modules['models']
+        unsafe_module_prefixes = ['models', 'annotator']
+        modules_backup = {}
+
+        for module_name in list(sys.modules.keys()):
+            if any(module_name.startswith(prefix + '.') or module_name == prefix for prefix in unsafe_module_prefixes):
+                modules_backup[module_name] = sys.modules[module_name]
+                del sys.modules[module_name]
 
         memory_management.unload_all_models()
         sys.path.insert(0, self.hf_path)
@@ -160,8 +206,7 @@ class ForgeSpace:
             server_port=port
         )
 
-        if module_name in sys.modules:
-            del sys.modules[module_name]
+        sys.modules.update(modules_backup)
 
         if 'models' in sys.modules:
             del sys.modules['models']

@@ -45,7 +45,7 @@ if device == "mps":
     torch_dtype = torch.float16
 
 
-with spaces.GPUObject() as gpu_object:
+with spaces.capture_gpu_object() as gpu_object:
     # load adapter
     adapter = T2IAdapter.from_pretrained(
         "TencentARC/t2i-adapter-sketch-sdxl-1.0", torch_dtype=torch_dtype, variant="fp16"

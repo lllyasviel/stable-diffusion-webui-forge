@@ -46,7 +46,7 @@ from torchvision.transforms import InterpolationMode
 
 device = spaces.gpu
 
-with spaces.GPUObject() as gpu_object:
+with spaces.capture_gpu_object() as gpu_object:
     vae = AutoencoderKL.from_pretrained(spaces.convert_root_path(), subfolder='vae')
     scheduler = DDIMScheduler.from_pretrained(spaces.convert_root_path(), subfolder='scheduler')
     image_encoder = CLIPVisionModelWithProjection.from_pretrained(spaces.convert_root_path(), subfolder="image_encoder")

@@ -469,8 +469,12 @@ def unload_model_clones(model):
         current_loaded_models.pop(i).model_unload(avoid_model_moving=True)
 
 
-def free_memory(memory_required, device, keep_loaded=[]):
-    print(f"[Unload] Trying to free {memory_required / (1024 * 1024):.2f} MB for {device} with {len(keep_loaded)} models keep loaded ...")
+def free_memory(memory_required, device, keep_loaded=[], free_all=False):
+    if free_all:
+        memory_required = 1e30
+        print(f"[Unload] Trying to free all memory for {device} with {len(keep_loaded)} models keep loaded ...")
+    else:
+        print(f"[Unload] Trying to free {memory_required / (1024 * 1024):.2f} MB for {device} with {len(keep_loaded)} models keep loaded ...")
 
     offload_everything = ALWAYS_VRAM_OFFLOAD or vram_state == VRAMState.NO_VRAM
     unloaded_model = False
@@ -1100,4 +1104,4 @@ def soft_empty_cache(force=False):
 
 
 def unload_all_models():
-    free_memory(1e30, get_torch_device())
+    free_memory(1e30, get_torch_device(), free_all=True)

@@ -377,7 +377,7 @@ class Api:
                 return None
 
             if field.api in request.__fields__:
-                target_type = request.__fields__[field.api].type_
+                target_type = request.__fields__[field.api].annotation
             else:
                 target_type = type(field.component.value)
 

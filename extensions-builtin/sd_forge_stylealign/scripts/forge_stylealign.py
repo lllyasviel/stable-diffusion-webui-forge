@@ -61,12 +61,26 @@ class StyleAlignForForge(scripts.Script):
                     indices = uncond_indices
 
                 if len(indices) > 0:
+
                     bq, bk, bv = q[indices], k[indices], v[indices]
-                    original_attention = sdp(bq, bk, bv, transformer_options)
-                    aligned_attention_result = aligned_attention(bq, bk, bv, transformer_options)
-                    # Blend original and aligned attention based on strength
-                    blended_attention = (1.0 - strength) * original_attention + strength * aligned_attention_result
-                    results.append(blended_attention)
+
+                    if strength < 0.01:
+                        # At strength = 0, use original.
+                        original_attention = sdp(bq, bk, bv, transformer_options)
+                        results.append(original_attention)
+
+                    elif strength > 0.99:
+                        # At strength 1, use aligned.
+                        aligned_attention_result = aligned_attention(bq, bk, bv, transformer_options)
+                        results.append(aligned_attention_result)
+
+                    else:
+                        # In between, blend original and aligned attention based on strength.
+                        original_attention = sdp(bq, bk, bv, transformer_options)
+                        aligned_attention_result = aligned_attention(bq, bk, bv, transformer_options)
+                        blended_attention = (1.0 - strength) * original_attention + strength * aligned_attention_result
+                        results.append(blended_attention)
+
 
             results = torch.cat(results, dim=0)
             return results

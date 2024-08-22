@@ -721,7 +721,7 @@ class Api:
 
     def get_sd_models(self):
         import modules.sd_models as sd_models
-        return [{"title": x.title, "model_name": x.model_name, "hash": x.shorthash, "sha256": x.sha256, "filename": x.filename} for x in sd_models.checkpoints_list.values()]
+        return [{"title": x.title, "model_name": x.model_name, "hash": x.shorthash, "sha256": x.sha256, "filename": x.filename, "config": getattr(x, 'config', None)} for x in sd_models.checkpoints_list.values()]
 
     def get_sd_vaes(self):
         import modules.sd_vae as sd_vae

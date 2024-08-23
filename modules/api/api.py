@@ -19,6 +19,7 @@ from secrets import compare_digest
 import modules.shared as shared
 from modules import sd_samplers, deepbooru, images, scripts, ui, postprocessing, errors, restart, shared_items, script_callbacks, infotext_utils, sd_models, sd_schedulers
 from modules.api import models
+from modules_forge import main_entry
 from modules.shared import opts
 from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, process_images
 from modules.textual_inversion.textual_inversion import create_embedding
@@ -690,7 +691,9 @@ class Api:
         for k, v in req.items():
             shared.opts.set(k, v, is_api=True)
 
-        shared.opts.save(shared.config_filename)
+        main_entry.checkpoint_change(checkpoint_name)
+        # shared.opts.save(shared.config_filename) --- applied in checkpoint_change()
+
         return
 
     def get_cmd_flags(self):

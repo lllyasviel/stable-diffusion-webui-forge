@@ -692,8 +692,8 @@ class Api:
             shared.opts.set(k, v, is_api=True)
 
         main_entry.checkpoint_change(checkpoint_name)
+        # shared.opts.save(shared.config_filename) --- applied in checkpoint_change()
 
-        shared.opts.save(shared.config_filename)
         return
 
     def get_cmd_flags(self):

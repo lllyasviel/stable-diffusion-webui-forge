@@ -264,7 +264,7 @@ class SDModelItem(BaseModel):
     filename: str = Field(title="Filename")
     config: Optional[str] = Field(default=None, title="Config file")
 
-class SDVaeItem(BaseModel):
+class SDModuleItem(BaseModel):
     class Config:
         protected_namespaces = ()
 

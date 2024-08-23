@@ -346,6 +346,8 @@ class LoraLoader:
 
         # Patch
 
+        memory_management.signal_empty_cache = True
+
         for key, current_patches in (tqdm(self.patches.items(), desc=f'Patching LoRAs for {type(self.model).__name__}') if len(self.patches) > 0 else self.patches):
             try:
                 parent_layer, child_key, weight = utils.get_attr_with_parent(self.model, key)

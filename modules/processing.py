@@ -766,6 +766,9 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
         "User": p.user if opts.add_user_name_to_info else None,
     })
 
+    if shared.opts.forge_unet_storage_dtype != 'Automatic':
+        generation_params['Diffusion in Low Bits'] = shared.opts.forge_unet_storage_dtype
+
     if isinstance(shared.opts.forge_additional_modules, list) and len(shared.opts.forge_additional_modules) > 0:
         for i, m in enumerate(shared.opts.forge_additional_modules):
             generation_params[f'Module {i+1}'] = os.path.splitext(os.path.basename(m))[0]

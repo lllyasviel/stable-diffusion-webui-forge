@@ -796,6 +796,8 @@ need_global_unload = False
 def process_images(p: StableDiffusionProcessing) -> Processed:
     global need_global_unload
 
+    stored_opts = {k: opts.data[k] if k in opts.data else opts.get_default(k) for k in p.override_settings.keys() if k in opts.data}
+
     p.sd_model, just_reloaded = forge_model_reload()
 
     if need_global_unload and not just_reloaded:
@@ -811,11 +813,18 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
     if p.scripts is not None:
         p.scripts.before_process(p)
 
+    for k, v in p.override_settings.items():
+        opts.set(k, v, is_api=True, run_callbacks=False)
+
     # backwards compatibility, fix sampler and scheduler if invalid
     sd_samplers.fix_p_invalid_sampler_and_scheduler(p)
 
     with profiling.Profiler():
         res = process_images_inner(p)
+
+    if p.override_settings_restore_afterwards:
+        for k, v in stored_opts.items():
+            setattr(opts, k, v)
 
     return res
 

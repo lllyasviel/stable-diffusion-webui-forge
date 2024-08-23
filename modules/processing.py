@@ -814,7 +814,8 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         p.scripts.before_process(p)
 
     for k, v in p.override_settings.items():
-        opts.set(k, v, is_api=True, run_callbacks=False)
+        if k != 'sd_model_checkpoint' and k != 'sd_vae':
+            opts.set(k, v, is_api=True, run_callbacks=False)
 
     # backwards compatibility, fix sampler and scheduler if invalid
     sd_samplers.fix_p_invalid_sampler_and_scheduler(p)
@@ -824,7 +825,8 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 
     if p.override_settings_restore_afterwards:
         for k, v in stored_opts.items():
-            setattr(opts, k, v)
+            if k != 'sd_model_checkpoint' and k != 'sd_vae':
+                setattr(opts, k, v)
 
     return res
 

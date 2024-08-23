@@ -224,6 +224,7 @@ class Api:
         self.add_api_route("/sdapi/v1/latent-upscale-modes", self.get_latent_upscale_modes, methods=["GET"], response_model=list[models.LatentUpscalerModeItem])
         self.add_api_route("/sdapi/v1/sd-models", self.get_sd_models, methods=["GET"], response_model=list[models.SDModelItem])
         self.add_api_route("/sdapi/v1/sd-vae", self.get_sd_vaes, methods=["GET"], response_model=list[models.SDVaeItem])
+        self.add_api_route("/sdapi/v1/sd-text-encoders", self.get_sd_text_encoders, methods=["GET"], response_model=list[models.SDTextEncoderItem])
         self.add_api_route("/sdapi/v1/hypernetworks", self.get_hypernetworks, methods=["GET"], response_model=list[models.HypernetworkItem])
         self.add_api_route("/sdapi/v1/face-restorers", self.get_face_restorers, methods=["GET"], response_model=list[models.FaceRestorerItem])
         self.add_api_route("/sdapi/v1/realesrgan-models", self.get_realesrgan_models, methods=["GET"], response_model=list[models.RealesrganItem])
@@ -737,6 +738,21 @@ class Api:
     def get_sd_vaes(self):
         import modules.sd_vae as sd_vae
         return [{"model_name": x, "filename": sd_vae.vae_dict[x]} for x in sd_vae.vae_dict.keys()]
+
+    def get_sd_text_encoders(self):
+        from modules import paths
+        from modules_forge.main_entry import find_files_with_extensions
+        text_encoder_paths = [
+            os.path.abspath(os.path.join(paths.models_path, "text_encoder")),
+        ]
+        if isinstance(shared.cmd_opts.vae_dir, str): # TODO shared.cmd_opts.text_encoder_dir?
+            text_encoder_paths.append(os.path.abspath(shared.cmd_opts.vae_dir))
+        file_extensions = ['ckpt', 'pt', 'bin', 'safetensors']
+        text_encoders = {}
+        for text_encoder_path in text_encoder_paths:
+            found = find_files_with_extensions(text_encoder_path, file_extensions)
+            text_encoders.update(found)
+        return [{"model_name": name, "filename": path} for name, path in text_encoders.items()]
 
     def get_hypernetworks(self):
         return [{"name": name, "path": shared.hypernetworks[name]} for name in shared.hypernetworks]

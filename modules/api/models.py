@@ -271,6 +271,13 @@ class SDVaeItem(BaseModel):
     model_name: str = Field(title="Model Name")
     filename: str = Field(title="Filename")
 
+class SDTextEncoderItem(BaseModel):
+    class Config:
+        protected_namespaces = ()
+
+    model_name: str = Field(title="Model Name")
+    filename: str = Field(title="Filename")
+
 class HypernetworkItem(BaseModel):
     name: str = Field(title="Name")
     path: Optional[str] = Field(title="Path")

@@ -609,6 +609,7 @@ class Q8_0(__Quant, qtype=GGMLQuantizationType.Q8_0):
     def bake_layer_weight(cls, layer, weight):
         blocks = weight.data
         d, x = quick_split(blocks, [2])
+        x = x.view(torch.int8)
         d = d.view(torch.float16).to(cls.computation_dtype)
         weight.data = x
         layer.quant_state_0 = torch.nn.Parameter(d, requires_grad=False)

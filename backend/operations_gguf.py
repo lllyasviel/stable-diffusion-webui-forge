@@ -35,6 +35,9 @@ class ParameterGGUF(torch.nn.Parameter):
     def __new__(cls, tensor=None, requires_grad=False, no_init=False):
         return super().__new__(cls, torch.tensor(tensor.data), requires_grad=requires_grad)
 
+    def dequantize_as_pytorch_parameter(self):
+        return torch.nn.Parameter(dequantize_tensor(self), requires_grad=False)
+
     def to(self, *args, **kwargs):
         new = ParameterGGUF(self.data.to(*args, **kwargs), no_init=True)
         new.gguf_type = self.gguf_type

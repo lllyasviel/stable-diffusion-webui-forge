@@ -332,5 +332,5 @@ class ExtensionItem(BaseModel):
     branch: str = Field(title="Branch", description="Extension Repository Branch")
     commit_hash: str = Field(title="Commit Hash", description="Extension Repository Commit Hash")
     version: str = Field(title="Version", description="Extension Version")
-    commit_date: str = Field(title="Commit Date", description="Extension Repository Commit Date")
+    commit_date: int = Field(title="Commit Date", description="Extension Repository Commit Date")
     enabled: bool = Field(title="Enabled", description="Flag specifying whether this extension is enabled")

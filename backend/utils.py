@@ -151,3 +151,18 @@ def get_state_dict_after_quant(model, prefix=''):
     sd = model.state_dict()
     sd = {(prefix + k): v.clone() for k, v in sd.items()}
     return sd
+
+
+def beautiful_print_gguf_state_dict_statics(state_dict):
+    from gguf.constants import GGMLQuantizationType
+    type_counts = {}
+    for k, v in state_dict.items():
+        gguf_type = getattr(v, 'gguf_type', None)
+        if gguf_type is not None:
+            type_name = GGMLQuantizationType(gguf_type).name
+            if type_name in type_counts:
+                type_counts[type_name] += 1
+            else:
+                type_counts[type_name] = 1
+    print(f'GGUF state dict: {type_counts}')
+    return

@@ -162,6 +162,10 @@ def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_p
             model.initial_device = initial_device
             model.offload_device = offload_device
 
+            if storage_dtype in ['gguf']:
+                from backend.operations_gguf import bake_gguf_model
+                model = bake_gguf_model(model)
+
             return model
 
     print(f'Skipped: {component_name} = {lib_name}.{cls_name}')

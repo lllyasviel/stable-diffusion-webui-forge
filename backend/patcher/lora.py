@@ -425,7 +425,8 @@ class LoraLoader:
                     data=weight,
                     gguf_type=gguf_type,
                     gguf_cls=gguf_cls,
-                    gguf_real_shape=gguf_real_shape
+                    gguf_real_shape=gguf_real_shape,
+                    parent=parent_layer
                 ))
                 continue
 

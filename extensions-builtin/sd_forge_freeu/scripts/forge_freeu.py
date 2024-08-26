@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 import gradio as gr
 from modules import scripts
 import logging
@@ -25,6 +26,10 @@ def Fourier_filter(x, threshold, scale):
     return x_filtered.to(x.dtype)
 
 def infer_model_channels(diffusion_model):
+    if 'flux' in str(type(diffusion_model)).lower():
+        logger.info("Flux model detected. Using default channels.")
+        return 320  # Or another appropriate default for Flux
+    
     if hasattr(diffusion_model, 'in_channels'):
         return diffusion_model.in_channels
     elif hasattr(diffusion_model, 'model') and hasattr(diffusion_model.model, 'diffusion_model'):
@@ -41,13 +46,63 @@ def infer_model_channels(diffusion_model):
                 if param.dim() > 1:
                     return param.shape[0]
     
-    # If all else fails, use a default value
     logger.warning("Could not infer model_channels. Using default value of 320.")
     return 320
 
 def is_compatible_architecture(model):
+    if 'flux' in str(type(model)).lower():
+        logger.info("Flux model detected. Assuming compatibility.")
+        return True
     # Check for U-Net like structure
     return hasattr(model, 'input_blocks') and hasattr(model, 'output_blocks')
+
+def apply_freeu_to_flux(h, scale_dict, b1, b2, s1, s2):
+    # Assuming 'h' is the output of a transformer block or a combination of transformer and diffusion outputs
+    B, C, H, W = h.shape
+    
+    # Split the channels into two halves
+    h1, h2 = torch.split(h, C // 2, dim=1)
+    
+    # Apply scaling to the first half (assumed to be more related to global structure)
+    if C in scale_dict:
+        scale = scale_dict[C]
+        h1_mean = h1.mean(1, keepdim=True)
+        h1_max, _ = torch.max(h1_mean.view(B, -1), dim=-1, keepdim=True)
+        h1_min, _ = torch.min(h1_mean.view(B, -1), dim=-1, keepdim=True)
+        h1_mean = (h1_mean - h1_min.view(B, 1, 1, 1)) / (h1_max - h1_min).view(B, 1, 1, 1)
+        h1 = h1 * ((scale[0] - 1) * h1_mean + 1)
+    
+    # Apply Fourier filter to the second half (assumed to be more related to fine details)
+    h2 = Fourier_filter(h2, threshold=1, scale=s1)
+    
+    # Combine the two halves
+    h_combined = torch.cat([h1, h2], dim=1)
+    
+    # Apply additional scaling based on the flow matching principle
+    h_flow = flow_matching_scale(h_combined, b1, b2)
+    
+    return h_flow
+
+def flow_matching_scale(h, b1, b2):
+    # This function attempts to scale the features based on the flow matching principle
+    # Note: This is a simplified approximation and may need adjustment based on FLUX's exact implementation
+    B, C, H, W = h.shape
+    
+    # Create a flow field
+    flow = torch.randn(B, 2, H, W, device=h.device)
+    flow = F.normalize(flow, dim=1)
+    
+    # Scale the flow field
+    flow = flow * b1
+    
+    # Apply the flow to the features
+    grid = F.affine_grid(flow.permute(0, 2, 3, 1).view(B, H * W, 2), h.size())
+    h_warped = F.grid_sample(h, grid, mode='bilinear', padding_mode='border')
+    
+    # Combine original and warped features
+    h_combined = h + b2 * (h_warped - h)
+    
+    return h_combined
 
 def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
     logger.info("Entering patch_freeu_v2 function")
@@ -80,8 +135,12 @@ def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
         return unet_patcher
 
     if 'flux' in str(type(diffusion_model)).lower():
-        logger.info("Flux model detected. Using default channels.")
-        model_channels = 320  # Or another appropriate default for Flux
+        logger.info("Flux model detected. Using specialized handling.")
+        try:
+            model_channels = infer_model_channels(diffusion_model)
+        except Exception as e:
+            logger.warning(f"Unable to apply FreeU to FLUX model: {str(e)}. Returning original model.")
+            return unet_patcher
     else:
         model_channels = infer_model_channels(diffusion_model)
 
@@ -95,6 +154,9 @@ def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
     on_cpu_devices = {}
 
     def output_block_patch(h, hsp, transformer_options):
+        if 'flux' in str(type(h)).lower():
+            return apply_freeu_to_flux(h, scale_dict, b1, b2, s1, s2), hsp
+
         scale = scale_dict.get(h.shape[1], None)
         if scale is not None:
             hidden_mean = h.mean(1).unsqueeze(1)

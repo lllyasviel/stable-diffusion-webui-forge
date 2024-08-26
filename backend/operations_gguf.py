@@ -27,6 +27,7 @@ class ParameterGGUF(torch.nn.Parameter):
         self.gguf_type = tensor.tensor_type
         self.gguf_real_shape = torch.Size(reversed(list(tensor.shape)))
         self.gguf_cls = quants_mapping.get(self.gguf_type, None)
+        self.parent = None
 
     @property
     def shape(self):
@@ -36,6 +37,9 @@ class ParameterGGUF(torch.nn.Parameter):
         return super().__new__(cls, torch.tensor(tensor.data), requires_grad=requires_grad)
 
     def dequantize_as_pytorch_parameter(self):
+        if self.parent is None:
+            self.parent = torch.nn.Module()
+            self.gguf_cls.bake_layer(self.parent, self, computation_dtype=torch.float16)
         return torch.nn.Parameter(dequantize_tensor(self), requires_grad=False)
 
     def to(self, *args, **kwargs):
@@ -43,6 +47,7 @@ class ParameterGGUF(torch.nn.Parameter):
         new.gguf_type = self.gguf_type
         new.gguf_real_shape = self.gguf_real_shape
         new.gguf_cls = self.gguf_cls
+        new.parent = self.parent
         return new
 
     def pin_memory(self, device=None):
@@ -50,15 +55,36 @@ class ParameterGGUF(torch.nn.Parameter):
         new.gguf_type = self.gguf_type
         new.gguf_real_shape = self.gguf_real_shape
         new.gguf_cls = self.gguf_cls
+        new.parent = self.parent
         return new
 
     @classmethod
-    def make(cls, data, gguf_type, gguf_cls, gguf_real_shape):
+    def make(cls, data, gguf_type, gguf_cls, gguf_real_shape, parent):
         new = ParameterGGUF(data, no_init=True)
         new.gguf_type = gguf_type
         new.gguf_real_shape = gguf_real_shape
         new.gguf_cls = gguf_cls
+        new.parent = parent
         return new
+
+
+def bake_gguf_model(model):
+    computation_dtype = model.computation_dtype
+    backed_layer_counter = 0
+
+    for m in model.modules():
+        if hasattr(m, 'weight'):
+            weight = m.weight
+            if hasattr(weight, 'gguf_cls'):
+                gguf_cls = weight.gguf_cls
+                if gguf_cls is not None:
+                    backed_layer_counter += 1
+                    gguf_cls.bake_layer(m, weight, computation_dtype)
+
+    if backed_layer_counter > 0:
+        print(f'GGUF backed {backed_layer_counter} layers.')
+
+    return model
 
 
 def dequantize_tensor(tensor):
@@ -68,7 +94,7 @@ def dequantize_tensor(tensor):
     if not hasattr(tensor, 'gguf_cls'):
         return tensor
 
-    data = torch.tensor(tensor.data)
+    data = tensor
     gguf_cls = tensor.gguf_cls
     gguf_real_shape = tensor.gguf_real_shape
 

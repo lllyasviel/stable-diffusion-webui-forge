@@ -36,53 +36,57 @@ def Fourier_filter(x, threshold, scale):
     return x_filtered.to(x.dtype)
 
 def is_flux_model(model):
-    return 'flux' in str(type(model)).lower() or hasattr(model, 'flux_attributes')
+    return 'IntegratedFluxTransformer2DModel' in str(type(model))
 
 def apply_freeu_to_flux(h, b1, b2, s1, s2):
     logger.info(f"Applying FreeU to FLUX. Input shape: {h.shape}")
     
-    chunks = torch.chunk(h, chunks=4, dim=1)
-    processed_chunks = []
-
-    for i, chunk in enumerate(chunks):
-        logger.info(f"Processing chunk {i}. Shape: {chunk.shape}")
-        chunk = flow_transform(chunk, b1)
-        chunk = fourier_filter(chunk, s1)
-        chunk = non_linear_transform(chunk, b2, s2)
-        processed_chunks.append(chunk)
-
-    h = torch.cat(processed_chunks, dim=1)
+    # Global scaling
+    h = h * b1
+    logger.info(f"After global scaling. Mean: {h.mean().item()}, Std: {h.std().item()}")
+    
+    # Apply Fourier filter
+    h_freq = torch.fft.fftn(h, dim=(-2, -1))
+    h_freq = torch.fft.fftshift(h_freq, dim=(-2, -1))
+    
+    B, C, H, W = h_freq.shape
+    mask = torch.ones_like(h_freq)
+    crow, ccol = H // 2, W // 2
+    mask[..., crow-H//4:crow+H//4, ccol-W//4:ccol+W//4] = s1
+    
+    h_freq = h_freq * mask
+    h_freq = torch.fft.ifftshift(h_freq, dim=(-2, -1))
+    h = torch.fft.ifftn(h_freq, dim=(-2, -1)).real
+    logger.info(f"After Fourier filter. Mean: {h.mean().item()}, Std: {h.std().item()}")
+    
+    # Non-linear transformation
+    h = torch.tanh(h * b2) * s2
+    logger.info(f"After non-linear transform. Mean: {h.mean().item()}, Std: {h.std().item()}")
+    
     logger.info(f"FreeU applied to FLUX. Output shape: {h.shape}")
     return h
-
-def flow_transform(x, scale):
-    return x + scale * torch.tanh(x)
-
-def fourier_filter(x, scale):
-    x_freq = torch.fft.fftn(x, dim=(-2, -1))
-    x_freq = torch.fft.fftshift(x_freq, dim=(-2, -1))
-    B, C, H, W = x_freq.shape
-    mask = torch.ones_like(x_freq)
-    crow, ccol = H // 2, W // 2
-    mask[..., crow-H//4:crow+H//4, ccol-W//4:ccol+W//4] = scale
-    x_freq = x_freq * mask
-    x_freq = torch.fft.ifftshift(x_freq, dim=(-2, -1))
-    return torch.fft.ifftn(x_freq, dim=(-2, -1)).real
-
-def non_linear_transform(x, scale1, scale2):
-    return torch.tanh(x * scale1) * scale2
 
 def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
     logger.info("Entering patch_freeu_v2 function")
     logger.info(f"unet_patcher type: {type(unet_patcher)}")
     
-    if is_flux_model(unet_patcher):
+    if hasattr(unet_patcher, 'model'):
+        diffusion_model = unet_patcher.model
+        logger.info("unet_patcher has 'model' attribute")
+    else:
+        diffusion_model = unet_patcher
+        logger.info("Using unet_patcher as diffusion_model")
+    
+    logger.info(f"diffusion_model type: {type(diffusion_model)}")
+    logger.info(f"diffusion_model attributes: {dir(diffusion_model)}")
+    
+    if is_flux_model(diffusion_model):
         logger.info("FLUX model detected. Applying FLUX-specific FreeU.")
         
         def flux_output_block_patch(h, *args, **kwargs):
-            logger.info(f"Entering flux_output_block_patch. Input shape: {h.shape}")
+            logger.info(f"Applying FreeU to FLUX output. Input shape: {h.shape}")
             result = apply_freeu_to_flux(h, b1, b2, s1, s2)
-            logger.info(f"Exiting flux_output_block_patch. Output shape: {result.shape}")
+            logger.info(f"FreeU applied to FLUX output. Output shape: {result.shape}")
             return result, None
 
         if hasattr(unet_patcher, 'set_model_output_block_patch'):
@@ -93,25 +97,22 @@ def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
         
         return unet_patcher
     
-    if hasattr(unet_patcher, 'model'):
-        logger.info("unet_patcher has 'model' attribute")
-        if hasattr(unet_patcher.model, 'diffusion_model'):
-            logger.info("unet_patcher.model has 'diffusion_model' attribute")
-            diffusion_model = unet_patcher.model.diffusion_model
-        else:
-            logger.info("Using unet_patcher.model as diffusion_model")
-            diffusion_model = unet_patcher.model
-    else:
-        logger.info("Using unet_patcher as diffusion_model")
-        diffusion_model = unet_patcher
-
-    logger.info(f"diffusion_model type: {type(diffusion_model)}")
-    logger.info(f"diffusion_model attributes: {dir(diffusion_model)}")
-
+    # Handling for standard U-Net models
     if not hasattr(diffusion_model, 'input_blocks') or not hasattr(diffusion_model, 'output_blocks'):
-        logger.warning("Model architecture is not compatible with FreeU. Skipping application.")
+        logger.warning("Model architecture is not compatible with standard FreeU. Attempting generic approach.")
+        
+        def generic_output_block_patch(h, *args, **kwargs):
+            return apply_freeu_to_flux(h, b1, b2, s1, s2), None
+
+        if hasattr(unet_patcher, 'set_model_output_block_patch'):
+            unet_patcher.set_model_output_block_patch(generic_output_block_patch)
+            logger.info("Generic FreeU patch applied successfully.")
+        else:
+            logger.warning("Could not set output block patch. FreeU may not be applied.")
+        
         return unet_patcher
 
+    # Standard U-Net FreeU implementation
     model_channels = getattr(diffusion_model, 'model_channels', 320)
     logger.info(f"model_channels: {model_channels}")
 
@@ -132,6 +133,7 @@ def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
 
     m = unet_patcher.clone()
     m.set_model_output_block_patch(output_block_patch)
+    logger.info("Standard U-Net FreeU patch applied successfully.")
     return m
 
 class FreeUForForge(scripts.Script):

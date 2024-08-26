@@ -37,6 +37,9 @@ class ParameterGGUF(torch.nn.Parameter):
         return super().__new__(cls, torch.tensor(tensor.data), requires_grad=requires_grad)
 
     def dequantize_as_pytorch_parameter(self):
+        if self.parent is None:
+            self.parent = torch.nn.Module()
+            self.gguf_cls.bake_layer(self.parent, self, computation_dtype=torch.float16)
         return torch.nn.Parameter(dequantize_tensor(self), requires_grad=False)
 
     def to(self, *args, **kwargs):

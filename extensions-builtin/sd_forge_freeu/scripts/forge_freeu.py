@@ -3,9 +3,36 @@ import torch.nn.functional as F
 import gradio as gr
 from modules import scripts
 import logging
+import sys
+from pathlib import Path
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+def setup_logging(log_file=None):
+    # Create a logger
+    logger = logging.getLogger("FreeU")
+    logger.setLevel(logging.DEBUG)
+
+    # Create console handler and set level to debug
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.DEBUG)
+
+    # Create formatter
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    console_handler.setFormatter(formatter)
+
+    # Add console handler to logger
+    logger.addHandler(console_handler)
+
+    # If a log file is specified, add a file handler
+    if log_file:
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    return logger
+
+# Setup logging (you can specify a log file path if needed)
+logger = setup_logging(log_file=Path("freeu_log.txt"))
 
 def Fourier_filter(x, threshold, scale):
     # FFT
@@ -26,7 +53,7 @@ def Fourier_filter(x, threshold, scale):
     return x_filtered.to(x.dtype)
 
 def infer_model_channels(diffusion_model):
-    if 'flux' in str(type(diffusion_model)).lower():
+    if is_flux_model(diffusion_model):
         logger.info("Flux model detected. Using default channels.")
         return 320  # Or another appropriate default for Flux
     
@@ -49,39 +76,42 @@ def infer_model_channels(diffusion_model):
     logger.warning("Could not infer model_channels. Using default value of 320.")
     return 320
 
+def is_flux_model(model):
+    return 'flux' in str(type(model)).lower() or hasattr(model, 'flux_attributes')  # Add any other FLUX-specific attributes
+
 def is_compatible_architecture(model):
-    if 'flux' in str(type(model)).lower():
+    if is_flux_model(model):
         logger.info("Flux model detected. Assuming compatibility.")
         return True
     # Check for U-Net like structure
     return hasattr(model, 'input_blocks') and hasattr(model, 'output_blocks')
 
 def apply_freeu_to_flux(h, scale_dict, b1, b2, s1, s2):
-    # Assuming 'h' is the output of a transformer block or a combination of transformer and diffusion outputs
+    logger.info(f"Applying FreeU to FLUX. Input shape: {h.shape}")
+    
     B, C, H, W = h.shape
     
-    # Split the channels into two halves
-    h1, h2 = torch.split(h, C // 2, dim=1)
+    # More aggressive scaling for FLUX
+    h = h * b1  # Global scaling
     
-    # Apply scaling to the first half (assumed to be more related to global structure)
-    if C in scale_dict:
-        scale = scale_dict[C]
-        h1_mean = h1.mean(1, keepdim=True)
-        h1_max, _ = torch.max(h1_mean.view(B, -1), dim=-1, keepdim=True)
-        h1_min, _ = torch.min(h1_mean.view(B, -1), dim=-1, keepdim=True)
-        h1_mean = (h1_mean - h1_min.view(B, 1, 1, 1)) / (h1_max - h1_min).view(B, 1, 1, 1)
-        h1 = h1 * ((scale[0] - 1) * h1_mean + 1)
+    # Apply Fourier filter
+    h_freq = torch.fft.fftn(h, dim=(-2, -1))
+    h_freq = torch.fft.fftshift(h_freq, dim=(-2, -1))
     
-    # Apply Fourier filter to the second half (assumed to be more related to fine details)
-    h2 = Fourier_filter(h2, threshold=1, scale=s1)
+    mask = torch.ones_like(h_freq)
+    crow, ccol = H // 2, W // 2
+    mask[..., crow-1:crow+1, ccol-1:ccol+1] = s1
     
-    # Combine the two halves
-    h_combined = torch.cat([h1, h2], dim=1)
+    h_freq = h_freq * mask
+    h_freq = torch.fft.ifftshift(h_freq, dim=(-2, -1))
+    h = torch.fft.ifftn(h_freq, dim=(-2, -1)).real
     
-    # Apply additional scaling based on the flow matching principle
-    h_flow = flow_matching_scale(h_combined, b1, b2)
+    # Additional contrast adjustment
+    h_mean = h.mean()
+    h = (h - h_mean) * b2 + h_mean
     
-    return h_flow
+    logger.info(f"FreeU applied to FLUX. Output shape: {h.shape}")
+    return h
 
 def flow_matching_scale(h, b1, b2):
     # This function attempts to scale the features based on the flow matching principle
@@ -111,6 +141,19 @@ def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
     # Debug: Print the structure of unet_patcher
     logger.info(f"unet_patcher attributes: {dir(unet_patcher)}")
     
+    if is_flux_model(unet_patcher):
+        logger.info("FLUX model detected. Using specialized handling.")
+        
+        def flux_output_block_patch(h, *args, **kwargs):
+            return apply_freeu_to_flux(h, None, b1, b2, s1, s2), None
+        
+        if hasattr(unet_patcher, 'set_model_output_block_patch'):
+            unet_patcher.set_model_output_block_patch(flux_output_block_patch)
+        else:
+            logger.warning("Could not set output block patch for FLUX model. FreeU may not be applied.")
+        
+        return unet_patcher
+    
     if hasattr(unet_patcher, 'model'):
         logger.info("unet_patcher has 'model' attribute")
         if hasattr(unet_patcher.model, 'diffusion_model'):
@@ -134,15 +177,7 @@ def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
         logger.warning("Quantized model detected. FreeU may not be directly applicable.")
         return unet_patcher
 
-    if 'flux' in str(type(diffusion_model)).lower():
-        logger.info("Flux model detected. Using specialized handling.")
-        try:
-            model_channels = infer_model_channels(diffusion_model)
-        except Exception as e:
-            logger.warning(f"Unable to apply FreeU to FLUX model: {str(e)}. Returning original model.")
-            return unet_patcher
-    else:
-        model_channels = infer_model_channels(diffusion_model)
+    model_channels = infer_model_channels(diffusion_model)
 
     if model_channels is None or model_channels > 1000000:  # Arbitrary large number to catch unreasonable values
         logger.warning("Could not reliably infer model channels. FreeU will be disabled for this run.")
@@ -154,7 +189,7 @@ def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
     on_cpu_devices = {}
 
     def output_block_patch(h, hsp, transformer_options):
-        if 'flux' in str(type(h)).lower():
+        if is_flux_model(h):
             return apply_freeu_to_flux(h, scale_dict, b1, b2, s1, s2), hsp
 
         scale = scale_dict.get(h.shape[1], None)
@@ -211,9 +246,12 @@ class FreeUForForge(scripts.Script):
             return
 
         unet = p.sd_model.forge_objects.unet
+        
+        logger.info(f"Model type before FreeU: {type(unet)}")
 
         try:
             unet = patch_freeu_v2(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)
+            logger.info(f"FreeU applied. Model type after: {type(unet)}")
         except Exception as e:
             logger.error(f"Error in patch_freeu_v2: {str(e)}", exc_info=True)
             return
@@ -228,4 +266,5 @@ class FreeUForForge(scripts.Script):
             freeu_s2=freeu_s2,
         ))
 
+        logger.info("FreeU parameters applied successfully")
         return

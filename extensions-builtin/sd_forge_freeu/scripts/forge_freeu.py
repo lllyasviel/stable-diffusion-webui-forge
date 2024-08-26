@@ -6,6 +6,14 @@ import logging
 import sys
 from pathlib import Path
 
+# Attempt to import FLUX model
+try:
+    from backend.nn.flux import IntegratedFluxTransformer2DModel
+    FLUX_AVAILABLE = True
+except ImportError:
+    FLUX_AVAILABLE = False
+    print("FLUX model not available. FLUX-specific features will be disabled.")
+
 def setup_logging(log_file=None):
     # Create a logger
     logger = logging.getLogger("FreeU")
@@ -77,7 +85,9 @@ def infer_model_channels(diffusion_model):
     return 320
 
 def is_flux_model(model):
-    return 'flux' in str(type(model)).lower() or hasattr(model, 'flux_attributes')  # Add any other FLUX-specific attributes
+    if not FLUX_AVAILABLE:
+        return False
+    return isinstance(model, IntegratedFluxTransformer2DModel)
 
 def is_compatible_architecture(model):
     if is_flux_model(model):
@@ -109,6 +119,9 @@ def apply_freeu_to_flux(h, scale_dict, b1, b2, s1, s2):
     # Additional contrast adjustment
     h_mean = h.mean()
     h = (h - h_mean) * b2 + h_mean
+    
+    # More aggressive modification
+    h = torch.tanh(h * b2) * s2
     
     logger.info(f"FreeU applied to FLUX. Output shape: {h.shape}")
     return h
@@ -142,13 +155,17 @@ def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
     logger.info(f"unet_patcher attributes: {dir(unet_patcher)}")
     
     if is_flux_model(unet_patcher):
-        logger.info("FLUX model detected. Using specialized handling.")
+        logger.info("FLUX model detected. Applying FLUX-specific FreeU.")
         
         def flux_output_block_patch(h, *args, **kwargs):
-            return apply_freeu_to_flux(h, None, b1, b2, s1, s2), None
-        
+            logger.info(f"Applying FreeU to FLUX output. Input shape: {h.shape}")
+            result = apply_freeu_to_flux(h, None, b1, b2, s1, s2)
+            logger.info(f"FreeU applied to FLUX output. Output shape: {result.shape}")
+            return result, None
+
         if hasattr(unet_patcher, 'set_model_output_block_patch'):
             unet_patcher.set_model_output_block_patch(flux_output_block_patch)
+            logger.info("FLUX-specific FreeU patch applied successfully.")
         else:
             logger.warning("Could not set output block patch for FLUX model. FreeU may not be applied.")
         

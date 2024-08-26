@@ -1,8 +1,10 @@
 import torch
 import gradio as gr
-
 from modules import scripts
+import logging
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def Fourier_filter(x, threshold, scale):
     # FFT
@@ -22,9 +24,59 @@ def Fourier_filter(x, threshold, scale):
 
     return x_filtered.to(x.dtype)
 
-
 def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
-    model_channels = unet_patcher.model.diffusion_model.config["model_channels"]
+    logger.info("Entering patch_freeu_v2 function")
+    logger.info(f"unet_patcher type: {type(unet_patcher)}")
+    
+    # Debug: Print the structure of unet_patcher
+    logger.info(f"unet_patcher attributes: {dir(unet_patcher)}")
+    
+    # Try to infer model_channels from the model structure
+    model_channels = None
+    
+    if hasattr(unet_patcher, 'model'):
+        logger.info("unet_patcher has 'model' attribute")
+        if hasattr(unet_patcher.model, 'diffusion_model'):
+            logger.info("unet_patcher.model has 'diffusion_model' attribute")
+            diffusion_model = unet_patcher.model.diffusion_model
+        else:
+            logger.info("Using unet_patcher.model as diffusion_model")
+            diffusion_model = unet_patcher.model
+    else:
+        logger.info("Using unet_patcher as diffusion_model")
+        diffusion_model = unet_patcher
+
+    logger.info(f"diffusion_model type: {type(diffusion_model)}")
+    logger.info(f"diffusion_model attributes: {dir(diffusion_model)}")
+
+    # Try different attributes to find model_channels
+    if hasattr(diffusion_model, 'in_channels'):
+        model_channels = diffusion_model.in_channels
+        logger.info(f"Found model_channels from in_channels: {model_channels}")
+    elif hasattr(diffusion_model, 'config') and isinstance(diffusion_model.config, dict):
+        model_channels = diffusion_model.config.get('model_channels', 
+                                                    diffusion_model.config.get('channels', None))
+        logger.info(f"Found model_channels from config: {model_channels}")
+    
+    if model_channels is None:
+        # If we still can't find it, let's try to infer from the model structure
+        for attr_name in dir(diffusion_model):
+            attr = getattr(diffusion_model, attr_name)
+            if isinstance(attr, torch.nn.Module):
+                for param in attr.parameters():
+                    if param.dim() > 1:
+                        model_channels = param.shape[0]
+                        logger.info(f"Inferred model_channels from {attr_name}: {model_channels}")
+                        break
+                if model_channels is not None:
+                    break
+    
+    if model_channels is None:
+        logger.warning("Could not infer model_channels. Using default value of 320.")
+        model_channels = 320
+
+    logger.info(f"Final model_channels value: {model_channels}")
+
     scale_dict = {model_channels * 4: (b1, s1), model_channels * 2: (b2, s2)}
     on_cpu_devices = {}
 
@@ -43,7 +95,7 @@ def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
                 try:
                     hsp = Fourier_filter(hsp, threshold=1, scale=scale[1])
                 except:
-                    print("Device", hsp.device, "does not support the torch.fft functions used in the FreeU node, switching to CPU.")
+                    logger.warning(f"Device {hsp.device} does not support the torch.fft functions used in the FreeU node, switching to CPU.")
                     on_cpu_devices[hsp.device] = True
                     hsp = Fourier_filter(hsp.cpu(), threshold=1, scale=scale[1]).to(hsp.device)
             else:
@@ -55,15 +107,13 @@ def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
     m.set_model_output_block_patch(output_block_patch)
     return m
 
-
 class FreeUForForge(scripts.Script):
-    sorting_priority = 12  # It will be the 12th item on UI.
+    sorting_priority = 12
 
     def title(self):
         return "FreeU Integrated"
 
     def show(self, is_img2img):
-        # make this extension visible in both txt2img and img2img tab.
         return scripts.AlwaysVisible
 
     def ui(self, *args, **kwargs):
@@ -79,9 +129,6 @@ class FreeUForForge(scripts.Script):
         return freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2
 
     def process_before_every_sampling(self, p, *script_args, **kwargs):
-        # This will be called before every sampling.
-        # If you use highres fix, this will be called twice.
-
         freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2 = script_args
 
         if not freeu_enabled:
@@ -89,12 +136,14 @@ class FreeUForForge(scripts.Script):
 
         unet = p.sd_model.forge_objects.unet
 
-        unet = patch_freeu_v2(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)
+        try:
+            unet = patch_freeu_v2(unet, freeu_b1, freeu_b2, freeu_s1, freeu_s2)
+        except Exception as e:
+            logger.error(f"Error in patch_freeu_v2: {str(e)}", exc_info=True)
+            return
 
         p.sd_model.forge_objects.unet = unet
 
-        # Below codes will add some logs to the texts below the image outputs on UI.
-        # The extra_generation_params does not influence results.
         p.extra_generation_params.update(dict(
             freeu_enabled=freeu_enabled,
             freeu_b1=freeu_b1,

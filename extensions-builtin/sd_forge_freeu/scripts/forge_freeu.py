@@ -24,15 +24,37 @@ def Fourier_filter(x, threshold, scale):
 
     return x_filtered.to(x.dtype)
 
+def infer_model_channels(diffusion_model):
+    if hasattr(diffusion_model, 'in_channels'):
+        return diffusion_model.in_channels
+    elif hasattr(diffusion_model, 'model') and hasattr(diffusion_model.model, 'diffusion_model'):
+        return diffusion_model.model.diffusion_model.in_channels
+    elif hasattr(diffusion_model, 'config'):
+        if isinstance(diffusion_model.config, dict):
+            return diffusion_model.config.get('model_channels', diffusion_model.config.get('channels'))
+    
+    # If we still can't find it, let's try to infer from the model structure
+    for attr_name in dir(diffusion_model):
+        attr = getattr(diffusion_model, attr_name)
+        if isinstance(attr, torch.nn.Module):
+            for param in attr.parameters():
+                if param.dim() > 1:
+                    return param.shape[0]
+    
+    # If all else fails, use a default value
+    logger.warning("Could not infer model_channels. Using default value of 320.")
+    return 320
+
+def is_compatible_architecture(model):
+    # Check for U-Net like structure
+    return hasattr(model, 'input_blocks') and hasattr(model, 'output_blocks')
+
 def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
     logger.info("Entering patch_freeu_v2 function")
     logger.info(f"unet_patcher type: {type(unet_patcher)}")
     
     # Debug: Print the structure of unet_patcher
     logger.info(f"unet_patcher attributes: {dir(unet_patcher)}")
-    
-    # Try to infer model_channels from the model structure
-    model_channels = None
     
     if hasattr(unet_patcher, 'model'):
         logger.info("unet_patcher has 'model' attribute")
@@ -49,31 +71,23 @@ def patch_freeu_v2(unet_patcher, b1, b2, s1, s2):
     logger.info(f"diffusion_model type: {type(diffusion_model)}")
     logger.info(f"diffusion_model attributes: {dir(diffusion_model)}")
 
-    # Try different attributes to find model_channels
-    if hasattr(diffusion_model, 'in_channels'):
-        model_channels = diffusion_model.in_channels
-        logger.info(f"Found model_channels from in_channels: {model_channels}")
-    elif hasattr(diffusion_model, 'config') and isinstance(diffusion_model.config, dict):
-        model_channels = diffusion_model.config.get('model_channels', 
-                                                    diffusion_model.config.get('channels', None))
-        logger.info(f"Found model_channels from config: {model_channels}")
-    
-    if model_channels is None:
-        # If we still can't find it, let's try to infer from the model structure
-        for attr_name in dir(diffusion_model):
-            attr = getattr(diffusion_model, attr_name)
-            if isinstance(attr, torch.nn.Module):
-                for param in attr.parameters():
-                    if param.dim() > 1:
-                        model_channels = param.shape[0]
-                        logger.info(f"Inferred model_channels from {attr_name}: {model_channels}")
-                        break
-                if model_channels is not None:
-                    break
-    
-    if model_channels is None:
-        logger.warning("Could not infer model_channels. Using default value of 320.")
-        model_channels = 320
+    if not is_compatible_architecture(diffusion_model):
+        logger.warning("Model architecture is not compatible with FreeU. Skipping application.")
+        return unet_patcher
+
+    if 'gguf' in str(type(diffusion_model)):
+        logger.warning("Quantized model detected. FreeU may not be directly applicable.")
+        return unet_patcher
+
+    if 'flux' in str(type(diffusion_model)).lower():
+        logger.info("Flux model detected. Using default channels.")
+        model_channels = 320  # Or another appropriate default for Flux
+    else:
+        model_channels = infer_model_channels(diffusion_model)
+
+    if model_channels is None or model_channels > 1000000:  # Arbitrary large number to catch unreasonable values
+        logger.warning("Could not reliably infer model channels. FreeU will be disabled for this run.")
+        return unet_patcher
 
     logger.info(f"Final model_channels value: {model_channels}")
 

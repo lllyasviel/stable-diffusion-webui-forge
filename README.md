@@ -6,6 +6,23 @@ The name "Forge" is inspired from "Minecraft Forge". This project is aimed at be
 
 Forge is currently based on SD-WebUI 1.10.1 at [this commit](https://github.com/AUTOMATIC1111/stable-diffusion-webui/commit/82a973c04367123ae98bd9abdf80d9eda9b910e2). (Because original SD-WebUI is almost static now, Forge will sync with original WebUI every 90 days, or when important fixes.)
 
+### Forge Issue&Discussion is Under Attack Now
+
+Today, a group of attackers attacked Forge Repo questions/discussions by sending spam files with viruses to all questions/discussions.
+
+As a protection, issue and discussion is in temp outage now. We will resume issues and discussions soon.
+
+Screenshots: 
+
+(DO NOT download any file from those attackers!)
+
+![image](https://github.com/user-attachments/assets/45fa406f-bdc3-4df4-aaa7-1a7544aac342)
+
+![image](https://github.com/user-attachments/assets/c73ecefd-bcb5-42bb-a39e-d0070645b484)
+
+![image](https://github.com/user-attachments/assets/734d47cd-05d8-4ce3-ab21-97f5e3d364ff)
+
+
 # Quick List
 
 [Gradio 4 UI Must Read (TLDR: You need to use RIGHT MOUSE BUTTON to move canvas!)](https://github.com/lllyasviel/stable-diffusion-webui-forge/discussions/853)

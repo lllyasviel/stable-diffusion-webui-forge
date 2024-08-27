@@ -62,7 +62,7 @@ def make_checkpoint_manager_ui():
         if len(sd_models.checkpoints_list) > 0:
             shared.opts.set('sd_model_checkpoint', next(iter(sd_models.checkpoints_list.values())).name)
 
-    ui_forge_preset = gr.Radio(label="UI", value=lambda: shared.opts.forge_preset, choices=['sd', 'xl', 'flux', 'ui-config', 'all'])
+    ui_forge_preset = gr.Radio(label="UI", value=lambda: shared.opts.forge_preset, choices=['sd', 'xl', 'flux', 'all'])
 
     ckpt_list, vae_list = refresh_models()
 
@@ -363,30 +363,8 @@ def on_preset_change(preset=None):
             gr.update(value='Simple'),  # ui_img2img_scheduler
         ]
 
-    if shared.opts.forge_preset == 'ui-config':
-        loadsave = ui_loadsave.UiLoadsave(cmd_opts.ui_config_file)
-        ui_settings_from_file = loadsave.ui_settings.copy()
-
-        return [
-            gr.update(visible=True),  # ui_vae
-            gr.update(visible=True, value=1),  # ui_clip_skip
-            gr.update(visible=True, value='Automatic'),  # ui_forge_unet_storage_dtype_options
-            gr.update(visible=True, value='Queue'),  # ui_forge_async_loading
-            gr.update(visible=True, value='CPU'),  # ui_forge_pin_shared_memory
-            gr.update(visible=True, value=total_vram - 1024),  # ui_forge_inference_memory
-            gr.update(value=ui_settings_from_file['txt2img/Width/value']),  # ui_txt2img_width
-            gr.update(value=ui_settings_from_file['img2img/Width/value']),  # ui_img2img_width
-            gr.update(value=ui_settings_from_file['txt2img/Height/value']),  # ui_txt2img_height
-            gr.update(value=ui_settings_from_file['img2img/Height/value']),  # ui_img2img_height
-            gr.update(value=ui_settings_from_file['txt2img/CFG Scale/value']),  # ui_txt2img_cfg
-            gr.update(value=ui_settings_from_file['img2img/CFG Scale/value']),  # ui_img2img_cfg
-            gr.update(visible=True, value=ui_settings_from_file['txt2img/Distilled CFG Scale/value']),  # ui_txt2img_distilled_cfg
-            gr.update(visible=True, value=ui_settings_from_file['img2img/Distilled CFG Scale/value']),  # ui_img2img_distilled_cfg
-            gr.update(value=ui_settings_from_file['customscript/sampler.py/txt2img/Sampling method/value']),  # ui_txt2img_sampler
-            gr.update(value=ui_settings_from_file['customscript/sampler.py/img2img/Sampling method/value']),  # ui_img2img_sampler
-            gr.update(value=ui_settings_from_file['customscript/sampler.py/txt2img/Schedule type/value']),  # ui_txt2img_scheduler
-            gr.update(value=ui_settings_from_file['customscript/sampler.py/img2img/Schedule type/value']),  # ui_img2img_scheduler
-        ]
+    loadsave = ui_loadsave.UiLoadsave(cmd_opts.ui_config_file)
+    ui_settings_from_file = loadsave.ui_settings.copy()
 
     return [
         gr.update(visible=True),  # ui_vae
@@ -395,16 +373,16 @@ def on_preset_change(preset=None):
         gr.update(visible=True, value='Queue'),  # ui_forge_async_loading
         gr.update(visible=True, value='CPU'),  # ui_forge_pin_shared_memory
         gr.update(visible=True, value=total_vram - 1024),  # ui_forge_inference_memory
-        gr.update(value=896),  # ui_txt2img_width
-        gr.update(value=1024),  # ui_img2img_width
-        gr.update(value=1152),  # ui_txt2img_height
-        gr.update(value=1024),  # ui_img2img_height
-        gr.update(value=7),  # ui_txt2img_cfg
-        gr.update(value=7),  # ui_img2img_cfg
-        gr.update(visible=True, value=3.5),  # ui_txt2img_distilled_cfg
-        gr.update(visible=True, value=3.5),  # ui_img2img_distilled_cfg
-        gr.update(value='DPM++ 2M'),  # ui_txt2img_sampler
-        gr.update(value='DPM++ 2M'),  # ui_img2img_sampler
-        gr.update(value='Automatic'),  # ui_txt2img_scheduler
-        gr.update(value='Automatic'),  # ui_img2img_scheduler
+        gr.update(value=ui_settings_from_file['txt2img/Width/value']),  # ui_txt2img_width
+        gr.update(value=ui_settings_from_file['img2img/Width/value']),  # ui_img2img_width
+        gr.update(value=ui_settings_from_file['txt2img/Height/value']),  # ui_txt2img_height
+        gr.update(value=ui_settings_from_file['img2img/Height/value']),  # ui_img2img_height
+        gr.update(value=ui_settings_from_file['txt2img/CFG Scale/value']),  # ui_txt2img_cfg
+        gr.update(value=ui_settings_from_file['img2img/CFG Scale/value']),  # ui_img2img_cfg
+        gr.update(visible=True, value=ui_settings_from_file['txt2img/Distilled CFG Scale/value']),  # ui_txt2img_distilled_cfg
+        gr.update(visible=True, value=ui_settings_from_file['img2img/Distilled CFG Scale/value']),  # ui_img2img_distilled_cfg
+        gr.update(value=ui_settings_from_file['customscript/sampler.py/txt2img/Sampling method/value']),  # ui_txt2img_sampler
+        gr.update(value=ui_settings_from_file['customscript/sampler.py/img2img/Sampling method/value']),  # ui_img2img_sampler
+        gr.update(value=ui_settings_from_file['customscript/sampler.py/txt2img/Schedule type/value']),  # ui_txt2img_scheduler
+        gr.update(value=ui_settings_from_file['customscript/sampler.py/img2img/Schedule type/value']),  # ui_img2img_scheduler
     ]

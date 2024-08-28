@@ -620,6 +620,8 @@ class Q8_0(__Quant, qtype=GGMLQuantizationType.Q8_0):
         if d.device != x.device:
             d = d.to(device=x.device)
 
+        x = x.to(cls.computation_dtype)
+
         return x * d
 
     @classmethod

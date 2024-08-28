@@ -85,6 +85,8 @@ def get_infotext_names():
             if isinstance(name, str):
                 res[name] = 1
 
+    res['Lora hashes'] = 1
+
     return list(res)
 
 

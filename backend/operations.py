@@ -412,17 +412,8 @@ class ForgeOperationsGGUF(ForgeOperations):
             return
 
         def _apply(self, fn, recurse=True):
-            if self.weight is not None:
-                self.weight = utils.tensor2parameter(fn(self.weight))
-            if self.bias is not None:
-                self.bias = utils.tensor2parameter(fn(self.bias))
-            for i in range(5):
-                quant_state_name = f'quant_state_{i}'
-                quant_state = getattr(self, quant_state_name, None)
-                if quant_state is not None:
-                    quant_state = fn(quant_state)
-                    quant_state = utils.tensor2parameter(quant_state)
-                    setattr(self, quant_state_name, quant_state)
+            for k, p in self.named_parameters(recurse=False, remove_duplicate=True):
+                setattr(self, k, utils.tensor2parameter(fn(p)))
             return self
 
         def forward(self, x):

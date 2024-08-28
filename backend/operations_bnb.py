@@ -92,10 +92,8 @@ class ForgeLoader4Bit(torch.nn.Module):
         self.quant_type = quant_type
 
     def _apply(self, fn, recurse=True):
-        if self.weight is not None:
-            self.weight = utils.tensor2parameter(fn(self.weight))
-        if self.bias is not None:
-            self.bias = utils.tensor2parameter(fn(self.bias))
+        for k, p in self.named_parameters(recurse=False, remove_duplicate=True):
+            setattr(self, k, utils.tensor2parameter(fn(p)))
         return self
 
     def _save_to_state_dict(self, destination, prefix, keep_vars):

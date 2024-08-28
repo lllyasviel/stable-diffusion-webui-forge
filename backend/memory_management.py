@@ -462,13 +462,13 @@ class LoadedModel:
                 m.to(self.device)
                 mem_counter += m.total_mem
 
-            for m in cpu_modules + gpu_modules_only_extras:
-                if hasattr(m, 'weight') and m.weight is not None and hasattr(m.weight, 'bnb_quantized') and not m.weight.bnb_quantized and self.device.type == 'cuda':
-                    m.to(self.device)  # Quantize happens here
-
             for m in cpu_modules:
                 m.prev_parameters_manual_cast = m.parameters_manual_cast
                 m.parameters_manual_cast = True
+
+                if hasattr(m, 'weight') and m.weight is not None and hasattr(m.weight, 'bnb_quantized') and not m.weight.bnb_quantized and self.device.type == 'cuda':
+                    m.to(self.device)  # Quantize happens here
+
                 m.to(self.model.offload_device)
                 if pin_memory:
                     m._apply(lambda x: x.pin_memory())
@@ -477,6 +477,10 @@ class LoadedModel:
             for m in gpu_modules_only_extras:
                 m.prev_parameters_manual_cast = m.parameters_manual_cast
                 m.parameters_manual_cast = True
+                
+                if hasattr(m, 'weight') and m.weight is not None and hasattr(m.weight, 'bnb_quantized') and not m.weight.bnb_quantized and self.device.type == 'cuda':
+                    m.to(self.device)  # Quantize happens here
+
                 module_move(m, device=self.device, recursive=False, excluded_pattens=['weight'])
                 if hasattr(m, 'weight') and m.weight is not None:
                     if pin_memory:

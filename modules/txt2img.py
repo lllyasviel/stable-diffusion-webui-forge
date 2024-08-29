@@ -84,6 +84,11 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
     p.seed = parameters.get('Seed', -1)
     p.subseed = parameters.get('Variation seed', -1)
 
+    #   update processing width/height based on actual dimensions of source image
+    p.width = gallery[gallery_index][0].size[0]
+    p.height = gallery[gallery_index][0].size[1]
+    p.extra_generation_params['Original Size'] = f'{args[8]}x{args[7]}'
+
     p.override_settings['save_images_before_highres_fix'] = False
 
     with closing(p):
@@ -97,7 +102,6 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
     new_gallery = []
     for i, image in enumerate(gallery):
         if i == gallery_index:
-            geninfo["infotexts"][gallery_index: gallery_index+1] = processed.infotexts
             new_gallery.extend(processed.images)
         else:
             new_gallery.append(image)

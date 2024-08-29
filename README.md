@@ -82,9 +82,9 @@ Based on manual test one-by-one:
 | Photopea/OpenposeEditor/etc for ControlNet          | Normal                                      | 2024 July 27 |
 | Wacom 128 level touch pressure support for Canvas   | Normal                                      | 2024 July 15 |
 | Microsoft Surface touch pressure support for Canvas | Broken, pending fix                         | 2024 July 29 |
-| txt2img and img2img API Endpoints                   | Broken, pending fix                         | 2024 July 29 |
 | ControlNets (Union)                                 | Not implemented yet, pending implementation | 2024 Aug 26  |
 | ControlNets (Flux)                                  | Not implemented yet, pending implementation | 2024 Aug 26  |
+| API endpoints (txt2img, img2img, etc)               | Normal, but pending improved Flux support   | 2024 Aug 29  |
 
 Feel free to open issue if anything is broken and I will take a look every several days. If I do not update this "Forge Status" then it means I cannot reproduce any problem. In that case, fresh re-install should help most.
 

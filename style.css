@@ -443,6 +443,11 @@ div.toprow-compact-tools{
     min-width: 20em !important;
 }
 
+#quicksettings > div.model_selection input{
+    margin-right: 2.5em !important;
+    text-align: right !important;
+}
+
 #quicksettings .subdued{
     display: block;
     margin-left: auto;

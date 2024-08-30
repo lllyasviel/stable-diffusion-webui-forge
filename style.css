@@ -444,8 +444,8 @@ div.toprow-compact-tools{
 }
 
 #quicksettings > div.model_selection input{
-    margin-right: 2.5em !important;
-    text-align: right !important;
+    width: 85% !important; /* Ensure the input field is never chopped off */
+    margin-left: 2% !important; /* override the margin set for subdued */
 }
 
 #quicksettings .subdued{

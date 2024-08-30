@@ -395,20 +395,22 @@ class ForgeOperationsGGUF(ForgeOperations):
 
         def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs):
             if hasattr(self, 'dummy'):
+                computation_dtype = self.dummy.dtype
+                if computation_dtype not in [torch.float16, torch.bfloat16]:
+                    # GGUF cast only supports 16bits otherwise super slow
+                    computation_dtype = torch.float16
                 if prefix + 'weight' in state_dict:
                     self.weight = state_dict[prefix + 'weight'].to(device=self.dummy.device)
+                    self.weight.computation_dtype = computation_dtype
                 if prefix + 'bias' in state_dict:
                     self.bias = state_dict[prefix + 'bias'].to(device=self.dummy.device)
+                    self.bias.computation_dtype = computation_dtype
                 del self.dummy
             else:
                 if prefix + 'weight' in state_dict:
                     self.weight = state_dict[prefix + 'weight']
                 if prefix + 'bias' in state_dict:
                     self.bias = state_dict[prefix + 'bias']
-            if self.weight is not None and hasattr(self.weight, 'parent'):
-                self.weight.parent = self
-            if self.bias is not None and hasattr(self.bias, 'parent'):
-                self.bias.parent = self
             return
 
         def _apply(self, fn, recurse=True):

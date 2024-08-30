@@ -19,77 +19,40 @@ quants_mapping = {
 class ParameterGGUF(torch.nn.Parameter):
     def __init__(self, tensor=None, requires_grad=False, no_init=False):
         super().__init__()
-        self.is_gguf = True
-
         if no_init:
             return
 
-        self.gguf_type = tensor.tensor_type
-        self.gguf_real_shape = torch.Size(reversed(list(tensor.shape)))
-        self.gguf_cls = quants_mapping.get(self.gguf_type, None)
-        self.parent = None
+        self.gguf_cls = quants_mapping.get(tensor.tensor_type, None)
+        self.real_shape = torch.Size(reversed(list(tensor.shape)))
+        self.computation_dtype = torch.float16
+        self.baked = False
+        return
 
     @property
     def shape(self):
-        return self.gguf_real_shape
+        return self.real_shape
 
     def __new__(cls, tensor=None, requires_grad=False, no_init=False):
         return super().__new__(cls, torch.tensor(tensor.data), requires_grad=requires_grad)
 
     def dequantize_as_pytorch_parameter(self):
-        if self.parent is None:
-            self.parent = torch.nn.Module()
-            self.gguf_cls.bake_layer(self.parent, self, computation_dtype=torch.float16)
+        if self.gguf_cls is not None:
+            self.gguf_cls.bake(self)
         return torch.nn.Parameter(dequantize_tensor(self), requires_grad=False)
 
-    def to(self, *args, **kwargs):
-        new = ParameterGGUF(self.data.to(*args, **kwargs), no_init=True)
-        new.gguf_type = self.gguf_type
-        new.gguf_real_shape = self.gguf_real_shape
+    def copy_with_data(self, data):
+        new = ParameterGGUF(data, no_init=True)
         new.gguf_cls = self.gguf_cls
-        new.parent = self.parent
+        new.real_shape = self.real_shape
+        new.computation_dtype = self.computation_dtype
+        new.baked = self.baked
         return new
+
+    def to(self, *args, **kwargs):
+        return self.copy_with_data(self.data.to(*args, **kwargs))
 
     def pin_memory(self, device=None):
-        new = ParameterGGUF(torch.Tensor.pin_memory(self, device=device), no_init=True)
-        new.gguf_type = self.gguf_type
-        new.gguf_real_shape = self.gguf_real_shape
-        new.gguf_cls = self.gguf_cls
-        new.parent = self.parent
-        return new
-
-    @classmethod
-    def make(cls, data, gguf_type, gguf_cls, gguf_real_shape, parent):
-        new = ParameterGGUF(data, no_init=True)
-        new.gguf_type = gguf_type
-        new.gguf_real_shape = gguf_real_shape
-        new.gguf_cls = gguf_cls
-        new.parent = parent
-        return new
-
-
-def bake_gguf_model(model):
-    computation_dtype = model.computation_dtype
-
-    if computation_dtype not in [torch.float16, torch.bfloat16]:
-        # Baking only supports 16bits otherwise super slow
-        computation_dtype = torch.float16
-
-    backed_layer_counter = 0
-
-    for m in model.modules():
-        if hasattr(m, 'weight'):
-            weight = m.weight
-            if hasattr(weight, 'gguf_cls'):
-                gguf_cls = weight.gguf_cls
-                if gguf_cls is not None:
-                    backed_layer_counter += 1
-                    gguf_cls.bake_layer(m, weight, computation_dtype)
-
-    if backed_layer_counter > 0:
-        print(f'GGUF backed {backed_layer_counter} layers.')
-
-    return model
+        return self.copy_with_data(torch.Tensor.pin_memory(self, device=device))
 
 
 def dequantize_tensor(tensor):
@@ -99,11 +62,9 @@ def dequantize_tensor(tensor):
     if not hasattr(tensor, 'gguf_cls'):
         return tensor
 
-    data = tensor
     gguf_cls = tensor.gguf_cls
-    gguf_real_shape = tensor.gguf_real_shape
 
     if gguf_cls is None:
-        return data
+        return tensor
 
-    return gguf_cls.dequantize_pytorch(data, gguf_real_shape)
+    return gguf_cls.dequantize_pytorch(tensor)

@@ -387,13 +387,12 @@ class LoraLoader:
                 from backend.operations_bnb import functional_dequantize_4bit
                 weight = functional_dequantize_4bit(weight)
 
-            gguf_cls, gguf_type, gguf_real_shape = None, None, None
+            gguf_cls = getattr(weight, 'gguf_cls', None)
+            gguf_parameter = None
 
-            if hasattr(weight, 'is_gguf'):
+            if gguf_cls is not None:
+                gguf_parameter = weight
                 from backend.operations_gguf import dequantize_tensor
-                gguf_cls = weight.gguf_cls
-                gguf_type = weight.gguf_type
-                gguf_real_shape = weight.gguf_real_shape
                 weight = dequantize_tensor(weight)
 
             try:
@@ -409,17 +408,9 @@ class LoraLoader:
                 continue
 
             if gguf_cls is not None:
-                from backend.operations_gguf import ParameterGGUF
-                weight = gguf_cls.quantize_pytorch(weight, gguf_real_shape)
-                weight = ParameterGGUF.make(
-                    data=weight,
-                    gguf_type=gguf_type,
-                    gguf_cls=gguf_cls,
-                    gguf_real_shape=gguf_real_shape,
-                    parent=parent_layer
-                )
-                gguf_cls.bake_layer(parent_layer, weight, gguf_cls.computation_dtype)
-                utils.set_attr_raw(self.model, key, weight)
+                gguf_parameter.data = gguf_cls.quantize_pytorch(weight, gguf_parameter.shape)
+                gguf_parameter.baked = False
+                gguf_cls.bake(gguf_parameter)
                 continue
 
             utils.set_attr_raw(self.model, key, torch.nn.Parameter(weight, requires_grad=False))

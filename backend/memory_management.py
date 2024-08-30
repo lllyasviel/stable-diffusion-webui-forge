@@ -310,7 +310,7 @@ def state_dict_parameters(sd):
 
 def state_dict_dtype(state_dict):
     for k, v in state_dict.items():
-        if hasattr(v, 'is_gguf'):
+        if hasattr(v, 'gguf_cls'):
             return 'gguf'
         if 'bitsandbytes__nf4' in k:
             return 'nf4'
@@ -335,6 +335,19 @@ def state_dict_dtype(state_dict):
             major_dtype = dtype
 
     return major_dtype
+
+
+def bake_gguf_model(model):
+    if getattr(model, 'gguf_baked', False):
+        return
+
+    for p in model.parameters():
+        gguf_cls = getattr(p, 'gguf_cls', None)
+        if gguf_cls is not None:
+            gguf_cls.bake(p)
+
+    model.gguf_baked = True
+    return model
 
 
 def module_size(module, exclude_device=None, return_split=False):
@@ -493,6 +506,8 @@ class LoadedModel:
             global signal_empty_cache
             signal_empty_cache = True
 
+        bake_gguf_model(self.real_model)
+
         self.model.lora_loader.refresh(offload_device=self.model.offload_device)
 
         if is_intel_xpu() and not args.disable_ipex_hijack:
@@ -642,7 +657,7 @@ def load_models_gpu(models, memory_required=0):
             inference_memory = minimum_inference_memory()
             estimated_remaining_memory = current_free_mem - model_memory - inference_memory
 
-            print(f"[Memory Management] Target: {loaded_model.model.__class__.__name__}, Free GPU: {current_free_mem / (1024 * 1024):.2f} MB, Model Require: {model_memory / (1024 * 1024):.2f} MB, Inference Require: {inference_memory / (1024 * 1024):.2f} MB, Remaining: {estimated_remaining_memory / (1024 * 1024):.2f} MB, ", end="")
+            print(f"[Memory Management] Target: {loaded_model.model.model.__class__.__name__}, Free GPU: {current_free_mem / (1024 * 1024):.2f} MB, Model Require: {model_memory / (1024 * 1024):.2f} MB, Inference Require: {inference_memory / (1024 * 1024):.2f} MB, Remaining: {estimated_remaining_memory / (1024 * 1024):.2f} MB, ", end="")
 
             if estimated_remaining_memory < 0:
                 vram_set_state = VRAMState.LOW_VRAM

@@ -104,11 +104,6 @@ def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_p
 
             load_state_dict(model, state_dict, log_name=cls_name, ignore_errors=['transformer.encoder.embed_tokens.weight', 'logit_scale'])
 
-            if storage_dtype in ['gguf']:
-                from backend.operations_gguf import bake_gguf_model
-                model.computation_dtype = torch.float16
-                model = bake_gguf_model(model)
-
             return model
         if cls_name in ['UNet2DConditionModel', 'FluxTransformer2DModel']:
             assert isinstance(state_dict, dict) and len(state_dict) > 16, 'You do not have model state dict!'
@@ -166,10 +161,6 @@ def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_p
             model.load_device = load_device
             model.initial_device = initial_device
             model.offload_device = offload_device
-
-            if storage_dtype in ['gguf']:
-                from backend.operations_gguf import bake_gguf_model
-                model = bake_gguf_model(model)
 
             return model
 

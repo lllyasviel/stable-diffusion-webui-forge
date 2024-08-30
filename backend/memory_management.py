@@ -451,7 +451,9 @@ class LoadedModel:
             self.model_unload()
             raise e
 
-        if not do_not_need_cpu_swap:
+        if do_not_need_cpu_swap:
+            print('All loaded to GPU.')
+        else:
             gpu_modules, gpu_modules_only_extras, cpu_modules = build_module_profile(self.real_model, model_gpu_memory_when_using_cpu_swap)
             pin_memory = PIN_SHARED_MEMORY and is_device_cpu(self.model.offload_device)
 
@@ -465,10 +467,6 @@ class LoadedModel:
             for m in cpu_modules:
                 m.prev_parameters_manual_cast = m.parameters_manual_cast
                 m.parameters_manual_cast = True
-
-                if hasattr(m, 'weight') and m.weight is not None and hasattr(m.weight, 'bnb_quantized') and not m.weight.bnb_quantized and self.device.type == 'cuda':
-                    m.to(self.device)  # Quantize happens here
-
                 m.to(self.model.offload_device)
                 if pin_memory:
                     m._apply(lambda x: x.pin_memory())
@@ -477,10 +475,6 @@ class LoadedModel:
             for m in gpu_modules_only_extras:
                 m.prev_parameters_manual_cast = m.parameters_manual_cast
                 m.parameters_manual_cast = True
-                
-                if hasattr(m, 'weight') and m.weight is not None and hasattr(m.weight, 'bnb_quantized') and not m.weight.bnb_quantized and self.device.type == 'cuda':
-                    m.to(self.device)  # Quantize happens here
-
                 module_move(m, device=self.device, recursive=False, excluded_pattens=['weight'])
                 if hasattr(m, 'weight') and m.weight is not None:
                     if pin_memory:
@@ -492,13 +486,14 @@ class LoadedModel:
 
             swap_flag = 'Shared' if PIN_SHARED_MEMORY else 'CPU'
             method_flag = 'asynchronous' if stream.should_use_stream() else 'blocked'
-            print(f"[Memory Management] Loaded to {swap_flag} Swap: {swap_counter / (1024 * 1024):.2f} MB ({method_flag} method)")
-            print(f"[Memory Management] Loaded to GPU: {mem_counter / (1024 * 1024):.2f} MB")
+            print(f"{swap_flag} Swap Loaded ({method_flag} method): {swap_counter / (1024 * 1024):.2f} MB, GPU Loaded: {mem_counter / (1024 * 1024):.2f} MB")
 
             self.model_accelerated = True
 
             global signal_empty_cache
             signal_empty_cache = True
+
+        self.model.lora_loader.refresh(offload_device=self.model.offload_device)
 
         if is_intel_xpu() and not args.disable_ipex_hijack:
             self.real_model = torch.xpu.optimize(self.real_model.eval(), inplace=True, auto_kernel_selection=True, graph_mode=True)
@@ -548,23 +543,23 @@ def unload_model_clones(model):
 def free_memory(memory_required, device, keep_loaded=[], free_all=False):
     if free_all:
         memory_required = 1e30
-        print(f"[Unload] Trying to free all memory for {device} with {len(keep_loaded)} models keep loaded ...")
+        print(f"[Unload] Trying to free all memory for {device} with {len(keep_loaded)} models keep loaded ... ", end="")
     else:
-        print(f"[Unload] Trying to free {memory_required / (1024 * 1024):.2f} MB for {device} with {len(keep_loaded)} models keep loaded ...")
+        print(f"[Unload] Trying to free {memory_required / (1024 * 1024):.2f} MB for {device} with {len(keep_loaded)} models keep loaded ... ", end="")
 
     offload_everything = ALWAYS_VRAM_OFFLOAD or vram_state == VRAMState.NO_VRAM
     unloaded_model = False
     for i in range(len(current_loaded_models) - 1, -1, -1):
         if not offload_everything:
             free_memory = get_free_memory(device)
-            print(f"[Unload] Current free memory is {free_memory / (1024 * 1024):.2f} MB ... ")
+            print(f"Current free memory is {free_memory / (1024 * 1024):.2f} MB ... ", end="")
             if free_memory > memory_required:
                 break
         shift_model = current_loaded_models[i]
         if shift_model.device == device:
             if shift_model not in keep_loaded:
                 m = current_loaded_models.pop(i)
-                print(f"[Unload] Unload model {m.model.model.__class__.__name__}")
+                print(f"Unload model {m.model.model.__class__.__name__} ", end="")
                 m.model_unload()
                 del m
                 unloaded_model = True
@@ -576,6 +571,9 @@ def free_memory(memory_required, device, keep_loaded=[], free_all=False):
             mem_free_total, mem_free_torch = get_free_memory(device, torch_free_too=True)
             if mem_free_torch > mem_free_total * 0.25:
                 soft_empty_cache()
+
+    print('Done.')
+    return
 
 
 def compute_model_gpu_memory_when_using_cpu_swap(current_free_mem, inference_memory):
@@ -605,8 +603,6 @@ def load_models_gpu(models, memory_required=0):
             current_loaded_models.insert(0, current_loaded_models.pop(index))
             models_already_loaded.append(loaded_model)
         else:
-            if hasattr(x, "model"):
-                print(f"To load target model {x.model.__class__.__name__}")
             models_to_load.append(loaded_model)
 
     if len(models_to_load) == 0:
@@ -620,8 +616,6 @@ def load_models_gpu(models, memory_required=0):
             print(f'Memory cleanup has taken {moving_time:.2f} seconds')
 
         return
-
-    print(f"Begin to load {len(models_to_load)} model{'s' if len(models_to_load) > 1 else ''}")
 
     total_memory_required = {}
     for loaded_model in models_to_load:
@@ -648,10 +642,7 @@ def load_models_gpu(models, memory_required=0):
             inference_memory = minimum_inference_memory()
             estimated_remaining_memory = current_free_mem - model_memory - inference_memory
 
-            print(f"[Memory Management] Current Free GPU Memory: {current_free_mem / (1024 * 1024):.2f} MB")
-            print(f"[Memory Management] Required Model Memory: {model_memory / (1024 * 1024):.2f} MB")
-            print(f"[Memory Management] Required Inference Memory: {inference_memory / (1024 * 1024):.2f} MB")
-            print(f"[Memory Management] Estimated Remaining GPU Memory: {estimated_remaining_memory / (1024 * 1024):.2f} MB")
+            print(f"[Memory Management] Target: {loaded_model.model.__class__.__name__}, Free GPU: {current_free_mem / (1024 * 1024):.2f} MB, Model Require: {model_memory / (1024 * 1024):.2f} MB, Inference Require: {inference_memory / (1024 * 1024):.2f} MB, Remaining: {estimated_remaining_memory / (1024 * 1024):.2f} MB, ", end="")
 
             if estimated_remaining_memory < 0:
                 vram_set_state = VRAMState.LOW_VRAM

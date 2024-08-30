@@ -223,10 +223,9 @@ class ModelPatcher:
 
             utils.set_attr_raw(self.model, k, item)
 
-        self.lora_loader.refresh(target_device=target_device, offload_device=self.offload_device)
-
         if target_device is not None:
             self.model.to(target_device)
+            self.current_device = target_device
 
         return self.model
 

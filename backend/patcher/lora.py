@@ -336,8 +336,6 @@ class LoraLoader:
 
         self.dirty = False
 
-        execution_start_time = time.perf_counter()
-
         # Initialize
 
         memory_management.signal_empty_cache = True
@@ -426,16 +424,14 @@ class LoraLoader:
 
             utils.set_attr_raw(self.model, key, torch.nn.Parameter(weight, requires_grad=False))
 
-        # Time
+        # End
 
         set_parameter_devices(self.model, parameter_devices=parameter_devices)
 
-        moving_time = time.perf_counter() - execution_start_time
-
         if len(self.patches) > 0:
             if self.online_mode:
-                print(f'Patching LoRA on-the-fly in {moving_time:.2f} seconds.')
+                print(f'Patched LoRAs on-the-fly; ', end='')
             else:
-                print(f'Patching LoRA by precomputing model weights in {moving_time:.2f} seconds.')
+                print(f'Patched LoRAs by precomputing model weights; ', end='')
 
         return

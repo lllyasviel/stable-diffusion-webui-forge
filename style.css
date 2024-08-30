@@ -448,6 +448,11 @@ div.toprow-compact-tools{
     margin-left: 2% !important; /* override the margin set for subdued */
 }
 
+#quicksettings > div.model_selection li{
+    overflow-x: visible !important;
+    width: 100% !important; /* Set size to max element */
+}
+
 #quicksettings .subdued{
     display: block;
     margin-left: auto;

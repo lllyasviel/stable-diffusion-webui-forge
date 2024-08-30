@@ -189,6 +189,8 @@ def refresh_memory_management_settings(model_memory, async_loading, pin_shared_m
         print(f'[Low VRAM Warning] You just set Forge to use 100% GPU memory ({model_memory:.2f} MB) to load model weights.')
         print('[Low VRAM Warning] This means you will have 0% GPU memory (0.00 MB) to do matrix computation. Computations may fallback to CPU or go Out of Memory.')
         print('[Low VRAM Warning] In many cases, image generation will be 10x slower.')
+        print("[Low VRAM Warning] To solve the problem, you can set the 'GPU Weights' (on the top of page) to a lower value.")
+        print("[Low VRAM Warning] If you cannot find 'GPU Weights', you can click the 'all' option in the 'UI' area on the left-top corner of the webpage.")
         print('[Low VRAM Warning] Make sure that you know what you are testing.')
         print('------------------')
     else:

@@ -25,6 +25,7 @@ class UnetPatcher(ModelPatcher):
 
     def clone(self):
         n = UnetPatcher(self.model, self.load_device, self.offload_device, self.size, self.current_device)
+        n.lora_patches = self.lora_patches.copy()
         n.object_patches = self.object_patches.copy()
         n.model_options = copy.deepcopy(self.model_options)
         n.controlnet_linked_list = self.controlnet_linked_list

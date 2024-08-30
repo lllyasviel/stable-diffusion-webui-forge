@@ -176,7 +176,7 @@ class UnetPatcher(ModelPatcher):
                     self.set_model_patch_replace(patch, target, block_name, number, transformer_index)
         return
 
-    def load_frozen_patcher(self, state_dict, strength):
+    def load_frozen_patcher(self, filename, state_dict, strength):
         patch_dict = {}
         for k, w in state_dict.items():
             model_key, patch_type, weight_index = k.split('::')
@@ -191,6 +191,5 @@ class UnetPatcher(ModelPatcher):
             for patch_type, weight_list in v.items():
                 patch_flat[model_key] = (patch_type, weight_list)
 
-        self.lora_loader.clear_patches()
-        self.lora_loader.add_patches(patches=patch_flat, strength_patch=float(strength), strength_model=1.0)
+        self.add_patches(filename=filename, patches=patch_flat, strength_patch=float(strength), strength_model=1.0)
         return

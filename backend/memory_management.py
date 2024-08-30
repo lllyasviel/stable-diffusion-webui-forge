@@ -513,7 +513,7 @@ class LoadedModel:
 
         bake_gguf_model(self.real_model)
 
-        self.model.lora_loader.refresh(offload_device=self.model.offload_device)
+        self.model.refresh_loras()
 
         if is_intel_xpu() and not args.disable_ipex_hijack:
             self.real_model = torch.xpu.optimize(self.real_model.eval(), inplace=True, auto_kernel_selection=True, graph_mode=True)

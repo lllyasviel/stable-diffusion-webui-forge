@@ -121,8 +121,10 @@ current_bnb_dtype = None
 
 class ForgeOperations:
     class Linear(torch.nn.Module):
-        def __init__(self, *args, **kwargs):
+        def __init__(self, in_features, out_features, *args, **kwargs):
             super().__init__()
+            self.in_features = in_features
+            self.out_features = out_features
             self.dummy = torch.nn.Parameter(torch.empty(1, device=current_device, dtype=current_dtype))
             self.weight = None
             self.bias = None

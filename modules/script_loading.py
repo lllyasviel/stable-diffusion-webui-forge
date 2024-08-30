@@ -1,4 +1,4 @@
-import os
+import os, sys
 import importlib.util
 
 from modules import errors
@@ -10,6 +10,11 @@ loaded_scripts = {}
 def load_module(path):
     module_spec = importlib.util.spec_from_file_location(os.path.basename(path), path)
     module = importlib.util.module_from_spec(module_spec)
+    # see importlib docs, module must be added to sys.modules
+    # https://docs.python.org/3/library/importlib.html#examples
+    # See dicussion https://github.com/python/cpython/issues/81702
+    if module_spec.name not in sys.modules:
+        sys.modules[module_spec.name] = module
     module_spec.loader.exec_module(module)
 
     loaded_scripts[path] = module

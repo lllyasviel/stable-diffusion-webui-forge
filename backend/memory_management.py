@@ -346,6 +346,9 @@ def bake_gguf_model(model):
         if gguf_cls is not None:
             gguf_cls.bake(p)
 
+    global signal_empty_cache
+    signal_empty_cache = True
+
     model.gguf_baked = True
     return model
 

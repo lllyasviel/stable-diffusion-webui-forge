@@ -111,10 +111,8 @@ def decoder_model():
         model_name = "taef1_decoder.pth"
     elif shared.sd_model.is_sdxl:
         model_name = "taesdxl_decoder.pth"
-    elif shared.sd_model.is_sd1:
-        model_name = "taesd_decoder.pth"
     else:
-        return None
+        model_name = "taesd_decoder.pth"
 
     loaded_model = sd_vae_taesd_models.get(model_name)
 

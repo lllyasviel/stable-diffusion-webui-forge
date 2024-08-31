@@ -151,7 +151,7 @@ class __Quant(ABC):
         rows = data.reshape((-1, data.shape[-1])).view(torch.uint8)
         n_blocks = rows.numel() // cls.type_size
         blocks = rows.reshape((n_blocks, cls.type_size))
-        parameter.data = blocks.contiguous()
+        parameter.data = blocks.clone(memory_format=torch.contiguous_format)
         cls.bake_inner(parameter)
         parameter.baked = True
         return
@@ -312,7 +312,7 @@ class Q4_0(__Quant, qtype=GGMLQuantizationType.Q4_0):
         d, x = quick_split(blocks, [2])
         d = d.view(torch.float16).to(parameter.computation_dtype).view(torch.uint8)
         x = change_4bits_order(x).view(torch.uint8)
-        parameter.data = torch.cat([d, x], dim=-1).contiguous()
+        parameter.data = torch.cat([d, x], dim=-1).clone(memory_format=torch.contiguous_format)
         return
 
     @classmethod
@@ -389,7 +389,7 @@ class Q4_1(__Quant, qtype=GGMLQuantizationType.Q4_1):
         m = m.view(torch.float16).to(parameter.computation_dtype).view(torch.uint8)
         qs = change_4bits_order(qs).view(torch.uint8)
 
-        parameter.data = torch.cat([d, m, qs], dim=-1).contiguous()
+        parameter.data = torch.cat([d, m, qs], dim=-1).clone(memory_format=torch.contiguous_format)
 
         return
 
@@ -601,7 +601,7 @@ class Q8_0(__Quant, qtype=GGMLQuantizationType.Q8_0):
         d, x = quick_split(blocks, [2])
         x = x.view(torch.int8)
         d = d.view(torch.float16).to(parameter.computation_dtype).view(torch.int8)
-        parameter.data = torch.cat([d, x], dim=-1).contiguous()
+        parameter.data = torch.cat([d, x], dim=-1).clone(memory_format=torch.contiguous_format)
         return
 
     @classmethod
@@ -808,7 +808,7 @@ class Q4_K(__Quant, qtype=GGMLQuantizationType.Q4_K):
         dm = dm.view(torch.uint8).reshape((n_blocks, -1))
         qs = qs.view(torch.uint8)
 
-        parameter.data = torch.cat([d, dm, qs], dim=-1).contiguous()
+        parameter.data = torch.cat([d, dm, qs], dim=-1).clone(memory_format=torch.contiguous_format)
         return
 
     @classmethod

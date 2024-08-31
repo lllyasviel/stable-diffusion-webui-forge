@@ -459,7 +459,7 @@ def apply_token_merging(sd_model, token_merging_ratio):
     return
 
 
-@torch.no_grad()
+@torch.inference_mode()
 def forge_model_reload():
     current_hash = str(model_data.forge_loading_parameters)
 

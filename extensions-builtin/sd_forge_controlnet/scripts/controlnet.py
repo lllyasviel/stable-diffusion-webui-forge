@@ -161,7 +161,7 @@ class ControlNetForForgeOfficial(scripts.Script):
                 logger.info(f'Try to read image: {img_path}')
                 img = np.ascontiguousarray(cv2.imread(img_path)[:, :, ::-1]).copy()
                 mask = None
-                if len(unit.batch_mask_gallery) > 0:
+                if unit.batch_mask_gallery is not None and len(unit.batch_mask_gallery) > 0:
                     if len(unit.batch_mask_gallery) >= len(unit.batch_input_gallery):
                         mask_path = unit.batch_mask_gallery[idx]['name']
                     else:

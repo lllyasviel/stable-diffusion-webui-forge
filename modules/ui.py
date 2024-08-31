@@ -542,15 +542,15 @@ def create_ui():
                                 add_copy_image_controls('img2img', init_img)
 
                             with gr.TabItem('Sketch', id='img2img_sketch', elem_id="img2img_img2img_sketch_tab") as tab_sketch:
-                                sketch = ForgeCanvas(elem_id="img2img_sketch", height=512)
+                                sketch = ForgeCanvas(elem_id="img2img_sketch", height=512, scribble_color=opts.img2img_sketch_default_brush_color)
                                 add_copy_image_controls('sketch', sketch)
 
                             with gr.TabItem('Inpaint', id='inpaint', elem_id="img2img_inpaint_tab") as tab_inpaint:
-                                init_img_with_mask = ForgeCanvas(elem_id="img2maskimg", height=512, contrast_scribbles=True)
+                                init_img_with_mask = ForgeCanvas(elem_id="img2maskimg", height=512, contrast_scribbles=opts.img2img_inpaint_mask_high_contrast, scribble_color=opts.img2img_inpaint_mask_brush_color, scribble_color_fixed=True, scribble_alpha_fixed=True, scribble_softness_fixed=True)
                                 add_copy_image_controls('inpaint', init_img_with_mask)
 
                             with gr.TabItem('Inpaint sketch', id='inpaint_sketch', elem_id="img2img_inpaint_sketch_tab") as tab_inpaint_color:
-                                inpaint_color_sketch = ForgeCanvas(elem_id="inpaint_sketch", height=512)
+                                inpaint_color_sketch = ForgeCanvas(elem_id="inpaint_sketch", height=512, scribble_color=opts.img2img_inpaint_sketch_default_brush_color)
                                 add_copy_image_controls('inpaint_sketch', inpaint_color_sketch)
 
                             with gr.TabItem('Inpaint upload', id='inpaint_upload', elem_id="img2img_inpaint_upload_tab") as tab_inpaint_upload:

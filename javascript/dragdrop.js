@@ -26,26 +26,7 @@ function dropReplaceImage(imgWrap, files) {
         }
     };
 
-    if (imgWrap.closest('#pnginfo_image')) {
-        // special treatment for PNG Info tab, wait for fetch request to finish
-        const oldFetch = window.fetch;
-        window.fetch = async(input, options) => {
-            const response = await oldFetch(input, options);
-            if ('api/predict/' === input) {
-                const content = await response.text();
-                window.fetch = oldFetch;
-                window.requestAnimationFrame(() => callback());
-                return new Response(content, {
-                    status: response.status,
-                    statusText: response.statusText,
-                    headers: response.headers
-                });
-            }
-            return response;
-        };
-    } else {
-        window.requestAnimationFrame(() => callback());
-    }
+    window.requestAnimationFrame(() => callback());
 }
 
 function eventHasFiles(e) {

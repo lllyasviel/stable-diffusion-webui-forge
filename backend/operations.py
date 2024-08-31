@@ -121,8 +121,10 @@ current_bnb_dtype = None
 
 class ForgeOperations:
     class Linear(torch.nn.Module):
-        def __init__(self, *args, **kwargs):
+        def __init__(self, in_features, out_features, *args, **kwargs):
             super().__init__()
+            self.in_features = in_features
+            self.out_features = out_features
             self.dummy = torch.nn.Parameter(torch.empty(1, device=current_device, dtype=current_dtype))
             self.weight = None
             self.bias = None
@@ -395,22 +397,27 @@ class ForgeOperationsGGUF(ForgeOperations):
 
         def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs):
             if hasattr(self, 'dummy'):
+                computation_dtype = self.dummy.dtype
+                if computation_dtype not in [torch.float16, torch.bfloat16]:
+                    # GGUF cast only supports 16bits otherwise super slow
+                    computation_dtype = torch.float16
                 if prefix + 'weight' in state_dict:
                     self.weight = state_dict[prefix + 'weight'].to(device=self.dummy.device)
+                    self.weight.computation_dtype = computation_dtype
                 if prefix + 'bias' in state_dict:
                     self.bias = state_dict[prefix + 'bias'].to(device=self.dummy.device)
+                    self.bias.computation_dtype = computation_dtype
                 del self.dummy
             else:
                 if prefix + 'weight' in state_dict:
                     self.weight = state_dict[prefix + 'weight']
                 if prefix + 'bias' in state_dict:
                     self.bias = state_dict[prefix + 'bias']
+            return
 
         def _apply(self, fn, recurse=True):
-            if self.weight is not None:
-                self.weight = utils.tensor2parameter(fn(self.weight))
-            if self.bias is not None:
-                self.bias = utils.tensor2parameter(fn(self.bias))
+            for k, p in self.named_parameters(recurse=False, remove_duplicate=True):
+                setattr(self, k, utils.tensor2parameter(fn(p)))
             return self
 
         def forward(self, x):

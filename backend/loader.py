@@ -264,7 +264,7 @@ def split_state_dict(sd, additional_state_dicts: list = None):
     return state_dict, guess
 
 
-@torch.no_grad()
+@torch.inference_mode()
 def forge_loader(sd, additional_state_dicts=None):
     try:
         state_dicts, estimated_config = split_state_dict(sd, additional_state_dicts=additional_state_dicts)

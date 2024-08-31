@@ -277,6 +277,26 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
         else:
             prompt += ("" if prompt == "" else "\n") + line
 
+    if 'Civitai' in lastline and 'FLUX' in lastline:
+        # Civitai really like to add random Clip skip to Flux metadata, where Clip skip is not a thing.
+        lastline = lastline.replace('Clip skip: 0, ', '')
+        lastline = lastline.replace('Clip skip: 1, ', '')
+        lastline = lastline.replace('Clip skip: 2, ', '')
+        lastline = lastline.replace('Clip skip: 3, ', '')
+        lastline = lastline.replace('Clip skip: 4, ', '')
+        lastline = lastline.replace('Clip skip: 5, ', '')
+        lastline = lastline.replace('Clip skip: 6, ', '')
+        lastline = lastline.replace('Clip skip: 7, ', '')
+        lastline = lastline.replace('Clip skip: 8, ', '')
+
+        # Civitai also add Sampler: Undefined
+        lastline = lastline.replace('Sampler: Undefined, ', 'Sampler: Euler, Schedule type: Simple, ')  # <- by lllyasviel, seem to give similar results to Civitai "Undefined" Sampler
+
+        # Civitai also confuse CFG scale and Distilled CFG Scale
+        lastline = lastline.replace('CFG scale: ', 'CFG scale: 1, Distilled CFG Scale: ')
+
+        print('Applied Forge Fix to broken Civitai Flux Meta.')
+
     for k, v in re_param.findall(lastline):
         try:
             if v[0] == '"' and v[-1] == '"':

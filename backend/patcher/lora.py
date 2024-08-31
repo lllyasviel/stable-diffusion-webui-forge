@@ -264,63 +264,52 @@ def merge_lora_to_weight(patches, weight, key="online_lora", computation_dtype=t
     return weight
 
 
+def get_parameter_devices(model):
+    parameter_devices = {}
+    for key, p in model.named_parameters():
+        parameter_devices[key] = p.device
+    return parameter_devices
+
+
+def set_parameter_devices(model, parameter_devices):
+    for key, device in parameter_devices.items():
+        p = utils.get_attr(model, key)
+        if p.device != device:
+            p = utils.tensor2parameter(p.to(device=device))
+            utils.set_attr_raw(model, key, p)
+    return model
+
+
 from backend import operations
 
 
 class LoraLoader:
     def __init__(self, model):
         self.model = model
-        self.patches = {}
         self.backup = {}
         self.online_backup = []
-        self.dirty = False
-        self.online_mode = False
-
-    def clear_patches(self):
-        self.patches.clear()
-        self.dirty = True
-        return
-
-    def add_patches(self, patches, strength_patch=1.0, strength_model=1.0):
-        p = set()
-        model_sd = self.model.state_dict()
-
-        for k in patches:
-            offset = None
-            function = None
-
-            if isinstance(k, str):
-                key = k
-            else:
-                offset = k[1]
-                key = k[0]
-                if len(k) > 2:
-                    function = k[2]
-
-            if key in model_sd:
-                p.add(k)
-                current_patches = self.patches.get(key, [])
-                current_patches.append([strength_patch, patches[k], strength_model, offset, function])
-                self.patches[key] = current_patches
-
-        self.dirty = True
-
-        self.online_mode = dynamic_args.get('online_lora', False)
-
-        if hasattr(self.model, 'storage_dtype'):
-            if self.model.storage_dtype in [torch.float32, torch.float16, torch.bfloat16]:
-                self.online_mode = False
-
-        return list(p)
+        self.loaded_hash = str([])
 
     @torch.inference_mode()
-    def refresh(self, target_device=None, offload_device=torch.device('cpu')):
-        if not self.dirty:
+    def refresh(self, lora_patches, offload_device=torch.device('cpu')):
+        hashes = str(list(lora_patches.keys()))
+
+        if hashes == self.loaded_hash:
             return
 
-        self.dirty = False
+        # Merge Patches
 
-        execution_start_time = time.perf_counter()
+        all_patches = {}
+
+        for (_, _, _, online_mode), patches in lora_patches.items():
+            for key, current_patches in patches.items():
+                all_patches[(key, online_mode)] = all_patches.get((key, online_mode), []) + current_patches
+
+        # Initialize
+
+        memory_management.signal_empty_cache = True
+
+        parameter_devices = get_parameter_devices(self.model)
 
         # Restore
 
@@ -338,27 +327,18 @@ class LoraLoader:
 
         self.backup = {}
 
-        if len(self.patches) > 0:
-            if self.online_mode:
-                print('Patching LoRA in on-the-fly.')
-            else:
-                print('Patching LoRA by precomputing model weights.')
+        set_parameter_devices(self.model, parameter_devices=parameter_devices)
 
         # Patch
 
-        memory_management.signal_empty_cache = True
-
-        for key, current_patches in (tqdm(self.patches.items(), desc=f'Patching LoRAs for {type(self.model).__name__}') if len(self.patches) > 0 else self.patches):
+        for (key, online_mode), current_patches in all_patches.items():
             try:
                 parent_layer, child_key, weight = utils.get_attr_with_parent(self.model, key)
                 assert isinstance(weight, torch.nn.Parameter)
             except:
                 raise ValueError(f"Wrong LoRA Key: {key}")
 
-            if key not in self.backup:
-                self.backup[key] = weight.to(device=offload_device)
-
-            if self.online_mode:
+            if online_mode:
                 if not hasattr(parent_layer, 'forge_online_loras'):
                     parent_layer.forge_online_loras = {}
 
@@ -366,51 +346,29 @@ class LoraLoader:
                 self.online_backup.append(parent_layer)
                 continue
 
+            if key not in self.backup:
+                self.backup[key] = weight.to(device=offload_device)
+
             bnb_layer = None
 
-            if operations.bnb_avaliable:
-                if hasattr(weight, 'bnb_quantized'):
-                    bnb_layer = parent_layer
-                    if weight.bnb_quantized:
-                        weight_original_device = weight.device
+            if hasattr(weight, 'bnb_quantized') and operations.bnb_avaliable:
+                bnb_layer = parent_layer
+                from backend.operations_bnb import functional_dequantize_4bit
+                weight = functional_dequantize_4bit(weight)
 
-                        if target_device is not None:
-                            assert target_device.type == 'cuda', 'BNB Must use CUDA!'
-                            weight = weight.to(target_device)
-                        else:
-                            weight = weight.cuda()
+            gguf_cls = getattr(weight, 'gguf_cls', None)
+            gguf_parameter = None
 
-                        from backend.operations_bnb import functional_dequantize_4bit
-                        weight = functional_dequantize_4bit(weight)
-
-                        if target_device is None:
-                            weight = weight.to(device=weight_original_device)
-                    else:
-                        weight = weight.data
-
-            if target_device is not None:
-                try:
-                    weight = weight.to(device=target_device)
-                except:
-                    print('Moving layer weight failed. Retrying by offloading models.')
-                    self.model.to(device=offload_device)
-                    memory_management.soft_empty_cache()
-                    weight = weight.to(device=target_device)
-
-            gguf_cls, gguf_type, gguf_real_shape = None, None, None
-
-            if hasattr(weight, 'is_gguf'):
+            if gguf_cls is not None:
+                gguf_parameter = weight
                 from backend.operations_gguf import dequantize_tensor
-                gguf_cls = weight.gguf_cls
-                gguf_type = weight.gguf_type
-                gguf_real_shape = weight.gguf_real_shape
                 weight = dequantize_tensor(weight)
 
             try:
                 weight = merge_lora_to_weight(current_patches, weight, key, computation_dtype=torch.float32)
             except:
-                print('Patching LoRA weights failed. Retrying by offloading models.')
-                self.model.to(device=offload_device)
+                print('Patching LoRA weights out of memory. Retrying by offloading models.')
+                set_parameter_devices(self.model, parameter_devices={k: offload_device for k in parameter_devices.keys()})
                 memory_management.soft_empty_cache()
                 weight = merge_lora_to_weight(current_patches, weight, key, computation_dtype=torch.float32)
 
@@ -419,23 +377,15 @@ class LoraLoader:
                 continue
 
             if gguf_cls is not None:
-                from backend.operations_gguf import ParameterGGUF
-                weight = gguf_cls.quantize_pytorch(weight, gguf_real_shape)
-                utils.set_attr_raw(self.model, key, ParameterGGUF.make(
-                    data=weight,
-                    gguf_type=gguf_type,
-                    gguf_cls=gguf_cls,
-                    gguf_real_shape=gguf_real_shape
-                ))
+                gguf_parameter.data = gguf_cls.quantize_pytorch(weight, gguf_parameter.shape)
+                gguf_parameter.baked = False
+                gguf_cls.bake(gguf_parameter)
                 continue
 
             utils.set_attr_raw(self.model, key, torch.nn.Parameter(weight, requires_grad=False))
 
-        # Time
+        # End
 
-        moving_time = time.perf_counter() - execution_start_time
-
-        if moving_time > 0.1:
-            print(f'LoRA patching has taken {moving_time:.2f} seconds')
-
+        set_parameter_devices(self.model, parameter_devices=parameter_devices)
+        self.loaded_hash = hashes
         return

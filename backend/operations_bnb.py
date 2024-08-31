@@ -15,7 +15,20 @@ def functional_linear_4bits(x, weight, bias):
 
 
 def functional_dequantize_4bit(weight):
-    return dequantize_4bit(weight, quant_state=weight.quant_state, blocksize=weight.blocksize, quant_type=weight.quant_type)
+    if not weight.bnb_quantized:
+        return weight
+
+    weight_original_device = weight.device
+
+    if weight_original_device.type != 'cuda':
+        weight = weight.cuda()
+
+    weight = dequantize_4bit(weight, quant_state=weight.quant_state, blocksize=weight.blocksize, quant_type=weight.quant_type)
+
+    if weight_original_device.type != 'cuda':
+        weight = weight.to(device=weight_original_device)
+
+    return weight
 
 
 def copy_quant_state(state: QuantState, device: torch.device = None) -> QuantState:
@@ -92,10 +105,8 @@ class ForgeLoader4Bit(torch.nn.Module):
         self.quant_type = quant_type
 
     def _apply(self, fn, recurse=True):
-        if self.weight is not None:
-            self.weight = utils.tensor2parameter(fn(self.weight))
-        if self.bias is not None:
-            self.bias = utils.tensor2parameter(fn(self.bias))
+        for k, p in self.named_parameters(recurse=False, remove_duplicate=True):
+            setattr(self, k, utils.tensor2parameter(fn(p)))
         return self
 
     def _save_to_state_dict(self, destination, prefix, keep_vars):
@@ -142,7 +153,8 @@ class ForgeLoader4Bit(torch.nn.Module):
             super()._load_from_state_dict(state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs)
 
     def reload_weight(self, weight):
-        self.weight = ForgeParams4bit(
+        weight_original_device = weight.device
+        weight = ForgeParams4bit(
             weight,
             requires_grad=False,
             compress_statistics=self.weight.compress_statistics,
@@ -151,4 +163,9 @@ class ForgeLoader4Bit(torch.nn.Module):
             quant_storage=self.weight.quant_storage,
             bnb_quantized=False
         )
+        if weight_original_device.type == 'cuda':
+            weight = weight.to(weight_original_device)
+        else:
+            weight = weight.cuda().to(weight_original_device)
+        self.weight = weight
         return self

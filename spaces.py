@@ -114,24 +114,17 @@ class GPUObject:
 
     def __enter__(self):
         self.original_init = torch.nn.Module.__init__
-        self.original_to = torch.nn.Module.to
 
         def patched_init(module, *args, **kwargs):
             self.module_list.append(module)
             return self.original_init(module, *args, **kwargs)
 
-        def patched_to(module, *args, **kwargs):
-            self.module_list.append(module)
-            return self.original_to(module, *args, **kwargs)
-
         torch.nn.Module.__init__ = patched_init
-        torch.nn.Module.to = patched_to
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         torch.nn.Module.__init__ = self.original_init
-        torch.nn.Module.to = self.original_to
-        self.module_list = set(self.module_list)
+        self.module_list = list(set(self.module_list))
         self.to(device=torch.device('cpu'))
         memory_management.soft_empty_cache()
         return
@@ -185,6 +178,29 @@ def convert_root_path():
     caller_file = os.path.abspath(caller_file)
     result = os.path.join(os.path.dirname(caller_file), 'huggingface_space_mirror')
     return result + '/'
+
+
+def download_single_file(
+    url: str,
+    *,
+    model_dir: str,
+    progress: bool = True,
+    file_name: str | None = None,
+    hash_prefix: str | None = None,
+) -> str:
+    os.makedirs(model_dir, exist_ok=True)
+    if not file_name:
+        from urllib.parse import urlparse
+        parts = urlparse(url)
+        file_name = os.path.basename(parts.path)
+    cached_file = os.path.abspath(os.path.join(model_dir, file_name))
+    if not os.path.exists(cached_file):
+        tmp_filename = cached_file + '.tmp'
+        print(f'Downloading: "{url}" to {cached_file} using temp file {tmp_filename}\n')
+        from torch.hub import download_url_to_file
+        download_url_to_file(url, tmp_filename, progress=progress, hash_prefix=hash_prefix)
+        os.replace(tmp_filename, cached_file)
+    return cached_file
 
 
 def automatically_move_to_gpu_when_forward(m: torch.nn.Module, target_model: torch.nn.Module = None):

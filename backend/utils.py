@@ -111,32 +111,39 @@ def fp16_fix(x):
     return x
 
 
-def nested_compute_size(obj):
+def dtype_to_element_size(dtype):
+    if isinstance(dtype, torch.dtype):
+        return torch.tensor([], dtype=dtype).element_size()
+    else:
+        raise ValueError(f"Invalid dtype: {dtype}")
+
+
+def nested_compute_size(obj, element_size):
     module_mem = 0
 
     if isinstance(obj, dict):
         for key in obj:
-            module_mem += nested_compute_size(obj[key])
+            module_mem += nested_compute_size(obj[key], element_size)
     elif isinstance(obj, list) or isinstance(obj, tuple):
         for i in range(len(obj)):
-            module_mem += nested_compute_size(obj[i])
+            module_mem += nested_compute_size(obj[i], element_size)
     elif isinstance(obj, torch.Tensor):
-        module_mem += obj.nelement() * obj.element_size()
+        module_mem += obj.nelement() * element_size
 
     return module_mem
 
 
-def nested_move_to_device(obj, device):
+def nested_move_to_device(obj, **kwargs):
     if isinstance(obj, dict):
         for key in obj:
-            obj[key] = nested_move_to_device(obj[key], device)
+            obj[key] = nested_move_to_device(obj[key], **kwargs)
     elif isinstance(obj, list):
         for i in range(len(obj)):
-            obj[i] = nested_move_to_device(obj[i], device)
+            obj[i] = nested_move_to_device(obj[i], **kwargs)
     elif isinstance(obj, tuple):
-        obj = tuple(nested_move_to_device(i, device) for i in obj)
+        obj = tuple(nested_move_to_device(i, **kwargs) for i in obj)
     elif isinstance(obj, torch.Tensor):
-        return obj.to(device)
+        return obj.to(**kwargs)
     return obj
 
 
@@ -157,9 +164,9 @@ def beautiful_print_gguf_state_dict_statics(state_dict):
     from gguf.constants import GGMLQuantizationType
     type_counts = {}
     for k, v in state_dict.items():
-        gguf_type = getattr(v, 'gguf_type', None)
-        if gguf_type is not None:
-            type_name = GGMLQuantizationType(gguf_type).name
+        gguf_cls = getattr(v, 'gguf_cls', None)
+        if gguf_cls is not None:
+            type_name = gguf_cls.__name__
             if type_name in type_counts:
                 type_counts[type_name] += 1
             else:

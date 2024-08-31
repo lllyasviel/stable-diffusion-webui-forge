@@ -77,7 +77,7 @@ def remove_dir(dir_path):
 
 
 class ForgeSpace:
-    def __init__(self, root_path, title, repo_id=None, repo_type='space', revision=None, **kwargs):
+    def __init__(self, root_path, title, repo_id=None, repo_type='space', revision=None, allow_patterns=None, ignore_patterns=None, **kwargs):
         self.title = title
         self.root_path = root_path
         self.hf_path = os.path.join(root_path, 'huggingface_space_mirror')
@@ -86,6 +86,9 @@ class ForgeSpace:
         self.revision = revision
         self.is_running = False
         self.gradio_metas = None
+
+        self.allow_patterns = allow_patterns
+        self.ignore_patterns = ignore_patterns
 
         self.label = gr.HTML(build_html(title=title, url=None), elem_classes=['forge_space_label'])
         self.btn_launch = gr.Button('Launch', elem_classes=['forge_space_btn'])
@@ -137,6 +140,8 @@ class ForgeSpace:
             revision=self.revision,
             local_dir=self.hf_path,
             force_download=True,
+            allow_patterns=self.allow_patterns,
+            ignore_patterns=self.ignore_patterns
         )
 
         print(f'Downloaded: {downloaded}')

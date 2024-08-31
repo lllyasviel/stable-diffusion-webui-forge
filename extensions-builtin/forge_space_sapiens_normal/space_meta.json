@@ -1,0 +1,7 @@
+{
+  "tag": "Computer Vision: Depth, Normal, and Geometry",
+  "title": "Sapiens: Normal Estimation",
+  "repo_id": "facebook/sapiens_normal",
+  "revision": "9c0e1ffc14c59f658197200fc599672675014dc6",
+  "ignore_patterns": "*.pt2"
+}

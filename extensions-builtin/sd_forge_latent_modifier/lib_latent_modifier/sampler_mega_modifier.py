@@ -824,27 +824,20 @@ def pyramid_noise_like(x, discount=0.9, generator=None, rand_source=random):
 
 import math
 def dyn_cfg_modifier(conditioning, unconditioning, method, cond_scale, time_mult):
+    time = time_mult[0].item()
+    time_factor = -(math.cos(0.5 * time * math.pi) / 2) + 1
+    noise_pred = conditioning - unconditioning
+    noise_pred_magnitude = (torch.linalg.vector_norm(noise_pred, dim=(1)) + 0.0000000001)[:,None]
+
     match method:
         case "dyncfg-halfcosine":
-            noise_pred = conditioning - unconditioning
-
-            noise_pred_magnitude = (torch.linalg.vector_norm(noise_pred, dim=(1)) + 0.0000000001)[:,None]
-
-            time = time_mult.item()
-            time_factor = -(math.cos(0.5 * time * math.pi) / 2) + 1
             noise_pred_timescaled_magnitude = (torch.linalg.vector_norm(noise_pred * time_factor, dim=(1)) + 0.0000000001)[:,None]
 
             noise_pred /= noise_pred_magnitude
             noise_pred *= noise_pred_timescaled_magnitude
             return noise_pred
+
         case "dyncfg-halfcosine-mimic":
-            noise_pred = conditioning - unconditioning
-
-            noise_pred_magnitude = (torch.linalg.vector_norm(noise_pred, dim=(1)) + 0.0000000001)[:,None]
-
-            time = time_mult.item()
-            time_factor = -(math.cos(0.5 * time * math.pi) / 2) + 1
-
             latent = noise_pred
 
             mimic_latent = noise_pred * time_factor

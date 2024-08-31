@@ -802,8 +802,6 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         memory_management.unload_all_models()
 
     if need_global_unload:
-        p.sd_model.current_lora_hash = str([])
-        p.sd_model.forge_objects.unet.lora_loader.dirty = True
         p.clear_prompt_cache()
 
     need_global_unload = False

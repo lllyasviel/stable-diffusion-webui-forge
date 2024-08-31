@@ -25,3 +25,6 @@ class CLIP:
         n.cond_stage_model = self.cond_stage_model
         n.tokenizer = self.tokenizer
         return n
+
+    def add_patches(self, *arg, **kwargs):
+        return self.patcher.add_patches(*arg, **kwargs)

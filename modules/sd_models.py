@@ -167,13 +167,8 @@ def list_models():
     checkpoint_aliases.clear()
 
     cmd_ckpt = shared.cmd_opts.ckpt
-    if shared.cmd_opts.no_download_sd_model or cmd_ckpt != shared.sd_model_file or os.path.exists(cmd_ckpt):
-        model_url = None
-        expected_sha256 = None
-    else:
-        model_url = "https://huggingface.co/lllyasviel/fav_models/resolve/main/fav/realisticVisionV51_v51VAE.safetensors"
 
-    model_list = modelloader.load_models(model_path=model_path, model_url=model_url, command_path=shared.cmd_opts.ckpt_dir, ext_filter=[".ckpt", ".safetensors", ".gguf"], download_name="realisticVisionV51_v51VAE.safetensors", ext_blacklist=[".vae.ckpt", ".vae.safetensors"])
+    model_list = modelloader.load_models(model_path=model_path, model_url=None, command_path=shared.cmd_opts.ckpt_dir, ext_filter=[".ckpt", ".safetensors", ".gguf"], download_name=None, ext_blacklist=[".vae.ckpt", ".vae.safetensors"])
 
     if os.path.exists(cmd_ckpt):
         checkpoint_info = CheckpointInfo(cmd_ckpt)
@@ -235,14 +230,8 @@ def select_checkpoint():
         return checkpoint_info
 
     if len(checkpoints_list) == 0:
-        error_message = "No checkpoints found. When searching for checkpoints, looked at:"
-        if shared.cmd_opts.ckpt is not None:
-            error_message += f"\n - file {os.path.abspath(shared.cmd_opts.ckpt)}"
-        error_message += f"\n - directory {model_path}"
-        if shared.cmd_opts.ckpt_dir is not None:
-            error_message += f"\n - directory {os.path.abspath(shared.cmd_opts.ckpt_dir)}"
-        error_message += "Can't run without a checkpoint. Find and place a .ckpt or .safetensors file into any of those locations."
-        raise FileNotFoundError(error_message)
+        print('You do not have any model!')
+        return None
 
     checkpoint_info = next(iter(checkpoints_list.values()))
     if model_checkpoint is not None:
@@ -470,7 +459,7 @@ def apply_token_merging(sd_model, token_merging_ratio):
     return
 
 
-@torch.no_grad()
+@torch.inference_mode()
 def forge_model_reload():
     current_hash = str(model_data.forge_loading_parameters)
 
@@ -490,6 +479,10 @@ def forge_model_reload():
     timer.record("unload existing model")
 
     checkpoint_info = model_data.forge_loading_parameters['checkpoint_info']
+
+    if checkpoint_info is None:
+        raise ValueError('You do not have any model! Please download at least one model in [models/Stable-diffusion].')
+
     state_dict = checkpoint_info.filename
     additional_state_dicts = model_data.forge_loading_parameters.get('additional_modules', [])
 

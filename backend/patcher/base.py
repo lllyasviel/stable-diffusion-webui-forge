@@ -52,6 +52,7 @@ class ModelPatcher:
     def __init__(self, model, load_device, offload_device, size=0, current_device=None, **kwargs):
         self.size = size
         self.model = model
+        self.lora_patches = {}
         self.object_patches = {}
         self.object_patches_backup = {}
         self.model_options = {"transformer_options": {}}
@@ -77,6 +78,7 @@ class ModelPatcher:
 
     def clone(self):
         n = ModelPatcher(self.model, self.load_device, self.offload_device, self.size, self.current_device)
+        n.lora_patches = self.lora_patches.copy()
         n.object_patches = self.object_patches.copy()
         n.model_options = copy.deepcopy(self.model_options)
         return n
@@ -85,6 +87,44 @@ class ModelPatcher:
         if hasattr(other, 'model') and self.model is other.model:
             return True
         return False
+
+    def add_patches(self, *, filename, patches, strength_patch=1.0, strength_model=1.0, online_mode=False):
+        lora_identifier = (filename, strength_patch, strength_model, online_mode)
+        this_patches = {}
+
+        p = set()
+        model_keys = set(k for k, _ in self.model.named_parameters())
+
+        for k in patches:
+            offset = None
+            function = None
+
+            if isinstance(k, str):
+                key = k
+            else:
+                offset = k[1]
+                key = k[0]
+                if len(k) > 2:
+                    function = k[2]
+
+            if key in model_keys:
+                p.add(k)
+                current_patches = this_patches.get(key, [])
+                current_patches.append([strength_patch, patches[k], strength_model, offset, function])
+                this_patches[key] = current_patches
+
+        self.lora_patches[lora_identifier] = this_patches
+        return p
+
+    def has_online_lora(self):
+        for (filename, strength_patch, strength_model, online_mode), this_patches in self.lora_patches.items():
+            if online_mode:
+                return True
+        return False
+
+    def refresh_loras(self):
+        self.lora_loader.refresh(lora_patches=self.lora_patches, offload_device=self.offload_device)
+        return
 
     def memory_required(self, input_shape):
         return self.model.memory_required(input_shape=input_shape)
@@ -223,10 +263,9 @@ class ModelPatcher:
 
             utils.set_attr_raw(self.model, k, item)
 
-        self.lora_loader.refresh(target_device=target_device, offload_device=self.offload_device)
-
         if target_device is not None:
             self.model.to(target_device)
+            self.current_device = target_device
 
         return self.model
 

@@ -585,11 +585,17 @@ def create_ui():
                             for i, tab in enumerate(img2img_tabs):
                                 tab.select(fn=lambda tabnum=i: tabnum, inputs=[], outputs=[img2img_selected_tab])
 
+                        def copyCanvas_img2img (background, foreground, source):
+                            if source == 1 or source == 3: #   1 is sketch, 3 is Inpaint sketch
+                                bg = Image.alpha_composite(background, foreground)
+                                return bg, None
+                            return background, None
+
                         for button, name, elem in copy_image_buttons:
                             button.click(
-                                fn=lambda img: img,
-                                inputs=[elem.background],
-                                outputs=[copy_image_destinations[name].background],
+                                fn=copyCanvas_img2img,
+                                inputs=[elem.background, elem.foreground, img2img_selected_tab],
+                                outputs=[copy_image_destinations[name].background, copy_image_destinations[name].foreground],
                             )
                             button.click(
                                 fn=None,

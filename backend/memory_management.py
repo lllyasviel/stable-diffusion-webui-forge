@@ -610,7 +610,8 @@ def load_models_gpu(models, memory_required=0, hard_memory_preservation=0):
     global vram_state
 
     execution_start_time = time.perf_counter()
-    extra_mem = max(minimum_inference_memory(), memory_required + hard_memory_preservation)
+    memory_to_free = max(minimum_inference_memory(), memory_required) + hard_memory_preservation
+    memory_for_inference = minimum_inference_memory() + hard_memory_preservation
 
     models_to_load = []
     models_already_loaded = []
@@ -628,7 +629,7 @@ def load_models_gpu(models, memory_required=0, hard_memory_preservation=0):
         devs = set(map(lambda a: a.device, models_already_loaded))
         for d in devs:
             if d != torch.device("cpu"):
-                free_memory(extra_mem, d, models_already_loaded)
+                free_memory(memory_to_free, d, models_already_loaded)
 
         moving_time = time.perf_counter() - execution_start_time
         if moving_time > 0.1:
@@ -646,7 +647,7 @@ def load_models_gpu(models, memory_required=0, hard_memory_preservation=0):
 
     for device in total_memory_required:
         if device != torch.device("cpu"):
-            free_memory(total_memory_required[device] * 1.3 + extra_mem, device, models_already_loaded)
+            free_memory(total_memory_required[device] * 1.3 + memory_to_free, device, models_already_loaded)
 
     for loaded_model in models_to_load:
         model = loaded_model.model
@@ -661,16 +662,14 @@ def load_models_gpu(models, memory_required=0, hard_memory_preservation=0):
         if lowvram_available and (vram_set_state == VRAMState.LOW_VRAM or vram_set_state == VRAMState.NORMAL_VRAM):
             model_require = loaded_model.exclusive_memory
             previously_loaded = loaded_model.inclusive_memory
-
             current_free_mem = get_free_memory(torch_dev)
-            inference_memory = minimum_inference_memory() + hard_memory_preservation
-            estimated_remaining_memory = current_free_mem - model_require - inference_memory
+            estimated_remaining_memory = current_free_mem - model_require - memory_for_inference
 
-            print(f"[Memory Management] Target: {loaded_model.model.model.__class__.__name__}, Free GPU: {current_free_mem / (1024 * 1024):.2f} MB, Model Require: {model_require / (1024 * 1024):.2f} MB, Previously Loaded: {previously_loaded / (1024 * 1024):.2f} MB, Inference Require: {inference_memory / (1024 * 1024):.2f} MB, Remaining: {estimated_remaining_memory / (1024 * 1024):.2f} MB, ", end="")
+            print(f"[Memory Management] Target: {loaded_model.model.model.__class__.__name__}, Free GPU: {current_free_mem / (1024 * 1024):.2f} MB, Model Require: {model_require / (1024 * 1024):.2f} MB, Previously Loaded: {previously_loaded / (1024 * 1024):.2f} MB, Inference Require: {memory_for_inference / (1024 * 1024):.2f} MB, Remaining: {estimated_remaining_memory / (1024 * 1024):.2f} MB, ", end="")
 
             if estimated_remaining_memory < 0:
                 vram_set_state = VRAMState.LOW_VRAM
-                model_gpu_memory_when_using_cpu_swap = compute_model_gpu_memory_when_using_cpu_swap(current_free_mem, inference_memory)
+                model_gpu_memory_when_using_cpu_swap = compute_model_gpu_memory_when_using_cpu_swap(current_free_mem, memory_for_inference)
                 if previously_loaded > 0:
                     model_gpu_memory_when_using_cpu_swap = previously_loaded
 

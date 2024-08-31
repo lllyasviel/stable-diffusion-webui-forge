@@ -377,9 +377,7 @@ class LoraLoader:
                 continue
 
             if gguf_cls is not None:
-                gguf_parameter.data = gguf_cls.quantize_pytorch(weight, gguf_parameter.shape)
-                gguf_parameter.baked = False
-                gguf_cls.bake(gguf_parameter)
+                gguf_cls.quantize_pytorch(weight, gguf_parameter)
                 continue
 
             utils.set_attr_raw(self.model, key, torch.nn.Parameter(weight, requires_grad=False))

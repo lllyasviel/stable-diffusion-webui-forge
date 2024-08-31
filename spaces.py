@@ -180,6 +180,29 @@ def convert_root_path():
     return result + '/'
 
 
+def download_single_file(
+    url: str,
+    *,
+    model_dir: str,
+    progress: bool = True,
+    file_name: str | None = None,
+    hash_prefix: str | None = None,
+) -> str:
+    os.makedirs(model_dir, exist_ok=True)
+    if not file_name:
+        from urllib.parse import urlparse
+        parts = urlparse(url)
+        file_name = os.path.basename(parts.path)
+    cached_file = os.path.abspath(os.path.join(model_dir, file_name))
+    if not os.path.exists(cached_file):
+        tmp_filename = cached_file + '.tmp'
+        print(f'Downloading: "{url}" to {cached_file} using temp file {tmp_filename}\n')
+        from torch.hub import download_url_to_file
+        download_url_to_file(url, tmp_filename, progress=progress, hash_prefix=hash_prefix)
+        os.replace(tmp_filename, cached_file)
+    return cached_file
+
+
 def automatically_move_to_gpu_when_forward(m: torch.nn.Module, target_model: torch.nn.Module = None):
     if target_model is None:
         target_model = m

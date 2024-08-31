@@ -382,7 +382,9 @@ def sampling_prepare(unet, x):
 
     memory_management.load_models_gpu(
         models=[unet] + additional_model_patchers,
-        memory_required=unet_inference_memory + additional_inference_memory)
+        memory_required=unet_inference_memory,
+        hard_memory_preservation=additional_inference_memory
+    )
 
     if unet.has_online_lora():
         utils.nested_move_to_device(unet.lora_patches, device=unet.current_device, dtype=unet.model.computation_dtype)

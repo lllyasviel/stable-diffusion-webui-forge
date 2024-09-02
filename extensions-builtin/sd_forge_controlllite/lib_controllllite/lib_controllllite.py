@@ -267,7 +267,7 @@ class LLLiteLoader:
 
         model_lllite = model.clone()
         patch = load_control_net_lllite_patch(state_dict, cond_image, strength, steps, start_percent, end_percent,
-                                              model_lllite.model.storage_dtype)
+                                              model.model.diffusion_model.computation_dtype)
         if patch is not None:
             model_lllite.set_model_attn1_patch(patch)
             model_lllite.set_model_attn2_patch(patch)

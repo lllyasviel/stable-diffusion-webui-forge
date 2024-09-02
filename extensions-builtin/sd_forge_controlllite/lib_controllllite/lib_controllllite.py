@@ -214,8 +214,6 @@ class LLLiteModule(torch.nn.Module):
 
         if self.cond_emb is None:
             # print(f"cond_emb is None, {self.name}")
-            # test bad idea
-            #self.cond_image = self.cond_image.view(dtype=x.dtype)
             cx = self.conditioning1(self.cond_image.to(x.device, dtype=x.dtype))
             if not self.is_conv2d:
                 # reshape / b,c,h,w -> b,h*w,c

@@ -136,7 +136,6 @@ class LLLiteModule(torch.nn.Module):
         self.start_step = start_step
         self.end_step = end_step
         self.is_first = False
-        self.dtype = dtype
 
         modules = []
         modules.append(torch.nn.Conv2d(3, cond_emb_dim // 2, kernel_size=4, stride=4, padding=0))  # to latent (from VAE) size*2

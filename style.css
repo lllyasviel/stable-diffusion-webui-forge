@@ -445,6 +445,7 @@ div.toprow-compact-tools{
 
 #quicksettings > div.model_selection input{
     margin-left: 2% !important; /* override the margin set for subdued */
+    width: 100%;
 }
 
 #quicksettings .icon-wrap {

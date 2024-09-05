@@ -444,12 +444,8 @@ div.toprow-compact-tools{
 }
 
 #quicksettings > div.model_selection input{
+    width: 85% !important; /* Ensure the input field is never chopped off */
     margin-left: 2% !important; /* override the margin set for subdued */
-}
-
-#quicksettings .icon-wrap {
-    margin-right: -4% !important;
-    background-color: var(--background-fill-secondary);
 }
 
 #quicksettings > div.model_selection li{

@@ -25,11 +25,13 @@ class ScriptPostprocessingCodeFormer(scripts_postprocessing.ScriptPostprocessing
         if codeformer_visibility == 0 or not enable:
             return
 
-        restored_img = codeformer_model.codeformer.restore(np.array(pp.image.convert("RGB"), dtype=np.uint8), w=codeformer_weight)
+        source_img = pp.image.convert("RGB")
+
+        restored_img = codeformer_model.codeformer.restore(np.array(source_img, dtype=np.uint8), w=codeformer_weight)
         res = Image.fromarray(restored_img)
 
         if codeformer_visibility < 1.0:
-            res = Image.blend(pp.image, res, codeformer_visibility)
+            res = Image.blend(source_img, res, codeformer_visibility)
 
         pp.image = res
         pp.info["CodeFormer visibility"] = round(codeformer_visibility, 3)

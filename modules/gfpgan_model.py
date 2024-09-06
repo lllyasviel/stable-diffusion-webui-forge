@@ -41,7 +41,18 @@ class FaceRestorerGFPGAN(face_restoration_utils.CommonFaceRestoration):
                     device=self.get_device(),
                     expected_architecture='GFPGAN',
                 ).model
-        raise ValueError("No GFPGAN model found")
+
+        #   if reach here, model not found. previous code will download it iff there are no models in GFPGAN directory
+        #   this will download it if the supporting models exist
+        try:
+            GFPGANmodel = modelloader.load_file_from_url(model_url, model_dir=self.model_path, file_name=model_download_name)
+            return modelloader.load_spandrel_model(
+                GFPGANmodel,
+                device=self.get_device(),
+                expected_architecture='GFPGAN',
+            ).model
+        except:
+            raise ValueError("No GFPGAN model found")
 
     def restore(self, np_image):
         def restore_face(cropped_face_t):

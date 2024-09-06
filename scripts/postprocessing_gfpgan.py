@@ -22,11 +22,13 @@ class ScriptPostprocessingGfpGan(scripts_postprocessing.ScriptPostprocessing):
         if gfpgan_visibility == 0 or not enable:
             return
 
-        restored_img = gfpgan_model.gfpgan_fix_faces(np.array(pp.image.convert("RGB"), dtype=np.uint8))
+        source_img = pp.image.convert("RGB")
+
+        restored_img = gfpgan_model.gfpgan_fix_faces(np.array(source_img, dtype=np.uint8))
         res = Image.fromarray(restored_img)
 
         if gfpgan_visibility < 1.0:
-            res = Image.blend(pp.image, res, gfpgan_visibility)
+            res = Image.blend(source_img, res, gfpgan_visibility)
 
         pp.image = res
         pp.info["GFPGAN visibility"] = round(gfpgan_visibility, 3)

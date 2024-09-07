@@ -20,13 +20,13 @@ function dimensionChange(e, is_width, is_height) {
 
     var tabIndex = get_tab_index('mode_img2img');
     if (tabIndex == 0) { // img2img
-        targetElement = gradioApp().querySelector('#img2img_image div[data-testid=image] canvas');
+        targetElement = gradioApp().querySelector('#img2img_image div[class=forge-image-container] img');
     } else if (tabIndex == 1) { //Sketch
-        targetElement = gradioApp().querySelector('#img2img_sketch div[data-testid=image] canvas');
+        targetElement = gradioApp().querySelector('#img2img_sketch div[class=forge-image-container] img');
     } else if (tabIndex == 2) { // Inpaint
-        targetElement = gradioApp().querySelector('#img2maskimg div[data-testid=image] canvas');
+        targetElement = gradioApp().querySelector('#img2maskimg div[class=forge-image-container] img');
     } else if (tabIndex == 3) { // Inpaint sketch
-        targetElement = gradioApp().querySelector('#inpaint_sketch div[data-testid=image] canvas');
+        targetElement = gradioApp().querySelector('#inpaint_sketch div[class=forge-image-container] img');
     } else if (tabIndex == 4) { // Inpaint upload
         targetElement = gradioApp().querySelector('#img_inpaint_base div[data-testid=image] img');
     }
@@ -84,8 +84,10 @@ onAfterUiUpdate(function() {
         if (tabImg2img.style.display == "block") {
             let inputs = gradioApp().querySelectorAll('input');
             inputs.forEach(function(e) {
-                var is_width = e.parentElement.id == "img2img_width";
-                var is_height = e.parentElement.id == "img2img_height";
+                var is_width = (e.parentElement.id == "img2img_width" && e.type == "range") || 
+					(e.parentElement.parentElement.parentElement.id == "img2img_width" && e.type == "number");
+                var is_height = (e.parentElement.id == "img2img_height" && e.type == "range") || 
+					(e.parentElement.parentElement.parentElement.id == "img2img_height" && e.type == "number");
 
                 if ((is_width || is_height) && !e.classList.contains('scrollwatch')) {
                     e.addEventListener('input', function(e) {

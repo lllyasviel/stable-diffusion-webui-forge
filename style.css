@@ -774,6 +774,7 @@ table.popup-table .link{
     top: 0px;
     left: 0px;
     border: 2px solid red;
+    margin: -2px;
     background: rgba(255, 0, 0, 0.3);
     z-index: 900;
     pointer-events: none;

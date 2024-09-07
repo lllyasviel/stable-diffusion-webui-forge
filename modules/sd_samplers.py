@@ -58,6 +58,16 @@ def set_samplers():
         for alias in sampler.aliases:
             samplers_map[alias.lower()] = sampler.name
 
+    return
+
+
+def add_sampler(sampler):
+    global all_samplers, all_samplers_map
+    all_samplers.append(sampler)
+    all_samplers_map = {x.name: x for x in all_samplers}
+    set_samplers()
+    return
+
 
 def visible_sampler_names():
     return [x.name for x in samplers if x.name not in samplers_hidden]

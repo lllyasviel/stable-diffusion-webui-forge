@@ -164,7 +164,7 @@ class SAGForForge(scripts.Script):
     sorting_priority = 12.5
 
     def title(self):
-        return "SelfAttentionGuidance Integrated"
+        return "SelfAttentionGuidance Integrated (SD 1.x, SD 2.x, SDXL)"
 
     def show(self, is_img2img):
         return scripts.AlwaysVisible

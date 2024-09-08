@@ -95,7 +95,12 @@ def load_module(m):
     print(f"[Memory Management] Required Inference Memory: {inference_memory / (1024 * 1024):.2f} MB")
     print(f"[Memory Management] Estimated Remaining GPU Memory: {estimated_remaining_memory / (1024 * 1024):.2f} MB")
 
-    if ALWAYS_SWAP or estimated_remaining_memory < 0:
+    is_torch_jit = 'ScriptModule' in type(m).__name__
+
+    if is_torch_jit:
+        print(f'Detected torch jit module: {type(m).__name__}')
+
+    if (ALWAYS_SWAP or estimated_remaining_memory < 0) and not is_torch_jit:
         print(f'Move module to SWAP: {type(m).__name__}')
         DynamicSwapInstaller.install_model(m, target_device=gpu)
         model_gpu_memory_when_using_cpu_swap = memory_management.compute_model_gpu_memory_when_using_cpu_swap(current_free_mem, inference_memory)

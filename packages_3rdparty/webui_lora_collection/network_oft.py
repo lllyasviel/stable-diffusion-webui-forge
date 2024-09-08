@@ -10,6 +10,7 @@ class ModuleTypeOFT(network.ModuleType):
 
         return None
 
+# TODO: Convert to forge patcher
 # Supports both kohya-ss' implementation of COFT  https://github.com/kohya-ss/sd-scripts/blob/main/networks/oft.py
 # and KohakuBlueleaf's implementation of OFT/COFT https://github.com/KohakuBlueleaf/LyCORIS/blob/dev/lycoris/modules/diag_oft.py
 class NetworkModuleOFT(network.NetworkModule):

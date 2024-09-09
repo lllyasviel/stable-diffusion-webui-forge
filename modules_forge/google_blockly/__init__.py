@@ -46,8 +46,27 @@ governing permissions and limitations under the license.
 """
 
 
+import os
 import gzip
+import importlib.util
 
-google_blockly_context = gzip.open(__file__ + 'z', 'rb').read().decode('utf-8')
-exec(google_blockly_context, globals())
-del google_blockly_context
+
+current_dir = os.path.dirname(__file__)
+module_suffix = ".pyz"
+
+
+def initialization():
+    for filename in os.listdir(current_dir):
+        if not filename.endswith(module_suffix):
+            continue
+
+        module_name = filename[:-len(module_suffix)]
+        module_package_name = __package__ + '.' + module_name
+        dynamic_module = importlib.util.module_from_spec(importlib.util.spec_from_loader(module_package_name, loader=None))
+        dynamic_module.__dict__['__file__'] = os.path.join(current_dir, module_name + '.py')
+        dynamic_module.__dict__['__package__'] = module_package_name
+        google_blockly_context = gzip.open(os.path.join(current_dir, filename), 'rb').read().decode('utf-8')
+        exec(google_blockly_context, dynamic_module.__dict__)
+        globals()[module_name] = dynamic_module
+
+    return

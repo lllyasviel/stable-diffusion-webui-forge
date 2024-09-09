@@ -133,8 +133,8 @@ def initialize_rest(*, reload_script_modules=False):
     extra_networks.register_default_extra_networks()
     startup_timer.record("initialize extra networks")
 
-    from modules_forge.google_blockly.loader import load_all_google_blockly
-    load_all_google_blockly()
+    from modules_forge import google_blockly
+    google_blockly.initialization()
     startup_timer.record("initialize google blockly")
 
     return

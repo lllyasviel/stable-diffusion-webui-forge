@@ -31,11 +31,11 @@ def model_lora_keys_clip(model, key_map={}):
     for model_key in model_keys:
         if model_key.endswith(".weight"):
             if model_key.startswith("t5xxl.transformer."):
-                # Flux OneTrainer T5
-                formatted = inner_str(model_key, "t5xxl.transformer.", ".weight")
-                formatted = formatted.replace(".", "_")
-                formatted = f"lora_te2_{formatted}"
-                key_map[formatted] = model_key
+                for prefix in ['te1', 'te2', 'te3']:
+                    formatted = inner_str(model_key, "t5xxl.transformer.", ".weight")
+                    formatted = formatted.replace(".", "_")
+                    formatted = f"lora_{prefix}_{formatted}"
+                    key_map[formatted] = model_key
 
     return key_maps
 

@@ -131,16 +131,15 @@ class ForgeSpace:
         return results
 
     def install(self):
-        installed = os.path.exists(self.hf_path)
         os.makedirs(self.hf_path, exist_ok=True)
 
-        if self.repo_id is not None and not installed:
+        if self.repo_id is not None:
             downloaded = snapshot_download(
                 repo_id=self.repo_id,
                 repo_type=self.repo_type,
                 revision=self.revision,
                 local_dir=self.hf_path,
-                force_download=True,
+                force_download=False,
                 allow_patterns=self.allow_patterns,
                 ignore_patterns=self.ignore_patterns
             )

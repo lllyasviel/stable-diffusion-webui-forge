@@ -116,22 +116,25 @@ class ForgeSpace:
         results = []
 
         installed = os.path.exists(self.hf_path)
+        requirements_filename = os.path.abspath(os.path.realpath(os.path.join(self.root_path, 'requirements.txt')))
+        has_requirement = os.path.exists(requirements_filename)
 
         if isinstance(self.gradio_metas, tuple):
             results.append(build_html(title=self.title, installed=installed, url=self.gradio_metas[1]))
         else:
             results.append(build_html(title=self.title, installed=installed, url=None))
 
-        results.append(gr.update(interactive=not self.is_running and not installed))
+        results.append(gr.update(interactive=not self.is_running and not (installed and not has_requirement), value=("Reinstall" if (installed and has_requirement) else "Install")))
         results.append(gr.update(interactive=not self.is_running and installed))
         results.append(gr.update(interactive=installed and not self.is_running))
         results.append(gr.update(interactive=installed and self.is_running))
         return results
 
     def install(self):
+        installed = os.path.exists(self.hf_path)
         os.makedirs(self.hf_path, exist_ok=True)
 
-        if self.repo_id is not None:
+        if self.repo_id is not None and not installed:
             downloaded = snapshot_download(
                 repo_id=self.repo_id,
                 repo_type=self.repo_type,

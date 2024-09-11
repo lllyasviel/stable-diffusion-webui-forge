@@ -118,46 +118,66 @@ var appendContextMenuOption = initResponse[0];
 var removeContextMenuOption = initResponse[1];
 var addContextMenuEventListener = initResponse[2];
 
+var regen_txt2img = null;
+var regen_img2img = null;
+
 (function() {
     //Start example Context Menu Items
-    let generateOnRepeat = function(genbuttonid, interruptbuttonid) {
-        let genbutton = gradioApp().querySelector(genbuttonid);
-        let interruptbutton = gradioApp().querySelector(interruptbuttonid);
-        if (!interruptbutton.offsetParent) {
-            genbutton.click();
-        }
-        clearInterval(window.generateOnRepeatInterval);
-        window.generateOnRepeatInterval = setInterval(function() {
-            if (!interruptbutton.offsetParent) {
-                genbutton.click();
-            }
-        },
-        500);
-    };
-
     let generateOnRepeat_txt2img = function() {
-        generateOnRepeat('#txt2img_generate', '#txt2img_interrupt');
-    };
+		if ((regen_txt2img == null) && (regen_img2img == null)) {
+			let generate = gradioApp().querySelector('#txt2img_generate');
+			let interrupt = gradioApp().querySelector('#txt2img_interrupt');
+			if (!interrupt.offsetParent) {
+				generate.click();
+			}
 
-    let generateOnRepeat_img2img = function() {
-        generateOnRepeat('#img2img_generate', '#img2img_interrupt');
+			regen_txt2img = setInterval(function() {
+				if (interrupt.style.display == 'none') {
+					generate.click();
+					interrupt.style.display = 'block';
+				}
+			},
+			500);
+		}
     };
-
     appendContextMenuOption('#txt2img_generate', 'Generate forever', generateOnRepeat_txt2img);
     appendContextMenuOption('#txt2img_interrupt', 'Generate forever', generateOnRepeat_txt2img);
+
+    let cancel_regen_txt2img = function() {
+        clearInterval(regen_txt2img);
+		regen_txt2img = null;
+    };
+    appendContextMenuOption('#txt2img_interrupt', 'Cancel generate forever', cancel_regen_txt2img);
+    appendContextMenuOption('#txt2img_generate', 'Cancel generate forever', cancel_regen_txt2img);
+
+    let generateOnRepeat_img2img = function() {
+		if ((regen_txt2img == null) && (regen_img2img == null)) {
+			let generate = gradioApp().querySelector('#img2img_generate');
+			let interrupt = gradioApp().querySelector('#img2img_interrupt');
+			if (!interrupt.offsetParent) {
+				generate.click();
+			}
+
+			regen_img2img = setInterval(function() {
+				if (interrupt.style.display == 'none') {
+					generate.click();
+					interrupt.style.display = 'block';
+				}
+			},
+			500);
+		}
+    };
     appendContextMenuOption('#img2img_generate', 'Generate forever', generateOnRepeat_img2img);
     appendContextMenuOption('#img2img_interrupt', 'Generate forever', generateOnRepeat_img2img);
 
-    let cancelGenerateForever = function() {
-        clearInterval(window.generateOnRepeatInterval);
+    let cancel_regen_img2img = function() {
+        clearInterval(regen_img2img);
+		regen_img2img = null;
     };
-
-    appendContextMenuOption('#txt2img_interrupt', 'Cancel generate forever', cancelGenerateForever);
-    appendContextMenuOption('#txt2img_generate', 'Cancel generate forever', cancelGenerateForever);
-    appendContextMenuOption('#img2img_interrupt', 'Cancel generate forever', cancelGenerateForever);
-    appendContextMenuOption('#img2img_generate', 'Cancel generate forever', cancelGenerateForever);
+    appendContextMenuOption('#img2img_interrupt', 'Cancel generate forever', cancel_regen_img2img);
+    appendContextMenuOption('#img2img_generate', 'Cancel generate forever', cancel_regen_img2img);
 
 })();
-//End example Context Menu Items
+
 
 onAfterUiUpdate(addContextMenuEventListener);

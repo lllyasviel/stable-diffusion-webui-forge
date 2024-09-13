@@ -184,6 +184,9 @@ class CFGDenoiser(torch.nn.Module):
         cfg_denoiser_callback(denoiser_params)
 
         # NGMS
+        if self.p.is_hr_pass == True:
+            cond_scale = self.p.hr_cfg
+        
         if shared.opts.skip_early_cond > 0 and self.step / self.total_steps <= shared.opts.skip_early_cond:
             cond_scale = 1.0
             self.p.extra_generation_params["Skip Early CFG"] = shared.opts.skip_early_cond

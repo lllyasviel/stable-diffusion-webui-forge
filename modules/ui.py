@@ -665,7 +665,7 @@ def create_ui():
 
                                     img_sources = [init_img.background, sketch.background, init_img_with_mask.background, inpaint_color_sketch.background, init_img_inpaint]
                                     for i in img_sources:
-                                        i.change(fn=updateWH, inputs=[i, width, height], outputs=[width, height])
+                                        i.change(fn=updateWH, inputs=[i, width, height], outputs=[width, height], show_progress='hidden')
                                         i.change(**on_change_args)
 
                             tab_scale_to.select(fn=lambda: 0, inputs=[], outputs=[selected_scale_tab])

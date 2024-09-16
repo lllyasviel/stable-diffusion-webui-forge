@@ -112,6 +112,9 @@ def resize_from_to_html(width, height, scale_by):
     if not target_width or not target_height:
         return "no image selected"
 
+    target_width -= target_width % 8        #   note: hardcoded latent size 8
+    target_height -= target_height % 8
+
     return f"resize: from <span class='resolution'>{width}x{height}</span> to <span class='resolution'>{target_width}x{target_height}</span>"
 
 
@@ -636,7 +639,7 @@ def create_ui():
                                                 detect_image_size_btn = ToolButton(value=detect_image_size_symbol, elem_id="img2img_detect_image_size_btn", tooltip="Auto detect size from img2img")
 
                                     with gr.Tab(label="Resize by", id="by", elem_id="img2img_tab_resize_by") as tab_scale_by:
-                                        scale_by = gr.Slider(minimum=0.05, maximum=4.0, step=0.05, label="Scale", value=1.0, elem_id="img2img_scale")
+                                        scale_by = gr.Slider(minimum=0.05, maximum=4.0, step=0.01, label="Scale", value=1.0, elem_id="img2img_scale")
 
                                         with FormRow():
                                             scale_by_html = FormHTML(resize_from_to_html(0, 0, 0.0), elem_id="img2img_scale_resolution_preview")
@@ -651,8 +654,19 @@ def create_ui():
                                         show_progress=False,
                                     )
 
-                                    scale_by.release(**on_change_args)
+                                    scale_by.change(**on_change_args)
                                     button_update_resize_to.click(**on_change_args)
+
+                                    def updateWH (img, w, h):
+                                        if img and shared.opts.img2img_autosize == True:
+                                            return img.size[0], img.size[1]
+                                        else:
+                                            return w, h
+
+                                    img_sources = [init_img.background, sketch.background, init_img_with_mask.background, inpaint_color_sketch.background, init_img_inpaint]
+                                    for i in img_sources:
+                                        i.change(fn=updateWH, inputs=[i, width, height], outputs=[width, height], show_progress='hidden')
+                                        i.change(**on_change_args)
 
                             tab_scale_to.select(fn=lambda: 0, inputs=[], outputs=[selected_scale_tab])
                             tab_scale_by.select(fn=lambda: 1, inputs=[], outputs=[selected_scale_tab])

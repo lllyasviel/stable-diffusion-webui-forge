@@ -266,6 +266,7 @@ def forge_main_entry():
     ui_img2img_sampler = get_a1111_ui_component('img2img', 'sampler_name')
     ui_img2img_scheduler = get_a1111_ui_component('img2img', 'scheduler')
 
+    ui_txt2img_hr_cfg = get_a1111_ui_component('txt2img', 'Hires CFG Scale')
     ui_txt2img_hr_distilled_cfg = get_a1111_ui_component('txt2img', 'Hires Distilled CFG Scale')
 
     output_targets = [
@@ -287,6 +288,7 @@ def forge_main_entry():
         ui_img2img_sampler,
         ui_txt2img_scheduler,
         ui_img2img_scheduler,
+        ui_txt2img_hr_cfg,
         ui_txt2img_hr_distilled_cfg,
     ]
 
@@ -322,6 +324,7 @@ def on_preset_change(preset=None):
             gr.update(value='Euler a'),  # ui_img2img_sampler
             gr.update(value='Automatic'),  # ui_txt2img_scheduler
             gr.update(value='Automatic'),  # ui_img2img_scheduler
+            gr.update(visible=True, value=7.0), # ui_txt2img_hr_cfg
             gr.update(visible=False, value=3.5), # ui_txt2img_hr_distilled_cfg
         ]
 
@@ -345,6 +348,7 @@ def on_preset_change(preset=None):
             gr.update(value='DPM++ 2M SDE'),  # ui_img2img_sampler
             gr.update(value='Karras'),  # ui_txt2img_scheduler
             gr.update(value='Karras'),  # ui_img2img_scheduler
+            gr.update(visible=True, value=7.0), # ui_txt2img_hr_cfg
             gr.update(visible=False, value=3.5), # ui_txt2img_hr_distilled_cfg
         ]
 
@@ -368,6 +372,7 @@ def on_preset_change(preset=None):
             gr.update(value='Euler'),  # ui_img2img_sampler
             gr.update(value='Simple'),  # ui_txt2img_scheduler
             gr.update(value='Simple'),  # ui_img2img_scheduler
+            gr.update(visible=True, value=1.0), # ui_txt2img_hr_cfg
             gr.update(visible=True, value=3.5), # ui_txt2img_hr_distilled_cfg
         ]
 
@@ -393,5 +398,6 @@ def on_preset_change(preset=None):
         gr.update(value=ui_settings_from_file['customscript/sampler.py/img2img/Sampling method/value']),  # ui_img2img_sampler
         gr.update(value=ui_settings_from_file['customscript/sampler.py/txt2img/Schedule type/value']),  # ui_txt2img_scheduler
         gr.update(value=ui_settings_from_file['customscript/sampler.py/img2img/Schedule type/value']),  # ui_img2img_scheduler
+        gr.update(visible=True, value=ui_settings_from_file['txt2img/Hires CFG Scale/value']), # ui_txt2img_hr_cfg
         gr.update(visible=True, value=ui_settings_from_file['txt2img/Hires Distilled CFG Scale/value']), # ui_txt2img_hr_distilled_cfg
     ]

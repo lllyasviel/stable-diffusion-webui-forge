@@ -8,12 +8,7 @@ from modules_forge.shared import add_supported_preprocessor
 def revision_conditioning_modifier(model, x, timestep, uncond, cond, cond_scale, model_options, seed):
     revision_conditions = model_options['revision_conditions']
 
-    # temporary fix for the noise_augmentor attribute error
-    if not hasattr(model, 'noise_augmentor'):
-        print(f"Error: '{type(model).__name__}' object has no attribute 'noise_augmentor'. Skipping noise augmentation.")
-        noise_augmentor = None
-    else:
-        noise_augmentor = model.noise_augmentor
+    noise_augmentor = getattr(model, 'noise_augmentor', None)
 
     noise_augment_merge = 0.0
     ignore_prompt = False

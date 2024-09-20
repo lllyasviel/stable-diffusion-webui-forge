@@ -22,3 +22,4 @@ for config_name, config in DIFFUSERS_DEFAULT_PIPELINE_PATHS.items():
         print(pretrained_model_name_or_path)
     except Exception as e:
         print(e)
+test

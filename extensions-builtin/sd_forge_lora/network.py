@@ -5,6 +5,13 @@ from modules import sd_models, cache, errors, hashes, shared
 
 metadata_tags_order = {"ss_sd_model_name": 1, "ss_resolution": 2, "ss_clip_skip": 3, "ss_num_train_images": 10, "ss_tag_frequency": 20}
 
+class SdVersion(enum.Enum):
+    Unknown = 1
+    SD1 = 2
+    SD2 = 3
+    SDXL = 4
+#    SD3 = 5
+    Flux = 6
 
 class NetworkOnDisk:
     def __init__(self, name, filename):

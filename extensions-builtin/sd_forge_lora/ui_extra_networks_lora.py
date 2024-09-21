@@ -48,10 +48,38 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
         if activation_text:
             item["prompt"] += " + " + quote_js(" " + activation_text)
 
-        negative_prompt = item["user_metadata"].get("negative text")
-        item["negative_prompt"] = quote_js("")
-        if negative_prompt:
-            item["negative_prompt"] = quote_js('(' + negative_prompt + ':1)')
+        negative_prompt = item["user_metadata"].get("negative text", "")
+        item["negative_prompt"] = quote_js(negative_prompt)
+
+        #   filter displayed loras by UI setting
+        sd_version = item["user_metadata"].get("sd version")
+        if sd_version in network.SdVersion.__members__:
+            item["sd_version"] = sd_version
+            sd_version = network.SdVersion[sd_version]
+        else:
+            sd_version = network.SdVersion.Unknown      #lora_on_disk.sd_version NOTE: not using unreliable auto-detection
+
+        if shared.opts.lora_filter_disabled == True or enable_filter == False:
+            pass
+        elif sd_version == network.SdVersion.Unknown:
+            pass
+        elif shared.opts.forge_preset == 'all':
+            pass
+        elif shared.opts.forge_preset == 'sd':
+            if sd_version == network.SdVersion.SD1 or sd_version == network.SdVersion.SD2:
+                pass
+            else:
+                return None
+        elif shared.opts.forge_preset == 'xl':
+            if sd_version == network.SdVersion.SDXL:
+                pass
+            else:
+                return None
+        elif shared.opts.forge_preset == 'flux':
+            if sd_version == network.SdVersion.Flux:
+                pass
+            else:
+                return None
 
         return item
 

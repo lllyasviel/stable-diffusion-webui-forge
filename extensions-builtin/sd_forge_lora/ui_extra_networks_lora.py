@@ -59,7 +59,7 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
         else:
             sd_version = lora_on_disk.sd_version
 
-        if shared.opts.lora_filter_disabled == True or enable_filter == False:
+        if shared.opts.lora_filter_disabled == True:
             pass
         elif sd_version == network.SdVersion.Unknown:
             pass

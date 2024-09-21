@@ -1,4 +1,5 @@
 import os
+import enum
 
 from modules import sd_models, cache, errors, hashes, shared
 

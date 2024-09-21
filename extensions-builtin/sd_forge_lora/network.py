@@ -48,6 +48,24 @@ class NetworkOnDisk:
             ''
         )
 
+        self.sd_version = self.detect_version()
+    
+    def detect_version(self):
+        if str(self.metadata.get('modelspec.implementation', '')) == 'https://github.com/black-forest-labs/flux':
+            return SdVersion.Flux
+        elif str(self.metadata.get('modelspec.architecture', '')) == 'flux-1-dev/lora':
+            return SdVersion.Flux
+        elif str(self.metadata.get('modelspec.architecture', '')) == 'stable-diffusion-xl-v1-base/lora':
+            return SdVersion.SDXL
+        elif str(self.metadata.get('ss_base_model_version', '')).startswith('sdxl_'):
+            return SdVersion.SDXL
+        elif str(self.metadata.get('ss_v2', '')) == 'True':
+            return SdVersion.SD2
+        elif str(self.metadata.get('modelspec.architecture', '')) == 'stable-diffusion-v1/lora':
+            return SdVersion.SD1
+
+        return SdVersion.Unknown
+    
     def set_hash(self, v):
         self.hash = v
         self.shorthash = self.hash[0:12]

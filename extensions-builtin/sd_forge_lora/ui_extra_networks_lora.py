@@ -57,7 +57,7 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
             item["sd_version"] = sd_version
             sd_version = network.SdVersion[sd_version]
         else:
-            sd_version = network.SdVersion.Unknown      #lora_on_disk.sd_version NOTE: not using unreliable auto-detection
+            sd_version = lora_on_disk.sd_version
 
         if shared.opts.lora_filter_disabled == True or enable_filter == False:
             pass

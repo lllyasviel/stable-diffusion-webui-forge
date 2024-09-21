@@ -66,21 +66,14 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
         elif shared.opts.forge_preset == 'all':
             pass
         elif shared.opts.forge_preset == 'sd':
-            if sd_version == network.SdVersion.SD1 or sd_version == network.SdVersion.SD2:
-                pass
-            else:
+            if sd_version != network.SdVersion.SD1 and sd_version != network.SdVersion.SD2:
                 return None
         elif shared.opts.forge_preset == 'xl':
-            if sd_version == network.SdVersion.SDXL:
-                pass
-            else:
+            if sd_version != network.SdVersion.SDXL:
                 return None
         elif shared.opts.forge_preset == 'flux':
-            if sd_version == network.SdVersion.Flux:
-                pass
-            else:
+            if sd_version != network.SdVersion.Flux:
                 return None
-
         return item
 
     def list_items(self):

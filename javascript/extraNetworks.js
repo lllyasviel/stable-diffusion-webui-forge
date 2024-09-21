@@ -449,6 +449,10 @@ function extraNetworksControlTreeViewOnClick(event, tabname, extra_networks_tabn
     pane.classList.toggle("extra-network-dirs-hidden", show);
 }
 
+function clickLoraRefresh() {
+	gradioApp().getElementById('txt2img_lora_extra_refresh_internal').click();
+	gradioApp().getElementById('img2img_lora_extra_refresh_internal').click();
+}
 function extraNetworksControlRefreshOnClick(event, tabname, extra_networks_tabname) {
     /**
      * Handles `onclick` events for the Refresh Page button.

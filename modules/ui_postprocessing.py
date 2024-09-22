@@ -49,7 +49,7 @@ def create_ui():
 
     submit.click(
         fn=call_queue.wrap_gradio_gpu_call(postprocessing.run_postprocessing_webui, extra_outputs=[None, '']),
-        js=f"(...args) => {{ return submit_extras(args.slice(0, {len(submit_click_inputs)})); }}",
+        _js=f"submit_extras",
         inputs=submit_click_inputs,
         outputs=[
             output_panel.gallery,

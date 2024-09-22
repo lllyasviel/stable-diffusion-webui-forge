@@ -306,74 +306,74 @@ def on_preset_change(preset=None):
 
     if shared.opts.forge_preset == 'sd':
         return [
-            gr.update(visible=True),  # ui_vae
-            gr.update(visible=True, value=1),  # ui_clip_skip
-            gr.update(visible=False, value='Automatic'),  # ui_forge_unet_storage_dtype_options
-            gr.update(visible=False, value='Queue'),  # ui_forge_async_loading
-            gr.update(visible=False, value='CPU'),  # ui_forge_pin_shared_memory
-            gr.update(visible=False, value=total_vram - 1024),  # ui_forge_inference_memory
-            gr.update(value=512),  # ui_txt2img_width
-            gr.update(value=512),  # ui_img2img_width
-            gr.update(value=640),  # ui_txt2img_height
-            gr.update(value=512),  # ui_img2img_height
-            gr.update(value=7),  # ui_txt2img_cfg
-            gr.update(value=7),  # ui_img2img_cfg
-            gr.update(visible=False, value=3.5),  # ui_txt2img_distilled_cfg
-            gr.update(visible=False, value=3.5),  # ui_img2img_distilled_cfg
-            gr.update(value='Euler a'),  # ui_txt2img_sampler
-            gr.update(value='Euler a'),  # ui_img2img_sampler
-            gr.update(value='Automatic'),  # ui_txt2img_scheduler
-            gr.update(value='Automatic'),  # ui_img2img_scheduler
-            gr.update(visible=True, value=7.0), # ui_txt2img_hr_cfg
-            gr.update(visible=False, value=3.5), # ui_txt2img_hr_distilled_cfg
+            gr.update(visible=True),                                                    # ui_vae
+            gr.update(visible=True, value=1),                                           # ui_clip_skip
+            gr.update(visible=False, value='Automatic'),                                # ui_forge_unet_storage_dtype_options
+            gr.update(visible=False, value='Queue'),                                    # ui_forge_async_loading
+            gr.update(visible=False, value='CPU'),                                      # ui_forge_pin_shared_memory
+            gr.update(visible=False, value=total_vram - 1024),                          # ui_forge_inference_memory
+            gr.update(value=getattr(shared.opts, "sd_t2i_width", 512)),                 # ui_txt2img_width
+            gr.update(value=getattr(shared.opts, "sd_i2i_width", 512)),                 # ui_img2img_width
+            gr.update(value=getattr(shared.opts, "sd_t2i_height", 640)),                # ui_txt2img_height
+            gr.update(value=getattr(shared.opts, "sd_i2i_height", 512)),                # ui_img2img_height
+            gr.update(value=getattr(shared.opts, "sd_t2i_cfg", 7)),                     # ui_txt2img_cfg
+            gr.update(value=getattr(shared.opts, "sd_i2i_cfg", 7)),                     # ui_img2img_cfg
+            gr.update(visible=False, value=3.5),                                        # ui_txt2img_distilled_cfg
+            gr.update(visible=False, value=3.5),                                        # ui_img2img_distilled_cfg
+            gr.update(value='Euler a'),                                                 # ui_txt2img_sampler
+            gr.update(value='Euler a'),                                                 # ui_img2img_sampler
+            gr.update(value='Automatic'),                                               # ui_txt2img_scheduler
+            gr.update(value='Automatic'),                                               # ui_img2img_scheduler
+            gr.update(visible=True, value=getattr(shared.opts, "sd_t2i_hr_cfg", 7.0)),  # ui_txt2img_hr_cfg
+            gr.update(visible=False, value=3.5),                                        # ui_txt2img_hr_distilled_cfg
         ]
 
     if shared.opts.forge_preset == 'xl':
         return [
-            gr.update(visible=True),  # ui_vae
-            gr.update(visible=False, value=1),  # ui_clip_skip
-            gr.update(visible=True, value='Automatic'),  # ui_forge_unet_storage_dtype_options
-            gr.update(visible=False, value='Queue'),  # ui_forge_async_loading
-            gr.update(visible=False, value='CPU'),  # ui_forge_pin_shared_memory
-            gr.update(visible=True, value=total_vram - 1024),  # ui_forge_inference_memory
-            gr.update(value=896),  # ui_txt2img_width
-            gr.update(value=1024),  # ui_img2img_width
-            gr.update(value=1152),  # ui_txt2img_height
-            gr.update(value=1024),  # ui_img2img_height
-            gr.update(value=5),  # ui_txt2img_cfg
-            gr.update(value=5),  # ui_img2img_cfg
-            gr.update(visible=False, value=3.5),  # ui_txt2img_distilled_cfg
-            gr.update(visible=False, value=3.5),  # ui_img2img_distilled_cfg
-            gr.update(value='DPM++ 2M SDE'),  # ui_txt2img_sampler
-            gr.update(value='DPM++ 2M SDE'),  # ui_img2img_sampler
-            gr.update(value='Karras'),  # ui_txt2img_scheduler
-            gr.update(value='Karras'),  # ui_img2img_scheduler
-            gr.update(visible=True, value=7.0), # ui_txt2img_hr_cfg
-            gr.update(visible=False, value=3.5), # ui_txt2img_hr_distilled_cfg
+            gr.update(visible=True),                                                    # ui_vae
+            gr.update(visible=False, value=1),                                          # ui_clip_skip
+            gr.update(visible=True, value='Automatic'),                                 # ui_forge_unet_storage_dtype_options
+            gr.update(visible=False, value='Queue'),                                    # ui_forge_async_loading
+            gr.update(visible=False, value='CPU'),                                      # ui_forge_pin_shared_memory
+            gr.update(visible=True, value=total_vram - 1024),                           # ui_forge_inference_memory
+            gr.update(value=getattr(shared.opts, "xl_t2i_width", 896)),                 # ui_txt2img_width
+            gr.update(value=getattr(shared.opts, "xl_i2i_width", 1024)),                # ui_img2img_width
+            gr.update(value=getattr(shared.opts, "xl_t2i_height", 1152)),               # ui_txt2img_height
+            gr.update(value=getattr(shared.opts, "xl_i2i_height", 1024)),               # ui_img2img_height
+            gr.update(value=getattr(shared.opts, "xl_t2i_cfg", 5)),                     # ui_txt2img_cfg
+            gr.update(value=getattr(shared.opts, "xl_i2i_cfg", 5)),                     # ui_img2img_cfg
+            gr.update(visible=False, value=3.5),                                        # ui_txt2img_distilled_cfg
+            gr.update(visible=False, value=3.5),                                        # ui_img2img_distilled_cfg
+            gr.update(value='DPM++ 2M SDE'),                                            # ui_txt2img_sampler
+            gr.update(value='DPM++ 2M SDE'),                                            # ui_img2img_sampler
+            gr.update(value='Karras'),                                                  # ui_txt2img_scheduler
+            gr.update(value='Karras'),                                                  # ui_img2img_scheduler
+            gr.update(visible=True, value=getattr(shared.opts, "xl_t2i_hr_cfg", 5.0)),  # ui_txt2img_hr_cfg
+            gr.update(visible=False, value=3.5),                                        # ui_txt2img_hr_distilled_cfg
         ]
 
     if shared.opts.forge_preset == 'flux':
         return [
-            gr.update(visible=True),  # ui_vae
-            gr.update(visible=False, value=1),  # ui_clip_skip
-            gr.update(visible=True, value='Automatic'),  # ui_forge_unet_storage_dtype_options
-            gr.update(visible=True, value='Queue'),  # ui_forge_async_loading
-            gr.update(visible=True, value='CPU'),  # ui_forge_pin_shared_memory
-            gr.update(visible=True, value=total_vram - 1024),  # ui_forge_inference_memory
-            gr.update(value=896),  # ui_txt2img_width
-            gr.update(value=1024),  # ui_img2img_width
-            gr.update(value=1152),  # ui_txt2img_height
-            gr.update(value=1024),  # ui_img2img_height
-            gr.update(value=1),  # ui_txt2img_cfg
-            gr.update(value=1),  # ui_img2img_cfg
-            gr.update(visible=True, value=3.5),  # ui_txt2img_distilled_cfg
-            gr.update(visible=True, value=3.5),  # ui_img2img_distilled_cfg
-            gr.update(value='Euler'),  # ui_txt2img_sampler
-            gr.update(value='Euler'),  # ui_img2img_sampler
-            gr.update(value='Simple'),  # ui_txt2img_scheduler
-            gr.update(value='Simple'),  # ui_img2img_scheduler
-            gr.update(visible=True, value=1.0), # ui_txt2img_hr_cfg
-            gr.update(visible=True, value=3.5), # ui_txt2img_hr_distilled_cfg
+            gr.update(visible=True),                                                    # ui_vae
+            gr.update(visible=False, value=1),                                          # ui_clip_skip
+            gr.update(visible=True, value='Automatic'),                                 # ui_forge_unet_storage_dtype_options
+            gr.update(visible=True, value='Queue'),                                     # ui_forge_async_loading
+            gr.update(visible=True, value='CPU'),                                       # ui_forge_pin_shared_memory
+            gr.update(visible=True, value=total_vram - 1024),                           # ui_forge_inference_memory
+            gr.update(value=getattr(shared.opts, "flux_t2i_width", 896)),               # ui_txt2img_width
+            gr.update(value=getattr(shared.opts, "flux_i2i_width", 1024)),              # ui_img2img_width
+            gr.update(value=getattr(shared.opts, "flux_t2i_height", 1152)),             # ui_txt2img_height
+            gr.update(value=getattr(shared.opts, "flux_i2i_height", 1024)),             # ui_img2img_height
+            gr.update(value=getattr(shared.opts, "flux_t2i_cfg", 1)),                   # ui_txt2img_cfg
+            gr.update(value=getattr(shared.opts, "flux_i2i_cfg", 1)),                   # ui_img2img_cfg
+            gr.update(visible=True, value=getattr(shared.opts, "flux_t2i_d_cfg", 3.5)), # ui_txt2img_distilled_cfg
+            gr.update(visible=True, value=getattr(shared.opts, "flux_i2i_d_cfg", 3.5)), # ui_img2img_distilled_cfg
+            gr.update(value='Euler'),                                                   # ui_txt2img_sampler
+            gr.update(value='Euler'),                                                   # ui_img2img_sampler
+            gr.update(value='Simple'),                                                  # ui_txt2img_scheduler
+            gr.update(value='Simple'),                                                  # ui_img2img_scheduler
+            gr.update(visible=True, value=getattr(shared.opts, "flux_t2i_hr_cfg", 1.0)),    # ui_txt2img_hr_cfg
+            gr.update(visible=True, value=getattr(shared.opts, "flux_t2i_hr_d_cfg", 3.5)),  # ui_txt2img_hr_distilled_cfg
         ]
 
     loadsave = ui_loadsave.UiLoadsave(cmd_opts.ui_config_file)
@@ -401,3 +401,34 @@ def on_preset_change(preset=None):
         gr.update(visible=True, value=ui_settings_from_file['txt2img/Hires CFG Scale/value']), # ui_txt2img_hr_cfg
         gr.update(visible=True, value=ui_settings_from_file['txt2img/Hires Distilled CFG Scale/value']), # ui_txt2img_hr_distilled_cfg
     ]
+
+shared.options_templates.update(shared.options_section(('ui_sd', "UI defaults 'sd'", "ui"), {
+    "sd_t2i_width":  shared.OptionInfo(512,  "txt2img width",      gr.Slider, {"minimum": 64, "maximum": 2048, "step": 8}),
+    "sd_t2i_height": shared.OptionInfo(640,  "txt2img height",     gr.Slider, {"minimum": 64, "maximum": 2048, "step": 8}),
+    "sd_t2i_cfg":    shared.OptionInfo(7,    "txt2img CFG",        gr.Slider, {"minimum": 1,  "maximum": 30,   "step": 0.1}),
+    "sd_t2i_hr_cfg": shared.OptionInfo(7,    "txt2img HiRes CFG",  gr.Slider, {"minimum": 1,  "maximum": 30,   "step": 0.1}),
+    "sd_i2i_width":  shared.OptionInfo(512,  "img2img width",      gr.Slider, {"minimum": 64, "maximum": 2048, "step": 8}),
+    "sd_i2i_height": shared.OptionInfo(512,  "img2img height",     gr.Slider, {"minimum": 64, "maximum": 2048, "step": 8}),
+    "sd_i2i_cfg":    shared.OptionInfo(7,    "img2img CFG",        gr.Slider, {"minimum": 1,  "maximum": 30,   "step": 0.1}),
+}))
+shared.options_templates.update(shared.options_section(('ui_xl', "UI defaults 'xl'", "ui"), {
+    "xl_t2i_width":  shared.OptionInfo(896,  "txt2img width",      gr.Slider, {"minimum": 64, "maximum": 2048, "step": 8}),
+    "xl_t2i_height": shared.OptionInfo(1152, "txt2img height",     gr.Slider, {"minimum": 64, "maximum": 2048, "step": 8}),
+    "xl_t2i_cfg":    shared.OptionInfo(5,    "txt2img CFG",        gr.Slider, {"minimum": 1,  "maximum": 30,   "step": 0.1}),
+    "xl_t2i_hr_cfg": shared.OptionInfo(5,    "txt2img HiRes CFG",  gr.Slider, {"minimum": 1,  "maximum": 30,   "step": 0.1}),
+    "xl_i2i_width":  shared.OptionInfo(1024, "img2img width",      gr.Slider, {"minimum": 64, "maximum": 2048, "step": 8}),
+    "xl_i2i_height": shared.OptionInfo(1024, "img2img height",     gr.Slider, {"minimum": 64, "maximum": 2048, "step": 8}),
+    "xl_i2i_cfg":    shared.OptionInfo(5,    "img2img CFG",        gr.Slider, {"minimum": 1,  "maximum": 30,   "step": 0.1}),
+}))
+shared.options_templates.update(shared.options_section(('ui_flux', "UI defaults 'flux'", "ui"), {
+    "flux_t2i_width":    shared.OptionInfo(896,  "txt2img width",                gr.Slider, {"minimum": 64, "maximum": 2048, "step": 8}),
+    "flux_t2i_height":   shared.OptionInfo(1152, "txt2img height",               gr.Slider, {"minimum": 64, "maximum": 2048, "step": 8}),
+    "flux_t2i_cfg":      shared.OptionInfo(1,    "txt2img CFG",                  gr.Slider, {"minimum": 1,  "maximum": 30,   "step": 0.1}),
+    "flux_t2i_hr_cfg":   shared.OptionInfo(1,    "txt2img HiRes CFG",            gr.Slider, {"minimum": 1,  "maximum": 30,   "step": 0.1}),
+    "flux_t2i_d_cfg":    shared.OptionInfo(3.5,  "txt2img Distilled CFG",        gr.Slider, {"minimum": 0,  "maximum": 30,   "step": 0.1}),
+    "flux_t2i_hr_d_cfg": shared.OptionInfo(3.5,  "txt2img Distilled HiRes CFG",  gr.Slider, {"minimum": 0,  "maximum": 30,   "step": 0.1}),
+    "flux_i2i_width":    shared.OptionInfo(1024, "img2img width",                gr.Slider, {"minimum": 64, "maximum": 2048, "step": 8}),
+    "flux_i2i_height":   shared.OptionInfo(1024, "img2img height",               gr.Slider, {"minimum": 64, "maximum": 2048, "step": 8}),
+    "flux_i2i_cfg":      shared.OptionInfo(1,    "img2img CFG",                  gr.Slider, {"minimum": 1,  "maximum": 30,   "step": 0.1}),
+    "flux_i2i_d_cfg":    shared.OptionInfo(3.5,  "img2img Distilled CFG",        gr.Slider, {"minimum": 0,  "maximum": 30,   "step": 0.1}),
+}))

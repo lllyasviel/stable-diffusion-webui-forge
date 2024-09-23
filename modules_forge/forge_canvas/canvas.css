@@ -52,11 +52,11 @@
     position: absolute;
     top: 0px;
     left: 0px;
-    z-index: 10;
+    z-index: 10 !important;
     background: rgba(47, 47, 47, 0.8);
     padding: 6px 10px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    opacity: 100 !important;
+/*    transition: opacity 0.3s ease;*/
 }
 
 .forge-toolbar .forge-btn {

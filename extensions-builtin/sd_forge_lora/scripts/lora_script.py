@@ -28,7 +28,6 @@ shared.options_templates.update(shared.options_section(('extra_networks', "Extra
     "lora_add_hashes_to_infotext": shared.OptionInfo(True, "Add Lora hashes to infotext"),
     "lora_bundled_ti_to_infotext": shared.OptionInfo(True, "Add Lora name as TI hashes for bundled Textual Inversion").info('"Add Textual Inversion hashes to infotext" needs to be enabled'),
     "lora_filter_disabled": shared.OptionInfo(True, "Always show all networks on the Lora page").info("otherwise, those detected as for incompatible version of Stable Diffusion will be hidden"),
-    "lora_hide_unknown_for_versions": shared.OptionInfo([], "Hide networks of unknown versions for model versions", gr.CheckboxGroup, {"choices": ["SD1", "SD2", "SDXL"]}),
     "lora_in_memory_limit": shared.OptionInfo(0, "Number of Lora networks to keep cached in memory", gr.Number, {"precision": 0}),
     "lora_not_found_warning_console": shared.OptionInfo(False, "Lora not found warning in console"),
     "lora_not_found_gradio_warning": shared.OptionInfo(False, "Lora not found warning popup in webui"),

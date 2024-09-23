@@ -304,10 +304,12 @@ class ExtraNetworksPage:
         if search_only and shared.opts.extra_networks_hidden_models == "Never":
             return ""
 
+        item_sort_keys = item.get("sort_keys", {})
+        item_sort_keys["SDversion"] = item.get("sd_version_str", "SdVersion.Unknown")
         sort_keys = " ".join(
             [
                 f'data-sort-{k}="{html.escape(str(v))}"'
-                for k, v in item.get("sort_keys", {}).items()
+                for k, v in item_sort_keys.items()
             ]
         ).strip()
 

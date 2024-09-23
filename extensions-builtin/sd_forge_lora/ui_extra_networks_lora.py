@@ -57,23 +57,11 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
             item["sd_version"] = sd_version
             sd_version = network.SdVersion[sd_version]
         else:
-            sd_version = lora_on_disk.sd_version
+            sd_version = lora_on_disk.sd_version        #   use heuristics
+            #sd_version = network.SdVersion.Unknown     #   avoid heuristics 
 
-        if shared.opts.lora_filter_disabled == True:
-            pass
-        elif sd_version == network.SdVersion.Unknown:
-            pass
-        elif shared.opts.forge_preset == 'all':
-            pass
-        elif shared.opts.forge_preset == 'sd':
-            if sd_version != network.SdVersion.SD1 and sd_version != network.SdVersion.SD2:
-                return None
-        elif shared.opts.forge_preset == 'xl':
-            if sd_version != network.SdVersion.SDXL:
-                return None
-        elif shared.opts.forge_preset == 'flux':
-            if sd_version != network.SdVersion.Flux:
-                return None
+        item["sd_version_str"] = str(sd_version)
+
         return item
 
     def list_items(self):

@@ -74,7 +74,7 @@ function setupExtraNetworksForTab(tabname) {
 
 				sdversion = elem.getAttribute('data-sort-sdversion');
 				if (sdversion == null) ;
-				if (sdversion == 'SdVersion.Unknown')	;
+				else if (sdversion == 'SdVersion.Unknown')	;
 				else if (UIresult == 3) ;	//	'all'
 				else if (UIresult == 0) {	//	'sd'
 					if (sdversion != 'SdVersion.SD1' && sdversion != 'SdVersion.SD2')	visible = false;

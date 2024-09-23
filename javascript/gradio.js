@@ -5,3 +5,7 @@ Object.defineProperty(Array.prototype, 'toLowerCase', {
         return this;
     }
 });
+
+// disable console.warn
+let save_console_warn = console.warn
+console.warn = function(){};

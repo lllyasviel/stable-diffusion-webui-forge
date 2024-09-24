@@ -72,20 +72,21 @@ function setupExtraNetworksForTab(tabname) {
                     visible = false;
                 }
 
-				sdversion = elem.getAttribute('data-sort-sdversion');
-				if (sdversion == null) ;
-				else if (sdversion == 'SdVersion.Unknown')	;
-				else if (UIresult == 3) ;	//	'all'
-				else if (UIresult == 0) {	//	'sd'
-					if (sdversion != 'SdVersion.SD1' && sdversion != 'SdVersion.SD2')	visible = false;
-				}
-				else if (UIresult == 1) {	//	'xl'
-					if (sdversion != 'SdVersion.SDXL')	visible = false;
-				}
-				else if (UIresult == 2) {	//	'flux'
-					if (sdversion != 'SdVersion.Flux')	visible = false;
-				}
-				
+                sdversion = elem.getAttribute('data-sort-sdversion');
+                if (sdversion == null) ;
+                else if (sdversion == 'SdVersion.Unknown')	;
+                else if (opts.lora_filter_disabled == True) ;
+                else if (UIresult == 3) ;	//	'all'
+                else if (UIresult == 0) {	//	'sd'
+                	if (sdversion != 'SdVersion.SD1' && sdversion != 'SdVersion.SD2')	visible = false;
+                }
+                else if (UIresult == 1) {	//	'xl'
+                	if (sdversion != 'SdVersion.SDXL')	visible = false;
+                }
+                else if (UIresult == 2) {	//	'flux'
+                	if (sdversion != 'SdVersion.Flux')	visible = false;
+                }
+                
                 if (visible) {
                     elem.classList.remove("hidden");
                 } else {

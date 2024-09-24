@@ -322,9 +322,9 @@ def on_preset_change(preset=None):
             gr.update(visible=False, value=3.5),                                        # ui_txt2img_distilled_cfg
             gr.update(visible=False, value=3.5),                                        # ui_img2img_distilled_cfg
             gr.update(value=getattr(shared.opts, "sd_t2i_sampler", 'Euler a')),         # ui_txt2img_sampler
-            gr.update(value=getattr(shared.opts, "sd_i2i_sampler", 'Euler a')),         # ui_txt2img_sampler
+            gr.update(value=getattr(shared.opts, "sd_i2i_sampler", 'Euler a')),         # ui_img2img_sampler
             gr.update(value=getattr(shared.opts, "sd_t2i_scheduler", 'Automatic')),     # ui_txt2img_scheduler
-            gr.update(value=getattr(shared.opts, "sd_i2i_scheduler", 'Automatic')),     # ui_txt2img_scheduler
+            gr.update(value=getattr(shared.opts, "sd_i2i_scheduler", 'Automatic')),     # ui_img2img_scheduler
             gr.update(visible=True, value=getattr(shared.opts, "sd_t2i_hr_cfg", 7.0)),  # ui_txt2img_hr_cfg
             gr.update(visible=False, value=3.5),                                        # ui_txt2img_hr_distilled_cfg
         ]
@@ -346,9 +346,9 @@ def on_preset_change(preset=None):
             gr.update(visible=False, value=3.5),                                        # ui_txt2img_distilled_cfg
             gr.update(visible=False, value=3.5),                                        # ui_img2img_distilled_cfg
             gr.update(value=getattr(shared.opts, "xl_t2i_sampler", 'Euler a')),         # ui_txt2img_sampler
-            gr.update(value=getattr(shared.opts, "xl_i2i_sampler", 'Euler a')),         # ui_txt2img_sampler
+            gr.update(value=getattr(shared.opts, "xl_i2i_sampler", 'Euler a')),         # ui_img2img_sampler
             gr.update(value=getattr(shared.opts, "xl_t2i_scheduler", 'Automatic')),     # ui_txt2img_scheduler
-            gr.update(value=getattr(shared.opts, "xl_i2i_scheduler", 'Automatic')),     # ui_txt2img_scheduler
+            gr.update(value=getattr(shared.opts, "xl_i2i_scheduler", 'Automatic')),     # ui_img2img_scheduler
             gr.update(visible=True, value=getattr(shared.opts, "xl_t2i_hr_cfg", 5.0)),  # ui_txt2img_hr_cfg
             gr.update(visible=False, value=3.5),                                        # ui_txt2img_hr_distilled_cfg
         ]
@@ -370,9 +370,9 @@ def on_preset_change(preset=None):
             gr.update(visible=True, value=getattr(shared.opts, "flux_t2i_d_cfg", 3.5)), # ui_txt2img_distilled_cfg
             gr.update(visible=True, value=getattr(shared.opts, "flux_i2i_d_cfg", 3.5)), # ui_img2img_distilled_cfg
             gr.update(value=getattr(shared.opts, "flux_t2i_sampler", 'Euler')),         # ui_txt2img_sampler
-            gr.update(value=getattr(shared.opts, "flux_i2i_sampler", 'Euler')),         # ui_txt2img_sampler
+            gr.update(value=getattr(shared.opts, "flux_i2i_sampler", 'Euler')),         # ui_img2img_sampler
             gr.update(value=getattr(shared.opts, "flux_t2i_scheduler", 'Simple')),      # ui_txt2img_scheduler
-            gr.update(value=getattr(shared.opts, "flux_i2i_scheduler", 'Simple')),      # ui_txt2img_scheduler
+            gr.update(value=getattr(shared.opts, "flux_i2i_scheduler", 'Simple')),      # ui_img2img_scheduler
             gr.update(visible=True, value=getattr(shared.opts, "flux_t2i_hr_cfg", 1.0)),    # ui_txt2img_hr_cfg
             gr.update(visible=True, value=getattr(shared.opts, "flux_t2i_hr_d_cfg", 3.5)),  # ui_txt2img_hr_distilled_cfg
         ]

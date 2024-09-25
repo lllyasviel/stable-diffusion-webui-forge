@@ -327,7 +327,7 @@ class UiSettings:
         def button_set_checkpoint_change(model, vae, dummy):
             if 'Built in' in vae:
                 vae.remove('Built in')
-            model = sd_models.match_checkpoint_to_name(model.split(' [')[0])
+            model = sd_models.match_checkpoint_to_name(model)
             return model, vae, opts.dumpjson()
 
         button_set_checkpoint = gr.Button('Change checkpoint', elem_id='change_checkpoint', visible=False)

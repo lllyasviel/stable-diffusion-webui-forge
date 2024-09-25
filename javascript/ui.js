@@ -362,6 +362,10 @@ function selectCheckpoint(name) {
     desiredCheckpointName = name;
     gradioApp().getElementById('change_checkpoint').click();
 }
+var desiredVAEName = 0;
+function selectVAE(vae) {
+    desiredVAEName = vae;
+}
 
 function currentImg2imgSourceResolution(w, h, r) {
     var img = gradioApp().querySelector('#mode_img2img > div[style="display: block;"] :is(img, canvas)');

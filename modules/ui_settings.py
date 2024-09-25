@@ -324,15 +324,18 @@ class UiSettings:
                     show_progress=False,
                 )
 
-        def button_set_checkpoint_change(value, dummy):
-            return value.split(' [')[0], opts.dumpjson()
+        def button_set_checkpoint_change(model, vae, dummy):
+            if 'Built in' in vae:
+                vae.remove('Built in')
+            model = sd_models.match_checkpoint_to_name(model)
+            return model, vae, opts.dumpjson()
 
         button_set_checkpoint = gr.Button('Change checkpoint', elem_id='change_checkpoint', visible=False)
         button_set_checkpoint.click(
             fn=button_set_checkpoint_change,
-            js="function(v){ var res = desiredCheckpointName; desiredCheckpointName = ''; return [res || v, null]; }",
-            inputs=[main_entry.ui_checkpoint, self.dummy_component],
-            outputs=[main_entry.ui_checkpoint, self.text_settings],
+            js="function(c, v, n){ var ckpt = desiredCheckpointName; var vae = desiredVAEName; if (vae == 0) vae = v; desiredCheckpointName = null; desiredVAEName = 0; return [ckpt, vae, null]; }",
+            inputs=[main_entry.ui_checkpoint, main_entry.ui_vae, self.dummy_component],
+            outputs=[main_entry.ui_checkpoint, main_entry.ui_vae, self.text_settings],
         )
 
         component_keys = [k for k in opts.data_labels.keys() if k in self.component_dict]

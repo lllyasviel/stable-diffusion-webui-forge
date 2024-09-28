@@ -216,6 +216,8 @@ class ExtraNetworksPage:
             item["description"] = desc
         vae = metadata.get("vae", None)
         if vae is not None:
+            if isinstance(vae, str):
+                vae = [vae]
             item["vae"] = vae
         version = metadata.get("sd_version_str", None)
         if version is not None:

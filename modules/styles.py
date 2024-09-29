@@ -1,10 +1,10 @@
-from __future__ import annotations
 from pathlib import Path
 from modules import errors
 import csv
 import os
 import typing
 import shutil
+import modules.processing_scripts.comments as comments
 
 
 class PromptStyle(typing.NamedTuple):
@@ -14,19 +14,18 @@ class PromptStyle(typing.NamedTuple):
     path: str | None = None
 
 
-def merge_prompts(style_prompt: str, prompt: str) -> str:
-    if "{prompt}" in style_prompt:
-        res = style_prompt.replace("{prompt}", prompt)
-    else:
-        parts = filter(None, (prompt.strip(), style_prompt.strip()))
-        res = ", ".join(parts)
-
-    return res
-
-
 def apply_styles_to_prompt(prompt, styles):
+    prompt = comments.strip_comments(prompt).strip()
+
     for style in styles:
-        prompt = merge_prompts(style, prompt)
+        style = comments.strip_comments(style).strip()
+
+        if "{prompt}" in style:
+            prompt = style.replace("{prompt}", prompt)
+        elif style != "":
+            if prompt != "":
+                prompt += ", "
+            prompt += style
 
     return prompt
 
@@ -40,7 +39,7 @@ def extract_style_text_from_prompt(style_text, prompt):
     """
 
     stripped_prompt = prompt.strip()
-    stripped_style_text = style_text.strip()
+    stripped_style_text = comments.strip_comments(style_text).strip()
 
     if "{prompt}" in stripped_style_text:
         left, _, right = stripped_style_text.partition("{prompt}")
@@ -207,28 +206,30 @@ class StyleDatabase:
                         {k: v for k, v in style._asdict().items() if k != "path"}
                     )
 
-    def extract_styles_from_prompt(self, prompt, negative_prompt):
+    def extract_styles_from_prompt(self, positive, negative):
         extracted = []
 
         applicable_styles = list(self.styles.values())
+
+        positive = comments.strip_comments(positive)
+        negative = comments.strip_comments(negative)
 
         while True:
             found_style = None
 
             for style in applicable_styles:
-                is_match, new_prompt, new_neg_prompt = extract_original_prompts(
-                    style, prompt, negative_prompt
+                is_match, new_positive, new_negative = extract_original_prompts(
+                    style, positive, negative
                 )
                 if is_match:
                     found_style = style
-                    prompt = new_prompt
-                    negative_prompt = new_neg_prompt
+                    positive = new_positive
+                    negative = new_negative
+                    applicable_styles.remove(found_style)
+                    extracted.append(found_style.name)
                     break
 
             if not found_style:
                 break
 
-            applicable_styles.remove(found_style)
-            extracted.append(found_style.name)
-
-        return list(reversed(extracted)), prompt, negative_prompt
+        return list(reversed(extracted)), positive, negative

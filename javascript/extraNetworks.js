@@ -682,6 +682,9 @@ function extraNetworksEditUserMetadata(event, tabname, extraPage) {
     }
 
     var cardName = event.target.parentElement.parentElement.getAttribute("data-name");
+    if (cardName == null) { // from tree
+        cardName = event.target.parentElement.parentElement.parentElement.getAttribute("data-name");
+    }
     editor.nameTextarea.value = cardName;
     updateInput(editor.nameTextarea);
 

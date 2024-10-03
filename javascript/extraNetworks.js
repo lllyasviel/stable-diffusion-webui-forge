@@ -655,6 +655,9 @@ function extraNetworksRequestMetadata(event, extraPage) {
     };
 
     var cardName = event.target.parentElement.parentElement.getAttribute("data-name");
+    if (cardName == null) { // from tree
+        cardName = event.target.parentElement.parentElement.parentElement.getAttribute("data-name");
+    }
 
     requestGet("./sd_extra_networks/metadata", {page: extraPage, item: cardName}, function(data) {
         if (data && data.metadata) {

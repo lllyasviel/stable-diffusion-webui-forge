@@ -122,6 +122,10 @@ function create_submit_args(args) {
         //res[res.length - 4] = null;
         // simply drop output args
         res = res.slice(0, res.length - 4);
+    } else if (Array.isArray(res[res.length - 3])) {
+        // for submit_extras()
+        //res[res.length - 3] = null;
+        res = res.slice(0, res.length - 3);
     }
 
     return res;

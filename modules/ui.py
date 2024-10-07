@@ -27,7 +27,6 @@ from modules import prompt_parser
 from modules.infotext_utils import image_from_url_text, PasteField
 from modules_forge.forge_canvas.canvas import ForgeCanvas, canvas_head
 from modules_forge import main_entry, forge_space
-import modules.processing_scripts.comments as comments
 
 
 create_setting_component = ui_settings.create_setting_component
@@ -113,9 +112,6 @@ def resize_from_to_html(width, height, scale_by):
     if not target_width or not target_height:
         return "no image selected"
 
-    target_width -= target_width % 8        #   note: hardcoded latent size 8
-    target_height -= target_height % 8
-
     return f"resize: from <span class='resolution'>{width}x{height}</span> to <span class='resolution'>{target_width}x{target_height}</span>"
 
 
@@ -174,8 +170,6 @@ def update_token_counter(text, steps, styles, *, is_positive=True):
     if shared.opts.include_styles_into_token_counters:
         apply_styles = shared.prompt_styles.apply_styles_to_prompt if is_positive else shared.prompt_styles.apply_negative_styles_to_prompt
         text = apply_styles(text, styles)
-    else:
-        text = comments.strip_comments(text).strip()
 
     try:
         text, _ = extra_networks.parse_prompt(text)
@@ -284,6 +278,10 @@ def create_ui():
 
     with gr.Blocks(analytics_enabled=False, head=canvas_head) as txt2img_interface:
         toprow = ui_toprow.Toprow(is_img2img=False, is_compact=shared.opts.compact_prompt_box)
+
+        # Modify the prompt input box to allow multiple lines
+        toprow.prompt.lines = 5  # Allows 5 lines in the prompt box
+        toprow.prompt.placeholder = "Prompts, one each line\n(Press Ctrl+Enter to generate, Alt+Enter to skip, Esc to interrupt)"
 
         dummy_component = gr.Textbox(visible=False)
         dummy_component_number = gr.Number(visible=False)
@@ -439,7 +437,7 @@ def create_ui():
             ]
 
             txt2img_args = dict(
-                fn=wrap_gradio_gpu_call(modules.txt2img.txt2img, extra_outputs=[None, '', '']),
+                fn=wrap_gradio_gpu_call(modules.txt2img.txt2img_multi_prompt, extra_outputs=[None, '', '']),
                 js=f"(...args) => {{ return submit(args.slice(0, {len(txt2img_inputs)})); }}",
                 inputs=txt2img_inputs,
                 outputs=txt2img_outputs,
@@ -642,7 +640,7 @@ def create_ui():
                                                 detect_image_size_btn = ToolButton(value=detect_image_size_symbol, elem_id="img2img_detect_image_size_btn", tooltip="Auto detect size from img2img")
 
                                     with gr.Tab(label="Resize by", id="by", elem_id="img2img_tab_resize_by") as tab_scale_by:
-                                        scale_by = gr.Slider(minimum=0.05, maximum=4.0, step=0.01, label="Scale", value=1.0, elem_id="img2img_scale")
+                                        scale_by = gr.Slider(minimum=0.05, maximum=4.0, step=0.05, label="Scale", value=1.0, elem_id="img2img_scale")
 
                                         with FormRow():
                                             scale_by_html = FormHTML(resize_from_to_html(0, 0, 0.0), elem_id="img2img_scale_resolution_preview")
@@ -657,19 +655,8 @@ def create_ui():
                                         show_progress=False,
                                     )
 
-                                    scale_by.change(**on_change_args)
+                                    scale_by.release(**on_change_args)
                                     button_update_resize_to.click(**on_change_args)
-
-                                    def updateWH (img, w, h):
-                                        if img and shared.opts.img2img_autosize == True:
-                                            return img.size[0], img.size[1]
-                                        else:
-                                            return w, h
-
-                                    img_sources = [init_img.background, sketch.background, init_img_with_mask.background, inpaint_color_sketch.background, init_img_inpaint]
-                                    for i in img_sources:
-                                        i.change(fn=updateWH, inputs=[i, width, height], outputs=[width, height], show_progress='hidden')
-                                        i.change(**on_change_args)
 
                             tab_scale_to.select(fn=lambda: 0, inputs=[], outputs=[selected_scale_tab])
                             tab_scale_by.select(fn=lambda: 1, inputs=[], outputs=[selected_scale_tab])

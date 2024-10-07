@@ -11,6 +11,137 @@ from PIL import Image
 import gradio as gr
 from modules_forge import main_thread
 
+# modules/txt2img.py
+
+from modules.shared import state
+from modules.processing import Processed
+import os
+
+# modules/txt2img.py
+
+from modules.shared import state
+from modules.processing import Processed
+import os
+
+import json
+import re
+import itertools
+def txt2img_multi_prompt(id_task: str, request: gr.Request, *args, **kwargs):
+    # Convert args to a list so we can modify it
+    args = list(args)
+
+    # Adjusted index mapping based on debug output
+    prompt_index = 0          # args[0] - prompt
+    batch_count_index = 3     # args[3] - batch_count
+    batch_size_index = 4      # args[4] - batch_size
+
+    # Extract the prompt from args
+    prompt = args[prompt_index]
+    print(f"DEBUG: prompt = {prompt}")
+
+    if not prompt:
+        return [], '', '', ''  # Return empty outputs if no prompt provided
+
+    # Split the prompt into multiple sub-prompts
+    sub_prompts = [p.strip() for p in prompt.split('\n') if p.strip()]
+    if not sub_prompts:
+        return [], '', '', ''  # Return empty outputs if no valid prompts provided
+
+    # ** New Code Start **
+
+    # Function to expand a single prompt with alternating tags
+    def expand_prompt(prompt):
+        # Regular expression to find [option1|option2|...]
+        pattern = re.compile(r'\[([^\[\]]+)\]')
+        matches = pattern.findall(prompt)
+
+        # If no matches, return the prompt as-is
+        if not matches:
+            return [prompt]
+
+        # List to hold all options lists
+        options_list = []
+
+        # For each match, split the options
+        for match in matches:
+            options = match.split('|')
+            options_list.append(options)
+
+        # Generate all combinations using itertools.product
+        combinations = list(itertools.product(*options_list))
+
+        # Generate expanded prompts by replacing the placeholders with combinations
+        expanded_prompts = []
+        for combo in combinations:
+            temp_prompt = prompt
+            for match, replacement in zip(matches, combo):
+                # Replace the first occurrence of the matched pattern
+                temp_prompt = pattern.sub(replacement, temp_prompt, count=1)
+            expanded_prompts.append(temp_prompt)
+
+        return expanded_prompts
+
+    # Expand each sub-prompt
+    expanded_prompts = []
+    for sub_prompt in sub_prompts:
+        expanded_prompts.extend(expand_prompt(sub_prompt))
+
+    # ** New Code End **
+
+    # Get batch_count and batch_size for progress tracking
+    batch_count = args[batch_count_index]
+    batch_size = args[batch_size_index]
+
+    # Update job count for progress tracking
+    total_prompts = len(expanded_prompts)
+    state.job_count = total_prompts * batch_count * batch_size
+
+    # Initialize collections to gather outputs
+    all_images = []
+    all_info_dicts = []
+    all_infotexts = []
+    all_comments = []
+
+    for i, expanded_prompt in enumerate(expanded_prompts):
+        # Update the prompt in args
+        args[prompt_index] = expanded_prompt  # Update 'prompt' in args
+
+        # Update the job state for progress tracking
+        state.job = f"Prompt {i + 1}/{total_prompts}"
+
+        # Call the original txt2img function with updated args
+        processed = txt2img(id_task, request, *args, **kwargs)
+
+        # Unpack the processed tuple
+        images, info_json, info_html, comments_html = processed
+
+        # Collect images
+        all_images.extend(images)
+
+        # Parse info_json and collect info dictionaries
+        try:
+            info_dict = json.loads(info_json)
+            all_info_dicts.append(info_dict)
+        except json.JSONDecodeError as e:
+            print(f"Error parsing info_json: {e}")
+
+        # Collect infotexts and comments
+        all_infotexts.append(info_html)
+        all_comments.append(comments_html)
+
+        # Check for interruption
+        if state.interrupted:
+            break
+
+    # Aggregate info_json by combining all info dictionaries into a list
+    combined_info_json = json.dumps(all_info_dicts)
+
+    # Combine infotexts and comments into single strings
+    combined_info_html = '\n'.join(all_infotexts)
+    combined_comments_html = '\n'.join(all_comments)
+
+    # Return the aggregated outputs
+    return all_images, combined_info_json, combined_info_html, combined_comments_html
 
 def txt2img_create_processing(id_task: str, request: gr.Request, prompt: str, negative_prompt: str, prompt_styles, n_iter: int, batch_size: int, cfg_scale: float, distilled_cfg_scale: float, height: int, width: int, enable_hr: bool, denoising_strength: float, hr_scale: float, hr_upscaler: str, hr_second_pass_steps: int, hr_resize_x: int, hr_resize_y: int, hr_checkpoint_name: str, hr_sampler_name: str, hr_scheduler: str, hr_prompt: str, hr_negative_prompt, hr_cfg: float, hr_distilled_cfg: float, override_settings_texts, *args, force_enable_hr=False):
     override_settings = create_override_settings_dict(override_settings_texts)

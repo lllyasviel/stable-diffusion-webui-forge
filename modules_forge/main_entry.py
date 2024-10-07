@@ -182,9 +182,7 @@ def refresh_memory_management_settings(model_memory, async_loading, pin_shared_m
 
     print(f'Environment vars changed: {log_dict}')
 
-    compute_percentage = (inference_memory / total_vram) * 100.0
-
-    if compute_percentage < 5:
+    if inference_memory < min(512, total_vram * 0.05):
         print('------------------')
         print(f'[Low VRAM Warning] You just set Forge to use 100% GPU memory ({model_memory:.2f} MB) to load model weights.')
         print('[Low VRAM Warning] This means you will have 0% GPU memory (0.00 MB) to do matrix computation. Computations may fallback to CPU or go Out of Memory.')
@@ -194,6 +192,7 @@ def refresh_memory_management_settings(model_memory, async_loading, pin_shared_m
         print('[Low VRAM Warning] Make sure that you know what you are testing.')
         print('------------------')
     else:
+        compute_percentage = (inference_memory / total_vram) * 100.0
         print(f'[GPU Setting] You will use {(100 - compute_percentage):.2f}% GPU memory ({model_memory:.2f} MB) to load weights, and use {compute_percentage:.2f}% GPU memory ({inference_memory:.2f} MB) to do matrix computation.')
 
     processing.need_global_unload = True

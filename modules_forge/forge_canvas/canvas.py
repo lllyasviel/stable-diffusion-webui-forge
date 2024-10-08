@@ -96,7 +96,8 @@ class LogicalImage(gr.Textbox):
             return None
 
         image = base64_to_image(payload, numpy=self.numpy)
-        image.info = self.infotext
+        if hasattr(image, 'info'):
+            image.info = self.infotext
         
         return image
 
@@ -104,7 +105,8 @@ class LogicalImage(gr.Textbox):
         if value is None:
             return None
             
-        self.infotext = value.info
+        if hasattr(value, 'info'):
+            self.infotext = value.info
 
         return image_to_base64(value, numpy=self.numpy)
 

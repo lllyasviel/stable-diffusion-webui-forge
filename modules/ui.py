@@ -440,7 +440,7 @@ def create_ui():
 
             txt2img_args = dict(
                 fn=wrap_gradio_gpu_call(modules.txt2img.txt2img, extra_outputs=[None, '', '']),
-                js=f"(...args) => {{ return submit(args.slice(0, {len(txt2img_inputs)})); }}",
+                _js="submit",
                 inputs=txt2img_inputs,
                 outputs=txt2img_outputs,
                 show_progress=False,
@@ -452,7 +452,7 @@ def create_ui():
             txt2img_upscale_inputs = txt2img_inputs[0:1] + [output_panel.gallery, dummy_component_number, output_panel.generation_info] + txt2img_inputs[1:]
             output_panel.button_upscale.click(
                 fn=wrap_gradio_gpu_call(modules.txt2img.txt2img_upscale, extra_outputs=[None, '', '']),
-                js=f"(...args) => {{ return submit_txt2img_upscale(args.slice(0, {len(txt2img_upscale_inputs)})); }}",
+                _js="submit_txt2img_upscale",
                 inputs=txt2img_upscale_inputs,
                 outputs=txt2img_outputs,
                 show_progress=False,
@@ -790,7 +790,7 @@ def create_ui():
 
             img2img_args = dict(
                 fn=wrap_gradio_gpu_call(modules.img2img.img2img, extra_outputs=[None, '', '']),
-                js=f"(...args) => {{ return submit_img2img(args.slice(0, {len(submit_img2img_inputs)})); }}",
+                _js="submit_img2img",
                 inputs=submit_img2img_inputs,
                 outputs=[
                     output_panel.gallery,

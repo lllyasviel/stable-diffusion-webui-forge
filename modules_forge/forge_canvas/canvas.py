@@ -77,6 +77,7 @@ class LogicalImage(gr.Textbox):
     @wraps(gr.Textbox.__init__)
     def __init__(self, *args, numpy=True, **kwargs):
         self.numpy = numpy
+        self.infotext = dict()
 
         if 'value' in kwargs:
             initial_value = kwargs['value']
@@ -94,11 +95,18 @@ class LogicalImage(gr.Textbox):
         if not payload.startswith("data:image/png;base64,"):
             return None
 
-        return base64_to_image(payload, numpy=self.numpy)
+        image = base64_to_image(payload, numpy=self.numpy)
+        if hasattr(image, 'info'):
+            image.info = self.infotext
+        
+        return image
 
     def postprocess(self, value):
         if value is None:
             return None
+            
+        if hasattr(value, 'info'):
+            self.infotext = value.info
 
         return image_to_base64(value, numpy=self.numpy)
 

@@ -329,13 +329,16 @@ def on_preset_change(preset=None):
         ]
 
     if shared.opts.forge_preset == 'xl':
+        model_mem = getattr(shared.opts, "xl_GPU_MB", total_vram - 1024)
+        if model_mem < 0 or model_mem > total_vram:
+            model_mem = total_vram - 1024
         return [
             gr.update(visible=True),                                                    # ui_vae
             gr.update(visible=False, value=1),                                          # ui_clip_skip
             gr.update(visible=True, value='Automatic'),                                 # ui_forge_unet_storage_dtype_options
             gr.update(visible=False, value='Queue'),                                    # ui_forge_async_loading
             gr.update(visible=False, value='CPU'),                                      # ui_forge_pin_shared_memory
-            gr.update(visible=True, value=getattr(shared.opts, "xl_GPU_MB", total_vram - 1024)),   # ui_forge_inference_memory
+            gr.update(visible=True, value=model_mem),                                   # ui_forge_inference_memory
             gr.update(value=getattr(shared.opts, "xl_t2i_width", 896)),                 # ui_txt2img_width
             gr.update(value=getattr(shared.opts, "xl_i2i_width", 1024)),                # ui_img2img_width
             gr.update(value=getattr(shared.opts, "xl_t2i_height", 1152)),               # ui_txt2img_height
@@ -353,13 +356,16 @@ def on_preset_change(preset=None):
         ]
 
     if shared.opts.forge_preset == 'flux':
+        model_mem = getattr(shared.opts, "flux_GPU_MB", total_vram - 1024)
+        if model_mem < 0 or model_mem > total_vram:
+            model_mem = total_vram - 1024
         return [
             gr.update(visible=True),                                                    # ui_vae
             gr.update(visible=False, value=1),                                          # ui_clip_skip
             gr.update(visible=True, value='Automatic'),                                 # ui_forge_unet_storage_dtype_options
             gr.update(visible=True, value='Queue'),                                     # ui_forge_async_loading
             gr.update(visible=True, value='CPU'),                                       # ui_forge_pin_shared_memory
-            gr.update(visible=True, value=getattr(shared.opts, "flux_GPU_MB", total_vram - 1024)), # ui_forge_inference_memory
+            gr.update(visible=True, value=model_mem),                                   # ui_forge_inference_memory
             gr.update(value=getattr(shared.opts, "flux_t2i_width", 896)),               # ui_txt2img_width
             gr.update(value=getattr(shared.opts, "flux_i2i_width", 1024)),              # ui_img2img_width
             gr.update(value=getattr(shared.opts, "flux_t2i_height", 1152)),             # ui_txt2img_height

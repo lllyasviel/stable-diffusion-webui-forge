@@ -674,9 +674,9 @@ def save_image(image, path, basename, seed=None, prompt=None, extension='png', i
         if short_filename or seed is None:
             file_decoration = ""
         elif opts.save_to_dirs:
-            file_decoration = opts.samples_filename_pattern or "[seed]"
+            file_decoration = opts.samples_filename_pattern or p.override_settings.get("samples_filename_pattern") or "[seed]"
         else:
-            file_decoration = opts.samples_filename_pattern or "[seed]-[prompt_spaces]"
+            file_decoration = opts.samples_filename_pattern or p.override_settings.get("samples_filename_pattern") or "[seed]-[prompt_spaces]"
 
         file_decoration = namegen.apply(file_decoration) + suffix
 

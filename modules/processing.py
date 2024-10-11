@@ -32,6 +32,7 @@ from einops import repeat, rearrange
 from blendmodes.blend import blendLayers, BlendType
 from modules.sd_models import apply_token_merging, forge_model_reload
 from modules_forge.utils import apply_circular_forge
+from modules_forge import main_entry
 from backend import memory_management
 
 
@@ -810,11 +811,54 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
     if p.scripts is not None:
         p.scripts.before_process(p)
 
-    # backwards compatibility, fix sampler and scheduler if invalid
-    sd_samplers.fix_p_invalid_sampler_and_scheduler(p)
+    stored_opts = {k: opts.data[k] if k in opts.data else opts.get_default(k) for k in p.override_settings.keys() if k in opts.data}
 
-    with profiling.Profiler():
-        res = process_images_inner(p)
+    try:
+        # if no checkpoint override or the override checkpoint can't be found, remove override entry and load opts checkpoint
+        # and if after running refiner, the refiner model is not unloaded - webui swaps back to main model here, if model over is present it will be reloaded afterwards
+        if sd_models.checkpoint_aliases.get(p.override_settings.get('sd_model_checkpoint')) is None:
+            p.override_settings.pop('sd_model_checkpoint', None)
+
+        refresh_memory = False
+        memory_keys = ['forge_inference_memory', 'forge_async_loading', 'forge_pin_shared_memory']
+
+        for k, v in p.override_settings.items():
+            if k in memory_keys:
+                refresh_memory = True
+            if k == 'forge_additional_modules':
+                main_entry.modules_change(v, refresh_params=False)
+            elif k == 'sd_model_checkpoint':
+                main_entry.checkpoint_change(v)
+            else:
+                opts.set(k, v, is_api=True, run_callbacks=False)
+
+        if refresh_memory:
+            forge_inference_memory = p.override_settings.get('forge_inference_memory', shared.opts.forge_inference_memory)
+            forge_async_loading = p.override_settings.get('forge_async_loading', shared.opts.forge_async_loading)
+            forge_pin_shared_memory = p.override_settings.get('forge_pin_shared_memory', shared.opts.forge_pin_shared_memory)
+            model_memory = main_entry.total_vram - forge_inference_memory
+            main_entry.refresh_memory_management_settings(model_memory, forge_async_loading, forge_pin_shared_memory)
+
+        # backwards compatibility, fix sampler and scheduler if invalid
+        sd_samplers.fix_p_invalid_sampler_and_scheduler(p)
+
+        with profiling.Profiler():
+            res = process_images_inner(p)
+
+    finally:
+        # restore opts to original state
+        if p.override_settings_restore_afterwards:
+            for k, v in stored_opts.items():
+                if k == 'forge_additional_modules':
+                    main_entry.modules_change(v, refresh_params=False)
+                elif k == 'sd_model_checkpoint':
+                    main_entry.checkpoint_change(v)
+                else:
+                    setattr(opts, k, v)
+
+            if refresh_memory:
+                model_memory = main_entry.total_vram - shared.opts.forge_inference_memory
+                main_entry.refresh_memory_management_settings(model_memory, shared.opts.forge_async_loading, shared.opts.forge_pin_shared_memory)
 
     return res
 

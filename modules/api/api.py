@@ -692,10 +692,13 @@ class Api:
         memory_keys = ['forge_inference_memory', 'forge_async_loading', 'forge_pin_shared_memory']
 
         for k, v in req.items():
+            # options for memory/modules are set in their dedicated functions
             if k in memory_keys:
-                memory_changes[k] = v
+                mem_key = k[len('forge_'):] # remove 'forge_' prefix
+                memory_changes[mem_key] = v
             elif k == 'forge_additional_modules':
                 main_entry.modules_change(v, refresh_params=False) # refresh_model_loading_parameters() --- applied in checkpoint_change()
+            # set all other options
             else:
                 shared.opts.set(k, v, is_api=True)
 

@@ -823,12 +823,15 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         memory_keys = ['forge_inference_memory', 'forge_async_loading', 'forge_pin_shared_memory']
 
         for k, v in p.override_settings.items():
+            # options for memory/modules/checkpoints are set in their dedicated functions
             if k in memory_keys:
-                temp_memory_changes[k] = v
+                mem_k = k[len('forge_'):] # remove 'forge_' prefix
+                temp_memory_changes[mem_k] = v
             elif k == 'forge_additional_modules':
                 main_entry.modules_change(v, refresh_params=False)
             elif k == 'sd_model_checkpoint':
                 main_entry.checkpoint_change(v)
+            # set all other options
             else:
                 opts.set(k, v, is_api=True, run_callbacks=False)
 
@@ -853,7 +856,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                     setattr(opts, k, v)
 
             if temp_memory_changes:
-                main_entry.refresh_memory_management_settings() # will apply the re-set options
+                main_entry.refresh_memory_management_settings() # applies the set options by default
 
     return res
 

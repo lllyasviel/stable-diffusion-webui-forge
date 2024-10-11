@@ -165,7 +165,7 @@ def refresh_models():
 
 
 def ui_refresh_memory_management_settings(model_memory, async_loading, pin_shared_memory):
-    """ Passes precalculated 'model_memory' (from "GPU Weights" UI slider), bypassing memory calculation if only 'forge_inference_memory' passed (from API, backend, etc). """
+    """ Passes precalculated 'model_memory' from "GPU Weights" UI slider (skip redundant calculation) """
     refresh_memory_management_settings(
         async_loading=async_loading,
         pin_shared_memory=pin_shared_memory,

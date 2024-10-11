@@ -819,25 +819,21 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         if sd_models.checkpoint_aliases.get(p.override_settings.get('sd_model_checkpoint')) is None:
             p.override_settings.pop('sd_model_checkpoint', None)
 
-        refresh_memory = False
+        temp_memory_changes = {}
         memory_keys = ['forge_inference_memory', 'forge_async_loading', 'forge_pin_shared_memory']
 
         for k, v in p.override_settings.items():
             if k in memory_keys:
-                refresh_memory = True
-            if k == 'forge_additional_modules':
+                temp_memory_changes[k] = v
+            elif k == 'forge_additional_modules':
                 main_entry.modules_change(v, refresh_params=False)
             elif k == 'sd_model_checkpoint':
                 main_entry.checkpoint_change(v)
             else:
                 opts.set(k, v, is_api=True, run_callbacks=False)
 
-        if refresh_memory:
-            forge_inference_memory = p.override_settings.get('forge_inference_memory', shared.opts.forge_inference_memory)
-            forge_async_loading = p.override_settings.get('forge_async_loading', shared.opts.forge_async_loading)
-            forge_pin_shared_memory = p.override_settings.get('forge_pin_shared_memory', shared.opts.forge_pin_shared_memory)
-            model_memory = main_entry.total_vram - forge_inference_memory
-            main_entry.refresh_memory_management_settings(model_memory, forge_async_loading, forge_pin_shared_memory)
+        if temp_memory_changes:
+            main_entry.refresh_memory_management_settings(**temp_memory_changes)
 
         # backwards compatibility, fix sampler and scheduler if invalid
         sd_samplers.fix_p_invalid_sampler_and_scheduler(p)
@@ -856,9 +852,8 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                 else:
                     setattr(opts, k, v)
 
-            if refresh_memory:
-                model_memory = main_entry.total_vram - shared.opts.forge_inference_memory
-                main_entry.refresh_memory_management_settings(model_memory, shared.opts.forge_async_loading, shared.opts.forge_pin_shared_memory)
+            if temp_memory_changes:
+                main_entry.refresh_memory_management_settings() # will apply the re-set options
 
     return res
 

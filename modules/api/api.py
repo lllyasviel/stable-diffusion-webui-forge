@@ -692,9 +692,12 @@ class Api:
         memory_keys = ['forge_inference_memory', 'forge_async_loading', 'forge_pin_shared_memory']
 
         for k, v in req.items():
-            shared.opts.set(k, v, is_api=True)
             if k in memory_keys:
                 refresh_memory = True
+            if k == 'forge_additional_modules':
+                main_entry.modules_change(v, refresh_params=False)
+            else:
+                shared.opts.set(k, v, is_api=True)
 
         main_entry.checkpoint_change(checkpoint_name)
         # shared.opts.save(shared.config_filename) --- applied in checkpoint_change()

@@ -121,7 +121,7 @@ def make_checkpoint_manager_ui():
     bind_to_opts(ui_clip_skip, 'CLIP_stop_at_last_layers', save=False)
 
     ui_checkpoint.change(checkpoint_change, inputs=[ui_checkpoint], show_progress=False)
-    ui_vae.change(vae_change, inputs=[ui_vae], queue=False, show_progress=False)
+    ui_vae.change(modules_change, inputs=[ui_vae], queue=False, show_progress=False)
 
     return
 
@@ -221,15 +221,16 @@ def refresh_model_loading_parameters():
     return
 
 
-def checkpoint_change(ckpt_name):
+def checkpoint_change(ckpt_name, refresh_params=True):
     shared.opts.set('sd_model_checkpoint', ckpt_name)
     shared.opts.save(shared.config_filename)
 
-    refresh_model_loading_parameters()
+    if refresh_params:
+        refresh_model_loading_parameters()
     return
 
 
-def vae_change(module_names):
+def modules_change(module_names, refresh_params=True):
     modules = []
 
     for n in module_names:
@@ -239,7 +240,8 @@ def vae_change(module_names):
     shared.opts.set('forge_additional_modules', modules)
     shared.opts.save(shared.config_filename)
 
-    refresh_model_loading_parameters()
+    if refresh_params:
+        refresh_model_loading_parameters()
     return
 
 

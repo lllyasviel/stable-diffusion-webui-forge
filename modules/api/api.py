@@ -212,7 +212,7 @@ class Api:
         self.add_api_route("/sdapi/v1/extra-single-image", self.extras_single_image_api, methods=["POST"], response_model=models.ExtrasSingleImageResponse)
         self.add_api_route("/sdapi/v1/extra-batch-images", self.extras_batch_images_api, methods=["POST"], response_model=models.ExtrasBatchImagesResponse)
         self.add_api_route("/sdapi/v1/png-info", self.pnginfoapi, methods=["POST"], response_model=models.PNGInfoResponse)
-        self.add_api_route("/sdapi/v1/progress", self.progressapi, methods=["GET"], response_model=models.ProgressResponse)
+        self.add_api_route("/sdapi/v1/progress", self.progressapi, methods=["GET"], response_model=models.ProgressResponse, auth_required=False)
         self.add_api_route("/sdapi/v1/interrogate", self.interrogateapi, methods=["POST"])
         self.add_api_route("/sdapi/v1/interrupt", self.interruptapi, methods=["POST"])
         self.add_api_route("/sdapi/v1/skip", self.skip, methods=["POST"])
@@ -266,10 +266,8 @@ class Api:
         if not self.default_script_arg_img2img:
             self.default_script_arg_img2img = self.init_default_script_args(img2img_script_runner)
 
-
-
-    def add_api_route(self, path: str, endpoint, **kwargs):
-        if shared.cmd_opts.api_auth:
+    def add_api_route(self, path: str, endpoint, auth_required=True, **kwargs):
+        if auth_required and shared.cmd_opts.api_auth:
             return self.app.add_api_route(path, endpoint, dependencies=[Depends(self.auth)], **kwargs)
         return self.app.add_api_route(path, endpoint, **kwargs)
 
@@ -374,7 +372,7 @@ class Api:
 
         def get_base_type(annotation):
             origin = get_origin(annotation)
-            
+
             if origin is Union:             # represents Optional
                 args = get_args(annotation) # filter out NoneType
                 non_none_args = [arg for arg in args if arg is not type(None)]
@@ -439,6 +437,25 @@ class Api:
 
     def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI):
         task_id = txt2imgreq.force_task_id or create_task_id("txt2img")
+        checkpoint_name = txt2imgreq.override_settings.get("sd_model_checkpoint", None)
+        if checkpoint_name is not None and checkpoint_name not in sd_models.checkpoint_aliases:
+            raise RuntimeError(f"model {checkpoint_name!r} not found")
+
+        refresh_memory = False
+        memory_keys = ['forge_inference_memory', 'forge_async_loading', 'forge_pin_shared_memory']
+        sd_model_checkpoint = shared.opts.sd_model_checkpoint
+        for k, v in txt2imgreq.override_settings.items():
+            shared.opts.set(k, v, is_api=True)
+            if k in memory_keys:
+                refresh_memory = True
+        if sd_model_checkpoint != checkpoint_name:
+            main_entry.checkpoint_change(checkpoint_name)
+        # shared.opts.save(shared.config_filename) --- applied in checkpoint_change()
+
+        if refresh_memory:
+            model_memory = main_entry.total_vram - shared.opts.forge_inference_memory
+            main_entry.refresh_memory_management_settings(model_memory, shared.opts.forge_async_loading,
+                                                          shared.opts.forge_pin_shared_memory)
 
         script_runner = scripts.scripts_txt2img
 
@@ -687,7 +704,7 @@ class Api:
         checkpoint_name = req.get("sd_model_checkpoint", None)
         if checkpoint_name is not None and checkpoint_name not in sd_models.checkpoint_aliases:
             raise RuntimeError(f"model {checkpoint_name!r} not found")
-        
+
         refresh_memory = False
         memory_keys = ['forge_inference_memory', 'forge_async_loading', 'forge_pin_shared_memory']
 

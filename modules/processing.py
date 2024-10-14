@@ -794,8 +794,7 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
 
 need_global_unload = False
 
-
-def process_images(p: StableDiffusionProcessing) -> Processed:
+def manage_model_and_prompt_cache(p: StableDiffusionProcessing):
     global need_global_unload
 
     p.sd_model, just_reloaded = forge_model_reload()
@@ -808,9 +807,9 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 
     need_global_unload = False
 
-    if p.scripts is not None:
-        p.scripts.before_process(p)
 
+def process_images(p: StableDiffusionProcessing) -> Processed:
+    """applies settings overrides (if any) before processing images, then restores settings as applicable."""
     stored_opts = {k: opts.data[k] if k in opts.data else opts.get_default(k) for k in p.override_settings.keys() if k in opts.data}
 
     try:
@@ -837,6 +836,12 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 
         if temp_memory_changes:
             main_entry.refresh_memory_management_settings(**temp_memory_changes)
+
+        # load/reload model and manage prompt cache as needed
+        manage_model_and_prompt_cache(p)
+
+        if p.scripts is not None:
+            p.scripts.before_process(p)
 
         # backwards compatibility, fix sampler and scheduler if invalid
         sd_samplers.fix_p_invalid_sampler_and_scheduler(p)

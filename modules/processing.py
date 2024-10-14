@@ -828,7 +828,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                 mem_k = k[len('forge_'):] # remove 'forge_' prefix
                 temp_memory_changes[mem_k] = v
             elif k == 'forge_additional_modules':
-                main_entry.modules_change(v, refresh_params=False)
+                main_entry.modules_change(v)
             elif k == 'sd_model_checkpoint':
                 main_entry.checkpoint_change(v)
             # set all other options
@@ -849,7 +849,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         if p.override_settings_restore_afterwards:
             for k, v in stored_opts.items():
                 if k == 'forge_additional_modules':
-                    main_entry.modules_change(v, refresh_params=False)
+                    main_entry.modules_change(v)
                 elif k == 'sd_model_checkpoint':
                     main_entry.checkpoint_change(v)
                 else:

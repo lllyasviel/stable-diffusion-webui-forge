@@ -248,6 +248,26 @@ def checkpoint_change(ckpt_name, refresh_params=True):
     return
 
 
+def second_pass_checkpoint_change(ckpt_name):
+    #   doesn't save the config
+    #   doesn't print model selection message to console
+    from modules.sd_models import select_checkpoint, model_data
+
+    shared.opts.set('sd_model_checkpoint', ckpt_name)
+    checkpoint_info = select_checkpoint()
+    unet_storage_dtype, _ = forge_unet_storage_dtype_options.get(shared.opts.forge_unet_storage_dtype, (None, False))
+
+    model_data.forge_loading_parameters = dict(
+        checkpoint_info=checkpoint_info,
+        additional_modules=shared.opts.forge_additional_modules,
+        unet_storage_dtype=unet_storage_dtype
+    )
+
+    processing.need_global_unload = True
+
+    return
+
+
 def modules_change(module_names, refresh_params=True):
     modules = []
 

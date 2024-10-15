@@ -1397,12 +1397,12 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
         with sd_models.SkipWritingToConfig():
             if self.hr_checkpoint_name and self.hr_checkpoint_name != 'Use same checkpoint':
                 firstpass_checkpoint = getattr(shared.opts, 'sd_model_checkpoint')
-                try:
-                    main_entry.checkpoint_change(self.hr_checkpoint_name)
-                    sd_models.unload_model_weights()
-                    sd_models.forge_model_reload();
-                finally:
-                    main_entry.checkpoint_change(firstpass_checkpoint)
+                if firstpass_checkpoint != self.hr_checkpoint_name:
+                    try:
+                        main_entry.checkpoint_change(self.hr_checkpoint_name, save=False)
+                        sd_models.forge_model_reload();
+                    finally:
+                        main_entry.checkpoint_change(firstpass_checkpoint, save=False)
 
         return self.sample_hr_pass(samples, decoded_samples, seeds, subseeds, subseed_strength, prompts)
 

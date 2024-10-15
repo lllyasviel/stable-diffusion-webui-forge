@@ -21,7 +21,7 @@ from modules import sd_samplers, deepbooru, images, scripts, ui, postprocessing,
 from modules.api import models
 from modules_forge import main_entry
 from modules.shared import opts
-from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, process_images
+from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, process_images, process_extra_images
 from modules.textual_inversion.textual_inversion import create_embedding
 from PIL import PngImagePlugin
 from modules.realesrgan_model import get_realesrgan_models
@@ -488,12 +488,13 @@ class Api:
                     else:
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p)
+                    process_extra_images(processed)
                     finish_task(task_id)
                 finally:
                     shared.state.end()
                     shared.total_tqdm.clear()
 
-        b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
+        b64images = list(map(encode_pil_to_base64, processed.images + processed.extra_images)) if send_images else []
 
         return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
 
@@ -559,12 +560,13 @@ class Api:
                     else:
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p)
+                    process_extra_images(processed)
                     finish_task(task_id)
                 finally:
                     shared.state.end()
                     shared.total_tqdm.clear()
 
-        b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
+        b64images = list(map(encode_pil_to_base64, processed.images + processed.extra_images)) if send_images else []
 
         if not img2imgreq.include_init_images:
             img2imgreq.init_images = None

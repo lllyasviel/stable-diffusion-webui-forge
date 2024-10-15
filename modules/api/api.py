@@ -19,7 +19,6 @@ from secrets import compare_digest
 import modules.shared as shared
 from modules import sd_samplers, deepbooru, images, scripts, ui, postprocessing, errors, restart, shared_items, script_callbacks, infotext_utils, sd_models, sd_schedulers
 from modules.api import models
-from modules_forge import main_entry
 from modules.shared import opts
 from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, process_images, process_extra_images
 from modules.textual_inversion.textual_inversion import create_embedding
@@ -675,42 +674,12 @@ class Api:
         shared.state.skip()
 
     def get_config(self):
-        options = {}
-        for key in shared.opts.data.keys():
-            metadata = shared.opts.data_labels.get(key)
-            if(metadata is not None):
-                options.update({key: shared.opts.data.get(key, shared.opts.data_labels.get(key).default)})
-            else:
-                options.update({key: shared.opts.data.get(key, None)})
-
-        return options
+        from modules.sysinfo import get_config
+        return get_config()
 
     def set_config(self, req: dict[str, Any]):
-        checkpoint_name = req.get("sd_model_checkpoint", None)
-        if checkpoint_name is not None and checkpoint_name not in sd_models.checkpoint_aliases:
-            raise RuntimeError(f"model {checkpoint_name!r} not found")
-        
-        memory_changes = {}
-        memory_keys = ['forge_inference_memory', 'forge_async_loading', 'forge_pin_shared_memory']
-
-        for k, v in req.items():
-            # options for memory/modules are set in their dedicated functions
-            if k in memory_keys:
-                mem_key = k[len('forge_'):] # remove 'forge_' prefix
-                memory_changes[mem_key] = v
-            elif k == 'forge_additional_modules':
-                main_entry.modules_change(v, refresh_params=False) # refresh_model_loading_parameters() --- applied in checkpoint_change()
-            # set all other options
-            else:
-                shared.opts.set(k, v, is_api=True)
-
-        main_entry.checkpoint_change(checkpoint_name)
-        # shared.opts.save(shared.config_filename) --- applied in checkpoint_change()
-
-        if memory_changes:
-            main_entry.refresh_memory_management_settings(**memory_changes)
-
-        return
+        from modules.sysinfo import set_config
+        set_config(req)
 
     def get_cmd_flags(self):
         return vars(shared.cmd_opts)

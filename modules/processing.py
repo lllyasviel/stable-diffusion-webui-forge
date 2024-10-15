@@ -1176,6 +1176,18 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     return res
 
 
+def process_extra_images(processed:Processed):
+    """used by API processing functions to ensure extra images are PIL image objects"""
+    extra_images = []
+    for img in processed.extra_images:
+        if isinstance(img, np.ndarray):
+            img = Image.fromarray(img)
+        if not Image.isImageType(img):
+            continue
+        extra_images.append(img)
+    processed.extra_images = extra_images
+
+
 def old_hires_fix_first_pass_dimensions(width, height):
     """old algorithm for auto-calculating first pass size"""
 

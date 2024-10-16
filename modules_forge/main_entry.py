@@ -119,7 +119,7 @@ def make_checkpoint_manager_ui():
     Context.root_block.load(ui_refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
 
     ui_clip_skip = gr.Slider(label="Clip skip", value=lambda: shared.opts.CLIP_stop_at_last_layers, **{"minimum": 1, "maximum": 12, "step": 1})
-    bind_to_opts(ui_clip_skip, 'CLIP_stop_at_last_layers', save=False)
+    bind_to_opts(ui_clip_skip, 'CLIP_stop_at_last_layers', save=True)
 
     ui_checkpoint.change(checkpoint_change, inputs=[ui_checkpoint], show_progress=False)
     ui_vae.change(modules_change, inputs=[ui_vae], queue=False, show_progress=False)

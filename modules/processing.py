@@ -20,6 +20,7 @@ from modules import devices, prompt_parser, masking, sd_samplers, lowvram, infot
 from modules.rng import slerp, get_noise_source_type  # noqa: F401
 from modules.sd_samplers_common import images_tensor_to_samples, decode_first_stage, approximation_indexes
 from modules.shared import opts, cmd_opts, state
+from modules.sysinfo import set_config
 import modules.shared as shared
 import modules.paths as paths
 import modules.face_restoration
@@ -818,24 +819,8 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         if sd_models.checkpoint_aliases.get(p.override_settings.get('sd_model_checkpoint')) is None:
             p.override_settings.pop('sd_model_checkpoint', None)
 
-        temp_memory_changes = {}
-        memory_keys = ['forge_inference_memory', 'forge_async_loading', 'forge_pin_shared_memory']
-
-        for k, v in p.override_settings.items():
-            # options for memory/modules/checkpoints are set in their dedicated functions
-            if k in memory_keys:
-                mem_k = k[len('forge_'):] # remove 'forge_' prefix
-                temp_memory_changes[mem_k] = v
-            elif k == 'forge_additional_modules':
-                main_entry.modules_change(v)
-            elif k == 'sd_model_checkpoint':
-                main_entry.checkpoint_change(v)
-            # set all other options
-            else:
-                opts.set(k, v, is_api=True, run_callbacks=False)
-
-        if temp_memory_changes:
-            main_entry.refresh_memory_management_settings(**temp_memory_changes)
+        # apply any options overrides
+        set_config(p.override_settings, is_api=True, run_callbacks=False, save_config=False)
 
         # load/reload model and manage prompt cache as needed
         manage_model_and_prompt_cache(p)
@@ -850,18 +835,9 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
             res = process_images_inner(p)
 
     finally:
-        # restore opts to original state
+        # restore original options
         if p.override_settings_restore_afterwards:
-            for k, v in stored_opts.items():
-                if k == 'forge_additional_modules':
-                    main_entry.modules_change(v)
-                elif k == 'sd_model_checkpoint':
-                    main_entry.checkpoint_change(v)
-                else:
-                    setattr(opts, k, v)
-
-            if temp_memory_changes:
-                main_entry.refresh_memory_management_settings() # applies the set options by default
+            set_config(stored_opts, save_config=False)
 
     return res
 

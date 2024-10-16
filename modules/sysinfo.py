@@ -237,7 +237,9 @@ def set_config(req: dict[str, Any], is_api=False, run_callbacks=True, save_confi
             main_entry.checkpoint_change(v, save=False, refresh=False)
             should_refresh_model_loading_params = True
         elif k == 'forge_additional_modules':
-            should_refresh_model_loading_params = main_entry.modules_change(v, save=False, refresh=False)
+            modules_changed = main_entry.modules_change(v, save=False, refresh=False)
+            if modules_changed:
+                should_refresh_model_loading_params = True
         elif k in memory_keys:
             mem_key = k[len('forge_'):] # remove 'forge_' prefix
             memory_changes[mem_key] = v

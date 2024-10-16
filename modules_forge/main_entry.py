@@ -250,7 +250,7 @@ def checkpoint_change(ckpt_name:str, save=True, refresh=True):
 
 
 def modules_change(module_values:list, save=True, refresh=True) -> bool:
-    """ module values may be provided as file paths or as simply the module names """
+    """ module values may be provided as file paths, or just the module names. Returns True if modules changed. """
     modules = []
     for v in module_values:
         module_name = os.path.basename(v) # If the input is a filepath, extract the file name

@@ -11,6 +11,8 @@ from modules.paths import data_path
 from modules import shared, ui_tempdir, script_callbacks, processing, infotext_versions, images, prompt_parser, errors
 from PIL import Image
 
+from modules_forge import main_entry
+
 sys.modules['modules.generation_parameters_copypaste'] = sys.modules[__name__]  # alias for old name
 
 re_param_code = r'\s*(\w[\w \-/]+):\s*("(?:\\.|[^\\"])+"|[^,]*)(?:,|$)'
@@ -414,11 +416,35 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
     for key in skip_fields:
         res.pop(key, None)
 
+    # basic check for same checkpoint using short name
+    checkpoint = res.get('Model', None)
+    if checkpoint is not None:
+        if checkpoint in shared.opts.sd_model_checkpoint:
+            res.pop('Model')
+
+    modules = []
+    for setting_name in ["Module 1", "Module 2", "Module 3"]:
+        m = res.pop(setting_name, None)
+        if m:
+            for knownmodule in main_entry.module_list.keys():
+                if m == knownmodule.split('.')[0]:
+                    modules.append(knownmodule)
+                    break
+
+    if modules != []:
+        current_modules = shared.opts.forge_additional_modules
+        basename_modules = []
+        for m in current_modules:
+            basename_modules.append(os.path.basename(m))
+
+        if sorted(modules) != sorted(basename_modules):
+            res['VAE/TE'] = modules
+
     return res
 
 
 infotext_to_setting_name_mapping = [
-
+    ('VAE/TE', 'forge_additional_modules'),
 ]
 """Mapping of infotext labels to setting names. Only left for backwards compatibility - use OptionInfo(..., infotext='...') instead.
 Example content:
@@ -430,8 +456,7 @@ infotext_to_setting_name_mapping = [
     ('Schedule type', 'k_sched_type'),
 ]
 """
-
-
+import ast
 def create_override_settings_dict(text_pairs):
     """creates processing's override_settings parameters from gradio's multiselect
 
@@ -453,11 +478,16 @@ def create_override_settings_dict(text_pairs):
 
         params[k] = v.strip()
 
+
     mapping = [(info.infotext, k) for k, info in shared.opts.data_labels.items() if info.infotext]
     for param_name, setting_name in mapping + infotext_to_setting_name_mapping:
         value = params.get(param_name, None)
 
         if value is None:
+            continue
+
+        if setting_name == "forge_additional_modules":
+            res[setting_name] = ast.literal_eval(value)
             continue
 
         res[setting_name] = shared.opts.cast_value(setting_name, value)
@@ -494,6 +524,9 @@ def get_override_settings(params, *, skip_fields=None):
             continue
 
         if setting_name == "sd_model_checkpoint" and shared.opts.disable_weights_auto_swap:
+            continue
+
+        if setting_name in ["Module 1", "Module 2", "Module 3"] and shared.opts.disable_weights_auto_swap:
             continue
 
         v = shared.opts.cast_value(setting_name, v)

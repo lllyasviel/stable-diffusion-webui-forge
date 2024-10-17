@@ -427,9 +427,6 @@ options_templates.update(options_section((None, "Hidden options"), {
     "disable_all_extensions": OptionInfo("none", "Disable all extensions (preserves the list of disabled extensions)", gr.Radio, {"choices": ["none", "extra", "all"]}),
     "restore_config_state_file": OptionInfo("", "Config state file to restore from, under 'config-states/' folder"),
     "sd_checkpoint_hash": OptionInfo("", "SHA256 hash of the current checkpoint"),
-    "Module_1":  OptionInfo("", "Module 1 (for infotext)", infotext="Module 1"),
-    "Module_2":  OptionInfo("", "Module 2 (for infotext)", infotext="Module 2"),
-    "Module_3":  OptionInfo("", "Module 3 (for infotext)", infotext="Module 3"),
 }))
 
 forge_shared_options.register(options_templates, options_section, OptionInfo)

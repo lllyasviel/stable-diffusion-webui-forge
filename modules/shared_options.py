@@ -170,7 +170,7 @@ options_templates.update(options_section(('training', "Training", "training"), {
 }))
 
 options_templates.update(options_section(('sd', "Stable Diffusion", "sd"), {
-    "sd_model_checkpoint": OptionInfo(None, "(Managed by Forge)", gr.State),
+    "sd_model_checkpoint": OptionInfo(None, "(Managed by Forge)", gr.State, infotext="Model"),
     "sd_checkpoints_limit": OptionInfo(1, "Maximum number of checkpoints loaded at the same time", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
     "sd_checkpoints_keep_in_cpu": OptionInfo(True, "Only keep one model on device").info("will keep models other than the currently used one in RAM rather than VRAM"),
     "sd_checkpoint_cache": OptionInfo(0, "Checkpoints to cache in RAM", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1}).info("obsolete; set to 0 and use the two settings above instead"),
@@ -180,7 +180,7 @@ options_templates.update(options_section(('sd', "Stable Diffusion", "sd"), {
     "enable_batch_seeds": OptionInfo(True, "Make K-diffusion samplers produce same images in a batch as when making a single image"),
     "comma_padding_backtrack": OptionInfo(20, "Prompt word wrap length limit", gr.Slider, {"minimum": 0, "maximum": 74, "step": 1}).info("in tokens - for texts shorter than specified, if they don't fit into 75 token limit, move them to the next 75 token chunk"),
     "sdxl_clip_l_skip": OptionInfo(False, "Clip skip SDXL", gr.Checkbox).info("Enable Clip skip for the secondary clip model in sdxl. Has no effect on SD 1.5 or SD 2.0/2.1."),
-    "CLIP_stop_at_last_layers": OptionInfo(1, "(Managed by Forge)", gr.State),
+    "CLIP_stop_at_last_layers": OptionInfo(1, "(Managed by Forge)", gr.State, infotext="Clip skip"),
     "upcast_attn": OptionInfo(False, "Upcast cross attention layer to float32"),
     "randn_source": OptionInfo("GPU", "Random number generator source.", gr.Radio, {"choices": ["GPU", "CPU", "NV"]}, infotext="RNG").info("changes seeds drastically; use CPU to produce the same picture across different videocard vendors; use NV to produce same picture as on NVidia videocards"),
     "tiling": OptionInfo(False, "Tiling", infotext='Tiling').info("produce a tileable picture"),
@@ -427,6 +427,9 @@ options_templates.update(options_section((None, "Hidden options"), {
     "disable_all_extensions": OptionInfo("none", "Disable all extensions (preserves the list of disabled extensions)", gr.Radio, {"choices": ["none", "extra", "all"]}),
     "restore_config_state_file": OptionInfo("", "Config state file to restore from, under 'config-states/' folder"),
     "sd_checkpoint_hash": OptionInfo("", "SHA256 hash of the current checkpoint"),
+    "Module_1":  OptionInfo("", "Module 1 (for infotext)", infotext="Module 1"),
+    "Module_2":  OptionInfo("", "Module 2 (for infotext)", infotext="Module 2"),
+    "Module_3":  OptionInfo("", "Module 3 (for infotext)", infotext="Module 3"),
 }))
 
 forge_shared_options.register(options_templates, options_section, OptionInfo)

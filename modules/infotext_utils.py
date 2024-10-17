@@ -422,14 +422,23 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
         if checkpoint in shared.opts.sd_model_checkpoint:
             res.pop('Model')
 
+    # VAE / TE
     modules = []
-    for setting_name in ["Module 1", "Module 2", "Module 3"]:
-        m = res.pop(setting_name, None)
-        if m:
-            for knownmodule in main_entry.module_list.keys():
-                if m == knownmodule.split('.')[0]:
-                    modules.append(knownmodule)
-                    break
+    vae = res.pop('VAE', None)  # old form
+    if vae:
+        modules = [vae]
+    else:
+        for setting_name in ["Module 1", "Module 2", "Module 3"]:
+            m = res.pop(setting_name, None)
+            if m:
+                added = False
+                for knownmodule in main_entry.module_list.keys():
+                    if m == knownmodule.split('.')[0]:
+                        added = True
+                        modules.append(knownmodule)
+                        break
+                if not added:
+                    modules.append(m)   # so it shows in the override section (consistent with checkpoint and old vae)
 
     if modules != []:
         current_modules = shared.opts.forge_additional_modules
@@ -456,7 +465,7 @@ infotext_to_setting_name_mapping = [
     ('Schedule type', 'k_sched_type'),
 ]
 """
-import ast
+from ast import literal_eval
 def create_override_settings_dict(text_pairs):
     """creates processing's override_settings parameters from gradio's multiselect
 
@@ -487,7 +496,7 @@ def create_override_settings_dict(text_pairs):
             continue
 
         if setting_name == "forge_additional_modules":
-            res[setting_name] = ast.literal_eval(value)
+            res[setting_name] = literal_eval(value)
             continue
 
         res[setting_name] = shared.opts.cast_value(setting_name, value)

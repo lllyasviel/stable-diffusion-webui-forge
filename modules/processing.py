@@ -1383,7 +1383,14 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                 decoded_samples = None
 
         with sd_models.SkipWritingToConfig():
-            sd_models.reload_model_weights(info=self.hr_checkpoint_info)
+            if self.hr_checkpoint_name and self.hr_checkpoint_name != 'Use same checkpoint':
+                firstpass_checkpoint = getattr(shared.opts, 'sd_model_checkpoint')
+                if firstpass_checkpoint != self.hr_checkpoint_name:
+                    try:
+                        main_entry.checkpoint_change(self.hr_checkpoint_name, save=False)
+                        sd_models.forge_model_reload();
+                    finally:
+                        main_entry.checkpoint_change(firstpass_checkpoint, save=False)
 
         return self.sample_hr_pass(samples, decoded_samples, seeds, subseeds, subseed_strength, prompts)
 
@@ -1543,7 +1550,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
         steps = self.hr_second_pass_steps or self.steps
         total_steps = sampler_config.total_steps(steps) if sampler_config else steps
 
-        if self.cfg_scale == 1:
+        if self.hr_cfg == 1:
             self.hr_uc = None
             print('Skipping unconditional conditioning (HR pass) when CFG = 1. Negative Prompts are ignored.')
         else:

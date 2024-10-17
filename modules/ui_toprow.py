@@ -26,6 +26,7 @@ class Toprow:
     apply_styles = None
     restore_progress_button = None
 
+    t5_token_counter = None
     token_counter = None
     token_button = None
     negative_token_counter = None
@@ -127,9 +128,10 @@ class Toprow:
 
             self.restore_progress_button = ToolButton(value=restore_progress_symbol, elem_id=f"{self.id_part}_restore_progress", visible=False, tooltip="Restore progress")
 
+            self.t5_token_counter = gr.HTML(value="<span>0/255</span>", elem_id=f"{self.id_part}_t5_token_counter", elem_classes=["t5-token-counter"], visible=False)
             self.token_counter = gr.HTML(value="<span>0/75</span>", elem_id=f"{self.id_part}_token_counter", elem_classes=["token-counter"], visible=False)
             self.token_button = gr.Button(visible=False, elem_id=f"{self.id_part}_token_button")
-            self.negative_token_counter = gr.HTML(value="<span>0/75</span>", elem_id=f"{self.id_part}_negative_token_counter", elem_classes=["token-counter"], visible=False)
+            self.negative_token_counter = gr.HTML(value="<span>0/75</span>", elem_id=f"{self.id_part}_negative_token_counter", elem_classes=["negative-token-counter"], visible=False)
             self.negative_token_button = gr.Button(visible=False, elem_id=f"{self.id_part}_negative_token_button")
 
             self.clear_prompt_button.click(

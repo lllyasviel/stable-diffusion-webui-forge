@@ -428,17 +428,17 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
     if vae:
         modules = [vae]
     else:
-        for setting_name in ["Module 1", "Module 2", "Module 3"]:
-            m = res.pop(setting_name, None)
-            if m:
+        for key in res:
+            if key.startswith('Module '):
                 added = False
                 for knownmodule in main_entry.module_list.keys():
-                    if m == knownmodule.split('.')[0]:
+                    filename, _ = os.path.splitext(knownmodule)
+                    if res[key] == filename:
                         added = True
                         modules.append(knownmodule)
                         break
                 if not added:
-                    modules.append(m)   # so it shows in the override section (consistent with checkpoint and old vae)
+                    modules.append(res[key])   # so it shows in the override section (consistent with checkpoint and old vae)
 
     if modules != []:
         current_modules = shared.opts.forge_additional_modules
@@ -465,6 +465,7 @@ infotext_to_setting_name_mapping = [
     ('Schedule type', 'k_sched_type'),
 ]
 """
+
 from ast import literal_eval
 def create_override_settings_dict(text_pairs):
     """creates processing's override_settings parameters from gradio's multiselect
@@ -486,7 +487,6 @@ def create_override_settings_dict(text_pairs):
         k, v = pair.split(":", maxsplit=1)
 
         params[k] = v.strip()
-
 
     mapping = [(info.infotext, k) for k, info in shared.opts.data_labels.items() if info.infotext]
     for param_name, setting_name in mapping + infotext_to_setting_name_mapping:
@@ -535,8 +535,9 @@ def get_override_settings(params, *, skip_fields=None):
         if setting_name == "sd_model_checkpoint" and shared.opts.disable_weights_auto_swap:
             continue
 
-        if setting_name == "forge_additional_modules" and shared.opts.disable_weights_auto_swap:
-            continue
+        if setting_name == "forge_additional_modules": 
+            if shared.opts.disable_weights_auto_swap:
+                continue
 
         v = shared.opts.cast_value(setting_name, v)
         current_value = getattr(shared.opts, setting_name, None)

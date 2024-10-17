@@ -532,10 +532,7 @@ def get_override_settings(params, *, skip_fields=None):
         if v is None:
             continue
 
-        if setting_name == "sd_model_checkpoint" and shared.opts.disable_weights_auto_swap:
-            continue
-
-        if setting_name == "forge_additional_modules": 
+        if setting_name in ["sd_model_checkpoint", "forge_additional_modules"]:
             if shared.opts.disable_weights_auto_swap:
                 continue
 

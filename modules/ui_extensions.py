@@ -106,7 +106,7 @@ def check_updates(id_task, disable_list):
     exts = [ext for ext in extensions.extensions if ext.remote is not None and ext.name not in disabled]
     shared.state.job_count = len(exts)
 
-    for ext in exts:
+    def _check_update(ext):
         shared.state.textinfo = ext.name
 
         try:
@@ -117,6 +117,14 @@ def check_updates(id_task, disable_list):
         except Exception:
             errors.report(f"Error checking updates for {ext.name}", exc_info=True)
 
+    threads = []
+    for ext in exts:
+        thread = threading.Thread(target=_check_update, args=(ext,))
+        threads.append(thread)
+        thread.start()   
+
+    for thread in threads:
+        thread.join()
         shared.state.nextjob()
 
     return extension_table(), ""

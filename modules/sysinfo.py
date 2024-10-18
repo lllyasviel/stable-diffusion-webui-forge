@@ -232,8 +232,6 @@ def set_config(req: dict[str, Any], is_api=False, run_callbacks=True, save_confi
         # checkpoints, modules, and options pertaining to memory management are managed in dedicated functions
         # If values for these options change, call refresh_model_loading_parameters()
         if k == 'sd_model_checkpoint':
-            if v is not None and v not in sd_models.checkpoint_aliases:
-                raise RuntimeError(f"model {v!r} not found")
             main_entry.checkpoint_change(v, save=False, refresh=False)
             should_refresh_model_loading_params = True
         elif k == 'forge_additional_modules':

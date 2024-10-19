@@ -474,7 +474,7 @@ infotext_to_setting_name_mapping = [
     ('Schedule type', 'k_sched_type'),
 ]
 """
-
+from ast import literal_eval
 def create_override_settings_dict(text_pairs):
     """creates processing's override_settings parameters from gradio's multiselect
 
@@ -501,6 +501,10 @@ def create_override_settings_dict(text_pairs):
         value = params.get(param_name, None)
 
         if value is None:
+            continue
+
+        if setting_name == "forge_additional_modules":
+            res[setting_name] = literal_eval(value)
             continue
 
         res[setting_name] = shared.opts.cast_value(setting_name, value)

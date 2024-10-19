@@ -294,7 +294,7 @@ def forge_loader(sd, additional_state_dicts=None):
         'EDM': 'edm',
     }
     if 'scheduler' in huggingface_components and hasattr(huggingface_components['scheduler'], 'config') and 'prediction_type' in huggingface_components['scheduler'].config:
-        huggingface_components['scheduler'].config.prediction_type = prediction_types.get(estimated_config.model_type.name, 'epsilon')
+        huggingface_components['scheduler'].config.prediction_type = prediction_types.get(estimated_config.model_type.name, huggingface_components['scheduler'].config.prediction_type)
 
     for M in possible_models:
         if any(isinstance(estimated_config, x) for x in M.matched_guesses):

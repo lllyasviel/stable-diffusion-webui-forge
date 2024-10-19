@@ -146,6 +146,7 @@ def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_p
 def split_state_dict(sd, sd_vae=None):
     guess = huggingface_guess.guess(sd)
     guess.clip_target = guess.clip_target(sd)
+    guess.model_type = guess.model_type(sd)
 
     if sd_vae is not None:
         print(f'Using external VAE state dict: {len(sd_vae)}')
@@ -187,6 +188,15 @@ def forge_loader(sd, sd_vae=None):
                 del state_dicts[component_name]
             if component is not None:
                 huggingface_components[component_name] = component
+
+    # Fix Huggingface prediction type using estimated config detection
+    prediction_types = {
+        'EPS': 'epsilon',
+        'V_PREDICTION': 'v_prediction',
+        'EDM': 'edm',
+    }
+    if 'scheduler' in huggingface_components and hasattr(huggingface_components['scheduler'], 'config') and 'prediction_type' in huggingface_components['scheduler'].config:
+        huggingface_components['scheduler'].config.prediction_type = prediction_types.get(estimated_config.model_type.name, 'epsilon')
 
     for M in possible_models:
         if any(isinstance(estimated_config, x) for x in M.matched_guesses):

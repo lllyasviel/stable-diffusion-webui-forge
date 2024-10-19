@@ -1644,6 +1644,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
     force_task_id: str = None
 
     hr_distilled_cfg: float = 3.5       #   needed here for cached_params
+    highresfix_quick: bool = False
 
     image_mask: Any = field(default=None, init=False)
 

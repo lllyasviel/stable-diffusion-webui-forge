@@ -244,6 +244,7 @@ def split_state_dict(sd, additional_state_dicts: list = None):
 
     guess.clip_target = guess.clip_target(sd)
     guess.model_type = guess.model_type(sd)
+    guess.ztsnr = 'ztsnr' in sd
 
     state_dict = {
         guess.unet_target: try_filter_state_dict(sd, guess.unet_key_prefix),

@@ -424,6 +424,7 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
 
     # VAE / TE
     modules = []
+    hr_modules = []
     vae = res.pop('VAE', None)  # old form
     if vae:
         modules = [vae]
@@ -439,6 +440,12 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
                         break
                 if not added:
                     modules.append(res[key])   # so it shows in the override section (consistent with checkpoint and old vae)
+            elif key.startswith('Hires Module '):
+                for knownmodule in main_entry.module_list.keys():
+                    filename, _ = os.path.splitext(knownmodule)
+                    if res[key] == filename:
+                        hr_modules.append(knownmodule)
+                        break
 
     if modules != []:
         current_modules = shared.opts.forge_additional_modules
@@ -448,6 +455,8 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
 
         if sorted(modules) != sorted(basename_modules):
             res['VAE/TE'] = modules
+
+    res['Hires VAE/TE'] = hr_modules
 
     return res
 
@@ -465,7 +474,6 @@ infotext_to_setting_name_mapping = [
     ('Schedule type', 'k_sched_type'),
 ]
 """
-
 from ast import literal_eval
 def create_override_settings_dict(text_pairs):
     """creates processing's override_settings parameters from gradio's multiselect

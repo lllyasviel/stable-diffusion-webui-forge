@@ -603,6 +603,11 @@ def create_ui():
                                     img2img_batch_source_type = gr.Textbox(visible=False, value="upload")
                                     with gr.TabItem('Upload', id='batch_upload', elem_id="img2img_batch_upload_tab") as tab_batch_upload:
                                         img2img_batch_upload = gr.Files(label="Files", interactive=True, elem_id="img2img_batch_upload")
+                                        img2img_batch_upload_use_original_name_option = gr.Checkbox(
+                                            label="Use original name when save",
+                                            info="Be care - existing files may be overwritten",
+                                            elem_id="img2img_batch_upload_use_original_name_option"
+                                        )
                                     with gr.TabItem('From directory', id='batch_from_dir', elem_id="img2img_batch_from_dir_tab") as tab_batch_from_dir:
                                         hidden = '<br>Disabled when launched with --hide-ui-dir-config.' if shared.cmd_opts.hide_ui_dir_config else ''
                                         gr.HTML(
@@ -616,6 +621,7 @@ def create_ui():
                                         img2img_batch_inpaint_mask_dir = gr.Textbox(label="Inpaint batch mask directory (required for inpaint batch processing only)", **shared.hide_dirs, elem_id="img2img_batch_inpaint_mask_dir")
                                 tab_batch_upload.select(fn=lambda: "upload", inputs=[], outputs=[img2img_batch_source_type])
                                 tab_batch_from_dir.select(fn=lambda: "from dir", inputs=[], outputs=[img2img_batch_source_type])
+
                                 with gr.Accordion("PNG info", open=False):
                                     img2img_batch_use_png_info = gr.Checkbox(label="Append png info to prompts", elem_id="img2img_batch_use_png_info")
                                     img2img_batch_png_info_dir = gr.Textbox(label="PNG info directory", **shared.hide_dirs, placeholder="Leave empty to use input directory", elem_id="img2img_batch_png_info_dir")
@@ -808,6 +814,7 @@ def create_ui():
                 img2img_batch_png_info_dir,
                 img2img_batch_source_type,
                 img2img_batch_upload,
+                img2img_batch_upload_use_original_name_option,
             ] + custom_inputs
 
             img2img_args = dict(

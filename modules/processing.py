@@ -812,6 +812,9 @@ def manage_model_and_prompt_cache(p: StableDiffusionProcessing):
 
 def process_images(p: StableDiffusionProcessing) -> Processed:
     """applies settings overrides (if any) before processing images, then restores settings as applicable."""
+    if p.scripts is not None:
+        p.scripts.before_process(p)
+        
     stored_opts = {k: opts.data[k] if k in opts.data else opts.get_default(k) for k in p.override_settings.keys() if k in opts.data}
 
     try:
@@ -829,9 +832,6 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
             pass
         else:
             manage_model_and_prompt_cache(p)
-
-        if p.scripts is not None:
-            p.scripts.before_process(p)
 
         # backwards compatibility, fix sampler and scheduler if invalid
         sd_samplers.fix_p_invalid_sampler_and_scheduler(p)

@@ -240,6 +240,9 @@ def refresh_model_loading_parameters():
 
 
 def checkpoint_change(ckpt_name:str, save=True, refresh=True):
+    if ckpt_name is not None and ckpt_name not in sd_models.checkpoint_aliases:
+        raise RuntimeError(f"model {ckpt_name!r} not found")
+
     shared.opts.set('sd_model_checkpoint', ckpt_name)
 
     if save:

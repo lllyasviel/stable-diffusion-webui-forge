@@ -1191,7 +1191,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
     hr_resize_x: int = 0
     hr_resize_y: int = 0
     hr_checkpoint_name: str = None
-    hr_additional_modules: list = field(default_factory=list)
+    hr_additional_modules: list = field(default=None)
     hr_sampler_name: str = None
     hr_scheduler: str = None
     hr_prompt: str = ''

@@ -3,10 +3,27 @@ import os
 from PIL import Image
 
 from modules import shared, images, devices, scripts, scripts_postprocessing, ui_common, infotext_utils
-from modules.shared import opts
+from modules.shared import opts, cmd_opts
 
+import gradio as gr
+from pathlib import Path
+ 
+def run_postprocessing(request:gr.Request, extras_mode, image, image_folder, input_dir, output_dir, show_extras_results, *args, save_output: bool = True):
+    if cmd_opts.multiUser: # Only if multiUser mode
+        if len(opts.outdir_samples) != 0: # If not empty
+            opts.outdir_samples = Path(opts.outdir_samples).parent # Cutting [user]
+            opts.outdir_samples /= Path(request.username) # Adding new username
+            opts.outdir_samples = str(opts.outdir_samples)
+        else:
+            last = Path(opts.outdir_extras_samples).parts[-1]
+            opts.outdir_extras_samples = Path(opts.outdir_extras_samples).parent.parent # Cutting last two parts
+            opts.outdir_extras_samples /= Path(request.username) / last # Adding new username and last folder
+            opts.outdir_extras_samples = str(opts.outdir_extras_samples)
 
-def run_postprocessing(extras_mode, image, image_folder, input_dir, output_dir, show_extras_results, *args, save_output: bool = True):
+        if len(opts.outdir_grids) != 0: # If not empty
+            opts.outdir_grids = Path(opts.outdir_grids).parent
+            opts.outdir_grids /= Path(request.username)
+            opts.outdir_grids = str(opts.outdir_grids)
     devices.torch_gc()
 
     shared.state.begin(job="extras")
@@ -131,8 +148,8 @@ def run_postprocessing(extras_mode, image, image_folder, input_dir, output_dir, 
     return outputs, ui_common.plaintext_to_html(infotext), ''
 
 
-def run_postprocessing_webui(id_task, *args, **kwargs):
-    return run_postprocessing(*args, **kwargs)
+def run_postprocessing_webui(id_task, request:gr.Request, *args, **kwargs):
+    return run_postprocessing(request, *args, **kwargs)
 
 
 def run_extras(extras_mode, resize_mode, image, image_folder, input_dir, output_dir, show_extras_results, gfpgan_visibility, codeformer_visibility, codeformer_weight, upscaling_resize, upscaling_resize_w, upscaling_resize_h, upscaling_crop, extras_upscaler_1, extras_upscaler_2, extras_upscaler_2_visibility, upscale_first: bool, save_output: bool = True, max_side_length: int = 0):

@@ -3,7 +3,8 @@
 set PYTHON=
 set GIT=
 set VENV_DIR=
-set COMMANDLINE_ARGS=
+set COMMANDLINE_ARGS=--xformers --listen --gradio-auth-path \\\\yvshn002\\_dsty_stco\\AI_farm\\credentials.txt --lora-dir \\\\yvshn002\\_dsty_stco\\AI_farm\\Lora --multiUser --invisibleSettings --pin-shared-memory --cuda-malloc --cuda-stream
+
 
 @REM Uncomment following code to reference an existing A1111 checkout.
 @REM set A1111_HOME=Your A1111 checkout dir

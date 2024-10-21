@@ -147,3 +147,8 @@ parser.add_argument(
     help="Path to directory with annotator model directories",
     default=None,
 )
+
+parser.add_argument("--multiUser", action="store_true", help="Launch application in multiUser mode : paths are considered personnal")
+parser.add_argument("--invisibleSettings", action="store_true", help="Same behaviour as hide-ui-dir-config to hide directory configuration in the WebUI : however, it does not prevent editing inside the app (code side)")
+parser.add_argument("--exportScript", type=str, default="", help="Path to script to export generated images",)
+parser.add_argument("--importScript", type=str, default="", help="Path to script to import loras",)

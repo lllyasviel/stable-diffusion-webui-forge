@@ -4,17 +4,37 @@ from contextlib import closing
 import modules.scripts
 from modules import processing, infotext_utils
 from modules.infotext_utils import create_override_settings_dict, parse_generation_parameters
-from modules.shared import opts
+from modules.shared import opts, cmd_opts
 import modules.shared as shared
 from modules.ui import plaintext_to_html
 from PIL import Image
 import gradio as gr
 from modules_forge import main_thread
+from pathlib import Path
 
 
 def txt2img_create_processing(id_task: str, request: gr.Request, prompt: str, negative_prompt: str, prompt_styles, n_iter: int, batch_size: int, cfg_scale: float, distilled_cfg_scale: float, height: int, width: int, enable_hr: bool, denoising_strength: float, hr_scale: float, hr_upscaler: str, hr_second_pass_steps: int, hr_resize_x: int, hr_resize_y: int, hr_checkpoint_name: str, hr_additional_modules: list, hr_sampler_name: str, hr_scheduler: str, hr_prompt: str, hr_negative_prompt, hr_cfg: float, hr_distilled_cfg: float, override_settings_texts, *args, force_enable_hr=False):
     override_settings = create_override_settings_dict(override_settings_texts)
+    if cmd_opts.multiUser: # Only if multiUser mode
+        if len(opts.outdir_samples) != 0: # If not empty
+            opts.outdir_samples = Path(opts.outdir_samples).parent # Cutting [user]
+            opts.outdir_samples /= Path(request.username) # Convert request.username to Path and add it
+            opts.outdir_samples = str(opts.outdir_samples) # Back to String
+        else:
+            last = Path(opts.outdir_txt2img_samples).parts[-1]
+            opts.outdir_txt2img_samples = Path(opts.outdir_txt2img_samples).parent.parent # Cutting last two parts
+            opts.outdir_txt2img_samples /= Path(request.username) / last
+            opts.outdir_txt2img_samples = str(opts.outdir_txt2img_samples)
 
+        if len(opts.outdir_grids) != 0: # If not empty
+            opts.outdir_grids = Path(opts.outdir_grids).parent
+            opts.outdir_grids /= Path(request.username)
+            opts.outdir_grids = str(opts.outdir_grids)
+        else:
+            last = Path(opts.outdir_txt2img_grids).parts[-1]
+            opts.outdir_txt2img_grids = Path(opts.outdir_txt2img_grids).parent.parent
+            opts.outdir_txt2img_grids /= Path(request.username) / last
+            opts.outdir_txt2img_grids = str(opts.outdir_txt2img_grids)
     if force_enable_hr:
         enable_hr = True
 

@@ -928,7 +928,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             if state.interrupted or state.stopping_generation:
                 break
 
-            sd_models.reload_model_weights()  # model can be changed for example by refiner
+            sd_models.forge_model_reload()  # model can be changed for example by refiner, hiresfix fix
 
             p.sd_model.forge_objects = p.sd_model.forge_objects_original.shallow_copy()
             p.prompts = p.all_prompts[n * p.batch_size:(n + 1) * p.batch_size]
@@ -1282,7 +1282,9 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                 self.extra_generation_params["Hires checkpoint"] = self.hr_checkpoint_info.short_title
 
             if isinstance(self.hr_additional_modules, list) and len(self.hr_additional_modules) > 0:
-                if 'Use same choices' not in self.hr_additional_modules:
+                if 'Use same choices' in self.hr_additional_modules:
+                    self.extra_generation_params['Hires Module 1'] = 'Use same choices'
+                else:
                     for i, m in enumerate(self.hr_additional_modules):
                         self.extra_generation_params[f'Hires Module {i+1}'] = os.path.splitext(os.path.basename(m))[0]
 

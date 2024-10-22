@@ -456,6 +456,12 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
         if sorted(modules) != sorted(basename_modules):
             res['VAE/TE'] = modules
 
+    # if 'Use same choices' was the selection for Hires VAE / Text Encoder, it will be the only option written
+    # but will not have matched the known modules, so will not be in hr_modules
+    if 'Hires Module 1' in res:
+        if res['Hires Module 1'] == 'Use same choices':
+            hr_modules = ['Use same choices']
+
     res['Hires VAE/TE'] = hr_modules
 
     return res

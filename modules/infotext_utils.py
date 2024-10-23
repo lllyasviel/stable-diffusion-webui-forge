@@ -456,13 +456,18 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
         if sorted(modules) != sorted(basename_modules):
             res['VAE/TE'] = modules
 
-    # if 'Use same choices' was the selection for Hires VAE / Text Encoder, it will be the only option written
-    # but will not have matched the known modules, so will not be in hr_modules
+    # if 'Use same choices' was the selection for Hires VAE / Text Encoder, it will be the only Hires Module
+    # if the selection was empty, it will be the only Hires Module, saved as 'Built-in'
     if 'Hires Module 1' in res:
         if res['Hires Module 1'] == 'Use same choices':
             hr_modules = ['Use same choices']
+        elif res['Hires Module 1'] == 'Built-in':
+            hr_modules = []
 
-    res['Hires VAE/TE'] = hr_modules
+        res['Hires VAE/TE'] = hr_modules
+    else:
+        # no Hires Module infotext, use default
+        res['Hires VAE/TE'] = ['Use same choices']
 
     return res
 

@@ -1281,8 +1281,10 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
 
                 self.extra_generation_params["Hires checkpoint"] = self.hr_checkpoint_info.short_title
 
-            if isinstance(self.hr_additional_modules, list) and len(self.hr_additional_modules) > 0:
-                if 'Use same choices' in self.hr_additional_modules:
+            if isinstance(self.hr_additional_modules, list):
+                if self.hr_additional_modules == []:
+                    self.extra_generation_params['Hires Module 1'] = 'Built-in'
+                elif 'Use same choices' in self.hr_additional_modules:
                     self.extra_generation_params['Hires Module 1'] = 'Use same choices'
                 else:
                     for i, m in enumerate(self.hr_additional_modules):

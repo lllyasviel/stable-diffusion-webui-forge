@@ -122,11 +122,14 @@ def process_batch(p, input, output_dir, inpaint_mask_dir, args, to_scale=False, 
         if output_dir:
             p.outpath_samples = output_dir
             p.override_settings['save_to_dirs'] = False
+
+        if not opts.img2img_batch_use_original_name:
             p.override_settings['save_images_replace_action'] = "Add number suffix"
-            if p.n_iter > 1 or p.batch_size > 1:
-                p.override_settings['samples_filename_pattern'] = f'{image_path.stem}-[generation_number]'
-            else:
-                p.override_settings['samples_filename_pattern'] = f'{image_path.stem}'
+
+        if (p.n_iter > 1 or p.batch_size > 1) and not opts.img2img_batch_use_original_name:
+            p.override_settings['samples_filename_pattern'] = f'{image_path.stem}-[generation_number]'
+        else:
+            p.override_settings['samples_filename_pattern'] = f'{image_path.stem}'
 
         proc = modules.scripts.scripts_img2img.run(p, *args)
 

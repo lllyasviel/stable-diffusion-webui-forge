@@ -214,7 +214,9 @@ class ExtraNetworksPage:
         desc = metadata.get("description", None)
         if desc is not None:
             item["description"] = desc
-        vae = metadata.get("vae", None)
+        vae = metadata.get('vae_te', None)
+        if vae is None:     # fallback to old type
+            vae = metadata.get("vae", None)
         if vae is not None:
             if isinstance(vae, str):
                 vae = [vae]

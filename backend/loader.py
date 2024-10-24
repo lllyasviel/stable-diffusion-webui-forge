@@ -243,6 +243,8 @@ def split_state_dict(sd, additional_state_dicts: list = None):
             sd = replace_state_dict(sd, asd, guess)
 
     guess.clip_target = guess.clip_target(sd)
+    guess.model_type = guess.model_type(sd)
+    guess.ztsnr = 'ztsnr' in sd
 
     state_dict = {
         guess.unet_target: try_filter_state_dict(sd, guess.unet_key_prefix),
@@ -285,6 +287,15 @@ def forge_loader(sd, additional_state_dicts=None):
                 del state_dicts[component_name]
             if component is not None:
                 huggingface_components[component_name] = component
+
+    # Fix Huggingface prediction type using estimated config detection
+    prediction_types = {
+        'EPS': 'epsilon',
+        'V_PREDICTION': 'v_prediction',
+        'EDM': 'edm',
+    }
+    if 'scheduler' in huggingface_components and hasattr(huggingface_components['scheduler'], 'config') and 'prediction_type' in huggingface_components['scheduler'].config:
+        huggingface_components['scheduler'].config.prediction_type = prediction_types.get(estimated_config.model_type.name, huggingface_components['scheduler'].config.prediction_type)
 
     for M in possible_models:
         if any(isinstance(estimated_config, x) for x in M.matched_guesses):

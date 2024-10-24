@@ -119,7 +119,7 @@ def make_checkpoint_manager_ui():
     Context.root_block.load(ui_refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
 
     ui_clip_skip = gr.Slider(label="Clip skip", value=lambda: shared.opts.CLIP_stop_at_last_layers, **{"minimum": 1, "maximum": 12, "step": 1})
-    bind_to_opts(ui_clip_skip, 'CLIP_stop_at_last_layers', save=False)
+    bind_to_opts(ui_clip_skip, 'CLIP_stop_at_last_layers', save=True)
 
     ui_checkpoint.change(checkpoint_change, inputs=[ui_checkpoint], show_progress=False)
     ui_vae.change(modules_change, inputs=[ui_vae], queue=False, show_progress=False)
@@ -239,28 +239,35 @@ def refresh_model_loading_parameters():
     return
 
 
-def checkpoint_change(ckpt_name, refresh_params=True):
+def checkpoint_change(ckpt_name:str, save=True, refresh=True):
     shared.opts.set('sd_model_checkpoint', ckpt_name)
-    shared.opts.save(shared.config_filename)
 
-    if refresh_params:
+    if save:
+        shared.opts.save(shared.config_filename)
+    if refresh:
         refresh_model_loading_parameters()
     return
 
 
-def modules_change(module_names, refresh_params=True):
+def modules_change(module_values:list, save=True, refresh=True) -> bool:
+    """ module values may be provided as file paths, or just the module names. Returns True if modules changed. """
     modules = []
-
-    for n in module_names:
-        if n in module_list:
-            modules.append(module_list[n])
+    for v in module_values:
+        module_name = os.path.basename(v) # If the input is a filepath, extract the file name
+        if module_name in module_list:
+            modules.append(module_list[module_name])
+    
+    # skip further processing if value unchanged
+    if modules == shared.opts.data.get('forge_additional_modules'):
+        return False
 
     shared.opts.set('forge_additional_modules', modules)
-    shared.opts.save(shared.config_filename)
 
-    if refresh_params:
+    if save:
+        shared.opts.save(shared.config_filename)
+    if refresh:
         refresh_model_loading_parameters()
-    return
+    return True
 
 
 def get_a1111_ui_component(tab, label):

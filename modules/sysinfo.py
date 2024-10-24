@@ -6,6 +6,7 @@ import platform
 import hashlib
 import re
 from pathlib import Path
+from typing import Any
 
 from modules import paths_internal, timer, shared_cmd_options, errors, launch_utils
 
@@ -213,3 +214,46 @@ def get_config():
                 return json.load(f)
         except Exception as e:
             return str(e)
+
+def set_config(req: dict[str, Any], is_api=False, run_callbacks=True, save_config=True):
+    from modules import shared, sd_models
+    from modules_forge import main_entry
+    
+    should_refresh_model_loading_params = False
+
+    memory_changes = {}
+    memory_keys = ['forge_inference_memory', 'forge_async_loading', 'forge_pin_shared_memory']
+
+    for k, v in req.items():
+        # ignore unchanged options
+        if v == shared.opts.data.get(k):
+            continue
+
+        # checkpoints, modules, and options pertaining to memory management are managed in dedicated functions
+        # If values for these options change, call refresh_model_loading_parameters()
+        if k == 'sd_model_checkpoint':
+            if v is not None and v not in sd_models.checkpoint_aliases:
+                raise RuntimeError(f"model {v!r} not found")
+            main_entry.checkpoint_change(v, save=False, refresh=False)
+            should_refresh_model_loading_params = True
+        elif k == 'forge_additional_modules':
+            modules_changed = main_entry.modules_change(v, save=False, refresh=False)
+            if modules_changed:
+                should_refresh_model_loading_params = True
+        elif k in memory_keys:
+            mem_key = k[len('forge_'):] # remove 'forge_' prefix
+            memory_changes[mem_key] = v
+
+        # set all other options
+        else:
+            shared.opts.set(k, v, is_api=is_api, run_callbacks=run_callbacks)
+
+    if memory_changes:
+        main_entry.refresh_memory_management_settings(**memory_changes)
+        should_refresh_model_loading_params = True
+
+    if should_refresh_model_loading_params:
+        main_entry.refresh_model_loading_parameters()
+
+    if save_config:
+        shared.opts.save(shared.config_filename)

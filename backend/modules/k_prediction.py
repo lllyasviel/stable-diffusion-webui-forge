@@ -45,6 +45,26 @@ def flux_time_shift(mu, sigma, t):
     return math.exp(mu) / (math.exp(mu) + (1 / t - 1) ** sigma)
 
 
+def rescale_zero_terminal_snr_sigmas(sigmas):
+    alphas_cumprod = 1 / ((sigmas * sigmas) + 1)
+    alphas_bar_sqrt = alphas_cumprod.sqrt()
+
+    # Store old values.
+    alphas_bar_sqrt_0 = alphas_bar_sqrt[0].clone()
+    alphas_bar_sqrt_T = alphas_bar_sqrt[-1].clone()
+
+    # Shift so the last timestep is zero.
+    alphas_bar_sqrt -= (alphas_bar_sqrt_T)
+
+    # Scale so the first timestep is back to the old value.
+    alphas_bar_sqrt *= alphas_bar_sqrt_0 / (alphas_bar_sqrt_0 - alphas_bar_sqrt_T)
+
+    # Convert alphas_bar_sqrt to betas
+    alphas_bar = alphas_bar_sqrt**2  # Revert sqrt
+    alphas_bar[-1] = 4.8973451890853435e-08
+    return ((1 - alphas_bar) / alphas_bar) ** 0.5
+
+
 class AbstractPrediction(torch.nn.Module):
     def __init__(self, sigma_data=1.0, prediction_type='epsilon'):
         super().__init__()
@@ -113,6 +133,10 @@ class Prediction(AbstractPrediction):
         self.register_buffer('sigmas', sigmas.float())
         self.register_buffer('log_sigmas', sigmas.log().float())
         return
+
+    def set_sigmas(self, sigmas):
+        self.register_buffer('sigmas', sigmas.float())
+        self.register_buffer('log_sigmas', sigmas.log().float())
 
     @property
     def sigma_min(self):

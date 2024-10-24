@@ -737,7 +737,9 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
         "CFG scale": p.cfg_scale
     }
 
-    if p.sd_model.use_distilled_cfg_scale:
+    # if hires fix was used, p.firstpass_use_distilled_cfg_scale is appropriately set, otherwise it doesn't exist
+    firstpass_use_distilled_cfg_scale = getattr(p,'firstpass_use_distilled_cfg_scale', p.sd_model.use_distilled_cfg_scale)
+    if firstpass_use_distilled_cfg_scale:
         generation_params['Distilled CFG Scale'] = p.distilled_cfg_scale
 
     noise_source_type = get_noise_source_type()
@@ -1305,8 +1307,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
             self.extra_generation_params["Hires negative prompt"] = get_hr_negative_prompt
 
             self.extra_generation_params["Hires CFG Scale"] = self.hr_cfg
-            if shared.sd_model.use_distilled_cfg_scale:
-                self.extra_generation_params['Hires Distilled CFG Scale'] = self.hr_distilled_cfg
+            self.extra_generation_params["Hires Distilled CFG Scale"] = None  # set after potential hires model load
 
             self.extra_generation_params["Hires schedule type"] = None  # to be set in sd_samplers_kdiffusion.py
 
@@ -1407,6 +1408,8 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
 
             if self.hr_checkpoint_name and self.hr_checkpoint_name != 'Use same checkpoint':
                 if self.hr_checkpoint_name != fp_checkpoint:
+                    self.firstpass_use_distilled_cfg_scale = self.sd_model.use_distilled_cfg_scale
+
                     main_entry.checkpoint_change(self.hr_checkpoint_name, save=False, refresh=False)
                     reload = True
             
@@ -1417,6 +1420,9 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                 finally:
                     main_entry.modules_change(fp_additional_modules, save=False, refresh=False)
                     main_entry.checkpoint_change(fp_checkpoint, save=False)
+
+            if self.sd_model.use_distilled_cfg_scale:
+                self.extra_generation_params['Hires Distilled CFG Scale'] = self.hr_distilled_cfg
 
         return self.sample_hr_pass(samples, decoded_samples, seeds, subseeds, subseed_strength, prompts)
 

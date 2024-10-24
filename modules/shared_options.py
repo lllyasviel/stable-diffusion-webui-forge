@@ -230,7 +230,7 @@ options_templates.update(options_section(('img2img', "img2img", "sd"), {
     "img2img_batch_show_results_limit": OptionInfo(32, "Show the first N batch img2img results in UI", gr.Slider, {"minimum": -1, "maximum": 1000, "step": 1}).info('0: disable, -1: show all images. Too many images can cause lag'),
     "overlay_inpaint": OptionInfo(True, "Overlay original for inpaint").info("when inpainting, overlay the original image over the areas that weren't inpainted."),
     "img2img_autosize": OptionInfo(False, "After loading into Img2img, automatically update Width and Height"),
-
+    "img2img_batch_use_original_name": OptionInfo(False, "Save using original filename in img2img batch. Applies to 'Upload' and 'From directory' tabs.").info("Warning: overwriting is possible, based on Settings > Saving images/grids > Saving the image to an existing file.")
 }))
 
 options_templates.update(options_section(('optimizations', "Optimizations", "sd"), {

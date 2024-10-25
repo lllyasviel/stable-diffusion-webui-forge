@@ -258,7 +258,7 @@ def modules_change(module_values:list, save=True, refresh=True) -> bool:
             modules.append(module_list[module_name])
     
     # skip further processing if value unchanged
-    if modules == shared.opts.data.get('forge_additional_modules'):
+    if sorted(modules) == sorted(shared.opts.data.get('forge_additional_modules', [])):
         return False
 
     shared.opts.set('forge_additional_modules', modules)

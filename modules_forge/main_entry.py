@@ -240,13 +240,19 @@ def refresh_model_loading_parameters():
 
 
 def checkpoint_change(ckpt_name:str, save=True, refresh=True):
+    """ checkpoint name can be a number of valid aliases. Returns True if checkpoint changed. """
+    new_ckpt_info = sd_models.checkpoint_aliases.get(ckpt_name)
+    current_ckpt_info = sd_models.checkpoint_aliases.get(shared.opts.data.get('sd_model_checkpoint', ''))
+    if new_ckpt_info == current_ckpt_info:
+        return False
+
     shared.opts.set('sd_model_checkpoint', ckpt_name)
 
     if save:
         shared.opts.save(shared.config_filename)
     if refresh:
         refresh_model_loading_parameters()
-    return
+    return True
 
 
 def modules_change(module_values:list, save=True, refresh=True) -> bool:

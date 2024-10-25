@@ -250,6 +250,74 @@ input[type="checkbox"].input-accordion-checkbox{
     padding: 0.1em 0.75em;
 }
 
+.block.t5-token-counter{
+    position: absolute;
+    display: inline-block;
+    right: 6em;
+    min-width: 0 !important;
+    width: auto;
+    z-index: 100;
+    top: -0.75em;
+}
+
+.block.t5-token-counter-visible{
+    display: block !important;
+}
+
+.block.t5-token-counter span{
+    background: var(--input-background-fill) !important;
+    box-shadow: 0 0 0.0 0.3em rgba(192,192,192,0.15), inset 0 0 0.6em rgba(192,192,192,0.075);
+    border: 2px solid rgba(192,192,192,0.4) !important;
+    border-radius: 0.4em;
+}
+
+.block.t5-token-counter.error span{
+    box-shadow: 0 0 0.0 0.3em rgba(255,0,0,0.15), inset 0 0 0.6em rgba(255,0,0,0.075);
+    border: 2px solid rgba(255,0,0,0.4) !important;
+}
+
+.block.t5-token-counter div{
+    display: inline;
+}
+
+.block.t5-token-counter span{
+    padding: 0.1em 0.75em;
+}
+
+.block.negative-token-counter{
+    position: absolute;
+    display: inline-block;
+    right: 1em;
+    min-width: 0 !important;
+    width: auto;
+    z-index: 100;
+    top: -0.75em;
+}
+
+.block.negative-token-counter-visible{
+    display: block !important;
+}
+
+.block.negative-token-counter span{
+    background: var(--input-background-fill) !important;
+    box-shadow: 0 0 0.0 0.3em rgba(192,192,192,0.15), inset 0 0 0.6em rgba(192,192,192,0.075);
+    border: 2px solid rgba(192,192,192,0.4) !important;
+    border-radius: 0.4em;
+}
+
+.block.negative-token-counter.error span{
+    box-shadow: 0 0 0.0 0.3em rgba(255,0,0,0.15), inset 0 0 0.6em rgba(255,0,0,0.075);
+    border: 2px solid rgba(255,0,0,0.4) !important;
+}
+
+.block.negative-token-counter div{
+    display: inline;
+}
+
+.block.negative-token-counter span{
+    padding: 0.1em 0.75em;
+}
+
 [id$=_subseed_show]{
     min-width: auto !important;
     flex-grow: 0 !important;

@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import os
 import time
-
-from modules import timer
-from modules import initialize_util
-from modules import initialize
 from threading import Thread
-from modules_forge.initialization import initialize_forge
-from modules_forge import main_thread
 
+from fastapi import Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+
+from modules import initialize, initialize_util, timer
+from modules_forge import main_thread
+from modules_forge.initialization import initialize_forge
 
 startup_timer = timer.startup_timer
 startup_timer.record("launcher")
@@ -23,6 +24,16 @@ initialize.check_versions()
 initialize.initialize()
 
 
+def _handle_exception(request: Request, e: Exception):
+    err = {
+        "error": type(e).__name__,
+        "detail": vars(e).get("detail", ""),
+        "body": vars(e).get("body", ""),
+        "errors": str(e),
+    }
+    return JSONResponse(status_code=vars(e).get('status_code', 500), content=jsonable_encoder(err))
+
+
 def create_api(app):
     from modules.api.api import Api
     from modules.call_queue import queue_lock
@@ -33,9 +44,10 @@ def create_api(app):
 
 def api_only_worker():
     from fastapi import FastAPI
+
     from modules.shared_cmd_options import cmd_opts
 
-    app = FastAPI()
+    app = FastAPI(exception_handlers={Exception: _handle_exception})
     initialize_util.setup_middleware(app)
     api = create_api(app)
 
@@ -98,6 +110,7 @@ def webui_worker():
             app_kwargs={
                 "docs_url": "/docs",
                 "redoc_url": "/redoc",
+                "exception_handlers": {Exception: _handle_exception}
             },
             root_path=f"/{cmd_opts.subpath}" if cmd_opts.subpath else "",
         )

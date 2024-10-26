@@ -28,13 +28,14 @@ initialize.initialize()
 
 
 def _handle_exception(request: Request, e: Exception):
+    error_information = vars(e)
     content = {
         "error": type(e).__name__,
-        "detail": vars(e).get("detail", ""),
-        "body": vars(e).get("body", ""),
+        "detail": error_information.get("detail", ""),
+        "body": error_information.get("body", ""),
         "message": str(e),
     }
-    return JSONResponse(status_code=int(vars(e).get("status_code", 500)), content=jsonable_encoder(content))
+    return JSONResponse(status_code=int(error_information.get("status_code", 500)), content=jsonable_encoder(content))
 
 
 def create_api(app):

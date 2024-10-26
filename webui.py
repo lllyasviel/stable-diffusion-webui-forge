@@ -25,13 +25,13 @@ initialize.initialize()
 
 
 def _handle_exception(request: Request, e: Exception):
-    err = {
+    content = {
         "error": type(e).__name__,
         "detail": vars(e).get("detail", ""),
         "body": vars(e).get("body", ""),
-        "errors": str(e),
+        "message": str(e),
     }
-    return JSONResponse(status_code=vars(e).get('status_code', 500), content=jsonable_encoder(err))
+    return JSONResponse(status_code=vars(e).get('status_code', 500), content=jsonable_encoder(content))
 
 
 def create_api(app):
@@ -110,7 +110,7 @@ def webui_worker():
             app_kwargs={
                 "docs_url": "/docs",
                 "redoc_url": "/redoc",
-                "exception_handlers": {Exception: _handle_exception}
+                "exception_handlers": {Exception: _handle_exception},
             },
             root_path=f"/{cmd_opts.subpath}" if cmd_opts.subpath else "",
         )

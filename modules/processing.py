@@ -829,8 +829,8 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         set_config(p.override_settings, is_api=True, run_callbacks=False, save_config=False)
 
         # load/reload model and manage prompt cache as needed
-        if p.highresfix_quick == True:
-            # avoid model load here, as it could be redundant
+        if getattr(p, 'txt2img_upscale', False):
+            # avoid model load from hiresfix quickbutton, as it could be redundant
             pass
         else:
             manage_model_and_prompt_cache(p)
@@ -930,7 +930,9 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             if state.interrupted or state.stopping_generation:
                 break
 
-            sd_models.forge_model_reload()  # model can be changed for example by refiner, hiresfix fix
+            if not getattr(p, 'txt2img_upscale', False) or p.hr_checkpoint_name is None:
+                # hiresfix quickbutton may not need reload of firstpass model
+                sd_models.forge_model_reload()  # model can be changed for example by refiner, hiresfix
 
             p.sd_model.forge_objects = p.sd_model.forge_objects_original.shallow_copy()
             p.prompts = p.all_prompts[n * p.batch_size:(n + 1) * p.batch_size]
@@ -1183,7 +1185,6 @@ def old_hires_fix_first_pass_dimensions(width, height):
 @dataclass(repr=False)
 class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
     enable_hr: bool = False
-    highresfix_quick: bool = False
     denoising_strength: float = 0.75
     firstphase_width: int = 0
     firstphase_height: int = 0
@@ -1652,7 +1653,6 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
     force_task_id: str = None
 
     hr_distilled_cfg: float = 3.5       #   needed here for cached_params
-    highresfix_quick: bool = False
 
     image_mask: Any = field(default=None, init=False)
 

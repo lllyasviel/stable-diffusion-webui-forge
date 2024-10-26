@@ -93,7 +93,6 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
     p.extra_generation_params['Original Size'] = f'{args[8]}x{args[7]}'
 
     p.override_settings['save_images_before_highres_fix'] = False
-    p.highresfix_quick = True
 
     with closing(p):
         processed = modules.scripts.scripts_txt2img.run(p, *p.script_args)

@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import os
 import time
-from threading import Thread
 
 from fastapi import Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
-from modules import initialize, initialize_util, timer
-from modules_forge import main_thread
+from modules import timer
+from modules import initialize_util
+from modules import initialize
+from threading import Thread
 from modules_forge.initialization import initialize_forge
+from modules_forge import main_thread
+
 
 startup_timer = timer.startup_timer
 startup_timer.record("launcher")
@@ -31,7 +34,7 @@ def _handle_exception(request: Request, e: Exception):
         "body": vars(e).get("body", ""),
         "message": str(e),
     }
-    return JSONResponse(status_code=vars(e).get('status_code', 500), content=jsonable_encoder(content))
+    return JSONResponse(status_code=int(vars(e).get("status_code", 500)), content=jsonable_encoder(content))
 
 
 def create_api(app):
@@ -44,7 +47,6 @@ def create_api(app):
 
 def api_only_worker():
     from fastapi import FastAPI
-
     from modules.shared_cmd_options import cmd_opts
 
     app = FastAPI(exception_handlers={Exception: _handle_exception})

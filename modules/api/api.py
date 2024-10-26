@@ -1,32 +1,35 @@
 import base64
 import io
-import ipaddress
+import os
 import time
-from contextlib import closing
-from io import BytesIO
-from secrets import compare_digest
-from threading import Lock
-from typing import Any, Union, get_args, get_origin
-
-import gradio as gr
-import piexif
-import piexif.helper
-import requests
+import datetime
 import uvicorn
-from fastapi import APIRouter, Depends, FastAPI, Response
-from fastapi.exceptions import HTTPException
+import ipaddress
+import requests
+import gradio as gr
+from threading import Lock
+from io import BytesIO
+from fastapi import APIRouter, Depends, FastAPI, Request, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from PIL import PngImagePlugin
+from fastapi.exceptions import HTTPException
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
+from secrets import compare_digest
 
 import modules.shared as shared
-from modules import sd_samplers, deepbooru, images, scripts, ui, postprocessing, restart, shared_items, script_callbacks, infotext_utils, sd_models, sd_schedulers
+from modules import sd_samplers, deepbooru, images, scripts, ui, postprocessing, errors, restart, shared_items, script_callbacks, infotext_utils, sd_models, sd_schedulers
 from modules.api import models
-from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, process_images, process_extra_images
-from modules.progress import create_task_id, add_task_to_queue, start_task, finish_task, current_task
-from modules.realesrgan_model import get_realesrgan_models
 from modules.shared import opts
+from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, process_images, process_extra_images
 from modules.textual_inversion.textual_inversion import create_embedding
-
+from PIL import PngImagePlugin
+from modules.realesrgan_model import get_realesrgan_models
+from modules import devices
+from typing import Any, Union, get_origin, get_args
+import piexif
+import piexif.helper
+from contextlib import closing
+from modules.progress import create_task_id, add_task_to_queue, start_task, finish_task, current_task
 
 def script_name_to_index(name, scripts):
     try:
@@ -127,6 +130,70 @@ def encode_pil_to_base64(image):
     return base64.b64encode(bytes_data)
 
 
+def api_middleware(app: FastAPI):
+    rich_available = False
+    try:
+        if os.environ.get('WEBUI_RICH_EXCEPTIONS', None) is not None:
+            import anyio  # importing just so it can be placed on silent list
+            import starlette  # importing just so it can be placed on silent list
+            from rich.console import Console
+            console = Console()
+            rich_available = True
+    except Exception:
+        pass
+
+    @app.middleware("http")
+    async def log_and_time(req: Request, call_next):
+        ts = time.time()
+        res: Response = await call_next(req)
+        duration = str(round(time.time() - ts, 4))
+        res.headers["X-Process-Time"] = duration
+        endpoint = req.scope.get('path', 'err')
+        if shared.cmd_opts.api_log and endpoint.startswith('/sdapi'):
+            print('API {t} {code} {prot}/{ver} {method} {endpoint} {cli} {duration}'.format(
+                t=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"),
+                code=res.status_code,
+                ver=req.scope.get('http_version', '0.0'),
+                cli=req.scope.get('client', ('0:0.0.0', 0))[0],
+                prot=req.scope.get('scheme', 'err'),
+                method=req.scope.get('method', 'err'),
+                endpoint=endpoint,
+                duration=duration,
+            ))
+        return res
+
+    def handle_exception(request: Request, e: Exception):
+        err = {
+            "error": type(e).__name__,
+            "detail": vars(e).get('detail', ''),
+            "body": vars(e).get('body', ''),
+            "errors": str(e),
+        }
+        if not isinstance(e, HTTPException):  # do not print backtrace on known httpexceptions
+            message = f"API error: {request.method}: {request.url} {err}"
+            if rich_available:
+                print(message)
+                console.print_exception(show_locals=True, max_frames=2, extra_lines=1, suppress=[anyio, starlette], word_wrap=False, width=min([console.width, 200]))
+            else:
+                errors.report(message, exc_info=True)
+        return JSONResponse(status_code=vars(e).get('status_code', 500), content=jsonable_encoder(err))
+
+    @app.middleware("http")
+    async def exception_handling(request: Request, call_next):
+        try:
+            return await call_next(request)
+        except Exception as e:
+            return handle_exception(request, e)
+
+    @app.exception_handler(Exception)
+    async def fastapi_exception_handler(request: Request, e: Exception):
+        return handle_exception(request, e)
+
+    @app.exception_handler(HTTPException)
+    async def http_exception_handler(request: Request, e: HTTPException):
+        return handle_exception(request, e)
+
+
 class Api:
     def __init__(self, app: FastAPI, queue_lock: Lock):
         if shared.cmd_opts.api_auth:
@@ -138,6 +205,7 @@ class Api:
         self.router = APIRouter()
         self.app = app
         self.queue_lock = queue_lock
+        #api_middleware(self.app)  # FIXME: (legacy) this will have to be fixed
         self.add_api_route("/sdapi/v1/txt2img", self.text2imgapi, methods=["POST"], response_model=models.TextToImageResponse)
         self.add_api_route("/sdapi/v1/img2img", self.img2imgapi, methods=["POST"], response_model=models.ImageToImageResponse)
         self.add_api_route("/sdapi/v1/extra-single-image", self.extras_single_image_api, methods=["POST"], response_model=models.ExtrasSingleImageResponse)
@@ -732,7 +800,6 @@ class Api:
     def get_memory(self):
         try:
             import os
-
             import psutil
             process = psutil.Process(os.getpid())
             res = process.memory_info() # only rss is cross-platform guaranteed so we dont rely on other values
@@ -807,3 +874,4 @@ class Api:
     def stop_webui(request):
         shared.state.server_command = "stop"
         return Response("Stopping.")
+

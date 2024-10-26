@@ -1402,24 +1402,24 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
 
             reload = False
             if 'Use same choices' not in self.hr_additional_modules:
-                if sorted(self.hr_additional_modules) != sorted(fp_additional_modules):
-                    main_entry.modules_change(self.hr_additional_modules, save=False, refresh=False)
+                modules_changed = main_entry.modules_change(self.hr_additional_modules, save=False, refresh=False)
+                if modules_changed:
                     reload = True
 
             if self.hr_checkpoint_name and self.hr_checkpoint_name != 'Use same checkpoint':
-                if self.hr_checkpoint_name != fp_checkpoint:
+                checkpoint_changed = main_entry.checkpoint_change(self.hr_checkpoint_name, save=False, refresh=False)
+                if checkpoint_changed:
                     self.firstpass_use_distilled_cfg_scale = self.sd_model.use_distilled_cfg_scale
-
-                    main_entry.checkpoint_change(self.hr_checkpoint_name, save=False, refresh=False)
                     reload = True
-            
+
             if reload:
                 try:
                     main_entry.refresh_model_loading_parameters()
                     sd_models.forge_model_reload()
                 finally:
                     main_entry.modules_change(fp_additional_modules, save=False, refresh=False)
-                    main_entry.checkpoint_change(fp_checkpoint, save=False)
+                    main_entry.checkpoint_change(fp_checkpoint, save=False, refresh=False)
+                    main_entry.refresh_model_loading_parameters()
 
             if self.sd_model.use_distilled_cfg_scale:
                 self.extra_generation_params['Hires Distilled CFG Scale'] = self.hr_distilled_cfg

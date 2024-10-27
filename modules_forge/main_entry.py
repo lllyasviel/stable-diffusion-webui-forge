@@ -240,13 +240,19 @@ def refresh_model_loading_parameters():
 
 
 def checkpoint_change(ckpt_name:str, save=True, refresh=True):
+    """ checkpoint name can be a number of valid aliases. Returns True if checkpoint changed. """
+    new_ckpt_info = sd_models.get_closet_checkpoint_match(ckpt_name)
+    current_ckpt_info = sd_models.get_closet_checkpoint_match(shared.opts.data.get('sd_model_checkpoint', ''))
+    if new_ckpt_info == current_ckpt_info:
+        return False
+
     shared.opts.set('sd_model_checkpoint', ckpt_name)
 
     if save:
         shared.opts.save(shared.config_filename)
     if refresh:
         refresh_model_loading_parameters()
-    return
+    return True
 
 
 def modules_change(module_values:list, save=True, refresh=True) -> bool:
@@ -258,7 +264,7 @@ def modules_change(module_values:list, save=True, refresh=True) -> bool:
             modules.append(module_list[module_name])
     
     # skip further processing if value unchanged
-    if modules == shared.opts.data.get('forge_additional_modules'):
+    if sorted(modules) == sorted(shared.opts.data.get('forge_additional_modules', [])):
         return False
 
     shared.opts.set('forge_additional_modules', modules)

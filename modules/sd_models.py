@@ -18,7 +18,7 @@ from modules import paths, shared, modelloader, devices, script_callbacks, sd_va
 from modules.shared import opts, cmd_opts
 from modules.timer import Timer
 import numpy as np
-from backend.loader import forge_loader
+from backend.loader import forge_preloader, forge_loader
 from backend import memory_management
 from backend.args import dynamic_args
 from backend.utils import load_torch_file
@@ -475,7 +475,19 @@ def forge_model_reload():
 
     if model_data.forge_hash == current_hash:
         return model_data.sd_model, False
+    
+    # verify model/components before reload
+    checkpoint_info = model_data.forge_loading_parameters['checkpoint_info']
 
+    if checkpoint_info is None:
+        raise ValueError('You do not have any model! Please download at least one model in [models/Stable-diffusion].')
+
+    state_dict = checkpoint_info.filename
+    additional_state_dicts = model_data.forge_loading_parameters.get('additional_modules', [])
+
+    state_dicts, estimated_config, config = forge_preloader(state_dict, additional_state_dicts=additional_state_dicts)
+
+    # reload model
     print('Loading Model: ' + str(model_data.forge_loading_parameters))
 
     timer = Timer()
@@ -488,20 +500,10 @@ def forge_model_reload():
 
     timer.record("unload existing model")
 
-    checkpoint_info = model_data.forge_loading_parameters['checkpoint_info']
-
-    if checkpoint_info is None:
-        raise ValueError('You do not have any model! Please download at least one model in [models/Stable-diffusion].')
-
-    state_dict = checkpoint_info.filename
-    additional_state_dicts = model_data.forge_loading_parameters.get('additional_modules', [])
-
-    timer.record("cache state dict")
-
     dynamic_args['forge_unet_storage_dtype'] = model_data.forge_loading_parameters.get('unet_storage_dtype', None)
     dynamic_args['embedding_dir'] = cmd_opts.embeddings_dir
     dynamic_args['emphasis_name'] = opts.emphasis
-    sd_model = forge_loader(state_dict, additional_state_dicts=additional_state_dicts)
+    sd_model = forge_loader(state_dicts, estimated_config, config)
     timer.record("forge model load")
 
     sd_model.extra_generation_params = {}

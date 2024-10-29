@@ -8,7 +8,8 @@ Forge is currently based on SD-WebUI 1.10.1 at [this commit](https://github.com/
 
 # News
 
-2024 Oct 28: A new branch `sd35` is contributed by #2183 . I will take a look at quants and sampling and transformer's clip-g vs that clip-g rewrite before merging to main ...
+2024 Oct 28: A new branch `sd35` is contributed by [#2183](https://github.com/lllyasviel/stable-diffusion-webui-forge/pull/2183) . I will take a look at quants and sampling and transformer's clip-g vs that clip-g rewrite before merging to main ...
+
 2024 Sep 7: New sampler `Flux Realistic` is available now! Recommended scheduler is "simple".
 
 # Quick List

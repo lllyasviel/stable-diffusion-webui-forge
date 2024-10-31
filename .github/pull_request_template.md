@@ -9,7 +9,7 @@
 
 ## Checklist:
 
-- [ ] I have read [contributing wiki page](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Contributing)
+- [ ] I have read [contributing wiki page](https://github.com/lllyasviel/stable-diffusion-webui-forge/wiki/Contributing)
 - [ ] I have performed a self-review of my own code
-- [ ] My code follows the [style guidelines](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Contributing#code-style)
-- [ ] My code passes [tests](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Tests)
+- [ ] My code follows the [style guidelines](https://github.com/lllyasviel/stable-diffusion-webui-forge/wiki/Contributing#code-style)
+- [ ] My code passes [tests](https://github.com/lllyasviel/stable-diffusion-webui-forge/wiki/Tests)

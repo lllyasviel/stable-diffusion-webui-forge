@@ -1,5 +1,6 @@
 import spaces
 import math
+import os
 import gradio as gr
 import numpy as np
 import torch
@@ -132,6 +133,11 @@ i2i_pipe = StableDiffusionImg2ImgPipeline(
 spaces.automatically_move_pipeline_components(t2i_pipe)
 
 
+def overwrite_components(components):
+    global tokenizer, text_encoder, vae, unet, t2i_pipe, i2i_pipe
+    tokenizer, text_encoder, vae, unet, t2i_pipe, i2i_pipe = components
+
+
 @torch.inference_mode()
 def encode_prompt_inner(txt: str):
     max_length = tokenizer.model_max_length
@@ -234,8 +240,14 @@ def run_rmbg(img, sigma=0.0):
     return result.clip(0, 255).astype(np.uint8), alpha
 
 
+external_processor = None
+
+
 @torch.inference_mode()
 def process(input_fg, prompt, image_width, image_height, num_samples, seed, steps, a_prompt, n_prompt, cfg, highres_scale, highres_denoise, lowres_denoise, bg_source):
+    if external_processor is not None:
+        return external_processor(input_fg, prompt, image_width, image_height, num_samples, seed, steps, a_prompt, n_prompt, cfg, highres_scale, highres_denoise, lowres_denoise, bg_source)
+
     bg_source = BGSource(bg_source)
     input_bg = None
 

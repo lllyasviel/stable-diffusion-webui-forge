@@ -313,7 +313,7 @@ def forge_loader(sd, additional_state_dicts=None):
     has_prediction_type = 'scheduler' in huggingface_components and hasattr(huggingface_components['scheduler'], 'config') and 'prediction_type' in huggingface_components['scheduler'].config
 
     if yaml_config is not None:
-        model_config_params = config.get('model', {}).get('params', {})
+        model_config_params = yaml_config.get('model', {}).get('params', {})
         if "parameterization" in model_config_params:
             if model_config_params["parameterization"] == "v":
                 yaml_config_prediction_type = 'v_prediction'

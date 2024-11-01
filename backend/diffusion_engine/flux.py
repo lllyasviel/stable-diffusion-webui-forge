@@ -33,9 +33,17 @@ class Flux(ForgeDiffusionEngine):
         vae = VAE(model=huggingface_components['vae'])
 
         if 'schnell' in estimated_config.huggingface_repo.lower():
-            k_predictor = PredictionFlux(sigma_data=1.0, prediction_type='const', shift=1.0, timesteps=10000)
+            k_predictor = PredictionFlux(
+                mu=1.0
+            )
         else:
-            k_predictor = PredictionFlux(sigma_data=1.0, prediction_type='const', shift=1.15, timesteps=10000)
+            k_predictor = PredictionFlux(
+                seq_len=4096,
+                base_seq_len=256,
+                max_seq_len=4096,
+                base_shift=0.5,
+                max_shift=1.15,
+            )
             self.use_distilled_cfg_scale = True
 
         unet = UnetPatcher.from_model(

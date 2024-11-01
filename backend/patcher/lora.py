@@ -25,33 +25,17 @@ def inner_str(k, prefix="", suffix=""):
     return k[len(prefix):-len(suffix)]
 
 
-def model_lora_keys_clip(model, key_maps={}):
-    result = get_function("model_lora_keys_clip")(model, key_maps)
+def model_lora_keys_clip(model, key_map={}):
+    model_keys, key_maps = get_function('model_lora_keys_clip')(model, key_map)
 
-    if isinstance(result, tuple):
-        model_keys, key_maps = result
-    else:
-        key_maps = result
-
-    sdk = model.state_dict().keys()
-
-    for model_key in sdk:
+    for model_key in model_keys:
         if model_key.endswith(".weight"):
             if model_key.startswith("t5xxl.transformer."):
-                for prefix in ["te1", "te2", "te3"]:
+                for prefix in ['te1', 'te2', 'te3']:
                     formatted = inner_str(model_key, "t5xxl.transformer.", ".weight")
                     formatted = formatted.replace(".", "_")
                     formatted = f"lora_{prefix}_{formatted}"
-                    key_maps[formatted] = model_key
-
-    # fix from comfyui updated lora code
-    k = "clip_g.transformer.text_projection.weight"
-    if k in sdk:
-        key_maps["lora_te2_text_projection"] = k
-
-    k = "clip_l.transformer.text_projection.weight"
-    if k in sdk:
-        key_maps["lora_te1_text_projection"] = k
+                    key_map[formatted] = model_key
 
     return key_maps
 

@@ -315,7 +315,7 @@ def forge_loader(sd, additional_state_dicts=None):
     if yaml_config is not None:
         yaml_config_prediction_type: str = (
                 yaml_config.get('model', {}).get('params', {}).get('parameterization', '')
-            or  yaml_config.get('model', {}).get('params', {}).get('denoiser_config', {}).get('params', {}).get('scaling_config').get('target', '')
+            or  yaml_config.get('model', {}).get('params', {}).get('denoiser_config', {}).get('params', {}).get('scaling_config', {}).get('target', '')
         )
         if yaml_config_prediction_type == 'v' or yaml_config_prediction_type.endswith(".VScaling"):
             yaml_config_prediction_type = 'v_prediction'

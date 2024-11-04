@@ -642,7 +642,7 @@ def save_image(image, path, basename, seed=None, prompt=None, extension='png', i
             Additional PNG info. `existing_info == {pngsectionname: info, ...}`
         no_prompt:
             TODO I don't know its meaning.
-        p (`StableDiffusionProcessing`)
+        p (`StableDiffusionProcessing` or `Processing`)
         forced_filename (`str`):
             If specified, `basename` and filename pattern will be ignored.
         save_to_dirs (bool):
@@ -673,10 +673,13 @@ def save_image(image, path, basename, seed=None, prompt=None, extension='png', i
     if forced_filename is None:
         if short_filename or seed is None:
             file_decoration = ""
-        elif opts.save_to_dirs:
-            file_decoration = opts.samples_filename_pattern or p.override_settings.get("samples_filename_pattern") or "[seed]"
+        elif hasattr(p, 'override_settings'):
+            file_decoration = p.override_settings.get("samples_filename_pattern")
         else:
-            file_decoration = opts.samples_filename_pattern or p.override_settings.get("samples_filename_pattern") or "[seed]-[prompt_spaces]"
+            file_decoration = None
+
+        if file_decoration is None:
+            file_decoration = opts.samples_filename_pattern or ("[seed]" if opts.save_to_dirs else "[seed]-[prompt_spaces]")
 
         file_decoration = namegen.apply(file_decoration) + suffix
 

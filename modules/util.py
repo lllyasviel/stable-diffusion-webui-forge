@@ -233,21 +233,7 @@ def load_file_from_url(
     """
     from urllib.parse import urlparse
     import requests
-    try:
-        from tqdm import tqdm
-    except ImportError:
-        class tqdm:
-            def __init__(self, *args, **kwargs):
-                pass
-
-            def update(self, n=1, *args, **kwargs):
-                pass
-
-            def __enter__(self):
-                return self
-
-            def __exit__(self, exc_type, exc_val, exc_tb):
-                pass
+    from tqdm import tqdm
 
     if not file_name:
         parts = urlparse(url)

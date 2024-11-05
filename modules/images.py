@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import datetime
+import datetime, time
 import functools
 import pytz
 import io
@@ -721,12 +721,15 @@ def save_image(image, path, basename, seed=None, prompt=None, extension='png', i
         save_image_with_geninfo(image_to_save, info, temp_file_path, extension, existing_pnginfo=params.pnginfo, pnginfo_section_name=pnginfo_section_name)
 
         filename = filename_without_extension + extension
+        without_extension = filename_without_extension
         if shared.opts.save_images_replace_action != "Replace":
             n = 0
             while os.path.exists(filename):
                 n += 1
-                filename = f"{filename_without_extension}-{n}{extension}"
+                without_extension = f"{filename_without_extension}-{n}"
+                filename = without_extension + extension
         os.replace(temp_file_path, filename)
+        return without_extension
 
     fullfn_without_extension, extension = os.path.splitext(params.filename)
     if hasattr(os, 'statvfs'):
@@ -734,9 +737,10 @@ def save_image(image, path, basename, seed=None, prompt=None, extension='png', i
         fullfn_without_extension = fullfn_without_extension[:max_name_len - max(4, len(extension))]
         params.filename = fullfn_without_extension + extension
         fullfn = params.filename
-    _atomically_save_image(image, fullfn_without_extension, extension)
 
-    image.already_saved_as = fullfn
+    fullfn_without_extension = _atomically_save_image(image, fullfn_without_extension, extension)
+    fullfn = fullfn_without_extension + extension
+    image.already_saved_as = f"{fullfn}\?{time.process_time_ns()}"
 
     oversize = image.width > opts.target_side_length or image.height > opts.target_side_length
     if opts.export_for_4chan and (oversize or os.stat(fullfn).st_size > opts.img_downscale_threshold * 1024 * 1024):
@@ -754,7 +758,7 @@ def save_image(image, path, basename, seed=None, prompt=None, extension='png', i
             except Exception:
                 image = image.resize(resize_to)
         try:
-            _atomically_save_image(image, fullfn_without_extension, ".jpg")
+            _ = _atomically_save_image(image, fullfn_without_extension, ".jpg")
         except Exception as e:
             errors.display(e, "saving image as downscaled JPG")
 

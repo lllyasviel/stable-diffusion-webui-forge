@@ -245,15 +245,15 @@ def model_lora_keys_clip(model, key_map={}):
                 lora_key = "lora_te2_{}".format(l_key.replace(".", "_"))#OneTrainer Flux lora, by Forge
                 key_map[lora_key] = k
                 #####
-            elif k.startswith("hydit_clip.transformer.bert."): #HunyuanDiT Lora
-                l_key = k[len("hydit_clip.transformer.bert."):-len(".weight")]
-                lora_key = "lora_te1_{}".format(l_key.replace(".", "_"))
-                key_map[lora_key] = k
+    #         elif k.startswith("hydit_clip.transformer.bert."): #HunyuanDiT Lora
+    #             l_key = k[len("hydit_clip.transformer.bert."):-len(".weight")]
+    #             lora_key = "lora_te1_{}".format(l_key.replace(".", "_"))
+    #             key_map[lora_key] = k
     
     
     k = "clip_g.transformer.text_projection.weight"
     if k in sdk:
-        key_map["lora_prior_te_text_projection"] = k #cascade lora?
+    #    key_map["lora_prior_te_text_projection"] = k #cascade lora?
         key_map["text_encoder.text_projection"] = k #TODO: check if other lora have the text_projection too
         key_map["lora_te2_text_projection"] = k #OneTrainer SD3 lora
     

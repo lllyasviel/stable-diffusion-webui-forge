@@ -319,6 +319,9 @@ def forge_loader(sd, additional_state_dicts=None):
         )
         if yaml_config_prediction_type == 'v' or yaml_config_prediction_type.endswith(".VScaling"):
             yaml_config_prediction_type = 'v_prediction'
+        else:
+            # Use estimated prediction config if no suitable prediction type found
+            yaml_config_prediction_type = ''
 
     if has_prediction_type:
         if yaml_config_prediction_type:

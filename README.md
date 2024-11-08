@@ -36,6 +36,20 @@ News are moved to this link: [Click here to see the News section](https://github
 
 # Installing Forge
 
+## Prerequisites
+
+You must have CUDA 12.1 installed on your system. You will most likely run into issue if you have a different version installed.  
+Currently CUDA 12.1 can be installed from the following location: [CUDA Toolkit 12.1 Downloads](https://developer.nvidia.com/cuda-12-1-0-download-archive)
+
+You do not need to do the express install - you only need to install the CUDA Toolkit and make sure it is added to your system environment variables. You should see the `CUDA_PATH` variable set in `System Properties > Environment Variables > System Variables`
+
+
+| Variable | Value |
+|----------|-------|
+| CUDA_PATH        | [Path to your installation]    |
+
+## Installers
+
 **Just use this one-click installation package (with git and python included).**
 
 [>>> Click Here to Download One-Click Package (CUDA 12.1 + Pytorch 2.3.1) <<<](https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/download/latest/webui_forge_cu121_torch231.7z)

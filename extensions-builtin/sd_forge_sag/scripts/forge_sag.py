@@ -203,9 +203,6 @@ class SAGForForge(scripts.Script):
         if p.cfg_scale == 1:
             gr.Info ("Self Attention Guidance requires CFG > 1")
             return
-        #   doesn't work in hires pass
-        if p.is_hr_pass == True:
-            return
 
         unet = p.sd_model.forge_objects.unet
 

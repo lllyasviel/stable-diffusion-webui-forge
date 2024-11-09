@@ -62,13 +62,19 @@ def create_blur_map(x0, attn, sigma=3.0, threshold=1.0):
     attn = attn.reshape(b, -1, hw1, hw2)
     # Global Average Pool
     mask = attn.mean(1, keepdim=False).sum(1, keepdim=False) > threshold
-
-    f = float(lh) / float(lw)
-    fh = f ** 0.5
-    fw = (1/f) ** 0.5
-    S = mask.size(1) ** 0.5
-    w = int(0.5 + S * fw)
-    h = int(0.5 + S * fh)
+    ratio = 2**(math.ceil(math.sqrt(lh * lw / hw1)) - 1).bit_length()
+    h = math.ceil(lh / ratio)
+    w = math.ceil(lw / ratio)
+    
+    if h * w != mask.size(1):
+        # this new calculation, to work with Kohya HRFix, sometimes incorrectly rounds up w or h
+        # so we only use it if the original method failed to calculate correct w, h
+        f = float(lh) / float(lw)
+        fh = f ** 0.5
+        fw = (1/f) ** 0.5
+        S = mask.size(1) ** 0.5
+        w = int(0.5 + S * fw)
+        h = int(0.5 + S * fh)
    
     # Reshape
     mask = (

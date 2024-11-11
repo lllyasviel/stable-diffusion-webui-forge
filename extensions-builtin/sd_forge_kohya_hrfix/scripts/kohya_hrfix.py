@@ -14,6 +14,9 @@ class PatchModelAddDownscale:
                 sigma = transformer_options["sigmas"][0].item()
                 if sigma <= sigma_start and sigma >= sigma_end:
                     h = adaptive_resize(h, round(h.shape[-1] * (1.0 / downscale_factor)), round(h.shape[-2] * (1.0 / downscale_factor)), downscale_method, "disabled")
+                    shared.kohya_shrink_shape = (h.shape[-1], h.shape[-2])
+                else:
+                    shared.kohya_shrink_shape = None
             return h
 
         def output_block_patch(h, hsp, transformer_options):

@@ -17,8 +17,7 @@ class PatchModelAddDownscale:
                     shared.kohya_shrink_shape = (h.shape[-1], h.shape[-2])
                 else:
                     shared.kohya_shrink_shape = None
-            else:
-                shared.kohya_shrink_shape = None
+
             return h
 
         def output_block_patch(h, hsp, transformer_options):

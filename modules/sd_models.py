@@ -449,8 +449,13 @@ def reload_model_weights(sd_model=None, info=None, forced_reload=False):
 
 
 def unload_model_weights(sd_model=None, info=None):
-    memory_management.unload_all_models()
-    pass
+    for i in range(len(memory_management.current_loaded_models)):
+        memory_management.current_loaded_models.pop(0).model_unload(avoid_model_moving=True)
+
+    memory_management.soft_empty_cache()
+    gc.collect()
+
+    return
 
 
 def apply_token_merging(sd_model, token_merging_ratio):

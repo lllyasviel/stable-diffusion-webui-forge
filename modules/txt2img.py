@@ -110,12 +110,14 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
         if i == gallery_index:
             new_gallery.extend(processed.images)
         
+    new_index = gallery_index
     if insert:
-        geninfo["infotexts"].insert(gallery_index+1, processed.info)
+        new_index += 1
+        geninfo["infotexts"].insert(new_index, processed.info)
     else:
         geninfo["infotexts"][gallery_index] = processed.info
 
-    return new_gallery, json.dumps(geninfo), plaintext_to_html(processed.info), plaintext_to_html(processed.comments, classname="comments")
+    return gr.Gallery(new_gallery, selected_index=new_index), json.dumps(geninfo), plaintext_to_html(processed.info), plaintext_to_html(processed.comments, classname="comments")
 
 
 def txt2img_function(id_task: str, request: gr.Request, *args):

@@ -106,6 +106,7 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
     new_gallery = []
     for i, image in enumerate(gallery):
         if insert or i != gallery_index:
+            image[0].already_saved_as = image[0].filename.rsplit('?', 1)[0]
             new_gallery.append(image)
         if i == gallery_index:
             new_gallery.extend(processed.images)
@@ -117,7 +118,7 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
     else:
         geninfo["infotexts"][gallery_index] = processed.info
 
-    return gr.Gallery(new_gallery, selected_index=new_index), json.dumps(geninfo), plaintext_to_html(processed.info), plaintext_to_html(processed.comments, classname="comments")
+    return new_gallery, json.dumps(geninfo), plaintext_to_html(processed.info), plaintext_to_html(processed.comments, classname="comments")
 
 
 def txt2img_function(id_task: str, request: gr.Request, *args):

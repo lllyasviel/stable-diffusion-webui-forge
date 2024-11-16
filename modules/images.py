@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import datetime, time
+import datetime
 import functools
 import pytz
 import io
@@ -740,7 +740,7 @@ def save_image(image, path, basename, seed=None, prompt=None, extension='png', i
 
     fullfn_without_extension = _atomically_save_image(image, fullfn_without_extension, extension)
     fullfn = fullfn_without_extension + extension
-    image.already_saved_as = f"{fullfn}\?{time.process_time_ns()}"
+    image.already_saved_as = fullfn
 
     oversize = image.width > opts.target_side_length or image.height > opts.target_side_length
     if opts.export_for_4chan and (oversize or os.stat(fullfn).st_size > opts.img_downscale_threshold * 1024 * 1024):

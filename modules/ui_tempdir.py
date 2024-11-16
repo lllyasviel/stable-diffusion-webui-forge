@@ -44,9 +44,11 @@ def check_tmp_file(gradio_app, filename):
 
 def save_pil_to_file(pil_image, cache_dir=None, format="png"):
     already_saved_as = getattr(pil_image, 'already_saved_as', None)
-    if already_saved_as and os.path.isfile(already_saved_as.rsplit('\\?')[0]):
+    if already_saved_as and os.path.isfile(already_saved_as):
         register_tmp_file(shared.demo, already_saved_as)
-        return already_saved_as
+        filename_with_mtime = f'{already_saved_as}?{os.path.getmtime(already_saved_as)}'
+        register_tmp_file(shared.demo, filename_with_mtime)
+        return filename_with_mtime
 
     if shared.opts.temp_dir:
         dir = shared.opts.temp_dir

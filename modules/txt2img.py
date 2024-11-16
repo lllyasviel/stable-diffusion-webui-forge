@@ -118,7 +118,7 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
     else:
         geninfo["infotexts"][gallery_index] = processed.info
 
-    return gr.Gallery(new_gallery, selected_index=new_index), json.dumps(geninfo), plaintext_to_html(processed.info), plaintext_to_html(processed.comments, classname="comments")
+    return new_gallery, json.dumps(geninfo), plaintext_to_html(processed.info), plaintext_to_html(processed.comments, classname="comments")
 
 
 def txt2img_function(id_task: str, request: gr.Request, *args):

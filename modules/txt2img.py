@@ -106,6 +106,7 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
     new_gallery = []
     for i, image in enumerate(gallery):
         if insert or i != gallery_index:
+            image[0].already_saved_as = image[0].filename.rsplit('?', 1)[0]
             new_gallery.append(image)
         if i == gallery_index:
             new_gallery.extend(processed.images)

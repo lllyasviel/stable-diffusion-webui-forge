@@ -262,8 +262,8 @@ def create_output_panel(tabname, outdir, toprow=None):
             else:
                 res.generation_info = gr.HTML(elem_id=f'html_info_x_{tabname}')
                 res.infotext = gr.HTML(elem_id=f'html_info_{tabname}', elem_classes="infotext")
-                res.infotext = gr.HTML(elem_id=f'html_info_pt_{tabname}', elem_classes="infotext_plaintext")
-                res.html_log = gr.HTML(elem_id=f'html_log_{tabname}')
+                res.infotext_plaintext = gr.HTML(visible=False, elem_id=f'infotext_plaintext_{tabname}', elem_classes="infotext")
+                res.html_log = gr.HTML(elem_id=f'html_log_{tabname}', elem_classes="html-log")
 
             paste_field_names = []
             if tabname == "txt2img":

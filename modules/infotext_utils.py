@@ -175,11 +175,11 @@ def connect_paste_params_buttons():
 
         if binding.source_text_component is not None and fields is not None:
             # get all the fields except those the user has configured
-            dont_paste_fileds = (["Seed"] if not shared.opts.send_seed else []) + (["Size-1", "Size-2"] if not shared.opts.send_size else [])
-            filtered_fields = [f for f in fields if f[1] not in dont_paste_fileds]
+            dont_paste_fields = (["Seed"] if not shared.opts.send_seed else []) + (["Size-1", "Size-2"] if not shared.opts.send_size else [])
+            filtered_fields = [f for f in fields if f[1] not in dont_paste_fields]
             connect_paste(binding.paste_button, filtered_fields, binding.source_text_component, override_settings_component, binding.tabname)
 
-        if binding.source_tabname is not None and fields is not None:
+        elif binding.source_tabname is not None and fields is not None:
             paste_field_names = ['Prompt', 'Negative prompt', 'Steps', 'Face restoration'] + (["Seed"] if shared.opts.send_seed else []) + binding.paste_field_names
             binding.paste_button.click(
                 fn=lambda *x: x,

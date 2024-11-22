@@ -343,8 +343,8 @@ options_templates.update(options_section(('ui', "User interface", "ui"), {
     "gradio_theme": OptionInfo("Default", "Gradio theme", ui_components.DropdownEditable, lambda: {"choices": ["Default"] + shared_gradio_themes.gradio_hf_hub_themes}).info("you can also manually enter any of themes from the <a href='https://huggingface.co/spaces/gradio/theme-gallery'>gallery</a>.").needs_reload_ui(),
     "gradio_themes_cache": OptionInfo(True, "Cache gradio themes locally").info("disable to update the selected Gradio theme"),
     "show_progress_in_title": OptionInfo(True, "Show generation progress in window title."),
-    "send_seed": OptionInfo(True, "Send seed when sending prompt or image to other interface"),
-    "send_size": OptionInfo(True, "Send size when sending prompt or image to another interface"),
+    "send_seed": OptionInfo(True, "Send seed when sending prompt or image to other interface").needs_reload_ui(),
+    "send_size": OptionInfo(True, "Send size when sending prompt or image to another interface").needs_reload_ui(),
     "enable_reloading_ui_scripts": OptionInfo(False, "Reload UI scripts when using Reload UI option").info("useful for developing: if you make changes to UI scripts code, it is applied when the UI is reloded."),
 
 }))

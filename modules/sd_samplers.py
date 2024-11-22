@@ -65,8 +65,8 @@ def add_sampler(sampler):
     global all_samplers, all_samplers_map
     if sampler.name not in [x.name for x in all_samplers]:
         all_samplers.append(sampler)
-    all_samplers_map = {x.name: x for x in all_samplers}
-    set_samplers()
+        all_samplers_map = {x.name: x for x in all_samplers}
+        set_samplers()
     return
 
 

@@ -174,8 +174,9 @@ def connect_paste_params_buttons():
             )
 
         if binding.source_text_component is not None and fields is not None:
-            # get all the fields except seed if option set
-            filtered_fields = [f for f in fields if f[1] != "Seed"] if not shared.opts.send_seed else fields
+            # get all the fields except those the user has configured
+            dont_paste_fileds = (["Seed"] if not shared.opts.send_seed else []) + (["Size-1", "Size-2"] if not shared.opts.send_size else [])
+            filtered_fields = [f for f in fields if f[1] not in dont_paste_fileds]
             connect_paste(binding.paste_button, filtered_fields, binding.source_text_component, override_settings_component, binding.tabname)
 
         if binding.source_tabname is not None and fields is not None:

@@ -174,7 +174,9 @@ def connect_paste_params_buttons():
             )
 
         if binding.source_text_component is not None and fields is not None:
-            connect_paste(binding.paste_button, fields, binding.source_text_component, override_settings_component, binding.tabname)
+            # get all the fields except seed if option set
+            filtered_fields = [f for f in fields if f[1] != "Seed"] if not shared.opts.send_seed else fields
+            connect_paste(binding.paste_button, filtered_fields, binding.source_text_component, override_settings_component, binding.tabname)
 
         if binding.source_tabname is not None and fields is not None:
             paste_field_names = ['Prompt', 'Negative prompt', 'Steps', 'Face restoration'] + (["Seed"] if shared.opts.send_seed else []) + binding.paste_field_names

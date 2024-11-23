@@ -19,12 +19,12 @@ def update_generation_info(generation_info, html_info, img_index):
     try:
         generation_info = json.loads(generation_info)
         if img_index < 0 or img_index >= len(generation_info["infotexts"]):
-            return html_info, gr.update(), html_info
-        return plaintext_to_html(generation_info["infotexts"][img_index]), gr.update(), generation_info["infotexts"][img_index]
+            return html_info, gr.update()
+        return plaintext_to_html(generation_info["infotexts"][img_index]), gr.update()
     except Exception:
         pass
     # if the json parse or anything else fails, just return the old html_info
-    return html_info, gr.update(), html_info
+    return html_info, gr.update()
 
 
 def plaintext_to_html(text, classname=None):
@@ -219,12 +219,18 @@ def create_output_panel(tabname, outdir, toprow=None):
                     res.generation_info = gr.Textbox(visible=False, elem_id=f'generation_info_{tabname}')
                     res.infotext_plaintext = gr.Textbox(visible=False, elem_id=f'infotext_plaintext_{tabname}')
                     if tabname == 'txt2img' or tabname == 'img2img':
+                        # set a change listener on gen info to populate infotext_plaintext
+                        res.generation_info.change(
+                            fn=lambda x: json.loads(x).get("infotexts", [""])[0],
+                            inputs=[res.generation_info],
+                            outputs=[res.infotext_plaintext]
+                        )
                         generation_info_button = gr.Button(visible=False, elem_id=f"{tabname}_generation_info_button")
                         generation_info_button.click(
                             fn=update_generation_info,
                             _js="function(x, y, z){ return [x, y, selected_gallery_index()] }",
                             inputs=[res.generation_info, res.infotext, res.infotext],
-                            outputs=[res.infotext, res.infotext, res.infotext_plaintext],
+                            outputs=[res.infotext, res.infotext],
                             show_progress=False,
                         )
 

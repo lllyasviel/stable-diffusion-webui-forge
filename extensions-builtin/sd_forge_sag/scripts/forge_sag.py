@@ -67,22 +67,13 @@ def create_blur_map(x0, attn, sigma=3.0, threshold=1.0):
     ratio = 2**(math.ceil(math.sqrt(lh * lw / hw1)) - 1).bit_length()
     h = math.ceil(lh / ratio)
     w = math.ceil(lw / ratio)
-    
+
     if h * w != mask.size(1):
         kohya_shrink_shape = getattr(shared, 'kohya_shrink_shape', None)
         if kohya_shrink_shape:
-            if shared.sd_model.is_sd1:
-                w = math.ceil(kohya_shrink_shape[0] / 4)
-                h = math.ceil(kohya_shrink_shape[1] / 4)
-            elif shared.sd_model.is_sd2:
-                w = math.ceil(kohya_shrink_shape[0] / 4)
-                h = math.ceil(kohya_shrink_shape[1] / 4)
-            elif shared.sd_model.is_sdxl:
-                w = math.ceil(kohya_shrink_shape[0] / 2)
-                h = math.ceil(kohya_shrink_shape[1] / 2)
-           # elif shared.sd_model.is_sd3:
-                # ?
-   
+            w = kohya_shrink_shape[0]   #    works with all block numbers for kohya hrfix
+            h = kohya_shrink_shape[1]
+
     # Reshape
     mask = (
         mask.reshape(b, h, w)

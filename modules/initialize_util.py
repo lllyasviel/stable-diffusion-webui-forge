@@ -214,7 +214,5 @@ def configure_cors_middleware(app):
     if cmd_opts.cors_allow_origins_regex:
         cors_options["allow_origin_regex"] = cmd_opts.cors_allow_origins_regex
 
-    # Clear existing middleware stack
-    app.middleware_stack = None
-    app.add_middleware(CORSMiddleware, **cors_options)
-    app.build_middleware_stack()
+    app.user_middleware.insert(0, starlette.middleware.Middleware(CORSMiddleware, **cors_options))
+

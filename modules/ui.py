@@ -969,8 +969,6 @@ def create_ui():
     extensions_interface = ui_extensions.create_ui()
     interfaces += [(extensions_interface, "Extensions", "extensions")]
 
-    interface_names_without_quick_setting_bars = ["Spaces"]
-
     shared.tab_names = []
     for _interface, label, _ifid in interfaces:
         shared.tab_names.append(label)
@@ -998,7 +996,8 @@ def create_ui():
             loadsave.setup_ui()
 
         def tab_changed(evt: gr.SelectData):
-            return gr.update(visible=evt.value not in interface_names_without_quick_setting_bars)
+            no_quick_setting = getattr(shared.opts, "tabs_without_quick_settings_bar", [])
+            return gr.update(visible=evt.value not in no_quick_setting)
 
         tabs.select(tab_changed, outputs=[quicksettings_row], show_progress=False, queue=False)
 

@@ -201,11 +201,14 @@ class SAGForForge(scripts.Script):
 
         #   not for FLux
         if not shared.sd_model.is_webui_legacy_model():     #   ideally would be is_flux
-            gr.Info ("Self Attention Guidance is not compatible with Flux")
+            print("Self Attention Guidance is not compatible with Flux")
             return
         #   Self Attention Guidance errors if CFG is 1
-        if p.cfg_scale == 1:
-            gr.Info ("Self Attention Guidance requires CFG > 1")
+        if p.is_hr_pass == False and p.cfg_scale <= 1:
+            print("Self Attention Guidance requires CFG > 1")
+            return
+        if p.is_hr_pass == True and p.hr_cfg <= 1:
+            print("Self Attention Guidance (hires pass) requires Hires CFG > 1")
             return
 
         unet = p.sd_model.forge_objects.unet

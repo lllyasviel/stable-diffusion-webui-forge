@@ -470,6 +470,12 @@ def create_ui():
             toprow.prompt.submit(**txt2img_args)
             toprow.submit.click(**txt2img_args)
 
+            def select_gallery_image(index):
+                index = int(index)
+                if getattr(shared.opts, 'hires_button_gallery_insert', False):
+                    index += 1
+                return gr.update(selected_index=index)
+            
             txt2img_upscale_inputs = txt2img_inputs[0:1] + [output_panel.gallery, dummy_component_number, output_panel.generation_info] + txt2img_inputs[1:]
             output_panel.button_upscale.click(
                 fn=wrap_gradio_gpu_call(modules.txt2img.txt2img_upscale, extra_outputs=[None, '', '']),
@@ -477,7 +483,7 @@ def create_ui():
                 inputs=txt2img_upscale_inputs,
                 outputs=txt2img_outputs,
                 show_progress=False,
-            )
+            ).then(fn=select_gallery_image, js="selected_gallery_index", inputs=[dummy_component], outputs=[output_panel.gallery])
 
             res_switch_btn.click(lambda w, h: (h, w), inputs=[width, height], outputs=[width, height], show_progress=False)
 
@@ -963,8 +969,6 @@ def create_ui():
     extensions_interface = ui_extensions.create_ui()
     interfaces += [(extensions_interface, "Extensions", "extensions")]
 
-    interface_names_without_quick_setting_bars = ["Spaces"]
-
     shared.tab_names = []
     for _interface, label, _ifid in interfaces:
         shared.tab_names.append(label)
@@ -992,7 +996,8 @@ def create_ui():
             loadsave.setup_ui()
 
         def tab_changed(evt: gr.SelectData):
-            return gr.update(visible=evt.value not in interface_names_without_quick_setting_bars)
+            no_quick_setting = getattr(shared.opts, "tabs_without_quick_settings_bar", [])
+            return gr.update(visible=evt.value not in no_quick_setting)
 
         tabs.select(tab_changed, outputs=[quicksettings_row], show_progress=False, queue=False)
 

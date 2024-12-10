@@ -4,6 +4,8 @@ from collections import namedtuple
 from backend.text_processing import parsing, emphasis
 from backend import memory_management
 
+from modules.shared import opts
+
 
 PromptChunkFix = namedtuple('PromptChunkFix', ['offset', 'embedding'])
 
@@ -21,7 +23,7 @@ class T5TextProcessingEngine:
         self.text_encoder = text_encoder.transformer
         self.tokenizer = tokenizer
 
-        self.emphasis = emphasis.get_current_option(emphasis_name)()
+        self.emphasis = emphasis.get_current_option(opts.emphasis)()
         self.min_length = min_length
         self.id_end = 1
         self.id_pad = 0
@@ -64,7 +66,7 @@ class T5TextProcessingEngine:
         return z
 
     def tokenize_line(self, line):
-        parsed = parsing.parse_prompt_attention(line)
+        parsed = parsing.parse_prompt_attention(line, self.emphasis.name)
 
         tokenized = self.tokenize([text for text, _ in parsed])
 
@@ -110,6 +112,8 @@ class T5TextProcessingEngine:
     def __call__(self, texts):
         zs = []
         cache = {}
+
+        self.emphasis = emphasis.get_current_option(opts.emphasis)()
 
         for line in texts:
             if line in cache:

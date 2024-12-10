@@ -19,22 +19,14 @@ import numpy as np
 
 from unittest.mock import patch
 from transformers.dynamic_module_utils import get_imports
-def fixed_get_imports(filename: str | os.PathLike) -> list[str]:
-    if not str(filename).endswith("modeling_florence2.py"):
-        return get_imports(filename)
-    imports = get_imports(filename)
-    imports.remove("flash_attn")
-    return imports
-
 
 with spaces.capture_gpu_object() as gpu_object:
-    with patch("transformers.dynamic_module_utils.get_imports", fixed_get_imports):
-        models = {
-            # 'microsoft/Florence-2-large-ft': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large-ft', attn_implementation='sdpa', trust_remote_code=True).to("cuda").eval(),
-            'microsoft/Florence-2-large': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True).to("cuda").eval(),
-            # 'microsoft/Florence-2-base-ft': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-base-ft', trust_remote_code=True).to("cuda").eval(),
-            # 'microsoft/Florence-2-base': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-base', trust_remote_code=True).to("cuda").eval(),
-        }
+    models = {
+        # 'microsoft/Florence-2-large-ft': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large-ft', attn_implementation='sdpa', trust_remote_code=True).to("cuda").eval(),
+        'microsoft/Florence-2-large': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True).to("cuda").eval(),
+        # 'microsoft/Florence-2-base-ft': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-base-ft', trust_remote_code=True).to("cuda").eval(),
+        # 'microsoft/Florence-2-base': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-base', trust_remote_code=True).to("cuda").eval(),
+    }
 
     processors = {
         # 'microsoft/Florence-2-large-ft': AutoProcessor.from_pretrained('microsoft/Florence-2-large-ft', trust_remote_code=True),

@@ -560,6 +560,11 @@ def unload_model_clones(model):
 
 
 def free_memory(memory_required, device, keep_loaded=[], free_all=False):
+    # this check fully unloads any 'abandoned' models
+    for i in range(len(current_loaded_models) - 1, -1, -1):
+        if sys.getrefcount(current_loaded_models[i].model) <= 2:
+            current_loaded_models.pop(i).model_unload(avoid_model_moving=True)
+
     if free_all:
         memory_required = 1e30
         print(f"[Unload] Trying to free all memory for {device} with {len(keep_loaded)} models keep loaded ... ", end="")

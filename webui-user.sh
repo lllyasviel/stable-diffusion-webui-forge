@@ -10,6 +10,7 @@
 #clone_dir="stable-diffusion-webui"
 
 # Commandline arguments for webui.py, for example: export COMMANDLINE_ARGS="--medvram --opt-split-attention"
+#export COMMANDLINE_ARGS="--theme dark --xformers-flash-attention --update-check --update-all-extensions" #for example this line allows you to run "./webui.sh" in bash and forge will start in dark mode.
 #export COMMANDLINE_ARGS=""
 
 # python3 executable

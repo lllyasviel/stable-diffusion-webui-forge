@@ -1,5 +1,5 @@
 # forge默认好像没有对ldm修补的文件夹，导致用不了很多插件，填个坑
-
+# 不知道会不会更新，看情况吧
 
 # Stable Diffusion WebUI Forge
 

@@ -1083,3 +1083,7 @@ def setup_ui_api(app):
 
     import fastapi.staticfiles
     app.mount("/webui-assets", fastapi.staticfiles.StaticFiles(directory=launch_utils.repo_dir('stable-diffusion-webui-assets')), name="webui-assets")
+
+# added the following line as inpainting does not create canvas
+def create_sampler_and_steps_selection(choices, tabname):
+    return scripts.scripts_txt2img.script('Sampler').steps, scripts.scripts_txt2img.script('Sampler').sampler_name

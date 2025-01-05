@@ -3,6 +3,8 @@ from typing import Dict, Optional, Tuple, List, Union
 
 import cv2
 import torch
+import random
+import time
 
 import modules.scripts as scripts
 from modules import shared, script_callbacks, masking, images
@@ -171,11 +173,20 @@ class ControlNetForForgeOfficial(scripts.Script):
                     image_list.append([img, mask])
         elif unit.input_mode == external_code.InputMode.BATCH:
             image_list = []
-            image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
+            image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.webp']
             batch_image_files = shared.listfiles(unit.batch_image_dir)
-            for batch_modifier in getattr(unit, 'batch_modifiers', []):
-                batch_image_files = batch_modifier(batch_image_files, p)
-            for idx, filename in enumerate(batch_image_files):
+
+            # Ограничиваем количество изображений на основе n_iter
+            user_defined_n_iter = getattr(p, 'n_iter', 1)
+            
+            # Убедимся, что не выбираем больше доступных изображений
+            if user_defined_n_iter > len(batch_image_files):
+                user_defined_n_iter = len(batch_image_files)
+
+            # Выбираем случайные изображения в зависимости от n_iter
+            selected_files = random.sample(batch_image_files, user_defined_n_iter)
+
+            for idx, filename in enumerate(selected_files):
                 if any(filename.lower().endswith(ext) for ext in image_extensions):
                     img_path = os.path.join(unit.batch_image_dir, filename)
                     logger.info(f'Try to read image: {img_path}')
@@ -340,16 +351,11 @@ class ControlNetForForgeOfficial(scripts.Script):
             if input_mask is not None:
                 control_masks.append(input_mask)
 
-            if len(input_list) > 1 and not preprocessor_output_is_image:
-                logger.info('Batch wise input only support controlnet, control-lora, and t2i adapters!')
-                break
-
         if has_high_res_fix:
             hr_option = HiResFixOption.from_value(unit.hr_option)
         else:
             hr_option = HiResFixOption.BOTH
 
-        alignment_indices = [i % len(preprocessor_outputs) for i in range(p.batch_size)]
         def attach_extra_result_image(img: np.ndarray, is_high_res: bool = False):
             if (
                 (is_high_res and hr_option.high_res_enabled) or
@@ -364,16 +370,20 @@ class ControlNetForForgeOfficial(scripts.Script):
             for preprocessor_output in preprocessor_outputs:
                 control_cond = crop_and_resize_image(preprocessor_output, resize_mode, h, w)
                 attach_extra_result_image(external_code.visualize_inpaint_mask(control_cond))
-                params.control_cond.append(numpy_to_pytorch(control_cond).movedim(-1, 1))
+                control_cond = numpy_to_pytorch(control_cond).movedim(-1, 1)
+                params.control_cond.append(control_cond)
 
-            params.control_cond = torch.cat(params.control_cond, dim=0)[alignment_indices].contiguous()
-
-            if has_high_res_fix:
-                for preprocessor_output in preprocessor_outputs:
+                if has_high_res_fix and hr_option != HiResFixOption.LOW_RES_ONLY:
                     control_cond_for_hr_fix = crop_and_resize_image(preprocessor_output, resize_mode, hr_y, hr_x)
                     attach_extra_result_image(external_code.visualize_inpaint_mask(control_cond_for_hr_fix), is_high_res=True)
-                    params.control_cond_for_hr_fix.append(numpy_to_pytorch(control_cond_for_hr_fix).movedim(-1, 1))
-                params.control_cond_for_hr_fix = torch.cat(params.control_cond_for_hr_fix, dim=0)[alignment_indices].contiguous()
+                    control_cond_for_hr_fix = numpy_to_pytorch(control_cond_for_hr_fix).movedim(-1, 1)
+                    params.control_cond_for_hr_fix.append(control_cond_for_hr_fix)
+                elif has_high_res_fix:
+                    params.control_cond_for_hr_fix.append(control_cond)
+
+            params.control_cond = torch.cat(params.control_cond, dim=0)
+            if has_high_res_fix:
+                params.control_cond_for_hr_fix = torch.cat(params.control_cond_for_hr_fix, dim=0)
             else:
                 params.control_cond_for_hr_fix = params.control_cond
         else:
@@ -392,15 +402,17 @@ class ControlNetForForgeOfficial(scripts.Script):
                 control_mask = numpy_to_pytorch(control_mask).movedim(-1, 1)[:, :1]
                 params.control_mask.append(control_mask)
 
-                if has_high_res_fix:
+                if has_high_res_fix and hr_option != HiResFixOption.LOW_RES_ONLY:
                     control_mask_for_hr_fix = crop_and_resize_image(input_mask, resize_mode, hr_y, hr_x, fill_border)
                     attach_extra_result_image(control_mask_for_hr_fix, is_high_res=True)
                     control_mask_for_hr_fix = numpy_to_pytorch(control_mask_for_hr_fix).movedim(-1, 1)[:, :1]
                     params.control_mask_for_hr_fix.append(control_mask_for_hr_fix)
+                elif has_high_res_fix:
+                    params.control_mask_for_hr_fix.append(control_mask)
 
-            params.control_mask = torch.cat(params.control_mask, dim=0)[alignment_indices].contiguous()
+            params.control_mask = torch.cat(params.control_mask, dim=0)
             if has_high_res_fix:
-                params.control_mask_for_hr_fix = torch.cat(params.control_mask_for_hr_fix, dim=0)[alignment_indices].contiguous()
+                params.control_mask_for_hr_fix = torch.cat(params.control_mask_for_hr_fix, dim=0)
             else:
                 params.control_mask_for_hr_fix = params.control_mask
 
@@ -423,13 +435,15 @@ class ControlNetForForgeOfficial(scripts.Script):
 
     @torch.no_grad()
     def process_unit_before_every_sampling(self,
-                                           p: StableDiffusionProcessing,
-                                           unit: ControlNetUnit,
-                                           params: ControlNetCachedParameters,
-                                           *args, **kwargs):
+                                         p: StableDiffusionProcessing,
+                                         unit: ControlNetUnit,
+                                         params: ControlNetCachedParameters,
+                                         *args, **kwargs):
 
         is_hr_pass = getattr(p, 'is_hr_pass', False)
-
+        current_iteration = getattr(p, 'iteration', 0)
+        batch_size = getattr(p, 'batch_size', 1)
+        
         has_high_res_fix = (
                 isinstance(p, StableDiffusionProcessingTxt2Img)
                 and getattr(p, 'enable_hr', False)
@@ -440,20 +454,37 @@ class ControlNetForForgeOfficial(scripts.Script):
         else:
             hr_option = HiResFixOption.BOTH
 
-        if has_high_res_fix and is_hr_pass and (not hr_option.high_res_enabled):
+        if has_high_res_fix and is_hr_pass and hr_option == HiResFixOption.LOW_RES_ONLY:
             logger.info(f"ControlNet Skipped High-res pass.")
             return
 
-        if has_high_res_fix and (not is_hr_pass) and (not hr_option.low_res_enabled):
+        if has_high_res_fix and (not is_hr_pass) and hr_option == HiResFixOption.HIGH_RES_ONLY:
             logger.info(f"ControlNet Skipped Low-res pass.")
             return
 
-        if is_hr_pass:
+        if is_hr_pass and hr_option != HiResFixOption.LOW_RES_ONLY:
             cond = params.control_cond_for_hr_fix
             mask = params.control_mask_for_hr_fix
         else:
             cond = params.control_cond
             mask = params.control_mask
+
+<<<<<<< Updated upstream
+        if isinstance(cond, torch.Tensor) and len(cond.shape) == 4:  # Tensor Batch [B, C, H, W]
+=======
+        if isinstance(cond, torch.Tensor) and len(cond.shape) == 4:  # Батч тензоров [B, C, H, W]
+>>>>>>> Stashed changes
+            total_images = cond.shape[0]
+            generation_index = current_iteration // batch_size
+            if generation_index < total_images:
+                cond = cond[generation_index:generation_index+1]
+                if mask is not None:
+                    mask = mask[generation_index:generation_index+1]
+            else:
+                logger.warning(f"Generation index {generation_index} exceeds available images {total_images}")
+                cond = cond[-1:] 
+                if mask is not None:
+                    mask = mask[-1:]
 
         kwargs.update(dict(
             unit=unit,
@@ -506,7 +537,7 @@ class ControlNetForForgeOfficial(scripts.Script):
 
         params.model.process_before_every_sampling(p, cond, mask, *args, **kwargs)
 
-        logger.info(f"ControlNet Method {params.preprocessor.name} patched.")
+        logger.info(f"ControlNet Method {params.preprocessor.name} patched for iteration {current_iteration} with image index {generation_index if 'generation_index' in locals() else 'N/A'}")
         return
 
     @staticmethod
@@ -548,11 +579,108 @@ class ControlNetForForgeOfficial(scripts.Script):
         self.current_params = {}
         enabled_units = self.get_enabled_units(args)
         Infotext.write_infotext(enabled_units, p)
+        
+<<<<<<< Updated upstream
+        # Find the maximum number of images in the batches among all units
+        max_batch_count = 1
+        for unit in enabled_units:
+            if unit.input_mode == external_code.InputMode.BATCH:
+                batch_image_files = shared.listfiles(unit.batch_image_dir)
+                image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
+                batch_count = len([f for f in batch_image_files if any(f.lower().endswith(ext) for ext in image_extensions)])
+=======
+        # Если нет включенных controlnet units, просто возвращаемся
+        if not enabled_units:
+            return
+        
+        # Находим максимальное количество изображений в батче среди всех юнитов
+        max_batch_count = 1
+        batch_files_by_unit = {}  # Словарь для хранения файлов для каждого юнита
+
+        # Устанавливаем seed на основе текущего времени для лучшей случайности
+        random.seed(int(time.time()))
+        
+        for unit in enabled_units:
+            if unit.input_mode == external_code.InputMode.BATCH:
+                batch_image_files = shared.listfiles(unit.batch_image_dir)
+                image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.webp']
+                unit_files = [f for f in batch_image_files if any(f.lower().endswith(ext) for ext in image_extensions)]
+                batch_files_by_unit[id(unit)] = unit_files
+                batch_count = len(unit_files)
+>>>>>>> Stashed changes
+                max_batch_count = max(max_batch_count, batch_count)
+            elif unit.input_mode == external_code.InputMode.MERGE:
+                batch_count = len(unit.batch_input_gallery)
+                max_batch_count = max(max_batch_count, batch_count)
+        
+<<<<<<< Updated upstream
+        # Set the number of iterations for the process
+        initial_batch_count = getattr(p, 'n_iter', 1)
+        p.n_iter = initial_batch_count * max_batch_count
+        
+        # Save the original batches index for later recovery
+        original_batch_index = getattr(p, 'batch_index', 0)
+        p.batch_index = original_batch_index % max_batch_count
+        
+=======
+        # Получаем значение n_iter, заданное пользователем (по умолчанию 1)
+        user_defined_n_iter = getattr(p, 'n_iter', 1)
+
+        # Если есть изображения в режиме batch, обрабатываем их
+        for unit in enabled_units:
+            if unit.input_mode == external_code.InputMode.BATCH:
+                unit_files = batch_files_by_unit.get(id(unit), [])
+                if not unit_files:
+                    continue
+                
+                # Защита от случая, когда файлов меньше чем n_iter
+                if len(unit_files) == 1:
+                    # Если файл один, просто дублируем его нужное количество раз
+                    selected_files = unit_files * user_defined_n_iter
+                else:
+                    # Создаем список индексов с повторением, если n_iter больше количества файлов
+                    total_needed = user_defined_n_iter
+                    full_cycles = total_needed // len(unit_files)
+                    remainder = total_needed % len(unit_files)
+                    
+                    # Создаем список всех необходимых индексов
+                    all_indices = []
+                    
+                    # Добавляем полные циклы
+                    if full_cycles > 0:
+                        for _ in range(full_cycles):
+                            cycle_indices = list(range(len(unit_files)))
+                            random.shuffle(cycle_indices)
+                            all_indices.extend(cycle_indices)
+                    
+                    # Добавляем оставшиеся файлы
+                    if remainder > 0:
+                        remaining_indices = list(range(len(unit_files)))
+                        random.shuffle(remaining_indices)
+                        all_indices.extend(remaining_indices[:remainder])
+                    
+                    # Выбираем файлы по индексам
+                    selected_files = [unit_files[i] for i in all_indices]
+                    
+                batch_files_by_unit[id(unit)] = selected_files
+
+        # Сохраняем выбранные файлы в юнитах
+        for unit in enabled_units:
+            if unit.input_mode == external_code.InputMode.BATCH:
+                unit.selected_batch_files = batch_files_by_unit.get(id(unit), [])
+
+        # Обновляем batch_index
+        original_batch_index = getattr(p, 'batch_index', 0)
+        p.batch_index = original_batch_index % max(max_batch_count, 1)
+        
+        # Обрабатываем каждый юнит
+>>>>>>> Stashed changes
         for i, unit in enumerate(enabled_units):
             self.bound_check_params(unit)
             params = ControlNetCachedParameters()
             self.process_unit_after_click_generate(p, unit, params, *args, **kwargs)
             self.current_params[i] = params
+        
         return
 
     @torch.no_grad()

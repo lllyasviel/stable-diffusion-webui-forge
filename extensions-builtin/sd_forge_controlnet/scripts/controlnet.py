@@ -3,6 +3,8 @@ from typing import Dict, Optional, Tuple, List, Union
 
 import cv2
 import torch
+import random
+import time
 
 import modules.scripts as scripts
 from modules import shared, script_callbacks, masking, images
@@ -171,11 +173,20 @@ class ControlNetForForgeOfficial(scripts.Script):
                     image_list.append([img, mask])
         elif unit.input_mode == external_code.InputMode.BATCH:
             image_list = []
-            image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
+            image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.webp']
             batch_image_files = shared.listfiles(unit.batch_image_dir)
-            for batch_modifier in getattr(unit, 'batch_modifiers', []):
-                batch_image_files = batch_modifier(batch_image_files, p)
-            for idx, filename in enumerate(batch_image_files):
+
+            # Ограничиваем количество изображений на основе n_iter
+            user_defined_n_iter = getattr(p, 'n_iter', 1)
+            
+            # Убедимся, что не выбираем больше доступных изображений
+            if user_defined_n_iter > len(batch_image_files):
+                user_defined_n_iter = len(batch_image_files)
+
+            # Выбираем случайные изображения в зависимости от n_iter
+            selected_files = random.sample(batch_image_files, user_defined_n_iter)
+
+            for idx, filename in enumerate(selected_files):
                 if any(filename.lower().endswith(ext) for ext in image_extensions):
                     img_path = os.path.join(unit.batch_image_dir, filename)
                     logger.info(f'Try to read image: {img_path}')
@@ -458,7 +469,11 @@ class ControlNetForForgeOfficial(scripts.Script):
             cond = params.control_cond
             mask = params.control_mask
 
+<<<<<<< Updated upstream
         if isinstance(cond, torch.Tensor) and len(cond.shape) == 4:  # Tensor Batch [B, C, H, W]
+=======
+        if isinstance(cond, torch.Tensor) and len(cond.shape) == 4:  # Батч тензоров [B, C, H, W]
+>>>>>>> Stashed changes
             total_images = cond.shape[0]
             generation_index = current_iteration // batch_size
             if generation_index < total_images:
@@ -565,6 +580,7 @@ class ControlNetForForgeOfficial(scripts.Script):
         enabled_units = self.get_enabled_units(args)
         Infotext.write_infotext(enabled_units, p)
         
+<<<<<<< Updated upstream
         # Find the maximum number of images in the batches among all units
         max_batch_count = 1
         for unit in enabled_units:
@@ -572,11 +588,32 @@ class ControlNetForForgeOfficial(scripts.Script):
                 batch_image_files = shared.listfiles(unit.batch_image_dir)
                 image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
                 batch_count = len([f for f in batch_image_files if any(f.lower().endswith(ext) for ext in image_extensions)])
+=======
+        # Если нет включенных controlnet units, просто возвращаемся
+        if not enabled_units:
+            return
+        
+        # Находим максимальное количество изображений в батче среди всех юнитов
+        max_batch_count = 1
+        batch_files_by_unit = {}  # Словарь для хранения файлов для каждого юнита
+
+        # Устанавливаем seed на основе текущего времени для лучшей случайности
+        random.seed(int(time.time()))
+        
+        for unit in enabled_units:
+            if unit.input_mode == external_code.InputMode.BATCH:
+                batch_image_files = shared.listfiles(unit.batch_image_dir)
+                image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.webp']
+                unit_files = [f for f in batch_image_files if any(f.lower().endswith(ext) for ext in image_extensions)]
+                batch_files_by_unit[id(unit)] = unit_files
+                batch_count = len(unit_files)
+>>>>>>> Stashed changes
                 max_batch_count = max(max_batch_count, batch_count)
             elif unit.input_mode == external_code.InputMode.MERGE:
                 batch_count = len(unit.batch_input_gallery)
                 max_batch_count = max(max_batch_count, batch_count)
         
+<<<<<<< Updated upstream
         # Set the number of iterations for the process
         initial_batch_count = getattr(p, 'n_iter', 1)
         p.n_iter = initial_batch_count * max_batch_count
@@ -585,6 +622,59 @@ class ControlNetForForgeOfficial(scripts.Script):
         original_batch_index = getattr(p, 'batch_index', 0)
         p.batch_index = original_batch_index % max_batch_count
         
+=======
+        # Получаем значение n_iter, заданное пользователем (по умолчанию 1)
+        user_defined_n_iter = getattr(p, 'n_iter', 1)
+
+        # Если есть изображения в режиме batch, обрабатываем их
+        for unit in enabled_units:
+            if unit.input_mode == external_code.InputMode.BATCH:
+                unit_files = batch_files_by_unit.get(id(unit), [])
+                if not unit_files:
+                    continue
+                
+                # Защита от случая, когда файлов меньше чем n_iter
+                if len(unit_files) == 1:
+                    # Если файл один, просто дублируем его нужное количество раз
+                    selected_files = unit_files * user_defined_n_iter
+                else:
+                    # Создаем список индексов с повторением, если n_iter больше количества файлов
+                    total_needed = user_defined_n_iter
+                    full_cycles = total_needed // len(unit_files)
+                    remainder = total_needed % len(unit_files)
+                    
+                    # Создаем список всех необходимых индексов
+                    all_indices = []
+                    
+                    # Добавляем полные циклы
+                    if full_cycles > 0:
+                        for _ in range(full_cycles):
+                            cycle_indices = list(range(len(unit_files)))
+                            random.shuffle(cycle_indices)
+                            all_indices.extend(cycle_indices)
+                    
+                    # Добавляем оставшиеся файлы
+                    if remainder > 0:
+                        remaining_indices = list(range(len(unit_files)))
+                        random.shuffle(remaining_indices)
+                        all_indices.extend(remaining_indices[:remainder])
+                    
+                    # Выбираем файлы по индексам
+                    selected_files = [unit_files[i] for i in all_indices]
+                    
+                batch_files_by_unit[id(unit)] = selected_files
+
+        # Сохраняем выбранные файлы в юнитах
+        for unit in enabled_units:
+            if unit.input_mode == external_code.InputMode.BATCH:
+                unit.selected_batch_files = batch_files_by_unit.get(id(unit), [])
+
+        # Обновляем batch_index
+        original_batch_index = getattr(p, 'batch_index', 0)
+        p.batch_index = original_batch_index % max(max_batch_count, 1)
+        
+        # Обрабатываем каждый юнит
+>>>>>>> Stashed changes
         for i, unit in enumerate(enabled_units):
             self.bound_check_params(unit)
             params = ControlNetCachedParameters()

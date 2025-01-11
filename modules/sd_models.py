@@ -450,7 +450,7 @@ def reload_model_weights(sd_model=None, info=None, forced_reload=False):
 
 def unload_model_weights(sd_model=None, info=None):
     memory_management.unload_all_models()
-    pass
+    return
 
 
 def apply_token_merging(sd_model, token_merging_ratio):

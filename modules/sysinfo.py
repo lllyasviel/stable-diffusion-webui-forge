@@ -234,8 +234,9 @@ def set_config(req: dict[str, Any], is_api=False, run_callbacks=True, save_confi
         if k == 'sd_model_checkpoint':
             if v is not None and v not in sd_models.checkpoint_aliases:
                 raise RuntimeError(f"model {v!r} not found")
-            main_entry.checkpoint_change(v, save=False, refresh=False)
-            should_refresh_model_loading_params = True
+            checkpoint_changed = main_entry.checkpoint_change(v, save=False, refresh=False)
+            if checkpoint_changed:
+                should_refresh_model_loading_params = True
         elif k == 'forge_additional_modules':
             modules_changed = main_entry.modules_change(v, save=False, refresh=False)
             if modules_changed:

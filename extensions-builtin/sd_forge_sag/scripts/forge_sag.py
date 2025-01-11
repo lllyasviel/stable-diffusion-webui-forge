@@ -62,12 +62,21 @@ def create_blur_map(x0, attn, sigma=3.0, threshold=1.0):
     attn = attn.reshape(b, -1, hw1, hw2)
     # Global Average Pool
     mask = attn.mean(1, keepdim=False).sum(1, keepdim=False) > threshold
+
+    # original method: works for all normal inputs that *do not* have Kohya HRFix scaling; typically fails with scaling
     ratio = 2**(math.ceil(math.sqrt(lh * lw / hw1)) - 1).bit_length()
-    mid_shape = [math.ceil(lh / ratio), math.ceil(lw / ratio)]
+    h = math.ceil(lh / ratio)
+    w = math.ceil(lw / ratio)
+
+    if h * w != mask.size(1):
+        kohya_shrink_shape = getattr(shared, 'kohya_shrink_shape', None)
+        if kohya_shrink_shape:
+            w = kohya_shrink_shape[0]   #    works with all block numbers for kohya hrfix
+            h = kohya_shrink_shape[1]
 
     # Reshape
     mask = (
-        mask.reshape(b, *mid_shape)
+        mask.reshape(b, h, w)
         .unsqueeze(1)
         .type(attn.dtype)
     )
@@ -192,11 +201,14 @@ class SAGForForge(scripts.Script):
 
         #   not for FLux
         if not shared.sd_model.is_webui_legacy_model():     #   ideally would be is_flux
-            gr.Info ("Self Attention Guidance is not compatible with Flux")
+            print("Self Attention Guidance is not compatible with Flux")
             return
         #   Self Attention Guidance errors if CFG is 1
-        if p.cfg_scale == 1:
-            gr.Info ("Self Attention Guidance requires CFG > 1")
+        if p.is_hr_pass == False and p.cfg_scale <= 1:
+            print("Self Attention Guidance requires CFG > 1")
+            return
+        if p.is_hr_pass == True and p.hr_cfg <= 1:
+            print("Self Attention Guidance (hires pass) requires Hires CFG > 1")
             return
 
         unet = p.sd_model.forge_objects.unet

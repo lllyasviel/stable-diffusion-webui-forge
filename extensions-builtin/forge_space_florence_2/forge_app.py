@@ -3,7 +3,6 @@ import gradio as gr
 from transformers import AutoProcessor, AutoModelForCausalLM
 import os
 
-import requests
 import copy
 
 from PIL import Image, ImageDraw, ImageFont
@@ -12,35 +11,23 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 import random
-import numpy as np
 
-# import subprocess
-# subprocess.run('pip install flash-attn --no-build-isolation', env={'FLASH_ATTENTION_SKIP_CUDA_BUILD': "TRUE"}, shell=True)
-
-from unittest.mock import patch
-from transformers.dynamic_module_utils import get_imports
-def fixed_get_imports(filename: str | os.PathLike) -> list[str]:
-    if not str(filename).endswith("modeling_florence2.py"):
-        return get_imports(filename)
-    imports = get_imports(filename)
-    imports.remove("flash_attn")
-    return imports
+from modules import shared
 
 
 with spaces.capture_gpu_object() as gpu_object:
-    with patch("transformers.dynamic_module_utils.get_imports", fixed_get_imports):
-        models = {
-            # 'microsoft/Florence-2-large-ft': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large-ft', attn_implementation='sdpa', trust_remote_code=True).to("cuda").eval(),
-            'microsoft/Florence-2-large': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True).to("cuda").eval(),
-            # 'microsoft/Florence-2-base-ft': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-base-ft', trust_remote_code=True).to("cuda").eval(),
-            # 'microsoft/Florence-2-base': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-base', trust_remote_code=True).to("cuda").eval(),
-        }
+    models = {
+        # 'microsoft/Florence-2-large-ft': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large-ft', attn_implementation='sdpa', trust_remote_code=True).to("cuda").eval(),
+        'microsoft/Florence-2-large': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True).to("cuda").eval(),
+        # 'microsoft/Florence-2-base-ft': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-base-ft', trust_remote_code=True).to("cuda").eval(),
+        'microsoft/Florence-2-base': AutoModelForCausalLM.from_pretrained('microsoft/Florence-2-base', trust_remote_code=True).to("cuda").eval(),
+    }
 
     processors = {
         # 'microsoft/Florence-2-large-ft': AutoProcessor.from_pretrained('microsoft/Florence-2-large-ft', trust_remote_code=True),
         'microsoft/Florence-2-large': AutoProcessor.from_pretrained('microsoft/Florence-2-large', trust_remote_code=True),
         # 'microsoft/Florence-2-base-ft': AutoProcessor.from_pretrained('microsoft/Florence-2-base-ft', trust_remote_code=True),
-        # 'microsoft/Florence-2-base': AutoProcessor.from_pretrained('microsoft/Florence-2-base', trust_remote_code=True),
+        'microsoft/Florence-2-base': AutoProcessor.from_pretrained('microsoft/Florence-2-base', trust_remote_code=True),
     }
 
 
@@ -134,8 +121,8 @@ def draw_ocr_bboxes(image, prediction):
                   fill=color)
     return image
 
+
 def process_image(image, task_prompt, text_input=None, model_id='microsoft/Florence-2-large'):
-    image = Image.fromarray(image)  # Convert NumPy array to PIL Image
     if task_prompt == 'Caption':
         task_prompt = '<CAPTION>'
         results = run_example(task_prompt, image, model_id=model_id)
@@ -234,6 +221,61 @@ def process_image(image, task_prompt, text_input=None, model_id='microsoft/Flore
     else:
         return "", None  # Return empty string and None for unknown task prompts
 
+
+@spaces.GPU(gpu_objects=[gpu_object], manual_load=False)
+def run_example_batch(directory, task_prompt, model_id='microsoft/Florence-2-large', save_caption=False):
+    model = models[model_id]
+    processor = processors[model_id]
+    
+    match task_prompt:
+        case 'More Detailed Caption':
+            prompt = '<MORE_DETAILED_CAPTION>'
+        case 'Detailed Caption':
+            prompt = '<DETAILED_CAPTION>'
+        case 'Caption':
+            prompt = '<CAPTION>'
+        case _:
+            prompt = '<CAPTION>'
+    
+    results = ""
+
+    # batch_images block lifted from modules/img2img.py
+    if isinstance(directory, str):
+        batch_images = list(shared.walk_files(directory, allowed_extensions=(".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff", ".avif")))
+    else:
+        batch_images = [os.path.abspath(x.name) for x in directory]
+
+    for file in batch_images:
+        image = Image.open(file)
+
+        if image:
+            inputs = processor(text=prompt, images=image, return_tensors="pt").to("cuda")
+            generated_ids = model.generate(
+                input_ids=inputs["input_ids"],
+                pixel_values=inputs["pixel_values"],
+                max_new_tokens=1024,
+                early_stopping=False,
+                do_sample=False,
+                num_beams=3,
+            )
+            generated_text = processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
+            parsed_answer = processor.post_process_generation(
+                generated_text,
+                task=task_prompt,
+                image_size=(image.width, image.height)
+            )
+            
+            parsed_answer = parsed_answer[task_prompt]
+            results += f"File: {file}\nCaption: {parsed_answer}\n\n"
+
+            if save_caption:
+                caption_file = file + ".txt"
+                with open(caption_file, 'w') as f:
+                    f.write(parsed_answer)
+
+    return results
+
+
 css = """
   #output {
     height: 500px; 
@@ -242,6 +284,9 @@ css = """
   }
 """
 
+caption_task_list = [
+    'Caption', 'Detailed Caption', 'More Detailed Caption'
+]
 
 single_task_list =[
     'Caption', 'Detailed Caption', 'More Detailed Caption', 'Object Detection',
@@ -251,17 +296,16 @@ single_task_list =[
     'OCR', 'OCR with Region'
 ]
 
-cascased_task_list =[
+cascaded_task_list =[
     'Caption + Grounding', 'Detailed Caption + Grounding', 'More Detailed Caption + Grounding'
 ]
 
 
 def update_task_dropdown(choice):
-    if choice == 'Cascased task':
-        return gr.Dropdown(choices=cascased_task_list, value='Caption + Grounding')
+    if choice == 'Cascaded task':
+        return gr.Dropdown(choices=cascaded_task_list, value='Caption + Grounding')
     else:
         return gr.Dropdown(choices=single_task_list, value='Caption')
-
 
 
 with gr.Blocks(css=css) as demo:
@@ -269,12 +313,12 @@ with gr.Blocks(css=css) as demo:
     with gr.Tab(label="Florence-2 Image Captioning"):
         with gr.Row():
             with gr.Column():
-                input_img = gr.Image(label="Input Picture")
+                input_img = gr.Image(label="Input picture", type="pil")
                 model_selector = gr.Dropdown(choices=list(models.keys()), label="Model", value=list(models.keys())[0])
-                task_type = gr.Radio(choices=['Single task', 'Cascased task'], label='Task type selector', value='Single task')
-                task_prompt = gr.Dropdown(choices=single_task_list, label="Task Prompt", value="More Detailed Caption")
+                task_type = gr.Radio(choices=['Single task', 'Cascaded task'], label='Task type selector', value='Single task')
+                task_prompt = gr.Dropdown(choices=single_task_list, label="Task prompt", value="More Detailed Caption")
                 task_type.change(fn=update_task_dropdown, inputs=task_type, outputs=task_prompt)
-                text_input = gr.Textbox(label="Text Input (optional)")
+                text_input = gr.Textbox(label="Text input (optional)")
                 submit_btn = gr.Button(value="Submit")
             with gr.Column():
                 output_text = gr.Textbox(label="Output Text")
@@ -294,6 +338,19 @@ with gr.Blocks(css=css) as demo:
 
         submit_btn.click(process_image, [input_img, task_prompt, text_input, model_selector], [output_text, output_img])
 
+    with gr.Tab(label="Batch captioning"):
+        with gr.Row():
+            with gr.Column():
+                input_directory = gr.Textbox(label="Input directory")
+                model_selector = gr.Dropdown(choices=list(models.keys()), label="Model", value=list(models.keys())[0])
+                task_prompt = gr.Dropdown(choices=caption_task_list, label="Task prompt", value="More Detailed Caption")
+                save_captions = gr.Checkbox(label="Save captions to textfiles (same filename, same directory)", value=False)
+                batch_btn = gr.Button(value="Submit")
+            with gr.Column():
+                output_text = gr.Textbox(label="Output captions")
+
+        batch_btn.click(run_example_batch, [input_directory, task_prompt, model_selector, save_captions], output_text)
+
 
 if __name__ == "__main__":
-    demo.launch(debug=True)
+    demo.launch()

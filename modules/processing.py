@@ -737,7 +737,9 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
         "CFG scale": p.cfg_scale
     }
 
-    if p.sd_model.use_distilled_cfg_scale:
+    # if hires fix was used, p.firstpass_use_distilled_cfg_scale is appropriately set, otherwise it doesn't exist
+    firstpass_use_distilled_cfg_scale = getattr(p,'firstpass_use_distilled_cfg_scale', p.sd_model.use_distilled_cfg_scale)
+    if firstpass_use_distilled_cfg_scale:
         generation_params['Distilled CFG Scale'] = p.distilled_cfg_scale
 
     noise_source_type = get_noise_source_type()
@@ -827,8 +829,8 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         set_config(p.override_settings, is_api=True, run_callbacks=False, save_config=False)
 
         # load/reload model and manage prompt cache as needed
-        if p.highresfix_quick == True:
-            # avoid model load here, as it could be redundant
+        if getattr(p, 'txt2img_upscale', False):
+            # avoid model load from hiresfix quickbutton, as it could be redundant
             pass
         else:
             manage_model_and_prompt_cache(p)
@@ -928,7 +930,9 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             if state.interrupted or state.stopping_generation:
                 break
 
-            sd_models.forge_model_reload()  # model can be changed for example by refiner, hiresfix fix
+            if not getattr(p, 'txt2img_upscale', False) or p.hr_checkpoint_name is None:
+                # hiresfix quickbutton may not need reload of firstpass model
+                sd_models.forge_model_reload()  # model can be changed for example by refiner, hiresfix
 
             p.sd_model.forge_objects = p.sd_model.forge_objects_original.shallow_copy()
             p.prompts = p.all_prompts[n * p.batch_size:(n + 1) * p.batch_size]
@@ -1181,7 +1185,6 @@ def old_hires_fix_first_pass_dimensions(width, height):
 @dataclass(repr=False)
 class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
     enable_hr: bool = False
-    highresfix_quick: bool = False
     denoising_strength: float = 0.75
     firstphase_width: int = 0
     firstphase_height: int = 0
@@ -1281,8 +1284,10 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
 
                 self.extra_generation_params["Hires checkpoint"] = self.hr_checkpoint_info.short_title
 
-            if isinstance(self.hr_additional_modules, list) and len(self.hr_additional_modules) > 0:
-                if 'Use same choices' in self.hr_additional_modules:
+            if isinstance(self.hr_additional_modules, list):
+                if self.hr_additional_modules == []:
+                    self.extra_generation_params['Hires Module 1'] = 'Built-in'
+                elif 'Use same choices' in self.hr_additional_modules:
                     self.extra_generation_params['Hires Module 1'] = 'Use same choices'
                 else:
                     for i, m in enumerate(self.hr_additional_modules):
@@ -1303,8 +1308,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
             self.extra_generation_params["Hires negative prompt"] = get_hr_negative_prompt
 
             self.extra_generation_params["Hires CFG Scale"] = self.hr_cfg
-            if shared.sd_model.use_distilled_cfg_scale:
-                self.extra_generation_params['Hires Distilled CFG Scale'] = self.hr_distilled_cfg
+            self.extra_generation_params["Hires Distilled CFG Scale"] = None  # set after potential hires model load
 
             self.extra_generation_params["Hires schedule type"] = None  # to be set in sd_samplers_kdiffusion.py
 
@@ -1398,23 +1402,28 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
             fp_additional_modules = getattr(shared.opts, 'forge_additional_modules')
 
             reload = False
-            if 'Use same choices' not in self.hr_additional_modules:
-                if sorted(self.hr_additional_modules) != sorted(fp_additional_modules):
-                    main_entry.modules_change(self.hr_additional_modules, save=False, refresh=False)
+            if hasattr(self, 'hr_additional_modules') and 'Use same choices' not in self.hr_additional_modules:
+                modules_changed = main_entry.modules_change(self.hr_additional_modules, save=False, refresh=False)
+                if modules_changed:
                     reload = True
 
             if self.hr_checkpoint_name and self.hr_checkpoint_name != 'Use same checkpoint':
-                if self.hr_checkpoint_name != fp_checkpoint:
-                    main_entry.checkpoint_change(self.hr_checkpoint_name, save=False, refresh=False)
+                checkpoint_changed = main_entry.checkpoint_change(self.hr_checkpoint_name, save=False, refresh=False)
+                if checkpoint_changed:
+                    self.firstpass_use_distilled_cfg_scale = self.sd_model.use_distilled_cfg_scale
                     reload = True
-            
+
             if reload:
                 try:
                     main_entry.refresh_model_loading_parameters()
                     sd_models.forge_model_reload()
                 finally:
                     main_entry.modules_change(fp_additional_modules, save=False, refresh=False)
-                    main_entry.checkpoint_change(fp_checkpoint, save=False)
+                    main_entry.checkpoint_change(fp_checkpoint, save=False, refresh=False)
+                    main_entry.refresh_model_loading_parameters()
+
+            if self.sd_model.use_distilled_cfg_scale:
+                self.extra_generation_params['Hires Distilled CFG Scale'] = self.hr_distilled_cfg
 
         return self.sample_hr_pass(samples, decoded_samples, seeds, subseeds, subseed_strength, prompts)
 
@@ -1644,7 +1653,6 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
     force_task_id: str = None
 
     hr_distilled_cfg: float = 3.5       #   needed here for cached_params
-    highresfix_quick: bool = False
 
     image_mask: Any = field(default=None, init=False)
 

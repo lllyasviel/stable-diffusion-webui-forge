@@ -93,7 +93,6 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
     p.extra_generation_params['Original Size'] = f'{args[8]}x{args[7]}'
 
     p.override_settings['save_images_before_highres_fix'] = False
-    p.highresfix_quick = True
 
     with closing(p):
         processed = modules.scripts.scripts_txt2img.run(p, *p.script_args)
@@ -103,14 +102,21 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
 
     shared.total_tqdm.clear()
 
+    insert = getattr(shared.opts, 'hires_button_gallery_insert', False)
     new_gallery = []
     for i, image in enumerate(gallery):
+        if insert or i != gallery_index:
+            image[0].already_saved_as = image[0].filename.rsplit('?', 1)[0]
+            new_gallery.append(image)
         if i == gallery_index:
             new_gallery.extend(processed.images)
-        else:
-            new_gallery.append(image)
-
-    geninfo["infotexts"][gallery_index] = processed.info
+        
+    new_index = gallery_index
+    if insert:
+        new_index += 1
+        geninfo["infotexts"].insert(new_index, processed.info)
+    else:
+        geninfo["infotexts"][gallery_index] = processed.info
 
     return new_gallery, json.dumps(geninfo), plaintext_to_html(processed.info), plaintext_to_html(processed.comments, classname="comments")
 

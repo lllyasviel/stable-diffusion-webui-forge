@@ -258,4 +258,7 @@ def create_embedding_from_data(data, name, filename='unknown embedding file', fi
     embedding.vectors = vectors
     embedding.shape = shape
 
+    if filepath:
+        embedding.filename = filepath
+
     return embedding

@@ -3,6 +3,10 @@ from __future__ import annotations
 import os
 import time
 
+from fastapi import Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+
 from modules import timer
 from modules import initialize_util
 from modules import initialize
@@ -23,6 +27,17 @@ initialize.check_versions()
 initialize.initialize()
 
 
+def _handle_exception(request: Request, e: Exception):
+    error_information = vars(e)
+    content = {
+        "error": type(e).__name__,
+        "detail": error_information.get("detail", ""),
+        "body": error_information.get("body", ""),
+        "message": str(e),
+    }
+    return JSONResponse(status_code=int(error_information.get("status_code", 500)), content=jsonable_encoder(content))
+
+
 def create_api(app):
     from modules.api.api import Api
     from modules.call_queue import queue_lock
@@ -35,7 +50,7 @@ def api_only_worker():
     from fastapi import FastAPI
     from modules.shared_cmd_options import cmd_opts
 
-    app = FastAPI()
+    app = FastAPI(exception_handlers={Exception: _handle_exception})
     initialize_util.setup_middleware(app)
     api = create_api(app)
 
@@ -98,6 +113,7 @@ def webui_worker():
             app_kwargs={
                 "docs_url": "/docs",
                 "redoc_url": "/redoc",
+                "exception_handlers": {Exception: _handle_exception},
             },
             root_path=f"/{cmd_opts.subpath}" if cmd_opts.subpath else "",
         )

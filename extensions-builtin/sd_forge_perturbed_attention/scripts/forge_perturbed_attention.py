@@ -1,6 +1,3 @@
-#seems like this PAG only needs to apply for a few steps, or only one
-# delay start to avoid changing composition/pose
-
 import gradio as gr
 
 from modules import scripts
@@ -32,11 +29,11 @@ class PerturbedAttentionGuidanceForForge(scripts.Script):
                 end_step = gr.Slider(label='End step', minimum=0.0, maximum=1.0, step=0.01, value=1.0)
 
         self.infotext_fields = [
-            (enabled, lambda d: d.get("pag_enabled", False)),
-            (scale,         "pag_scale"),
-            (attenuation,   "pag_attenuation"),
-            (start_step,    "pag_start_step"),
-            (end_step,      "pag_end_step"),
+            (enabled, lambda d: d.get("pagi_enabled", False)),
+            (scale,         "pagi_scale"),
+            (attenuation,   "pagi_attenuation"),
+            (start_step,    "pagi_start_step"),
+            (end_step,      "pagi_end_step"),
         ]
 
         return enabled, scale, attenuation, start_step, end_step
@@ -90,11 +87,11 @@ class PerturbedAttentionGuidanceForForge(scripts.Script):
         p.sd_model.forge_objects.unet = unet
 
         p.extra_generation_params.update(dict(
-            pag_enabled     = enabled,
-            pag_scale       = scale,
-            pag_attenuation = attenuation,
-            pag_start_step  = start_step,
-            pag_end_step    = end_step,
+            pagi_enabled     = enabled,
+            pagi_scale       = scale,
+            pagi_attenuation = attenuation,
+            pagi_start_step  = start_step,
+            pagi_end_step    = end_step,
         ))
 
         return

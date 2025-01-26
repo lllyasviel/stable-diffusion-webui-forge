@@ -299,10 +299,10 @@ class LoraLoader:
         self.loaded_hash = str([])
 
     @torch.inference_mode()
-    def refresh(self, lora_patches, offload_device=torch.device('cpu')):
+    def refresh(self, lora_patches, offload_device=torch.device('cpu'), force_refresh = False):
         hashes = str(list(lora_patches.keys()))
 
-        if hashes == self.loaded_hash:
+        if hashes == self.loaded_hash and not force_refresh:
             return
 
         # Merge Patches

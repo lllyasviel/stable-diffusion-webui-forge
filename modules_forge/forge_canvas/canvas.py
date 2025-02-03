@@ -32,6 +32,7 @@ from io import BytesIO
 from gradio.context import Context
 from functools import wraps
 
+from modules.shared import opts
 
 canvas_js_root_path = os.path.dirname(__file__)
 
@@ -136,7 +137,15 @@ class ForgeCanvas:
             elem_classes=None
     ):
         self.uuid = 'uuid_' + uuid.uuid4().hex
-        self.block = gr.HTML(canvas_html.replace('forge_mixin', self.uuid), visible=visible, elem_id=elem_id, elem_classes=elem_classes)
+
+        canvas_html_uuid = canvas_html.replace('forge_mixin', self.uuid)
+
+        if opts.forge_canvas_plain:
+            canvas_html_uuid = canvas_html_uuid.replace('class="forge-image-container"', 'class="forge-image-container-plain"').replace('stroke="white"', 'stroke=#444')
+        if opts.forge_canvas_toolbar_always:
+            canvas_html_uuid = canvas_html_uuid.replace('class="forge-toolbar"', 'class="forge-toolbar-static"')
+            
+        self.block = gr.HTML(canvas_html_uuid, visible=visible, elem_id=elem_id, elem_classes=elem_classes)
         self.foreground = LogicalImage(visible=DEBUG_MODE, label='foreground', numpy=numpy, elem_id=self.uuid, elem_classes=['logical_image_foreground'])
         self.background = LogicalImage(visible=DEBUG_MODE, label='background', numpy=numpy, value=initial_image, elem_id=self.uuid, elem_classes=['logical_image_background'])
         Context.root_block.load(None, js=f'async ()=>{{new ForgeCanvas("{self.uuid}", {no_upload}, {no_scribbles}, {contrast_scribbles}, {height}, '

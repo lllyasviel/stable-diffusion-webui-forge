@@ -32,6 +32,7 @@ from io import BytesIO
 from gradio.context import Context
 from functools import wraps
 
+from modules.shared import opts
 
 canvas_js_root_path = os.path.dirname(__file__)
 
@@ -77,6 +78,7 @@ class LogicalImage(gr.Textbox):
     @wraps(gr.Textbox.__init__)
     def __init__(self, *args, numpy=True, **kwargs):
         self.numpy = numpy
+        self.infotext = dict()
 
         if 'value' in kwargs:
             initial_value = kwargs['value']
@@ -94,11 +96,18 @@ class LogicalImage(gr.Textbox):
         if not payload.startswith("data:image/png;base64,"):
             return None
 
-        return base64_to_image(payload, numpy=self.numpy)
+        image = base64_to_image(payload, numpy=self.numpy)
+        if hasattr(image, 'info'):
+            image.info = self.infotext
+        
+        return image
 
     def postprocess(self, value):
         if value is None:
             return None
+            
+        if hasattr(value, 'info'):
+            self.infotext = value.info
 
         return image_to_base64(value, numpy=self.numpy)
 
@@ -128,7 +137,15 @@ class ForgeCanvas:
             elem_classes=None
     ):
         self.uuid = 'uuid_' + uuid.uuid4().hex
-        self.block = gr.HTML(canvas_html.replace('forge_mixin', self.uuid), visible=visible, elem_id=elem_id, elem_classes=elem_classes)
+
+        canvas_html_uuid = canvas_html.replace('forge_mixin', self.uuid)
+
+        if opts.forge_canvas_plain:
+            canvas_html_uuid = canvas_html_uuid.replace('class="forge-image-container"', 'class="forge-image-container-plain"')
+        if opts.forge_canvas_toolbar_always:
+            canvas_html_uuid = canvas_html_uuid.replace('class="forge-toolbar"', 'class="forge-toolbar-static"')
+            
+        self.block = gr.HTML(canvas_html_uuid, visible=visible, elem_id=elem_id, elem_classes=elem_classes)
         self.foreground = LogicalImage(visible=DEBUG_MODE, label='foreground', numpy=numpy, elem_id=self.uuid, elem_classes=['logical_image_foreground'])
         self.background = LogicalImage(visible=DEBUG_MODE, label='background', numpy=numpy, value=initial_image, elem_id=self.uuid, elem_classes=['logical_image_background'])
         Context.root_block.load(None, js=f'async ()=>{{new ForgeCanvas("{self.uuid}", {no_upload}, {no_scribbles}, {contrast_scribbles}, {height}, '

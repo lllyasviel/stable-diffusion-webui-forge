@@ -185,6 +185,15 @@ def list_models():
 
 re_strip_checksum = re.compile(r"\s*\[[^]]+]\s*$")
 
+def match_checkpoint_to_name(name):
+    name = name.split(' [')[0]
+
+    for ckptname in checkpoints_list.values():
+        title = ckptname.title.split(' [')[0]
+        if (name in title) or (title in name):
+            return ckptname.short_title if shared.opts.sd_checkpoint_dropdown_use_short else ckptname.name.split(' [')[0]
+
+    return name
 
 def get_closet_checkpoint_match(search_string):
     if not search_string:
@@ -440,7 +449,8 @@ def reload_model_weights(sd_model=None, info=None, forced_reload=False):
 
 
 def unload_model_weights(sd_model=None, info=None):
-    pass
+    memory_management.unload_all_models()
+    return
 
 
 def apply_token_merging(sd_model, token_merging_ratio):

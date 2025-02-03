@@ -6,6 +6,8 @@ from backend.text_processing import parsing, emphasis
 from backend.text_processing.textual_inversion import EmbeddingDatabase
 from backend import memory_management
 
+from modules.shared import opts
+
 
 PromptChunkFix = namedtuple('PromptChunkFix', ['offset', 'embedding'])
 last_extra_generation_params = {}
@@ -67,7 +69,7 @@ class ClassicTextProcessingEngine:
         self.text_encoder = text_encoder
         self.tokenizer = tokenizer
 
-        self.emphasis = emphasis.get_current_option(emphasis_name)()
+        self.emphasis = emphasis.get_current_option(opts.emphasis)()
         self.text_projection = text_projection
         self.minimal_clip_skip = minimal_clip_skip
         self.clip_skip = clip_skip
@@ -146,7 +148,7 @@ class ClassicTextProcessingEngine:
         return z
 
     def tokenize_line(self, line):
-        parsed = parsing.parse_prompt_attention(line)
+        parsed = parsing.parse_prompt_attention(line, self.emphasis.name)
 
         tokenized = self.tokenize([text for text, _ in parsed])
 
@@ -248,6 +250,8 @@ class ClassicTextProcessingEngine:
         return batch_chunks, token_count
 
     def __call__(self, texts):
+        self.emphasis = emphasis.get_current_option(opts.emphasis)()
+
         batch_chunks, token_count = self.process_texts(texts)
 
         used_embeddings = {}

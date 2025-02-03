@@ -4,6 +4,8 @@ from collections import namedtuple
 from backend.text_processing import parsing, emphasis
 from backend import memory_management
 
+from modules.shared import opts
+
 
 PromptChunkFix = namedtuple('PromptChunkFix', ['offset', 'embedding'])
 
@@ -21,7 +23,7 @@ class T5TextProcessingEngine:
         self.text_encoder = text_encoder.transformer
         self.tokenizer = tokenizer
 
-        self.emphasis = emphasis.get_current_option(emphasis_name)()
+        self.emphasis = emphasis.get_current_option(opts.emphasis)()
         self.min_length = min_length
         self.id_end = 1
         self.id_pad = 0
@@ -64,7 +66,7 @@ class T5TextProcessingEngine:
         return z
 
     def tokenize_line(self, line):
-        parsed = parsing.parse_prompt_attention(line)
+        parsed = parsing.parse_prompt_attention(line, self.emphasis.name)
 
         tokenized = self.tokenize([text for text, _ in parsed])
 
@@ -111,15 +113,29 @@ class T5TextProcessingEngine:
         zs = []
         cache = {}
 
+        self.emphasis = emphasis.get_current_option(opts.emphasis)()
+
         for line in texts:
             if line in cache:
                 line_z_values = cache[line]
             else:
                 chunks, token_count = self.tokenize_line(line)
                 line_z_values = []
+
+                #   pad all chunks to length of longest chunk
+                max_tokens = 0
+                for chunk in chunks:
+                    max_tokens = max (len(chunk.tokens), max_tokens)
+
                 for chunk in chunks:
                     tokens = chunk.tokens
                     multipliers = chunk.multipliers
+                    
+                    remaining_count = max_tokens - len(tokens)
+                    if remaining_count > 0:
+                        tokens += [self.id_pad] * remaining_count
+                        multipliers += [1.0] * remaining_count
+
                     z = self.process_tokens([tokens], [multipliers])[0]
                     line_z_values.append(z)
                 cache[line] = line_z_values

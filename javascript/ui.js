@@ -113,6 +113,21 @@ function get_img2img_tab_index() {
 function create_submit_args(args) {
     var res = Array.from(args);
 
+    // As it is currently, txt2img and img2img send back the previous output args (txt2img_gallery, generation_info, html_info) whenever you generate a new image.
+    // This can lead to uploading a huge gallery of previously generated images, which leads to an unnecessary delay between submitting and beginning to generate.
+    // I don't know why gradio is sending outputs along with inputs, but we can prevent sending the image gallery here, which seems to be an issue for some.
+
+    // If gradio at some point stops sending outputs, this may break something
+    if (Array.isArray(res[res.length - 4])) {
+        //res[res.length - 4] = null;
+        // simply drop output args
+        res = res.slice(0, res.length - 4);
+    } else if (Array.isArray(res[res.length - 3])) {
+        // for submit_extras()
+        //res[res.length - 3] = null;
+        res = res.slice(0, res.length - 3);
+    }
+
     return res;
 }
 
@@ -136,7 +151,7 @@ function showRestoreProgressButton(tabname, show) {
     button.style.setProperty('display', show ? 'flex' : 'none', 'important');
 }
 
-function submit(args) {
+function submit() {
     showSubmitButtons('txt2img', false);
 
     var id = randomId();
@@ -148,22 +163,22 @@ function submit(args) {
         showRestoreProgressButton('txt2img', false);
     });
 
-    var res = create_submit_args(args);
+    var res = create_submit_args(arguments);
 
     res[0] = id;
 
     return res;
 }
 
-function submit_txt2img_upscale(args) {
-    var res = submit(args);
+function submit_txt2img_upscale() {
+    var res = submit(...arguments);
 
     res[2] = selected_gallery_index();
 
     return res;
 }
 
-function submit_img2img(args) {
+function submit_img2img() {
     showSubmitButtons('img2img', false);
 
     var id = randomId();
@@ -175,14 +190,14 @@ function submit_img2img(args) {
         showRestoreProgressButton('img2img', false);
     });
 
-    var res = create_submit_args(args);
+    var res = create_submit_args(arguments);
 
     res[0] = id;
 
     return res;
 }
 
-function submit_extras(args) {
+function submit_extras() {
     showSubmitButtons('extras', false);
 
     var id = randomId();
@@ -191,7 +206,7 @@ function submit_extras(args) {
         showSubmitButtons('extras', true);
     });
 
-    var res = create_submit_args(args);
+    var res = create_submit_args(arguments);
 
     res[0] = id;
 
@@ -361,6 +376,10 @@ var desiredCheckpointName = null;
 function selectCheckpoint(name) {
     desiredCheckpointName = name;
     gradioApp().getElementById('change_checkpoint').click();
+}
+var desiredVAEName = 0;
+function selectVAE(vae) {
+    desiredVAEName = vae;
 }
 
 function currentImg2imgSourceResolution(w, h, r) {

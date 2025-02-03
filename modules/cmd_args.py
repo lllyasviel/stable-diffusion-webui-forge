@@ -15,6 +15,7 @@ parser.add_argument("--update-check", action='store_true', help="launch.py argum
 parser.add_argument("--test-server", action='store_true', help="launch.py argument: configure server for testing")
 parser.add_argument("--log-startup", action='store_true', help="launch.py argument: print a detailed log of what's happening at startup")
 parser.add_argument("--skip-prepare-environment", action='store_true', help="launch.py argument: skip all environment preparation")
+parser.add_argument("--skip-google-blockly", action='store_true', help="launch.py argument: do not initialize google blockly modules")
 parser.add_argument("--skip-install", action='store_true', help="launch.py argument: skip installation of packages")
 parser.add_argument("--dump-sysinfo", action='store_true', help="launch.py argument: dump limited sysinfo file (without information about extensions, options) to disk and quit")
 parser.add_argument("--loglevel", type=str, help="log level; one of: CRITICAL, ERROR, WARNING, INFO, DEBUG", default=None)

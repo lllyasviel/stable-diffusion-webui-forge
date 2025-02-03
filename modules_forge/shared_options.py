@@ -1,3 +1,4 @@
+from modules import ui_components
 
 def register(options_templates, options_section, OptionInfo):
     options_templates.update(options_section((None, "Forge Hidden options"), {
@@ -7,4 +8,8 @@ def register(options_templates, options_section, OptionInfo):
         "forge_pin_shared_memory": OptionInfo('CPU'),
         "forge_preset": OptionInfo('sd'),
         "forge_additional_modules": OptionInfo([]),
+    }))
+    options_templates.update(options_section(('ui_alternatives', "UI alternatives", "ui"), {
+        "forge_canvas_plain": OptionInfo(False, "ForgeCanvas: use plain background").needs_reload_ui(),
+        "forge_canvas_toolbar_always": OptionInfo(False, "ForgeCanvas: toolbar always visible").needs_reload_ui(),
     }))

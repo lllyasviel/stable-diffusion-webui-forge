@@ -163,6 +163,10 @@ def connect_clear_prompt(button):
     )
 
 
+def wrap_counter_value(value):
+    return f"<span class='gr-box gr-text-input'>{value}</span>"
+
+
 def update_token_counter(text, steps, styles, *, is_positive=True):
     params = script_callbacks.BeforeTokenCounterParams(text, steps, styles, is_positive=is_positive)
     script_callbacks.before_token_counter_callback(params)
@@ -172,7 +176,11 @@ def update_token_counter(text, steps, styles, *, is_positive=True):
     is_positive = params.is_positive
 
     if shared.opts.include_styles_into_token_counters:
-        apply_styles = shared.prompt_styles.apply_styles_to_prompt if is_positive else shared.prompt_styles.apply_negative_styles_to_prompt
+        apply_styles = (
+            shared.prompt_styles.apply_styles_to_prompt
+            if is_positive
+            else shared.prompt_styles.apply_negative_styles_to_prompt
+        )
         text = apply_styles(text, styles)
     else:
         text = comments.strip_comments(text).strip()
@@ -187,21 +195,57 @@ def update_token_counter(text, steps, styles, *, is_positive=True):
 
         prompt_schedules = prompt_parser.get_learned_conditioning_prompt_schedules(prompt_flat_list, steps)
 
-    except Exception:
-        # a parsing error can happen here during typing, and we don't want to bother the user with
-        # messages related to it in console
-        prompt_schedules = [[[steps, text]]]
-
-    try:
         get_prompt_lengths_on_ui = sd_models.model_data.sd_model.get_prompt_lengths_on_ui
         assert get_prompt_lengths_on_ui is not None
-    except Exception:
-        return f"<span class='gr-box gr-text-input'>?/?</span>"
 
-    flat_prompts = reduce(lambda list1, list2: list1+list2, prompt_schedules)
+    except Exception:
+        counter_value = wrap_counter_value('?/?')
+        if is_positive:
+            counter_value = [counter_value] * 2
+
+        return counter_value
+
+    flat_prompts = reduce(lambda list1, list2: list1 + list2, prompt_schedules)
     prompts = [prompt_text for step, prompt_text in flat_prompts]
-    token_count, max_length = max([get_prompt_lengths_on_ui(prompt) for prompt in prompts], key=lambda args: args[0])
-    return f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>"
+    counts = [get_prompt_lengths_on_ui(prompt) for prompt in prompts]
+
+    clip_token_count = clip_max_length = t5_token_count = t5_max_length = None
+
+    if is_positive:
+        for count in counts:
+            if 'clip' in count and count['clip'] is not None:
+                clip_token_count = max(clip_token_count or 0, count['clip'])
+                clip_max_length = count['clip_max']
+            if 't5' in count and count['t5'] is not None:
+                t5_token_count = max(t5_token_count or 0, count['t5'])
+                t5_max_length = count['t5_max']
+
+        clip_counter_text = (
+            wrap_counter_value(f"{clip_token_count}/{clip_max_length}")
+            if clip_token_count is not None
+            else wrap_counter_value('-/-')
+        )
+
+        t5_counter_text = (
+            wrap_counter_value(f"{t5_token_count}/{t5_max_length}")
+            if t5_token_count is not None
+            else wrap_counter_value('-/-')
+        )
+
+        counter_value = [t5_counter_text, clip_counter_text]
+    else:
+        for count in counts:
+            if 'clip' in count and count['clip'] is not None:
+                clip_token_count = max(clip_token_count or 0, count['clip'])
+                clip_max_length = count['clip_max']
+
+        counter_value = (
+            wrap_counter_value(f"{clip_token_count}/{clip_max_length}")
+            if clip_token_count is not None
+            else wrap_counter_value('-/-')
+        )
+
+    return counter_value
 
 
 def update_negative_prompt_token_counter(*args):
@@ -535,9 +579,9 @@ def create_ui():
 
             steps = scripts.scripts_txt2img.script('Sampler').steps
 
-            toprow.ui_styles.dropdown.change(fn=wrap_queued_call(update_token_counter), inputs=[toprow.prompt, steps, toprow.ui_styles.dropdown], outputs=[toprow.token_counter])
+            toprow.ui_styles.dropdown.change(fn=wrap_queued_call(update_token_counter), inputs=[toprow.prompt, steps, toprow.ui_styles.dropdown], outputs=[toprow.t5_token_counter, toprow.token_counter])
             toprow.ui_styles.dropdown.change(fn=wrap_queued_call(update_negative_prompt_token_counter), inputs=[toprow.negative_prompt, steps, toprow.ui_styles.dropdown], outputs=[toprow.negative_token_counter])
-            toprow.token_button.click(fn=wrap_queued_call(update_token_counter), inputs=[toprow.prompt, steps, toprow.ui_styles.dropdown], outputs=[toprow.token_counter])
+            toprow.token_button.click(fn=wrap_queued_call(update_token_counter), inputs=[toprow.prompt, steps, toprow.ui_styles.dropdown], outputs=[toprow.t5_token_counter, toprow.token_counter])
             toprow.negative_token_button.click(fn=wrap_queued_call(update_negative_prompt_token_counter), inputs=[toprow.negative_prompt, steps, toprow.ui_styles.dropdown], outputs=[toprow.negative_token_counter])
 
         extra_networks_ui = ui_extra_networks.create_ui(txt2img_interface, [txt2img_generation_tab], 'txt2img')
@@ -882,9 +926,9 @@ def create_ui():
 
             steps = scripts.scripts_img2img.script('Sampler').steps
 
-            toprow.ui_styles.dropdown.change(fn=wrap_queued_call(update_token_counter), inputs=[toprow.prompt, steps, toprow.ui_styles.dropdown], outputs=[toprow.token_counter])
+            toprow.ui_styles.dropdown.change(fn=wrap_queued_call(update_token_counter), inputs=[toprow.prompt, steps, toprow.ui_styles.dropdown], outputs=[toprow.t5_token_counter, toprow.token_counter])
             toprow.ui_styles.dropdown.change(fn=wrap_queued_call(update_negative_prompt_token_counter), inputs=[toprow.negative_prompt, steps, toprow.ui_styles.dropdown], outputs=[toprow.negative_token_counter])
-            toprow.token_button.click(fn=update_token_counter, inputs=[toprow.prompt, steps, toprow.ui_styles.dropdown], outputs=[toprow.token_counter])
+            toprow.token_button.click(fn=update_token_counter, inputs=[toprow.prompt, steps, toprow.ui_styles.dropdown], outputs=[toprow.t5_token_counter, toprow.token_counter])
             toprow.negative_token_button.click(fn=wrap_queued_call(update_negative_prompt_token_counter), inputs=[toprow.negative_prompt, steps, toprow.ui_styles.dropdown], outputs=[toprow.negative_token_counter])
 
             img2img_paste_fields = [

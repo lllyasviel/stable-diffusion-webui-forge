@@ -921,13 +921,13 @@ def create_ui():
 
     scripts.scripts_current = None
 
-    with gr.Blocks(analytics_enabled=False, head=canvas_head) as extras_interface:
+    with gr.Blocks(analytics_enabled=False) as extras_interface:
         ui_postprocessing.create_ui()
 
-    with gr.Blocks(analytics_enabled=False, head=canvas_head) as pnginfo_interface:
+    with gr.Blocks(analytics_enabled=False) as pnginfo_interface:
         with ResizeHandleRow(equal_height=False):
             with gr.Column(variant='panel'):
-                image = gr.Image(elem_id="pnginfo_image", label="Source", source="upload", interactive=True, type="pil")
+                image = gr.Image(elem_id="pnginfo_image", label="Source", source="upload", interactive=True, type="pil", height="50vh")
 
             with gr.Column(variant='panel'):
                 html = gr.HTML()

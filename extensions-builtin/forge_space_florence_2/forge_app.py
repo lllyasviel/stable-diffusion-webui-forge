@@ -343,9 +343,9 @@ with gr.Blocks(css=css) as demo:
             with gr.Column():
                 input_directory = gr.Textbox(label="Input directory")
                 model_selector = gr.Dropdown(choices=list(models.keys()), label="Model", value=list(models.keys())[0])
-                task_prompt = gr.Dropdown(choices=['Caption', 'Detailed Caption', 'More Detailed Caption'], label="Task prompt", value="More Detailed Caption")
+                task_prompt = gr.Dropdown(choices=caption_task_list, label="Task prompt", value="More Detailed Caption")
                 save_captions = gr.Checkbox(label="Save captions to textfiles (same filename, same directory)", value=False)  
-                prefix_input = gr.Textbox(label="Prefix to add to captions (Optional)")
+                prefix_input = gr.Textbox(label="Prefix to add to captions (optional)")
                 batch_btn = gr.Button(value="Submit")
             with gr.Column():
                 output_text = gr.Textbox(label="Output captions")

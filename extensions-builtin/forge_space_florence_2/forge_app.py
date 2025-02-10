@@ -239,7 +239,7 @@ def run_example_batch(directory, task_prompt, model_id='microsoft/Florence-2-lar
     
     results = ""
 
-    # Récupération des images dans le répertoire
+    # batch_images block lifted from modules/img2img.py
     if isinstance(directory, str):
         batch_images = list(shared.walk_files(directory, allowed_extensions=(".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff", ".avif")))
     else:
@@ -265,11 +265,11 @@ def run_example_batch(directory, task_prompt, model_id='microsoft/Florence-2-lar
                 image_size=(image.width, image.height)
             )
 
-            caption_text = prefix + parsed_answer[task_prompt]  # Ajout du préfixe
+            caption_text = prefix + parsed_answer[task_prompt]  # prefix imput add
             results += f"File: {file}\nCaption: {caption_text}\n\n"
 
             if save_caption:
-                caption_file = os.path.splitext(file)[0] + ".txt"
+                caption_file = file + ".txt"
                 with open(caption_file, 'w') as f:
                     f.write(caption_text)
 
@@ -344,8 +344,8 @@ with gr.Blocks(css=css) as demo:
                 input_directory = gr.Textbox(label="Input directory")
                 model_selector = gr.Dropdown(choices=list(models.keys()), label="Model", value="microsoft/Florence-2-large")
                 task_prompt = gr.Dropdown(choices=['Caption', 'Detailed Caption', 'More Detailed Caption'], label="Task prompt", value="More Detailed Caption")
+                prefix_input = gr.Textbox(label="Prefix to add to captions")
                 save_captions = gr.Checkbox(label="Save captions to textfiles (same filename, same directory)", value=False)
-                prefix_input = gr.Textbox(label="Prefix to add to captions", placeholder="Enter a prefix")
                 batch_btn = gr.Button(value="Submit")
             with gr.Column():
                 output_text = gr.Textbox(label="Output captions")

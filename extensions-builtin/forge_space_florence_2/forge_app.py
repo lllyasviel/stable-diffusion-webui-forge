@@ -223,7 +223,7 @@ def process_image(image, task_prompt, text_input=None, model_id='microsoft/Flore
 
 
 @spaces.GPU(gpu_objects=[gpu_object], manual_load=False)
-def run_example_batch(directory, task_prompt, model_id='microsoft/Florence-2-large', save_caption=False):
+def run_example_batch(directory, task_prompt, model_id='microsoft/Florence-2-large', save_caption=False, prefix=""):
     model = models[model_id]
     processor = processors[model_id]
     
@@ -264,14 +264,14 @@ def run_example_batch(directory, task_prompt, model_id='microsoft/Florence-2-lar
                 task=task_prompt,
                 image_size=(image.width, image.height)
             )
-            
-            parsed_answer = parsed_answer[task_prompt]
-            results += f"File: {file}\nCaption: {parsed_answer}\n\n"
+
+            caption_text = prefix + parsed_answer[task_prompt]  # prefix imput add
+            results += f"File: {file}\nCaption: {caption_text}\n\n"
 
             if save_caption:
                 caption_file = file + ".txt"
                 with open(caption_file, 'w') as f:
-                    f.write(parsed_answer)
+                    f.write(caption_text)
 
     return results
 
@@ -344,12 +344,18 @@ with gr.Blocks(css=css) as demo:
                 input_directory = gr.Textbox(label="Input directory")
                 model_selector = gr.Dropdown(choices=list(models.keys()), label="Model", value=list(models.keys())[0])
                 task_prompt = gr.Dropdown(choices=caption_task_list, label="Task prompt", value="More Detailed Caption")
-                save_captions = gr.Checkbox(label="Save captions to textfiles (same filename, same directory)", value=False)
+                save_captions = gr.Checkbox(label="Save captions to textfiles (same filename, same directory)", value=False)  
+                prefix_input = gr.Textbox(label="Prefix to add to captions (optional)")
                 batch_btn = gr.Button(value="Submit")
             with gr.Column():
                 output_text = gr.Textbox(label="Output captions")
 
-        batch_btn.click(run_example_batch, [input_directory, task_prompt, model_selector, save_captions], output_text)
+
+        batch_btn.click(
+            fn=run_example_batch,
+            inputs=[input_directory, task_prompt, model_selector, save_captions, prefix_input],
+            outputs=output_text
+        )
 
 
 if __name__ == "__main__":

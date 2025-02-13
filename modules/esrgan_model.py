@@ -13,7 +13,7 @@ class UpscalerESRGAN(Upscaler):
         self.scalers = []
         self.user_path = dirname
         super().__init__()
-        model_paths = self.find_models(ext_filter=[".pt", ".pth"])
+        model_paths = self.find_models(ext_filter=[".pt", ".pth", ".safetensors"])
         scalers = []
         if len(model_paths) == 0:
             scaler_data = UpscalerData(self.model_name, self.model_url, self, 4)

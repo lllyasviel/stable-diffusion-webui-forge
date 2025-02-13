@@ -14,7 +14,7 @@ class UpscalerDAT(Upscaler):
         self.scalers = []
         super().__init__()
 
-        for file in self.find_models(ext_filter=[".pt", ".pth"]):
+        for file in self.find_models(ext_filter=[".pt", ".pth", ".safetensors"]):
             name = modelloader.friendly_name(file)
             scaler_data = UpscalerData(name, file, upscaler=self, scale=None)
             self.scalers.append(scaler_data)

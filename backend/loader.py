@@ -260,7 +260,7 @@ def replace_state_dict(sd, asd, guess):
 
     ##  VAE format 0 (extracted from model, could be sd1, sd2, sdxl, sd3).
     if "first_stage_model.decoder.conv_in.weight" in asd:
-        channels = asd[first_stage_model.decoder.conv_in.weight].shape[1]
+        channels = asd["first_stage_model.decoder.conv_in.weight"].shape[1]
         if model_type == "sd1" or model_type == "sd2" or model_type == "sdxl":
             if channels == 4:
                 for k, v in asd.items():

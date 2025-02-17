@@ -20,7 +20,8 @@ def calculate_sha256_real(filename):
 
 
 def calculate_sha256(filename):
-    return forge_fake_calculate_sha256(filename)
+    print("Calculating real hash: ", filename)
+    return calculate_sha256_real(filename)
 
 
 def forge_fake_calculate_sha256(filename):
@@ -59,8 +60,8 @@ def sha256(filename, title, use_addnet_hash=False):
     if shared.cmd_opts.no_hashing:
         return None
 
-    print(f"Calculating sha256 for {filename}: ", end='')
-    sha256_value = forge_fake_calculate_sha256(filename)
+    print(f"Calculating sha256 for {filename}: ", end='', flush=True)
+    sha256_value = calculate_sha256_real(filename)
     print(f"{sha256_value}")
 
     hashes[title] = {

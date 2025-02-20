@@ -8,7 +8,8 @@ import gradio as gr
 from modules import sd_samplers, errors, sd_models
 from modules.processing import Processed, process_images
 from modules.shared import state
-
+from modules.images import image_grid, save_image
+from modules.shared import opts
 
 def process_model_tag(tag):
     info = sd_models.get_closet_checkpoint_match(tag)
@@ -101,10 +102,10 @@ def cmdargs(line):
 
 def load_prompt_file(file):
     if file is None:
-        return None, gr.update(), gr.update(lines=7)
+        return None, gr.update()
     else:
         lines = [x.strip() for x in file.decode('utf8', errors='ignore').split("\n")]
-        return None, "\n".join(lines), gr.update(lines=7)
+        return None, "\n".join(lines)
 
 
 class Script(scripts.Script):
@@ -115,19 +116,16 @@ class Script(scripts.Script):
         checkbox_iterate = gr.Checkbox(label="Iterate seed every line", value=False, elem_id=self.elem_id("checkbox_iterate"))
         checkbox_iterate_batch = gr.Checkbox(label="Use same random seed for all lines", value=False, elem_id=self.elem_id("checkbox_iterate_batch"))
         prompt_position = gr.Radio(["start", "end"], label="Insert prompts at the", elem_id=self.elem_id("prompt_position"), value="start")
+        make_combined = gr.Checkbox(label="Make a combined image containing all outputs (if more than one)", value=False)
 
-        prompt_txt = gr.Textbox(label="List of prompt inputs", lines=1, elem_id=self.elem_id("prompt_txt"))
+        prompt_txt = gr.Textbox(label="List of prompt inputs", lines=2, elem_id=self.elem_id("prompt_txt"))
         file = gr.File(label="Upload prompt inputs", type='binary', elem_id=self.elem_id("file"))
 
-        file.change(fn=load_prompt_file, inputs=[file], outputs=[file, prompt_txt, prompt_txt], show_progress=False)
+        file.upload(fn=load_prompt_file, inputs=[file], outputs=[file, prompt_txt], show_progress=False)
 
-        # We start at one line. When the text changes, we jump to seven lines, or two lines if no \n.
-        # We don't shrink back to 1, because that causes the control to ignore [enter], and it may
-        # be unclear to the user that shift-enter is needed.
-        prompt_txt.change(lambda tb: gr.update(lines=7) if ("\n" in tb) else gr.update(lines=2), inputs=[prompt_txt], outputs=[prompt_txt], show_progress=False)
-        return [checkbox_iterate, checkbox_iterate_batch, prompt_position, prompt_txt]
+        return [checkbox_iterate, checkbox_iterate_batch, prompt_position, prompt_txt, make_combined]
 
-    def run(self, p, checkbox_iterate, checkbox_iterate_batch, prompt_position, prompt_txt: str):
+    def run(self, p, checkbox_iterate, checkbox_iterate_batch, prompt_position, prompt_txt: str, make_combined):
         lines = [x for x in (x.strip() for x in prompt_txt.splitlines()) if x]
 
         p.do_not_save_grid = True
@@ -187,5 +185,37 @@ class Script(scripts.Script):
                 p.seed = p.seed + (p.batch_size * p.n_iter)
             all_prompts += proc.all_prompts
             infotexts += proc.infotexts
+
+        if make_combined and len(images) > 1:
+            combined_image = image_grid(images, batch_size=1, rows=None).convert("RGB")
+            full_infotext = "\n".join(infotexts)
+            
+            is_img2img = getattr(p, "init_images", None) is not None
+            
+            if opts.grid_save:  #   use grid specific Settings
+                save_image(
+                    combined_image,
+                    opts.outdir_grids or (opts.outdir_img2img_grids if is_img2img else opts.outdir_txt2img_grids),
+                    "",
+                    -1,
+                    prompt_txt,
+                    opts.grid_format,
+                    full_infotext,
+                    grid=True
+                )
+            else:               #   use normal output Settings
+                save_image(
+                    combined_image,
+                    opts.outdir_samples or (opts.outdir_img2img_samples if is_img2img else opts.outdir_txt2img_samples),
+                    "",
+                    -1,
+                    prompt_txt,
+                    opts.samples_format,
+                    full_infotext
+                )
+
+            images.insert(0, combined_image)
+            all_prompts.insert(0, prompt_txt)
+            infotexts.insert(0, full_infotext)
 
         return Processed(p, images, p.seed, "", all_prompts=all_prompts, infotexts=infotexts)

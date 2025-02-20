@@ -116,7 +116,7 @@ class Script(scripts.Script):
         checkbox_iterate = gr.Checkbox(label="Iterate seed every line", value=False, elem_id=self.elem_id("checkbox_iterate"))
         checkbox_iterate_batch = gr.Checkbox(label="Use same random seed for all lines", value=False, elem_id=self.elem_id("checkbox_iterate_batch"))
         prompt_position = gr.Radio(["start", "end"], label="Insert prompts at the", elem_id=self.elem_id("prompt_position"), value="start")
-        make_combined = gr.Checkbox(label="Make a combined image containing all outputs", value=False)
+        make_combined = gr.Checkbox(label="Make a combined image containing all outputs (if more than one)", value=False)
 
         prompt_txt = gr.Textbox(label="List of prompt inputs", lines=2, elem_id=self.elem_id("prompt_txt"))
         file = gr.File(label="Upload prompt inputs", type='binary', elem_id=self.elem_id("file"))
@@ -186,7 +186,7 @@ class Script(scripts.Script):
             all_prompts += proc.all_prompts
             infotexts += proc.infotexts
 
-        if make_combined:
+        if make_combined and len(images) > 1:
             combined_image = image_grid(images, batch_size=1, rows=None).convert("RGB")
             full_infotext = "\n".join(infotexts)
             

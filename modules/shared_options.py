@@ -358,6 +358,7 @@ Infotext is what this software calls the text that contains generation parameter
 It is displayed in UI below the image. To use infotext, paste it into the prompt and click the ↙️ paste button.
 """),
     "enable_pnginfo": OptionInfo(True, "Write infotext to metadata of the generated image"),
+    "stealth_pnginfo_option": OptionInfo("Alpha", "Stealth infotext mode", gr.Radio, {"choices": ["Alpha", "RGB", "None"]}).info("Ignored if infotext is disabled"),
     "save_txt": OptionInfo(False, "Create a text file with infotext next to every generated image"),
 
     "add_model_name_to_info": OptionInfo(True, "Add model name to infotext"),

@@ -19,7 +19,7 @@ import string
 import json
 import hashlib
 
-from modules import sd_samplers, shared, script_callbacks, errors
+from modules import sd_samplers, shared, script_callbacks, errors, stealth_infotext
 from modules.paths_internal import roboto_ttf_file
 from modules.shared import opts
 
@@ -263,6 +263,9 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, force_RGBA=
         height: The height to resize the image to.
         upscaler_name: The name of the upscaler to use. If not provided, defaults to opts.upscaler_for_img2img.
     """
+
+    if not force_RGBA and im.mode == 'RGBA':
+        im = im.convert('RGB')
 
     upscaler_name = upscaler_name or opts.upscaler_for_img2img
 
@@ -706,6 +709,8 @@ def save_image(image, path, basename, seed=None, prompt=None, extension='png', i
         pnginfo[pnginfo_section_name] = info
 
     params = script_callbacks.ImageSaveParams(image, p, fullfn, pnginfo)
+    if opts.enable_pnginfo:
+        stealth_infotext.add_stealth_pnginfo(params)
     script_callbacks.before_image_saved_callback(params)
 
     image = params.image
@@ -782,44 +787,53 @@ IGNORED_INFO_KEYS = {
 
 
 def read_info_from_image(image: Image.Image) -> tuple[str | None, dict]:
-    items = (image.info or {}).copy()
+    """Read generation info from an image, checking standard metadata first, then stealth info if needed."""
 
-    geninfo = items.pop('parameters', None)
+    def read_standard():
+        items = (image.info or {}).copy()
 
-    if "exif" in items:
-        exif_data = items["exif"]
-        try:
-            exif = piexif.load(exif_data)
-        except OSError:
-            # memory / exif was not valid so piexif tried to read from a file
-            exif = None
-        exif_comment = (exif or {}).get("Exif", {}).get(piexif.ExifIFD.UserComment, b'')
-        try:
-            exif_comment = piexif.helper.UserComment.load(exif_comment)
-        except ValueError:
-            exif_comment = exif_comment.decode('utf8', errors="ignore")
+        geninfo = items.pop('parameters', None)
 
-        if exif_comment:
-            geninfo = exif_comment
-    elif "comment" in items: # for gif
-        if isinstance(items["comment"], bytes):
-            geninfo = items["comment"].decode('utf8', errors="ignore")
-        else:
-            geninfo = items["comment"]
+        if "exif" in items:
+            exif_data = items["exif"]
+            try:
+                exif = piexif.load(exif_data)
+            except OSError:
+                # memory / exif was not valid so piexif tried to read from a file
+                exif = None
+            exif_comment = (exif or {}).get("Exif", {}).get(piexif.ExifIFD.UserComment, b'')
+            try:
+                exif_comment = piexif.helper.UserComment.load(exif_comment)
+            except ValueError:
+                exif_comment = exif_comment.decode('utf8', errors="ignore")
 
-    for field in IGNORED_INFO_KEYS:
-        items.pop(field, None)
+            if exif_comment:
+                geninfo = exif_comment
+        elif "comment" in items: # for gif
+            if isinstance(items["comment"], bytes):
+                geninfo = items["comment"].decode('utf8', errors="ignore")
+            else:
+                geninfo = items["comment"]
 
-    if items.get("Software", None) == "NovelAI":
-        try:
-            json_info = json.loads(items["Comment"])
-            sampler = sd_samplers.samplers_map.get(json_info["sampler"], "Euler a")
+        for field in IGNORED_INFO_KEYS:
+            items.pop(field, None)
 
-            geninfo = f"""{items["Description"]}
-Negative prompt: {json_info["uc"]}
-Steps: {json_info["steps"]}, Sampler: {sampler}, CFG scale: {json_info["scale"]}, Seed: {json_info["seed"]}, Size: {image.width}x{image.height}, Clip skip: 2, ENSD: 31337"""
-        except Exception:
-            errors.report("Error parsing NovelAI image generation parameters", exc_info=True)
+        if items.get("Software", None) == "NovelAI":
+            try:
+                json_info = json.loads(items["Comment"])
+                sampler = sd_samplers.samplers_map.get(json_info["sampler"], "Euler a")
+
+                geninfo = f"""{items["Description"]}
+    Negative prompt: {json_info["uc"]}
+    Steps: {json_info["steps"]}, Sampler: {sampler}, CFG scale: {json_info["scale"]}, Seed: {json_info["seed"]}, Size: {image.width}x{image.height}, Clip skip: 2, ENSD: 31337"""
+            except Exception:
+                errors.report("Error parsing NovelAI image generation parameters", exc_info=True)
+
+        return geninfo, items
+    
+    geninfo, items = read_standard()
+    if geninfo is None:
+        geninfo = stealth_infotext.read_info_from_image_stealth(image)
 
     return geninfo, items
 

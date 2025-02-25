@@ -9,18 +9,10 @@
     "EulerDiscreteScheduler"
   ],
   "text_encoder": [
-    null,
-    null
-  ],
-  "text_encoder_2": [
     "transformers",
     "CLIPTextModelWithProjection"
   ],
   "tokenizer": [
-    null,
-    null
-  ],
-  "tokenizer_2": [
     "transformers",
     "CLIPTokenizer"
   ],

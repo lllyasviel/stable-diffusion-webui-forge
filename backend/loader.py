@@ -20,10 +20,11 @@ from backend.nn.unet import IntegratedUNet2DConditionModel
 from backend.diffusion_engine.sd15 import StableDiffusion
 from backend.diffusion_engine.sd20 import StableDiffusion2
 from backend.diffusion_engine.sdxl import StableDiffusionXL, StableDiffusionXLRefiner
+from backend.diffusion_engine.sd35 import StableDiffusion3
 from backend.diffusion_engine.flux import Flux
 
 
-possible_models = [StableDiffusion, StableDiffusion2, StableDiffusionXLRefiner, StableDiffusionXL, Flux]
+possible_models = [StableDiffusion, StableDiffusion2, StableDiffusionXLRefiner, StableDiffusionXL, StableDiffusion3, Flux]
 
 
 logging.getLogger("diffusers").setLevel(logging.ERROR)
@@ -107,15 +108,18 @@ def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_p
             load_state_dict(model, state_dict, log_name=cls_name, ignore_errors=['transformer.encoder.embed_tokens.weight', 'logit_scale'])
 
             return model
-        if cls_name in ['UNet2DConditionModel', 'FluxTransformer2DModel']:
+        if cls_name in ['UNet2DConditionModel', 'FluxTransformer2DModel', 'SD3Transformer2DModel']:
             assert isinstance(state_dict, dict) and len(state_dict) > 16, 'You do not have model state dict!'
 
             model_loader = None
             if cls_name == 'UNet2DConditionModel':
                 model_loader = lambda c: IntegratedUNet2DConditionModel.from_config(c)
-            if cls_name == 'FluxTransformer2DModel':
+            elif cls_name == 'FluxTransformer2DModel':
                 from backend.nn.flux import IntegratedFluxTransformer2DModel
                 model_loader = lambda c: IntegratedFluxTransformer2DModel(**c)
+            elif cls_name == 'SD3Transformer2DModel':
+                from backend.nn.mmditx import MMDiTX
+                model_loader = lambda c: MMDiTX(**c)
 
             unet_config = guess.unet_config.copy()
             state_dict_parameters = memory_management.state_dict_parameters(state_dict)
@@ -249,7 +253,7 @@ def replace_state_dict(sd, asd, guess):
         "xlrf": "conditioner.embedders.0.model.",
         "sdxl": "conditioner.embedders.1.model.",
         "flux": None,
-        "sd3" : "text_encoders.clip_g.",
+        "sd3" : "text_encoders.clip_g.transformer.",
     }
     ##  prefixes used by various model types for CLIP-H
     prefix_H = {
@@ -303,7 +307,7 @@ def replace_state_dict(sd, asd, guess):
             old_prefix = CLIP_G[CLIP_key]
 
             if new_prefix is not None:
-                if "resblocks" not in CLIP_key: # need to convert
+                if "resblocks" not in CLIP_key and model_type != "sd3": # need to convert
                     def convert_transformers(statedict, prefix_from, prefix_to, number):
                         keys_to_replace = {
                             "{}text_model.embeddings.position_embedding.weight" : "{}positional_embedding",
@@ -339,6 +343,7 @@ def replace_state_dict(sd, asd, guess):
                                 weightsV = statedict.pop(k_from)
 
                                 k_to = "{}transformer.resblocks.{}.attn.in_proj_{}".format(prefix_to, resblock, y)
+
                                 statedict[k_to] = torch.cat((weightsQ, weightsK, weightsV))
                         return statedict
 

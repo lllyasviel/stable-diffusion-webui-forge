@@ -773,10 +773,13 @@ class MMDiTX(nn.Module):
         self.dtype = dtype
         self.learn_sigma = learn_sigma
         self.in_channels = in_channels
-        default_out_channels = in_channels * 2 if learn_sigma else in_channels
-        self.out_channels = (
-            out_channels if out_channels is not None else default_out_channels
-        )
+        # default_out_channels = in_channels * 2 if learn_sigma else in_channels
+        # self.out_channels = (
+            # out_channels if out_channels is not None else default_out_channels
+        # )
+        self.out_channels = 16      # hard coded - detected value can be vastly wrong if nf4
+                                    # but always 16 for sd3 and sd3.5 (learn_sigma always False)
+
         self.patch_size = patch_size
         self.pos_embed_scaling_factor = pos_embed_scaling_factor
         self.pos_embed_offset = pos_embed_offset

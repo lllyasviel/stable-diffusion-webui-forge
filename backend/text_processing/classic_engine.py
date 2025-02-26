@@ -141,7 +141,7 @@ class ClassicTextProcessingEngine:
         if self.return_pooled:
             pooled_output = outputs.pooler_output
 
-            if self.text_projection:
+            if self.text_projection and self.embedding_key != 'clip_l':
                 pooled_output = self.text_encoder.transformer.text_projection(pooled_output)
 
             z.pooled = pooled_output

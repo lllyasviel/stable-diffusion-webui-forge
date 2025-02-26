@@ -324,9 +324,9 @@ def replace_state_dict(sd, asd, guess):
                             "self_attn.out_proj"    : "attn.out_proj" ,
                         }
 
-                        for x in keys_to_replace:
+                        for x in keys_to_replace:   #   remove trailing 'transformer.' from new prefix
                             k = x.format(prefix_from)
-                            statedict[keys_to_replace[x].format(prefix_to)] = statedict.pop(k)
+                            statedict[keys_to_replace[x].format(prefix_to[:-12])] = statedict.pop(k)
 
                         for resblock in range(number):
                             for y in ["weight", "bias"]:
@@ -382,6 +382,7 @@ def replace_state_dict(sd, asd, guess):
                             "token_embedding.weight": "{}text_model.embeddings.token_embedding.weight",
                             "ln_final.weight"       : "{}text_model.final_layer_norm.weight",
                             "ln_final.bias"         : "{}text_model.final_layer_norm.bias",
+                            "text_projection"       : "text_projection.weight",
                         }
                         resblock_to_replace = {
                             "ln_1"          : "layer_norm1",

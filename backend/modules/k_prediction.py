@@ -274,6 +274,13 @@ class PredictionDiscreteFlow(AbstractPrediction):
             return timestep
         return self.shift * timestep / (1 + (self.shift - 1) * timestep)
 
+    def percent_to_sigma(self, percent):
+        if percent <= 0.0:
+            return 1.0
+        if percent >= 1.0:
+            return 0.0
+        return 1.0 - percent
+
 
 class PredictionFlux(AbstractPrediction):
     def __init__(self, seq_len=4096, base_seq_len=256, max_seq_len=4096, base_shift=0.5, max_shift=1.15, pseudo_timestep_range=10000, mu=None):

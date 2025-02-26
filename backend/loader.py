@@ -250,8 +250,8 @@ def replace_state_dict(sd, asd, guess):
         "-"   : None,
         "sd1" : None,
         "sd2" : None,
-        "xlrf": "conditioner.embedders.0.model.",
-        "sdxl": "conditioner.embedders.1.model.",
+        "xlrf": "conditioner.embedders.0.model.transformer.",
+        "sdxl": "conditioner.embedders.1.model.transformer.",
         "flux": None,
         "sd3" : "text_encoders.clip_g.transformer.",
     }
@@ -296,10 +296,10 @@ def replace_state_dict(sd, asd, guess):
 
     ##  CLIP-G
     CLIP_G = {     #   key to identify source model                                                old_prefix
-        'conditioner.embedders.1.model.transformer.resblocks.0.ln_1.bias'               : 'conditioner.embedders.1.model.',
-        'text_encoders.clip_g.transformer.text_model.encoder.layers.0.layer_norm1.bias' : 'text_encoders.clip_g.',
+        'conditioner.embedders.1.model.transformer.resblocks.0.ln_1.bias'               : 'conditioner.embedders.1.model.transformer.',
+        'text_encoders.clip_g.transformer.text_model.encoder.layers.0.layer_norm1.bias' : 'text_encoders.clip_g.transformer.',
         'text_model.encoder.layers.0.layer_norm1.bias'                                  : '',
-        'transformer.resblocks.0.ln_1.bias'                                             : ''
+        'transformer.resblocks.0.ln_1.bias'                                             : 'transformer.'
     }
     for CLIP_key in CLIP_G.keys():
         if CLIP_key in asd and asd[CLIP_key].shape[0] == 1280:
@@ -332,7 +332,7 @@ def replace_state_dict(sd, asd, guess):
                             for y in ["weight", "bias"]:
                                 for x in resblock_to_replace:
                                     k = "{}text_model.encoder.layers.{}.{}.{}".format(prefix_from, resblock, x, y)
-                                    k_to = "{}transformer.resblocks.{}.{}.{}".format(prefix_to, resblock, resblock_to_replace[x], y)
+                                    k_to = "{}resblocks.{}.{}.{}".format(prefix_to, resblock, resblock_to_replace[x], y)
                                     statedict[k_to] = statedict.pop(k)
 
                                 k_from = "{}text_model.encoder.layers.{}.{}.{}".format(prefix_from, resblock, "self_attn.q_proj", y)
@@ -342,15 +342,16 @@ def replace_state_dict(sd, asd, guess):
                                 k_from = "{}text_model.encoder.layers.{}.{}.{}".format(prefix_from, resblock, "self_attn.v_proj", y)
                                 weightsV = statedict.pop(k_from)
 
-                                k_to = "{}transformer.resblocks.{}.attn.in_proj_{}".format(prefix_to, resblock, y)
+                                k_to = "{}resblocks.{}.attn.in_proj_{}".format(prefix_to, resblock, y)
 
                                 statedict[k_to] = torch.cat((weightsQ, weightsK, weightsV))
                         return statedict
 
                     asd = convert_transformers(asd, old_prefix, new_prefix, 32)
-                    new_prefix = ""
+                    for k, v in asd.items():
+                        sd[k] = v
 
-                if old_prefix == "":
+                elif old_prefix == "":
                     for k, v in asd.items():
                         new_k = new_prefix + k
                         sd[new_k] = v
@@ -365,7 +366,7 @@ def replace_state_dict(sd, asd, guess):
         'conditioner.embedders.0.transformer.text_model.encoder.layers.0.layer_norm1.bias'  : 'conditioner.embedders.0.transformer.',
         'text_encoders.clip_l.transformer.text_model.encoder.layers.0.layer_norm1.bias'     : 'text_encoders.clip_l.transformer.',
         'text_model.encoder.layers.0.layer_norm1.bias'                                      : '',
-        'transformer.resblocks.0.ln_1.bias'                                                 : ''
+        'transformer.resblocks.0.ln_1.bias'                                                 : 'transformer.'
     }
 
     for CLIP_key in CLIP_L.keys():
@@ -396,11 +397,11 @@ def replace_state_dict(sd, asd, guess):
                         for resblock in range(number):
                             for y in ["weight", "bias"]:
                                 for x in resblock_to_replace:
-                                    k = "{}transformer.resblocks.{}.{}.{}".format(prefix_from, resblock, x, y)
+                                    k = "{}resblocks.{}.{}.{}".format(prefix_from, resblock, x, y)
                                     k_to = "{}text_model.encoder.layers.{}.{}.{}".format(prefix_to, resblock, resblock_to_replace[x], y)
                                     statedict[k_to] = statedict.pop(k)
 
-                                k_from = "{}transformer.resblocks.{}.attn.in_proj_{}".format(prefix_from, resblock, y)
+                                k_from = "{}resblocks.{}.attn.in_proj_{}".format(prefix_from, resblock, y)
                                 weights = statedict.pop(k_from)
                                 shape_from = weights.shape[0] // 3
                                 for x in range(3):
@@ -410,9 +411,10 @@ def replace_state_dict(sd, asd, guess):
                         return statedict
 
                     asd = transformers_convert(asd, old_prefix, new_prefix, 12)
-                    new_prefix = ""
+                    for k, v in asd.items():
+                        sd[k] = v
                 
-                if old_prefix == "":
+                elif old_prefix == "":
                     for k, v in asd.items():
                         new_k = new_prefix + k
                         sd[new_k] = v

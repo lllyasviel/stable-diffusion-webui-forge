@@ -72,6 +72,7 @@ class PatchEmbed(nn.Module):
         device=None,
     ):
         super().__init__()
+
         self.patch_size = (patch_size, patch_size)
         if img_size is not None:
             self.img_size = (img_size, img_size)
@@ -772,6 +773,7 @@ class MMDiTX(nn.Module):
             )
         self.dtype = dtype
         self.learn_sigma = learn_sigma
+        in_channels = int(in_channels)
         self.in_channels = in_channels
         # default_out_channels = in_channels * 2 if learn_sigma else in_channels
         # self.out_channels = (
@@ -779,19 +781,20 @@ class MMDiTX(nn.Module):
         # )
         self.out_channels = 16      # hard coded - detected value can be vastly wrong if nf4
                                     # but always 16 for sd3 and sd3.5 (learn_sigma always False)
-        
+        patch_size = int(patch_size)
         self.patch_size = patch_size
         self.pos_embed_scaling_factor = pos_embed_scaling_factor
         self.pos_embed_offset = pos_embed_offset
-        self.pos_embed_max_size = pos_embed_max_size
-        self.x_block_self_attn_layers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] if pos_embed_max_size == 384 else x_block_self_attn_layers
-        
+        self.pos_embed_max_size = int(pos_embed_max_size)
+        self.x_block_self_attn_layers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] if self.pos_embed_max_size == 384 else x_block_self_attn_layers
+
         # apply magic --> this defines a head_size of 64
-        hidden_size = 64 * depth
+        depth = int(depth)
+        hidden_size = int(64 * depth)
         num_heads = depth
 
         self.num_heads = num_heads
-
+        
         self.x_embedder = PatchEmbed(
             input_size,
             patch_size,
@@ -803,6 +806,8 @@ class MMDiTX(nn.Module):
             device=device,
         )
         self.t_embedder = TimestepEmbedder(hidden_size, dtype=dtype, device=device)
+
+        adm_in_channels = int(adm_in_channels)  # 2048
 
         if adm_in_channels is not None:
             assert isinstance(adm_in_channels, int)
@@ -827,6 +832,7 @@ class MMDiTX(nn.Module):
         # Will use fixed sin-cos embedding:
         # just use a buffer already
         if num_patches is not None:
+            num_patches = int(num_patches)
             self.register_buffer(
                 "pos_embed",
                 torch.zeros(1, num_patches, hidden_size, dtype=dtype, device=device),

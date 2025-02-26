@@ -779,7 +779,7 @@ class MMDiTX(nn.Module):
         # )
         self.out_channels = 16      # hard coded - detected value can be vastly wrong if nf4
                                     # but always 16 for sd3 and sd3.5 (learn_sigma always False)
-
+        
         self.patch_size = patch_size
         self.pos_embed_scaling_factor = pos_embed_scaling_factor
         self.pos_embed_offset = pos_embed_offset
@@ -945,10 +945,11 @@ class MMDiTX(nn.Module):
         y: (N,) tensor of class labels
         """
 
+        skip_layers = transformer_options.get("skip_layers", [])
+
         hw = x.shape[-2:]
 
-        # input always seems to be 33 channels?
-        x = x[:,:16,:,:]
+        # x = x[:,:16,:,:]
 
         x = self.x_embedder(x) + self.cropped_pos_embed(hw).to(x.device, x.dtype)
         c = self.t_embedder(t, dtype=x.dtype)  # (N, D)
@@ -958,7 +959,7 @@ class MMDiTX(nn.Module):
 
         context = self.context_embedder(context)
 
-        x = self.forward_core_with_concat(x, c, context, [], control)   #[] is skip_layers
+        x = self.forward_core_with_concat(x, c, context, skip_layers, control)
 
         x = self.unpatchify(x, hw=hw)  # (N, out_channels, H, W)
         return x

@@ -107,7 +107,7 @@ class StableDiffusion3(ForgeDiffusionEngine):
         if opts.sd3_enable_t5:
             cond_t5 = self.text_processing_engine_t5(prompt)
         else:
-            cond_t5 = torch.zeros([len(prompt), 256, 4096])
+            cond_t5 = torch.zeros([len(prompt), 256, 4096]).to(cond_l.device)
 
         is_negative_prompt = getattr(prompt, 'is_negative_prompt', False)
 

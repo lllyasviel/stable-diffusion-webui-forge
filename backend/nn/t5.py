@@ -2,11 +2,13 @@ import torch
 import math
 
 from backend.attention import attention_pytorch as attention_function
+from transformers.activations import NewGELUActivation
 
 
 activations = {
     "gelu_pytorch_tanh": lambda a: torch.nn.functional.gelu(a, approximate="tanh"),
     "relu": torch.nn.functional.relu,
+    "gelu_new":  lambda a: NewGELUActivation()(a),
 }
 
 

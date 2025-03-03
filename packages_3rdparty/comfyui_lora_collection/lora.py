@@ -37,8 +37,6 @@ def load_lora(lora, to_load):
         for k in sd:
             k_to = "diffusion_model.{}".format(k.replace(".lora_B.bias", ".diff_b").replace("_norm.scale", "_norm.scale.set_weight"))
             sd_out[k_to] = sd[k]
-
-        sd_out["diffusion_model.img_in.reshape_weight"] = torch.tensor([sd["img_in.lora_B.weight"].shape[0], sd["img_in.lora_A.weight"].shape[1]])
         
         return sd_out
 
@@ -59,10 +57,6 @@ def load_lora(lora, to_load):
         if dora_scale_name in lora.keys():
             dora_scale = lora[dora_scale_name]
             loaded_keys.add(dora_scale_name)
-
-        reshape_name = "{}.reshape_weight".format(x)
-        if reshape_name in lora.keys():
-            loaded_keys.add(reshape_name)
 
         regular_lora = "{}.lora_up.weight".format(x)
         diffusers_lora = "{}_lora.up.weight".format(x)

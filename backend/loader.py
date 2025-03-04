@@ -31,6 +31,24 @@ logging.getLogger("diffusers").setLevel(logging.ERROR)
 dir_path = os.path.dirname(__file__)
 
 
+def check_huggingface_component(component_name:str, cls_name:str, state_dict):
+    check_sd = False
+    comp_str = 'model'
+
+    if cls_name == 'AutoencoderKL':
+        check_sd = True
+        comp_str = 'VAE'
+    elif component_name.startswith('text_encoder') and cls_name in ['CLIPTextModel', 'CLIPTextModelWithProjection']:
+        check_sd = True
+        comp_str = 'CLIP'
+    elif cls_name == 'T5EncoderModel':
+        check_sd = True
+        comp_str = 'T5'
+
+    if check_sd and (not isinstance(state_dict, dict) or len(state_dict) <= 16):
+        raise AssertionError(f'You do not have {comp_str} state dict!')
+
+
 def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_path, state_dict):
     config_path = os.path.join(repo_path, component_name)
 
@@ -480,16 +498,33 @@ def split_state_dict(sd, additional_state_dicts: list = None):
 
 
 @torch.inference_mode()
-def forge_loader(sd, additional_state_dicts=None):
+def forge_preloader(sd, additional_state_dicts=None):
+    """performs minimum steps to validate model params before reloading models"""
     try:
         state_dicts, estimated_config = split_state_dict(sd, additional_state_dicts=additional_state_dicts)
     except:
         raise ValueError('Failed to recognize model type!')
     
     repo_name = estimated_config.huggingface_repo
-
     local_path = os.path.join(dir_path, 'huggingface', repo_name)
+
     config: dict = DiffusionPipeline.load_config(local_path)
+
+    for component_name, v in config.items():
+        if isinstance(v, list) and len(v) == 2:
+            _, cls_name = v
+            component_sd = state_dicts.get(component_name, None)
+            # Raise AssertionError for invalid params
+            check_huggingface_component(component_name, cls_name, component_sd)
+
+    return state_dicts, estimated_config, config
+
+
+@torch.inference_mode()
+def forge_loader(state_dicts:dict, estimated_config, config:dict):    
+    repo_name = estimated_config.huggingface_repo
+    local_path = os.path.join(dir_path, 'huggingface', repo_name)
+
     huggingface_components = {}
     for component_name, v in config.items():
         if isinstance(v, list) and len(v) == 2:

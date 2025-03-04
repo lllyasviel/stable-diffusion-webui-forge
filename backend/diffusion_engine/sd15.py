@@ -69,7 +69,14 @@ class StableDiffusion(ForgeDiffusionEngine):
     @torch.inference_mode()
     def get_prompt_lengths_on_ui(self, prompt):
         _, token_count = self.text_processing_engine.process_texts([prompt])
-        return token_count, self.text_processing_engine.get_target_prompt_token_count(token_count)
+        max_length = self.text_processing_engine.get_target_prompt_token_count(token_count)
+
+        return {
+            't5': 0,
+            't5_max': 255,
+            'clip': token_count,
+            'clip_max': max_length,
+        }
 
     @torch.inference_mode()
     def encode_first_stage(self, x):

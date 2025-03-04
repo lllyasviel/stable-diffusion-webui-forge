@@ -51,7 +51,12 @@ class ForgeDiffusionEngine:
         pass
 
     def get_prompt_lengths_on_ui(self, prompt):
-        return 0, 75
+        return {
+            't5': 0,
+            't5_max': 255,
+            'clip': 0,
+            'clip_max': 75,
+        }
 
     def is_webui_legacy_model(self):
         return self.is_sd1 or self.is_sd2 or self.is_sdxl or self.is_sd3

@@ -27,118 +27,129 @@ fill_values_symbol = "\U0001f4d2"  # 📒
 
 AxisInfo = namedtuple('AxisInfo', ['axis', 'values'])
 
+# New helper function to parse ranges for integers and floats
+def parse_range(val, is_float=False):
+    """Parse a string into a list of values based on range or count syntax."""
+    if is_float:
+        re_range_pattern = re_range_float
+        re_range_count_pattern = re_range_count_float
+        type_conv = float
+    else:
+        re_range_pattern = re_range
+        re_range_count_pattern = re_range_count
+        type_conv = int
+
+    m = re_range_pattern.fullmatch(val)
+    if m:
+        start = type_conv(m.group(1))
+        end = type_conv(m.group(2))
+        step = type_conv(m.group(3)) if m.group(3) is not None else 1
+        if is_float:
+            return list(np.arange(start, end + step, step))
+        else:
+            return list(range(start, end + 1, step))
+
+    mc = re_range_count_pattern.fullmatch(val)
+    if mc:
+        start = type_conv(mc.group(1))
+        end = type_conv(mc.group(2))
+        num = int(mc.group(3)) if mc.group(3) is not None else 1
+        return list(np.linspace(start, end, num))
+
+    try:
+        return [type_conv(val)]
+    except ValueError:
+        raise ValueError(f"Cannot parse value: {val}")
 
 def apply_field(field):
     def fun(p, x, xs):
         setattr(p, field, x)
-
     return fun
-
 
 def apply_prompt(p, x, xs):
     if xs[0] not in p.prompt and xs[0] not in p.negative_prompt:
         raise RuntimeError(f"Prompt S/R did not find {xs[0]} in prompt or negative prompt.")
-
     p.prompt = p.prompt.replace(xs[0], x)
     p.negative_prompt = p.negative_prompt.replace(xs[0], x)
 
-
 def apply_order(p, x, xs):
     token_order = []
-
-    # Initially grab the tokens from the prompt, so they can be replaced in order of earliest seen
     for token in x:
         token_order.append((p.prompt.find(token), token))
-
     token_order.sort(key=lambda t: t[0])
-
     prompt_parts = []
-
-    # Split the prompt up, taking out the tokens
     for _, token in token_order:
         n = p.prompt.find(token)
         prompt_parts.append(p.prompt[0:n])
         p.prompt = p.prompt[n + len(token):]
-
-    # Rebuild the prompt with the tokens in the order we want
     prompt_tmp = ""
     for idx, part in enumerate(prompt_parts):
         prompt_tmp += part
         prompt_tmp += x[idx]
     p.prompt = prompt_tmp + p.prompt
 
-
 def confirm_samplers(p, xs):
     for x in xs:
         if x.lower() not in sd_samplers.samplers_map:
             raise RuntimeError(f"Unknown sampler: {x}")
 
-
 def apply_checkpoint(p, x, xs):
     info = modules.sd_models.get_closet_checkpoint_match(x)
     if info is None:
         raise RuntimeError(f"Unknown checkpoint: {x}")
-    # skip if the checkpoint was last override
     if info.name == p.override_settings.get('sd_model_checkpoint', None):
         return
     org_cp = getattr(opts, 'sd_model_checkpoint', None)
     p.override_settings['sd_model_checkpoint'] = info.name
     opts.set('sd_model_checkpoint', info.name)
     refresh_loading_params_for_xyz_grid()
-    # This saves part of the reload
     opts.set('sd_model_checkpoint', org_cp)
 
 def refresh_loading_params_for_xyz_grid():
     """
-    Refreshes the loading parameters for the model, 
+    Refreshes the loading parameters for the model,
     prompts a reload in sd_models.forge_model_reload()
     """
     checkpoint_info = select_checkpoint()
-
     model_data.forge_loading_parameters = dict(
         checkpoint_info=checkpoint_info,
         additional_modules=shared.opts.forge_additional_modules,
-        #unet_storage_dtype=shared.opts.forge_unet_storage_dtype
         unet_storage_dtype=model_data.forge_loading_parameters.get('unet_storage_dtype', None)
     )
-
 
 def confirm_checkpoints(p, xs):
     for x in xs:
         if modules.sd_models.get_closet_checkpoint_match(x) is None:
             raise RuntimeError(f"Unknown checkpoint: {x}")
 
-
 def confirm_checkpoints_or_none(p, xs):
     for x in xs:
         if x in (None, "", "None", "none"):
             continue
-
         if modules.sd_models.get_closet_checkpoint_match(x) is None:
             raise RuntimeError(f"Unknown checkpoint: {x}")
 
-
 def confirm_range(min_val, max_val, axis_label):
     """Generates a AxisOption.confirm() function that checks all values are within the specified range."""
-
     def confirm_range_fun(p, xs):
         for x in xs:
             if not (max_val >= x >= min_val):
                 raise ValueError(f'{axis_label} value "{x}" out of range [{min_val}, {max_val}]')
-
     return confirm_range_fun
 
-
 def apply_size(p, x: str, xs) -> None:
-    try:
-        width, _, height = x.partition('x')
-        width = int(width.strip())
-        height = int(height.strip())
-        p.width = width
-        p.height = height
-    except ValueError:
-        print(f"Invalid size in XYZ plot: {x}")
-
+    """Apply width and height from a string in 'widthxheight' format with improved error handling."""
+    parts = x.split('x')
+    if len(parts) == 2:
+        try:
+            width = int(parts[0].strip())
+            height = int(parts[1].strip())
+            p.width = width
+            p.height = height
+        except ValueError:
+            print(f"Invalid size format: {x}. Expected 'widthxheight' with integers.")
+    else:
+        print(f"Invalid size format: {x}. Expected 'widthxheight'.")
 
 def find_vae(name: str):
     if (name := name.strip().lower()) in ('auto', 'automatic'):
@@ -147,18 +158,14 @@ def find_vae(name: str):
         return 'None'
     return next((k for k in modules.sd_vae.vae_dict if k.lower() == name), print(f'No VAE found for {name}; using Automatic') or 'Automatic')
 
-
 def apply_vae(p, x, xs):
     p.override_settings['sd_vae'] = find_vae(x)
-
 
 def apply_styles(p: StableDiffusionProcessingTxt2Img, x: str, _):
     p.styles.extend(x.split(','))
 
-
 def apply_uni_pc_order(p, x, xs):
     p.override_settings['uni_pc_order'] = min(x, p.steps - 1)
-
 
 def apply_face_restore(p, opt, x):
     opt = opt.lower()
@@ -170,69 +177,53 @@ def apply_face_restore(p, opt, x):
         p.face_restoration_model = 'GFPGAN'
     else:
         is_active = opt in ('true', 'yes', 'y', '1')
-
     p.restore_faces = is_active
-
 
 def apply_override(field, boolean: bool = False):
     def fun(p, x, xs):
         if boolean:
             x = True if x.lower() == "true" else False
         p.override_settings[field] = x
-
     return fun
-
 
 def boolean_choice(reverse: bool = False):
     def choice():
         return ["False", "True"] if reverse else ["True", "False"]
-
     return choice
-
 
 def format_value_add_label(p, opt, x):
     if type(x) == float:
         x = round(x, 8)
-
     return f"{opt.label}: {x}"
-
 
 def format_value(p, opt, x):
     if type(x) == float:
         x = round(x, 8)
     return x
 
-
 def format_value_join_list(p, opt, x):
     return ", ".join(x)
-
 
 def do_nothing(p, x, xs):
     pass
 
-
 def format_nothing(p, opt, x):
     return ""
-
 
 def format_remove_path(p, opt, x):
     return os.path.basename(x)
 
-
 def str_permutations(x):
     """dummy function for specifying it in AxisOption's type when you want to get a list of permutations"""
     return x
-
 
 def list_to_csv_string(data_list):
     with StringIO() as o:
         csv.writer(o).writerow(data_list)
         return o.getvalue().strip()
 
-
 def csv_string_to_list_strip(data_str):
     return list(map(str.strip, chain.from_iterable(csv.reader(StringIO(data_str), skipinitialspace=True))))
-
 
 class AxisOption:
     def __init__(self, label, type, apply, format_value=format_value_add_label, confirm=None, cost=0.0, choices=None, prepare=None):
@@ -245,18 +236,15 @@ class AxisOption:
         self.prepare = prepare
         self.choices = choices
 
-
 class AxisOptionImg2Img(AxisOption):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.is_img2img = True
 
-
 class AxisOptionTxt2Img(AxisOption):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.is_img2img = False
-
 
 axis_options = [
     AxisOption("Nothing", str, do_nothing, format_value=format_nothing),
@@ -307,7 +295,6 @@ axis_options = [
     AxisOption("Size", str, apply_size),
 ]
 
-
 def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend, include_lone_images, include_sub_grids, first_axes_processed, second_axes_processed, margin_size):
     hor_texts = [[images.GridAnnotation(x)] for x in x_labels]
     ver_texts = [[images.GridAnnotation(y)] for y in y_labels]
@@ -330,7 +317,6 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
         processed: Processed = cell(x, y, z, ix, iy, iz)
 
         if processed_result is None:
-            # Use our first processed result object as a template container to hold our full results
             processed_result = copy(processed)
             processed_result.images = [None] * list_size
             processed_result.all_prompts = [None] * list_size
@@ -340,7 +326,6 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
 
         idx = index(ix, iy, iz)
         if processed.images:
-            # Non-empty list indicates some degree of success.
             processed_result.images[idx] = processed.images[0]
             processed_result.all_prompts[idx] = processed.prompt
             processed_result.all_seeds[idx] = processed.seed
@@ -350,7 +335,6 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
             cell_size = (processed_result.width, processed_result.height)
             if processed_result.images[0] is not None:
                 cell_mode = processed_result.images[0].mode
-                # This corrects size in case of batches:
                 cell_size = processed_result.images[0].size
             processed_result.images[idx] = Image.new(cell_mode, cell_size)
 
@@ -386,7 +370,6 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
                         process_cell(x, y, z, ix, iy, iz)
 
     if not processed_result:
-        # Should never happen, I've only seen it on one of four open tabs and it needed to refresh.
         print("Unexpected error: Processing could not begin, you may need to refresh the tab or restart the service.")
         return Processed(p, [])
     elif not any(processed_result.images):
@@ -412,13 +395,9 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
     if draw_legend:
         z_grid = images.draw_grid_annotations(z_grid, z_sub_grid_max_w, z_sub_grid_max_h, title_texts, [[images.GridAnnotation()]])
     processed_result.images.insert(0, z_grid)
-    # TODO: Deeper aspects of the program rely on grid info being misaligned between metadata arrays, which is not ideal.
-    # processed_result.all_prompts.insert(0, processed_result.all_prompts[0])
-    # processed_result.all_seeds.insert(0, processed_result.all_seeds[0])
     processed_result.infotexts.insert(0, processed_result.infotexts[0])
 
     return processed_result
-
 
 class SharedSettingsStackHelper(object):
     def __enter__(self):
@@ -428,13 +407,10 @@ class SharedSettingsStackHelper(object):
         modules.sd_models.reload_model_weights()
         modules.sd_vae.reload_vae_weights()
 
-
 re_range = re.compile(r"\s*([+-]?\s*\d+)\s*-\s*([+-]?\s*\d+)(?:\s*\(([+-]\d+)\s*\))?\s*")
 re_range_float = re.compile(r"\s*([+-]?\s*\d+(?:.\d*)?)\s*-\s*([+-]?\s*\d+(?:.\d*)?)(?:\s*\(([+-]\d+(?:.\d*)?)\s*\))?\s*")
-
 re_range_count = re.compile(r"\s*([+-]?\s*\d+)\s*-\s*([+-]?\s*\d+)(?:\s*\[(\d+)\s*])?\s*")
 re_range_count_float = re.compile(r"\s*([+-]?\s*\d+(?:.\d*)?)\s*-\s*([+-]?\s*\d+(?:.\d*)?)(?:\s*\[(\d+(?:.\d*)?)\s*])?\s*")
-
 
 class Script(scripts.Script):
     def title(self):
@@ -508,11 +484,9 @@ class Script(scripts.Script):
         fill_z_button.click(fn=fill, inputs=[z_type, csv_mode], outputs=[z_values, z_values_dropdown])
 
         def select_axis(axis_type, axis_values, axis_values_dropdown, csv_mode):
-            axis_type = axis_type or 0  # if axle type is None set to 0
-
+            axis_type = axis_type or 0
             choices = self.current_axis_options[axis_type].choices
             has_choices = choices is not None
-
             if has_choices:
                 choices = choices()
                 if csv_mode:
@@ -523,7 +497,6 @@ class Script(scripts.Script):
                     if axis_values:
                         axis_values_dropdown = list(filter(lambda x: x in choices, csv_string_to_list_strip(axis_values)))
                         axis_values = ""
-
             return (gr.Button.update(visible=has_choices), gr.Textbox.update(visible=not has_choices or csv_mode, value=axis_values),
                     gr.update(choices=choices if has_choices else None, visible=has_choices and not csv_mode, value=axis_values_dropdown))
 
@@ -560,7 +533,7 @@ class Script(scripts.Script):
         return [x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, draw_legend, include_lone_images, include_sub_grids, no_fixed_seeds, vary_seeds_x, vary_seeds_y, vary_seeds_z, margin_size, csv_mode]
 
     def run(self, p, x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, draw_legend, include_lone_images, include_sub_grids, no_fixed_seeds, vary_seeds_x, vary_seeds_y, vary_seeds_z, margin_size, csv_mode):
-        x_type, y_type, z_type = x_type or 0, y_type or 0, z_type or 0  # if axle type is None set to 0
+        x_type, y_type, z_type = x_type or 0, y_type or 0, z_type or 0
 
         if not no_fixed_seeds:
             modules.processing.fix_seed(p)
@@ -569,6 +542,7 @@ class Script(scripts.Script):
             p.batch_size = 1
 
         def process_axis(opt, vals, vals_dropdown):
+            """Process axis values, handling ranges and permutations with improved parsing."""
             if opt.label == 'Nothing':
                 return [0]
 
@@ -579,60 +553,22 @@ class Script(scripts.Script):
             else:
                 valslist = csv_string_to_list_strip(vals)
 
-            if opt.type == int:
+            if opt.type in (int, float):
                 valslist_ext = []
-
                 for val in valslist:
                     if val.strip() == '':
                         continue
-                    m = re_range.fullmatch(val)
-                    mc = re_range_count.fullmatch(val)
-                    if m is not None:
-                        start = int(m.group(1))
-                        end = int(m.group(2)) + 1
-                        step = int(m.group(3)) if m.group(3) is not None else 1
-
-                        valslist_ext += list(range(start, end, step))
-                    elif mc is not None:
-                        start = int(mc.group(1))
-                        end = int(mc.group(2))
-                        num = int(mc.group(3)) if mc.group(3) is not None else 1
-
-                        valslist_ext += [int(x) for x in np.linspace(start=start, stop=end, num=num).tolist()]
-                    else:
-                        valslist_ext.append(val)
-
-                valslist = valslist_ext
-            elif opt.type == float:
-                valslist_ext = []
-
-                for val in valslist:
-                    if val.strip() == '':
-                        continue
-                    m = re_range_float.fullmatch(val)
-                    mc = re_range_count_float.fullmatch(val)
-                    if m is not None:
-                        start = float(m.group(1))
-                        end = float(m.group(2))
-                        step = float(m.group(3)) if m.group(3) is not None else 1
-
-                        valslist_ext += np.arange(start, end + step, step).tolist()
-                    elif mc is not None:
-                        start = float(mc.group(1))
-                        end = float(mc.group(2))
-                        num = int(mc.group(3)) if mc.group(3) is not None else 1
-
-                        valslist_ext += np.linspace(start=start, stop=end, num=num).tolist()
-                    else:
-                        valslist_ext.append(val)
-
+                    try:
+                        parsed_vals = parse_range(val, is_float=(opt.type == float))
+                        valslist_ext.extend(parsed_vals)
+                    except ValueError as e:
+                        print(f"Error parsing value for {opt.label}: {val} - {e}")
                 valslist = valslist_ext
             elif opt.type == str_permutations:
                 valslist = list(permutations(valslist))
 
             valslist = [opt.type(x) for x in valslist]
 
-            # Confirm options are valid before starting
             if opt.confirm:
                 opt.confirm(p, valslist)
 
@@ -653,8 +589,7 @@ class Script(scripts.Script):
             z_values = list_to_csv_string(z_values_dropdown)
         zs = process_axis(z_opt, z_values, z_values_dropdown)
 
-        # this could be moved to common code, but unlikely to be ever triggered anywhere else
-        Image.MAX_IMAGE_PIXELS = None  # disable check in Pillow and rely on check below to allow large custom image sizes
+        Image.MAX_IMAGE_PIXELS = None
         grid_mp = round(len(xs) * len(ys) * len(zs) * p.width * p.height / 1000000)
         assert grid_mp < opts.img_max_size_mp, f'Error: Resulting grid would be too large ({grid_mp} MPixels) (max configured size is {opts.img_max_size_mp} MPixels)'
 
@@ -702,9 +637,6 @@ class Script(scripts.Script):
         state.xyz_plot_y = AxisInfo(y_opt, ys)
         state.xyz_plot_z = AxisInfo(z_opt, zs)
 
-        # If one of the axes is very slow to change between (like SD model
-        # checkpoint), then make sure it is in the outer iteration of the nested
-        # `for` loop.
         first_axes_processed = 'z'
         second_axes_processed = 'y'
         if x_opt.cost > y_opt.cost and x_opt.cost > z_opt.cost:
@@ -752,10 +684,8 @@ class Script(scripts.Script):
                 res = process_images(pc)
             except Exception as e:
                 errors.display(e, "generating image for xyz plot")
-
                 res = Processed(p, [], p.seed, "")
 
-            # Sets subgrid infotexts
             subgrid_index = 1 + iz
             if grid_infotext[subgrid_index] is None and ix == 0 and iy == 0:
                 pc.extra_generation_params = copy(pc.extra_generation_params)
@@ -775,16 +705,13 @@ class Script(scripts.Script):
 
                 grid_infotext[subgrid_index] = processing.create_infotext(pc, pc.all_prompts, pc.all_seeds, pc.all_subseeds)
 
-            # Sets main grid infotext
             if grid_infotext[0] is None and ix == 0 and iy == 0 and iz == 0:
                 pc.extra_generation_params = copy(pc.extra_generation_params)
-
                 if z_opt.label != 'Nothing':
                     pc.extra_generation_params["Z Type"] = z_opt.label
                     pc.extra_generation_params["Z Values"] = z_values
                     if z_opt.label in ["Seed", "Var. seed"] and not no_fixed_seeds:
                         pc.extra_generation_params["Fixed Z Values"] = ", ".join([str(z) for z in zs])
-
                 grid_infotext[0] = processing.create_infotext(pc, pc.all_prompts, pc.all_seeds, pc.all_subseeds)
 
             return res
@@ -806,35 +733,27 @@ class Script(scripts.Script):
                 second_axes_processed=second_axes_processed,
                 margin_size=margin_size
             )
-        
-        # reset loading params to previous state
+
         refresh_loading_params_for_xyz_grid()
 
         if not processed.images:
-            # It broke, no further handling needed.
             return processed
 
         z_count = len(zs)
-
-        # Set the grid infotexts to the real ones with extra_generation_params (1 main grid + z_count sub-grids)
         processed.infotexts[:1 + z_count] = grid_infotext[:1 + z_count]
 
         if not include_lone_images:
-            # Don't need sub-images anymore, drop from list:
             processed.images = processed.images[:z_count + 1]
 
         if opts.grid_save:
-            # Auto-save main and sub-grids:
             grid_count = z_count + 1 if z_count > 1 else 1
             for g in range(grid_count):
-                # TODO: See previous comment about intentional data misalignment.
                 adj_g = g - 1 if g > 0 else g
                 images.save_image(processed.images[g], p.outpath_grids, "xyz_grid", info=processed.infotexts[g], extension=opts.grid_format, prompt=processed.all_prompts[adj_g], seed=processed.all_seeds[adj_g], grid=True, p=processed)
-                if not include_sub_grids:  # if not include_sub_grids then skip saving after the first grid
+                if not include_sub_grids:
                     break
 
         if not include_sub_grids:
-            # Done with sub-grids, drop all related information:
             for _ in range(z_count):
                 del processed.images[1]
                 del processed.all_prompts[1]

@@ -1,69 +1,176 @@
 import argparse
+import json
+import logging
+import os
 
-parser = argparse.ArgumentParser()
+def setup_logging(verbosity: int):
+    level = max(logging.DEBUG, logging.WARNING - 10 * verbosity)
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s %(levelname)-8s %(message)s",
+        datefmt="%H:%M:%S",
+    )
 
-parser.add_argument("--gpu-device-id", type=int, default=None, metavar="DEVICE_ID")
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Advanced GPU/precision configuration for ML inference"
+    )
+    # Config file
+    parser.add_argument(
+        "--config",
+        type=str,
+        help="Path to JSON config file with argument defaults",
+    )
 
-fp_group = parser.add_mutually_exclusive_group()
-fp_group.add_argument("--all-in-fp32", action="store_true")
-fp_group.add_argument("--all-in-fp16", action="store_true")
+    # Hardware
+    hw = parser.add_argument_group("Hardware Configuration")
+    hw.add_argument(
+        "--gpu-device-id",
+        type=int,
+        default=None,
+        metavar="ID",
+        help="Index of GPU to use (None = CPU)",
+    )
+    hw.add_argument(
+        "--directml",
+        nargs="?",
+        const=-1,
+        type=int,
+        metavar="DEVICE",
+        help="Enable DirectML on given device (default: all devices)",
+    )
 
-fpunet_group = parser.add_mutually_exclusive_group()
-fpunet_group.add_argument("--unet-in-bf16", action="store_true")
-fpunet_group.add_argument("--unet-in-fp16", action="store_true")
-fpunet_group.add_argument("--unet-in-fp8-e4m3fn", action="store_true")
-fpunet_group.add_argument("--unet-in-fp8-e5m2", action="store_true")
+    # Global precision
+    prec = parser.add_argument_group("Precision Settings")
+    prec.add_argument(
+        "--precision",
+        choices=["fp32", "fp16"],
+        default="fp16",
+        help="Global precision for all modules",
+    )
+    prec.add_argument(
+        "--unet-precision",
+        choices=["bf16", "fp16", "fp8-e4m3fn", "fp8-e5m2"],
+        help="Precision override for UNet",
+    )
+    prec.add_argument(
+        "--vae-precision",
+        choices=["bf16", "fp16", "fp32"],
+        help="Precision override for VAE",
+    )
+    prec.add_argument(
+        "--vae-cpu",
+        action="store_true",
+        help="Force VAE to load on CPU",
+    )
 
-fpvae_group = parser.add_mutually_exclusive_group()
-fpvae_group.add_argument("--vae-in-fp16", action="store_true")
-fpvae_group.add_argument("--vae-in-fp32", action="store_true")
-fpvae_group.add_argument("--vae-in-bf16", action="store_true")
+    # Attention
+    attn = parser.add_argument_group("Attention Options")
+    attn.add_argument(
+        "--attention",
+        choices=["split", "quad", "pytorch", "sage", "flash"],
+        default="pytorch",
+        help="Which attention implementation to use",
+    )
+    attn.add_argument(
+        "--upcast-attention",
+        action="store_true",
+        help="Force upcast inside attention kernels",
+    )
+    attn.add_argument(
+        "--disable-attention-upcast",
+        action="store_true",
+        help="Prevent any upcasting in attention",
+    )
 
-parser.add_argument("--vae-in-cpu", action="store_true")
+    # VRAM policy
+    parser.add_argument(
+        "--vram-mode",
+        choices=["always-gpu", "high", "normal", "low", "no-vram", "cpu"],
+        default="normal",
+        help="VRAM usage policy (overrides other vram flags)",
+    )
+    parser.add_argument(
+        "--always-offload-from-vram",
+        action="store_true",
+        help="Offload tensors from VRAM when idle",
+    )
 
-fpte_group = parser.add_mutually_exclusive_group()
-fpte_group.add_argument("--clip-in-fp8-e4m3fn", action="store_true")
-fpte_group.add_argument("--clip-in-fp8-e5m2", action="store_true")
-fpte_group.add_argument("--clip-in-fp16", action="store_true")
-fpte_group.add_argument("--clip-in-fp32", action="store_true")
+    # Performance tweaks
+    perf = parser.add_argument_group("Performance Tweaks")
+    perf.add_argument(
+        "--pytorch-deterministic",
+        action="store_true",
+        help="Enable deterministic mode in PyTorch",
+    )
+    perf.add_argument(
+        "--cuda-malloc",
+        action="store_true",
+        help="Use cudaMalloc for allocations",
+    )
+    perf.add_argument(
+        "--cuda-stream",
+        action="store_true",
+        help="Enable CUDA streams",
+    )
+    perf.add_argument(
+        "--pin-shared-memory",
+        action="store_true",
+        help="Pin shared memory for faster transfers",
+    )
+    perf.add_argument(
+        "--disable-xformers",
+        action="store_true",
+        help="Disable XFormers optimizations",
+    )
+    perf.add_argument(
+        "--disable-ipex-hijack",
+        action="store_true",
+        help="Disable Intel IPEX hijacking",
+    )
+    perf.add_argument(
+        "--disable-gpu-warning",
+        action="store_true",
+        help="Suppress GPU compatibility warnings",
+    )
 
-attn_group = parser.add_mutually_exclusive_group()
-attn_group.add_argument("--attention-split", action="store_true")
-attn_group.add_argument("--attention-quad", action="store_true")
-attn_group.add_argument("--attention-pytorch", action="store_true")
-attn_group.add_argument("--use-sage-attention", action="store_true", help="Use sage attention.")
-attn_group.add_argument("--use-flash-attention", action="store_true", help="Use FlashAttention.")
+    # Debug / utility
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="Increase log verbosity (repeat for more)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print parsed arguments and exit",
+    )
 
-upcast = parser.add_mutually_exclusive_group()
-upcast.add_argument("--force-upcast-attention", action="store_true")
-upcast.add_argument("--disable-attention-upcast", action="store_true")
+    # First pass: load CLI + config file
+    args = parser.parse_args()
+    if args.config and os.path.isfile(args.config):
+        with open(args.config, "r") as f:
+            cfg = json.load(f)
+        parser.set_defaults(**cfg)
+        args = parser.parse_args()  # reparse with config defaults
 
-parser.add_argument("--disable-xformers", action="store_true")
+    # Validation
+    if args.upcast_attention and args.disable_attention_upcast:
+        parser.error("Cannot use both --upcast-attention and --disable-attention-upcast")
 
-parser.add_argument("--directml", type=int, nargs="?", metavar="DIRECTML_DEVICE", const=-1)
-parser.add_argument("--disable-ipex-hijack", action="store_true")
+    setup_logging(args.verbose)
+    return args
 
-vram_group = parser.add_mutually_exclusive_group()
-vram_group.add_argument("--always-gpu", action="store_true")
-vram_group.add_argument("--always-high-vram", action="store_true")
-vram_group.add_argument("--always-normal-vram", action="store_true")
-vram_group.add_argument("--always-low-vram", action="store_true")
-vram_group.add_argument("--always-no-vram", action="store_true")
-vram_group.add_argument("--always-cpu", action="store_true")
+def main():
+    args = parse_args()
+    if args.dry_run:
+        print(args)
+        return
 
-parser.add_argument("--always-offload-from-vram", action="store_true")
-parser.add_argument("--pytorch-deterministic", action="store_true")
+    logging.info("Starting with configuration: %s", args)
+    # ... rest of your application logic ...
 
-parser.add_argument("--cuda-malloc", action="store_true")
-parser.add_argument("--cuda-stream", action="store_true")
-parser.add_argument("--pin-shared-memory", action="store_true")
-
-parser.add_argument("--disable-gpu-warning", action="store_true")
-
-args = parser.parse_known_args()[0]
-
-# Some dynamic args that may be changed by webui rather than cmd flags.
-dynamic_args = dict(
-    embedding_dir='./embeddings',
-    emphasis_name='original'
-)
+if __name__ == "__main__":
+    main()

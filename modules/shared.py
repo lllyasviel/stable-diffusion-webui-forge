@@ -1,95 +1,127 @@
 import os
 import sys
+import logging
+from pathlib import Path
+from dataclasses import dataclass, field
+from typing import Optional, Dict, List, Set, Callable
+from functools import lru_cache
 
 import gradio as gr
-
 from modules import shared_cmd_options, shared_gradio_themes, options, shared_items, sd_models_types
-from modules.paths_internal import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir  # noqa: F401
+from modules.paths_internal import (
+    models_path, script_path, data_path,
+    sd_configs_path, sd_default_config,
+    extensions_dir, extensions_builtin_dir
+)
 from modules import util
-from typing import TYPE_CHECKING
 from backend import memory_management
 
-if TYPE_CHECKING:
-    from modules import shared_state, styles, interrogate, shared_total_tqdm, memmon
+# ── Logging ─────────────────────────────────────────────────────────────────────
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s][%(levelname)s] %(message)s",
+    datefmt="%H:%M:%S"
+)
 
+# ── Configuration Dataclass ────────────────────────────────────────────────────
+@dataclass
+class UIConfig:
+    styles_files: List[Path] = field(default_factory=lambda: [
+        Path(data_path) / "styles.csv",
+        Path(data_path) / "styles_integrated.csv",
+    ])
+    ui_settings_file: Path = Path(shared_cmd_options.cmd_opts.ui_settings_file)
+    hide_ui_dirs: bool = shared_cmd_options.cmd_opts.hide_ui_dir_config
+    hf_endpoint: str = os.getenv("HF_ENDPOINT", "https://huggingface.co").rstrip("/")
+    xformers_available: bool = memory_management.xformers_enabled()
+
+# Instantiate UI configuration
 cmd_opts = shared_cmd_options.cmd_opts
-parser = shared_cmd_options.parser
+parser   = shared_cmd_options.parser
+config   = UIConfig()
 
-batch_cond_uncond = True  # old field, unused now in favor of shared.opts.batch_cond_uncond
-parallel_processing_allowed = True
-styles_filename = cmd_opts.styles_file = cmd_opts.styles_file if len(cmd_opts.styles_file) > 0 else [os.path.join(data_path, 'styles.csv'), os.path.join(data_path, 'styles_integrated.csv')]
-config_filename = cmd_opts.ui_settings_file
-hide_dirs = {"visible": not cmd_opts.hide_ui_dir_config}
-
-demo: gr.Blocks = None
-
-device: str = None
-
-weight_load_location: str = None
-
-xformers_available = memory_management.xformers_enabled()
-
-hypernetworks = {}
-
-loaded_hypernetworks = []
-
-state: 'shared_state.State' = None
-
-prompt_styles: 'styles.StyleDatabase' = None
-
-interrogator: 'interrogate.InterrogateModels' = None
-
-face_restorers = []
-
-options_templates: dict = None
-opts: options.Options = None
-restricted_opts: set[str] = None
-
-sd_model = None
-
-settings_components: dict = None
-"""assigned from ui.py, a mapping on setting names to gradio components responsible for those settings"""
-
-tab_names = []
+# ── Globals & Placeholders ─────────────────────────────────────────────────────
+demo:        Optional[gr.Blocks]         = None
+device:      Optional[str]               = None
+weight_loc:  Optional[str]               = None
+hypernetworks:       Dict[str, object]   = {}
+loaded_hypernetworks: List[str]          = []
+state:       Optional['shared_state.State']          = None
+prompt_styles: Optional['styles.StyleDatabase']      = None
+interrogator: Optional['interrogate.InterrogateModels'] = None
+face_restorers:     List[object]         = []
+options_templates:  Dict[str, options.OptionInfo]   = {}
+opts:        options.Options               = options.opts
+restricted_opts: Set[str]                  = set(options.restricted_opts or [])
+sd_model:    Optional[object]              = None
+settings_components: Dict[str, gr.Component] = {}
+tab_names:   List[str]                    = []
 
 latent_upscale_default_mode = "Latent"
-latent_upscale_modes = {
-    "Latent": {"mode": "bilinear", "antialias": False},
-    "Latent (antialiased)": {"mode": "bilinear", "antialias": True},
-    "Latent (bicubic)": {"mode": "bicubic", "antialias": False},
-    "Latent (bicubic antialiased)": {"mode": "bicubic", "antialias": True},
-    "Latent (nearest)": {"mode": "nearest", "antialias": False},
-    "Latent (nearest-exact)": {"mode": "nearest-exact", "antialias": False},
+latent_upscale_modes: Dict[str, Dict[str, bool]] = {
+    "Latent":                {"mode": "bilinear", "antialias": False},
+    "Latent (antialiased)":  {"mode": "bilinear", "antialias": True},
+    "Latent (bicubic)":      {"mode": "bicubic",  "antialias": False},
+    "Latent (bicubic aa)":   {"mode": "bicubic",  "antialias": True},
+    "Latent (nearest)":      {"mode": "nearest",  "antialias": False},
+    "Latent (nearest-exact)":{"mode": "nearest-exact","antialias": False},
 }
 
-sd_upscalers = []
-
-clip_model = None
-
+sd_upscalers: List[str]      = []
+clip_model:  Optional[object] = None
 progress_print_out = sys.stdout
+gradio_theme       = shared_gradio_themes.reload_gradio_theme(config.ui_settings_file)
+total_tqdm:        'shared_total_tqdm.TotalTQDM'    = None
+mem_mon:           'memmon.MemUsageMonitor'        = None
 
-gradio_theme = gr.themes.Base()
-
-total_tqdm: 'shared_total_tqdm.TotalTQDM' = None
-
-mem_mon: 'memmon.MemUsageMonitor' = None
-
-options_section = options.options_section
-OptionInfo = options.OptionInfo
-OptionHTML = options.OptionHTML
-
-natural_sort_key = util.natural_sort_key
-listfiles = util.listfiles
-html_path = util.html_path
-html = util.html
-walk_files = util.walk_files
-ldm_print = util.ldm_print
-
-reload_gradio_theme = shared_gradio_themes.reload_gradio_theme
-
+# aliases for convenience
 list_checkpoint_tiles = shared_items.list_checkpoint_tiles
-refresh_checkpoints = shared_items.refresh_checkpoints
-list_samplers = shared_items.list_samplers
-reload_hypernetworks = shared_items.reload_hypernetworks
+refresh_checkpoints   = shared_items.refresh_checkpoints
+list_samplers         = shared_items.list_samplers
+reload_hypernetworks  = shared_items.reload_hypernetworks
 
-hf_endpoint = os.getenv('HF_ENDPOINT', 'https://huggingface.co').rstrip('/')
+hf_endpoint = config.hf_endpoint
+
+# ── Caching & Utilities ────────────────────────────────────────────────────────
+@lru_cache(maxsize=1)
+def get_checkpoint_tiles() -> List[str]:
+    return list_checkpoint_tiles()
+
+@lru_cache(maxsize=None)
+def list_models(model_type: sd_models_types.ModelType) -> List[str]:
+    try:
+        return util.listfiles(models_path, model_type.file_ext)
+    except Exception as e:
+        logger.error(f"Error listing {model_type}: {e}")
+        return []
+
+# ── Directory Watcher for Extensions ────────────────────────────────────────────
+def watch_extensions_directory(on_change: Callable) -> Optional[object]:
+    try:
+        from watchdog.observers import Observer
+        from watchdog.events    import FileSystemEventHandler
+    except ImportError:
+        logger.warning("watchdog not installed; extension auto‑reload disabled")
+        return None
+
+    class ExtHandler(FileSystemEventHandler):
+        def on_any_event(self, event):
+            logger.info(f"Extensions directory changed: {event.src_path}")
+            on_change()
+
+    observer = Observer()
+    observer.schedule(ExtHandler(), str(extensions_dir), recursive=True)
+    observer.start()
+    return observer
+
+_ext_observer = watch_extensions_directory(reload_hypernetworks)
+
+# ── Hide/Show UI Directories ────────────────────────────────────────────────────
+hide_dirs = {"visible": not config.hide_ui_dirs}
+
+# ── Initialization Logging ─────────────────────────────────────────────────────
+logger.info(f"Styles files: {config.styles_files}")
+logger.info(f"Hiding UI dirs: {config.hide_ui_dirs}")
+logger.info(f"HuggingFace endpoint: {config.hf_endpoint}")
+logger.info(f"xFormers available: {config.xformers_available}")

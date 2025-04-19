@@ -1,0 +1,3 @@
+[submodule "repositories/huggingface_guess"]
+	path = repositories/huggingface_guess
+	url = https://github.com/lllyasviel/huggingface_guess

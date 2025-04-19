@@ -569,37 +569,6 @@ legacy_preprocessors = {
             "Lineart"
         ]
     },
-    "mediapipe_face": {
-        "label": "mediapipe_face",
-        "call_function": mediapipe_face,
-        "unload_function": None,
-        "managed_model": "model_mediapipe_face",
-        "model_free": False,
-        "no_control_mode": False,
-        "resolution": {
-            "label": "Resolution",
-            "value": 512,
-            "minimum": 64,
-            "maximum": 2048
-        },
-        "slider_1": {
-            "label": "Max Faces",
-            "value": 1,
-            "minimum": 1,
-            "maximum": 10,
-            "step": 1
-        },
-        "slider_2": {
-            "label": "Min Face Confidence",
-            "value": 0.5,
-            "minimum": 0.01,
-            "maximum": 1.0,
-            "step": 0.01
-        },
-        "slider_3": None,
-        "priority": 0,
-        "tags": []
-    },
     "mlsd": {
         "label": "mlsd",
         "call_function": mlsd,

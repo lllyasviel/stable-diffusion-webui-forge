@@ -154,21 +154,6 @@ def scribble_hed(img, res=512, **kwargs):
     return result, True
 
 
-model_mediapipe_face = None
-
-
-def mediapipe_face(img, res=512, thr_a: int = 10, thr_b: float = 0.5, **kwargs):
-    max_faces = int(thr_a)
-    min_confidence = thr_b
-    img, remove_pad = resize_image_with_pad(img, res)
-    global model_mediapipe_face
-    if model_mediapipe_face is None:
-        from annotator.mediapipe_face import apply_mediapipe_face
-        model_mediapipe_face = apply_mediapipe_face
-    result = model_mediapipe_face(img, max_faces=max_faces, min_confidence=min_confidence)
-    return remove_pad(result), True
-
-
 model_mlsd = None
 
 

@@ -496,12 +496,12 @@ class StableDiffusionProcessing:
         self.step_multiplier = total_steps // self.steps
         self.firstpass_steps = total_steps
 
-        if self.cfg_scale == 1:
-            self.uc = None
-            print('Skipping unconditional conditioning when CFG = 1. Negative Prompts are ignored.')
-        else:
-            self.uc = self.get_conds_with_caching(prompt_parser.get_learned_conditioning, negative_prompts, total_steps, [self.cached_uc], self.extra_network_data)
-
+        # if self.cfg_scale == 1:
+        #     self.uc = None
+        #     print('Skipping unconditional conditioning when CFG = 1. Negative Prompts are ignored.')
+        # else:
+        
+        self.uc = self.get_conds_with_caching(prompt_parser.get_learned_conditioning, negative_prompts, total_steps, [self.cached_uc], self.extra_network_data)
         self.c = self.get_conds_with_caching(prompt_parser.get_multicond_learned_conditioning, prompts, total_steps, [self.cached_c], self.extra_network_data)
 
     def get_conds(self):
@@ -1583,12 +1583,12 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
         steps = self.hr_second_pass_steps or self.steps
         total_steps = sampler_config.total_steps(steps) if sampler_config else steps
 
-        if self.hr_cfg == 1:
-            self.hr_uc = None
-            print('Skipping unconditional conditioning (HR pass) when CFG = 1. Negative Prompts are ignored.')
-        else:
-            self.hr_uc = self.get_conds_with_caching(prompt_parser.get_learned_conditioning, hr_negative_prompts, self.firstpass_steps, [self.cached_hr_uc, self.cached_uc], self.hr_extra_network_data, total_steps)
-
+        # if self.hr_cfg == 1:
+        #     self.hr_uc = None
+        #     print('Skipping unconditional conditioning (HR pass) when CFG = 1. Negative Prompts are ignored.')
+        # else:
+            
+        self.hr_uc = self.get_conds_with_caching(prompt_parser.get_learned_conditioning, hr_negative_prompts, self.firstpass_steps, [self.cached_hr_uc, self.cached_uc], self.hr_extra_network_data, total_steps)
         self.hr_c = self.get_conds_with_caching(prompt_parser.get_multicond_learned_conditioning, hr_prompts, self.firstpass_steps, [self.cached_hr_c, self.cached_c], self.hr_extra_network_data, total_steps)
 
     def setup_conds(self):

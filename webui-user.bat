@@ -1,9 +1,11 @@
 @echo off
 
+shift
+
 set PYTHON=
 set GIT=
 set VENV_DIR=
-set COMMANDLINE_ARGS=
+set COMMANDLINE_ARGS=--skip-version-check --skip-python-version-check --skip-torch-cuda-test --cuda-malloc --cuda-stream --pin-shared-memory %*
 
 @REM Uncomment following code to reference an existing A1111 checkout.
 @REM set A1111_HOME=Your A1111 checkout dir

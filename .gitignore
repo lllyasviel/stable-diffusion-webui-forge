@@ -14,7 +14,8 @@ __pycache__
 /outputs/
 /ESRGAN/*
 /SwinIR/*
-/repositories
+/repositories/BLIP
+/repositories/stable-diffusion-webui-assets
 /venv
 /tmp
 /output

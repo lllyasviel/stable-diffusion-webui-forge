@@ -362,7 +362,7 @@ def attention_sage(q, k, v, heads, mask=None, attn_precision=None, skip_reshape=
     # Check inputs for NaN or Inf
     for t, name in [(q, 'q'), (k, 'k'), (v, 'v')]:
         if torch.isnan(t).any() or torch.isinf(t).any():
-            logging.warning(f"NaN or Inf detected in {name}: mean={t.mean()}, min={t.min()}, max={t.max()}")
+            print(f"NaN or Inf detected in {name}: mean={t.mean()}, min={t.min()}, max={t.max()}")
             t = torch.nan_to_num(t, nan=0.0, posinf=1.0, neginf=-1.0)
 
     if skip_reshape:
@@ -386,7 +386,7 @@ def attention_sage(q, k, v, heads, mask=None, attn_precision=None, skip_reshape=
             mask = mask.unsqueeze(1)
         # Check mask for NaN or Inf
         if torch.isnan(mask).any() or torch.isinf(mask).any():
-            logging.warning(f"NaN or Inf detected in mask")
+            print(f"NaN or Inf detected in mask")
             mask = torch.nan_to_num(mask, nan=0.0, posinf=1.0, neginf=-1.0)
 
     # Call sageattn with error handling
@@ -394,18 +394,18 @@ def attention_sage(q, k, v, heads, mask=None, attn_precision=None, skip_reshape=
         out = sageattn(q, k, v, attn_mask=mask, is_causal=False, tensor_layout=tensor_layout)
         # Check output for NaN or Inf
         if torch.isnan(out).any() or torch.isinf(out).any():
-            logging.warning(f"NaN or Inf detected in sageattn output: mean={out.mean()}, min={out.min()}, max={out.max()}")
-            logging.warning("Falling back to attention_pytorch due to invalid sageattn output")
+            print(f"NaN or Inf detected in sageattn output: mean={out.mean()}, min={out.min()}, max={out.max()}")
+            print("Falling back to attention_pytorch due to invalid sageattn output")
             return attention_pytorch(q, k, v, heads, mask=mask, attn_precision=attn_precision, skip_reshape=skip_reshape)
     except Exception as e:
-        logging.warning(f"sageattn failed: {e}. Falling back to attention_pytorch")
+        print(f"sageattn failed: {e}. Falling back to attention_pytorch")
         return attention_pytorch(q, k, v, heads, mask=mask, attn_precision=attn_precision, skip_reshape=skip_reshape)
 
     # Normalize output to prevent extreme values
     out = torch.nan_to_num(out, nan=0.0, posinf=1.0, neginf=-1.0)
 
     # Log output statistics for debugging
-    logging.debug(f"sageattn output: mean={out.mean()}, min={out.min()}, max={out.max()}")
+    print(f"sageattn output: mean={out.mean()}, min={out.min()}, max={out.max()}")
 
     if tensor_layout == "HND":
         if not skip_output_reshape:

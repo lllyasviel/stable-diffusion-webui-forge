@@ -405,7 +405,7 @@ def attention_sage(q, k, v, heads, mask=None, attn_precision=None, skip_reshape=
     out = torch.nan_to_num(out, nan=0.0, posinf=1.0, neginf=-1.0)
 
     # Log output statistics for debugging
-    print(f"sageattn output: mean={out.mean()}, min={out.min()}, max={out.max()}")
+    #print(f"sageattn output: mean={out.mean()}, min={out.min()}, max={out.max()}")
 
     if tensor_layout == "HND":
         if not skip_output_reshape:

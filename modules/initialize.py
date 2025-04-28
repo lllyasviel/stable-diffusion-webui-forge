@@ -133,4 +133,7 @@ def initialize_rest(*, reload_script_modules=False):
     extra_networks.register_default_extra_networks()
     startup_timer.record("initialize extra networks")
 
+    from modules import devices
+    devices.torch_npu_set_device()
+
     return

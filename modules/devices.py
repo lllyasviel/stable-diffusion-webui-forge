@@ -40,7 +40,8 @@ def torch_gc():
 
 
 def torch_npu_set_device():
-    return
+    if memory_management.is_npu():
+        torch.npu.set_device(0)
 
 
 def enable_tf32():

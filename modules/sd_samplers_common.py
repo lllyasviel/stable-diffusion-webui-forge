@@ -70,9 +70,12 @@ def samples_to_images_tensor(sample, approximation=None, model=None):
 def single_sample_to_image(sample, approximation=None):
     x_sample = samples_to_images_tensor(sample.unsqueeze(0), approximation)[0] * 0.5 + 0.5
 
-    x_sample = torch.clamp(x_sample, min=0.0, max=1.0)
-    x_sample = 255. * np.moveaxis(x_sample.cpu().numpy(), 0, 2)
-    x_sample = x_sample.astype(np.uint8)
+    x_sample = x_sample.cpu()
+    x_sample.clamp_(0.0, 1.0)
+    x_sample.mul_(255.)
+    x_sample.round_()
+    x_sample = x_sample.to(torch.uint8)
+    x_sample = np.moveaxis(x_sample.numpy(), 0, 2)
 
     return Image.fromarray(x_sample)
 

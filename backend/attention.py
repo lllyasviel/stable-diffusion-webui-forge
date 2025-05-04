@@ -358,16 +358,9 @@ def attention_sage(q, k, v, heads, mask=None, attn_precision=None, skip_reshape=
     # sageattn doesn't work with sd1.5, fallback to sdpa
     if q.shape[-1] // heads not in [64, 96, 128]:
         return attention_pytorch(q, k, v, heads, mask=mask, attn_precision=attn_precision, skip_reshape=skip_reshape)
-
-    # Check inputs for NaN or Inf
-    for t, name in [(q, 'q'), (k, 'k'), (v, 'v')]:
-        if torch.isnan(t).any() or torch.isinf(t).any():
-            print(f"NaN or Inf detected in {name}: mean={t.mean()}, min={t.min()}, max={t.max()}")
-            t = torch.nan_to_num(t, nan=0.0, posinf=1.0, neginf=-1.0)
-
     if skip_reshape:
         b, _, _, dim_head = q.shape
-        tensor_layout = "HND"
+        tensor_layout="HND"
     else:
         b, _, dim_head = q.shape
         dim_head //= heads
@@ -375,7 +368,7 @@ def attention_sage(q, k, v, heads, mask=None, attn_precision=None, skip_reshape=
             lambda t: t.view(b, -1, heads, dim_head),
             (q, k, v),
         )
-        tensor_layout = "NHD"
+        tensor_layout="NHD"
 
     if mask is not None:
         # add a batch dimension if there isn't already one
@@ -384,32 +377,13 @@ def attention_sage(q, k, v, heads, mask=None, attn_precision=None, skip_reshape=
         # add a heads dimension if there isn't already one
         if mask.ndim == 3:
             mask = mask.unsqueeze(1)
-        # Check mask for NaN or Inf
-        if torch.isnan(mask).any() or torch.isinf(mask).any():
-            print(f"NaN or Inf detected in mask")
-            mask = torch.nan_to_num(mask, nan=0.0, posinf=1.0, neginf=-1.0)
 
-    # Call sageattn with error handling
-    try:
-        out = sageattn(q, k, v, attn_mask=mask, is_causal=False, tensor_layout=tensor_layout)
-        # Check output for NaN or Inf
-        if torch.isnan(out).any() or torch.isinf(out).any():
-            print(f"NaN or Inf detected in sageattn output: mean={out.mean()}, min={out.min()}, max={out.max()}")
-            print("Falling back to attention_pytorch due to invalid sageattn output")
-            return attention_pytorch(q, k, v, heads, mask=mask, attn_precision=attn_precision, skip_reshape=skip_reshape)
-    except Exception as e:
-        print(f"sageattn failed: {e}. Falling back to attention_pytorch")
-        return attention_pytorch(q, k, v, heads, mask=mask, attn_precision=attn_precision, skip_reshape=skip_reshape)
-
-    # Normalize output to prevent extreme values
-    out = torch.nan_to_num(out, nan=0.0, posinf=1.0, neginf=-1.0)
-
-    # Log output statistics for debugging
-    #print(f"sageattn output: mean={out.mean()}, min={out.min()}, max={out.max()}")
-
+    out = sageattn(q, k, v, attn_mask=mask, is_causal=False, tensor_layout=tensor_layout)
     if tensor_layout == "HND":
         if not skip_output_reshape:
-            out = out.transpose(1, 2).reshape(b, -1, heads * dim_head)
+            out = (
+                out.transpose(1, 2).reshape(b, -1, heads * dim_head)
+            )
     else:
         if skip_output_reshape:
             out = out.transpose(1, 2)

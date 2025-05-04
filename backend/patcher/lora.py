@@ -49,7 +49,7 @@ def model_lora_keys_unet(model, key_map={}):
 
 
 @torch.inference_mode()
-def weight_decompose(dora_scale, weight, lora_diff, alpha, strength, computation_dtype):
+def weight_decompose(dora_scale, weight, lora_diff, alpha, strength, computation_dtype, function):
     # Modified from https://github.com/comfyanonymous/ComfyUI/blob/80a44b97f5cbcb890896e2b9e65d177f1ac6a588/comfy/weight_adapter/base.py#L42
     dora_scale = memory_management.cast_to_device(dora_scale, weight.device, computation_dtype)
     lora_diff *= alpha
@@ -172,7 +172,7 @@ def merge_lora_to_weight(patches, weight, key="online_lora", computation_dtype=t
                         lora_diff = torch.nn.functional.pad(lora_diff, (0, expand_factor), mode='constant', value=0)
                     
                 if dora_scale is not None:
-                    weight = function(weight_decompose(dora_scale, weight, lora_diff, alpha, strength, computation_dtype))
+                    weight = weight_decompose(dora_scale, weight, lora_diff, alpha, strength, computation_dtype, function)
                 else:
                     weight += function(((strength * alpha) * lora_diff).type(weight.dtype))
 
@@ -220,7 +220,7 @@ def merge_lora_to_weight(patches, weight, key="online_lora", computation_dtype=t
             try:
                 lora_diff = torch.kron(w1, w2).reshape(weight.shape)
                 if dora_scale is not None:
-                    weight = function(weight_decompose(dora_scale, weight, lora_diff, alpha, strength, computation_dtype))
+                    weight = weight_decompose(dora_scale, weight, lora_diff, alpha, strength, computation_dtype, function)
                 else:
                     weight += function(((strength * alpha) * lora_diff).type(weight.dtype))
             except Exception as e:
@@ -258,7 +258,7 @@ def merge_lora_to_weight(patches, weight, key="online_lora", computation_dtype=t
             try:
                 lora_diff = (m1 * m2).reshape(weight.shape)
                 if dora_scale is not None:
-                    weight = function(weight_decompose(dora_scale, weight, lora_diff, alpha, strength, computation_dtype))
+                    weight = weight_decompose(dora_scale, weight, lora_diff, alpha, strength, computation_dtype, function)
                 else:
                     weight += function(((strength * alpha) * lora_diff).type(weight.dtype))
             except Exception as e:

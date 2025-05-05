@@ -8,6 +8,9 @@ def stream_context():
 
     if torch.xpu.is_available():
         return torch.xpu.stream
+    
+    if hasattr(torch, "npu") and torch.npu.is_available():
+        return torch.npu.stream
 
     return None
 
@@ -28,6 +31,13 @@ def get_current_stream():
                 torch.zeros((1, 1)).to(device, torch.float32)
             stream.synchronize()
             return stream
+        if hasattr(torch, "npu") and torch.npu.is_available():
+            device = torch.device("npu")
+            stream = torch.npu.current_stream(device)
+            with torch.npu.stream(stream):
+                torch.zeros((1, 1)).to(device, torch.float32)
+            stream.synchronize()
+            return stream
     except:
         return None
 
@@ -45,6 +55,13 @@ def get_new_stream():
             device = torch.device("xpu")
             stream = torch.xpu.Stream(device)
             with torch.xpu.stream(stream):
+                torch.zeros((1, 1)).to(device, torch.float32)
+            stream.synchronize()
+            return stream
+        if hasattr(torch, "npu") and torch.npu.is_available():
+            device = torch.device("npu")
+            stream = torch.npu.Stream(device)
+            with torch.npu.stream(stream):
                 torch.zeros((1, 1)).to(device, torch.float32)
             stream.synchronize()
             return stream

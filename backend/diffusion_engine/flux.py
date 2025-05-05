@@ -82,9 +82,22 @@ class Flux(ForgeDiffusionEngine):
 
     @torch.inference_mode()
     def get_learned_conditioning(self, prompt: list[str]):
+        prompt_t5 = []
+        prompt_l = []
+
+        for p in prompt:
+            if 'SPLIT' in p:
+                before_split, after_split = p.split('SPLIT', 1)
+                prompt_t5.append(before_split.strip())
+                prompt_l.append(after_split.strip())
+            else:
+                prompt_t5.append(p)
+                prompt_l.append(p)
+
         memory_management.load_model_gpu(self.forge_objects.clip.patcher)
-        cond_l, pooled_l = self.text_processing_engine_l(prompt)
-        cond_t5 = self.text_processing_engine_t5(prompt)
+
+        cond_l, pooled_l = self.text_processing_engine_l(prompt_l)
+        cond_t5 = self.text_processing_engine_t5(prompt_t5)
         cond = dict(crossattn=cond_t5, vector=pooled_l)
 
         if self.use_distilled_cfg_scale:
@@ -98,8 +111,25 @@ class Flux(ForgeDiffusionEngine):
 
     @torch.inference_mode()
     def get_prompt_lengths_on_ui(self, prompt):
-        token_count = len(self.text_processing_engine_t5.tokenize([prompt])[0])
-        return token_count, max(255, token_count)
+        if 'SPLIT' in prompt:
+            prompt_t5, prompt_l = prompt.split('SPLIT', 1)
+            prompt_t5 = prompt_t5.strip()
+            prompt_l = prompt_l.strip()
+        else:
+            prompt_t5 = prompt_l = prompt
+
+        t5_token_count = len(self.text_processing_engine_t5.tokenize([prompt_t5])[0])
+        t5_max_length = max(255, t5_token_count)
+
+        _, clip_token_count = self.text_processing_engine_l.process_texts([prompt_l])
+        clip_max_length = self.text_processing_engine_l.get_target_prompt_token_count(clip_token_count)
+
+        return {
+            't5': t5_token_count,
+            't5_max': t5_max_length,
+            'clip': clip_token_count,
+            'clip_max': clip_max_length,
+        }
 
     @torch.inference_mode()
     def encode_first_stage(self, x):

@@ -355,8 +355,12 @@ def attention_pytorch(q, k, v, heads, mask=None, attn_precision=None, skip_resha
     return out
 
 def attention_sage(q, k, v, heads, mask=None, attn_precision=None, skip_reshape=False, skip_output_reshape=False):
-    # sageattn doesn't work with sd1.5, fallback to sdpa
+    # sageattn doesn't work with sd1.5
     if q.shape[-1] // heads not in [64, 96, 128]:
+        if memory_management.flash_attention_enabled()
+            return attention_flash(q, k, v, heads, mask=mask, attn_precision=attn_precision, skip_reshape=skip_reshape)
+        elif memory_management.xformers_enabled():
+            return attention_xformers(q, k, v, heads, mask=mask, attn_precision=attn_precision, skip_reshape=skip_reshape)
         return attention_pytorch(q, k, v, heads, mask=mask, attn_precision=attn_precision, skip_reshape=skip_reshape)
     if skip_reshape:
         b, _, _, dim_head = q.shape
@@ -538,12 +542,12 @@ def pytorch_attention_single_head_spatial(q, k, v):
 if memory_management.sage_attention_enabled():
     print("Using sage attention")
     attention_function = attention_sage
-elif memory_management.xformers_enabled():
-    print("Using xformers cross attention")
-    attention_function = attention_xformers
 elif memory_management.flash_attention_enabled():
     print("Using Flash Attention")
     attention_function = attention_flash
+elif memory_management.xformers_enabled():
+    print("Using xformers cross attention")
+    attention_function = attention_xformers
 elif memory_management.pytorch_attention_enabled():
     print("Using pytorch cross attention")
     attention_function = attention_pytorch

@@ -357,7 +357,7 @@ def attention_pytorch(q, k, v, heads, mask=None, attn_precision=None, skip_resha
 def attention_sage(q, k, v, heads, mask=None, attn_precision=None, skip_reshape=False, skip_output_reshape=False):
     # sageattn doesn't work with sd1.5
     if q.shape[-1] // heads not in [64, 96, 128]:
-        if memory_management.flash_attention_enabled()
+        if memory_management.flash_attention_enabled():
             return attention_flash(q, k, v, heads, mask=mask, attn_precision=attn_precision, skip_reshape=skip_reshape)
         elif memory_management.xformers_enabled():
             return attention_xformers(q, k, v, heads, mask=mask, attn_precision=attn_precision, skip_reshape=skip_reshape)

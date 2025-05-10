@@ -159,7 +159,7 @@ class PreprocessorInpaintLama(PreprocessorInpaintOnly):
         process.modified_noise = original_noise + self.latent.to(original_noise) / sigma_max.to(original_noise)
         return cond, mask
 
-class PreprocessorInpaintNoobAIXL(Preprocessor):
+class PreprocessorInpaintNoobAIXL(Preprocessor): # support noob ctrlnet inpaint model https://civitai.com/models/1376234/noobai-inpainting-controlnet
     def __init__(self):
         super().__init__()
         self.name = 'inpaint_noobai_xl'

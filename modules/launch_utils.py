@@ -560,7 +560,7 @@ def dump_sysinfo():
     import datetime
 
     text = sysinfo.get()
-    filename = f"sysinfo-{datetime.datetime.utcnow().strftime('%Y-%m-%d-%H-%M')}.json"
+    filename = f"sysinfo-{datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d-%H-%M')}.json"
 
     with open(filename, "w", encoding="utf8") as file:
         file.write(text)

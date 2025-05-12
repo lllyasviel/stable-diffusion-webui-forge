@@ -1074,7 +1074,7 @@ def setup_ui_api(app):
         from fastapi.responses import PlainTextResponse
 
         text = sysinfo.get()
-        filename = f"sysinfo-{datetime.datetime.utcnow().strftime('%Y-%m-%d-%H-%M')}.json"
+        filename = f"sysinfo-{datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d-%H-%M')}.json"
 
         return PlainTextResponse(text, headers={'Content-Disposition': f'{"attachment" if attachment else "inline"}; filename="{filename}"'})
 

@@ -13,6 +13,7 @@ quants_mapping = {
     gguf.GGMLQuantizationType.Q5_K: gguf.Q5_K,
     gguf.GGMLQuantizationType.Q6_K: gguf.Q6_K,
     gguf.GGMLQuantizationType.Q8_0: gguf.Q8_0,
+    gguf.GGMLQuantizationType.BF16: gguf.BF16,
 }
 
 

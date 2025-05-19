@@ -18,6 +18,22 @@ if memory_management.xformers_enabled():
     except:
         pass
 
+if memory_management.sage_attention_enabled():
+    try:
+        from sageattention import sageattn
+    except ModuleNotFoundError:
+        print(f"\n\nTo use the `--use-sage-attention` feature, the `sageattention` package must be installed first.\ncommand:\n\t{sys.executable} -m pip install sageattention")
+        exit(-1)
+
+if memory_management.flash_attention_enabled():
+    try:
+        from flash_attn import flash_attn_func
+    except ModuleNotFoundError:
+        print(f"\n\nTo use the `--use-flash-attention` feature, the `flash-attn` package must be installed first.\ncommand:\n\t{sys.executable} -m pip install flash-attn")
+        exit(-1)
+
+import backend.operations
+ops = backend.operations.ForgeOperations
 
 FORCE_UPCAST_ATTENTION_DTYPE = memory_management.force_upcast_attention_dtype()
 
@@ -338,6 +354,102 @@ def attention_pytorch(q, k, v, heads, mask=None, attn_precision=None, skip_resha
     )
     return out
 
+def attention_sage(q, k, v, heads, mask=None, attn_precision=None, skip_reshape=False, skip_output_reshape=False):
+    # sageattn doesn't work with sd1.5
+    if q.shape[-1] // heads not in [64, 96, 128]:
+        if memory_management.flash_attention_enabled():
+            return attention_flash(q, k, v, heads, mask=mask, attn_precision=attn_precision, skip_reshape=skip_reshape)
+        elif memory_management.xformers_enabled():
+            return attention_xformers(q, k, v, heads, mask=mask, attn_precision=attn_precision, skip_reshape=skip_reshape)
+        return attention_pytorch(q, k, v, heads, mask=mask, attn_precision=attn_precision, skip_reshape=skip_reshape)
+    if skip_reshape:
+        b, _, _, dim_head = q.shape
+        tensor_layout="HND"
+    else:
+        b, _, dim_head = q.shape
+        dim_head //= heads
+        q, k, v = map(
+            lambda t: t.view(b, -1, heads, dim_head),
+            (q, k, v),
+        )
+        tensor_layout="NHD"
+
+    if mask is not None:
+        # add a batch dimension if there isn't already one
+        if mask.ndim == 2:
+            mask = mask.unsqueeze(0)
+        # add a heads dimension if there isn't already one
+        if mask.ndim == 3:
+            mask = mask.unsqueeze(1)
+
+    out = sageattn(q, k, v, attn_mask=mask, is_causal=False, tensor_layout=tensor_layout)
+    if tensor_layout == "HND":
+        if not skip_output_reshape:
+            out = (
+                out.transpose(1, 2).reshape(b, -1, heads * dim_head)
+            )
+    else:
+        if skip_output_reshape:
+            out = out.transpose(1, 2)
+        else:
+            out = out.reshape(b, -1, heads * dim_head)
+    return out
+
+try:
+    @torch.library.custom_op("flash_attention::flash_attn", mutates_args=())
+    def flash_attn_wrapper(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor,
+                    dropout_p: float = 0.0, causal: bool = False) -> torch.Tensor:
+        return flash_attn_func(q, k, v, dropout_p=dropout_p, causal=causal)
+
+
+    @flash_attn_wrapper.register_fake
+    def flash_attn_fake(q, k, v, dropout_p=0.0, causal=False):
+        # Output shape is the same as q
+        return q.new_empty(q.shape)
+except AttributeError as error:
+    FLASH_ATTN_ERROR = error
+
+    def flash_attn_wrapper(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor,
+                    dropout_p: float = 0.0, causal: bool = False) -> torch.Tensor:
+        assert False, f"Could not define flash_attn_wrapper: {FLASH_ATTN_ERROR}"
+
+
+def attention_flash(q, k, v, heads, mask=None, attn_precision=None, skip_reshape=False, skip_output_reshape=False):
+    if skip_reshape:
+        b, _, _, dim_head = q.shape
+    else:
+        b, _, dim_head = q.shape
+        dim_head //= heads
+        q, k, v = map(
+            lambda t: t.view(b, -1, heads, dim_head).transpose(1, 2),
+            (q, k, v),
+        )
+
+    if mask is not None:
+        # add a batch dimension if there isn't already one
+        if mask.ndim == 2:
+            mask = mask.unsqueeze(0)
+        # add a heads dimension if there isn't already one
+        if mask.ndim == 3:
+            mask = mask.unsqueeze(1)
+
+    try:
+        assert mask is None
+        out = flash_attn_wrapper(
+            q.transpose(1, 2),
+            k.transpose(1, 2),
+            v.transpose(1, 2),
+            dropout_p=0.0,
+            causal=False,
+        ).transpose(1, 2)
+    except Exception as e:
+        print(f"Flash Attention failed, using default SDPA: {e}")
+        out = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=mask, dropout_p=0.0, is_causal=False)
+    if not skip_output_reshape:
+        out = (
+            out.transpose(1, 2).reshape(b, -1, heads * dim_head)
+        )
+    return out
 
 def slice_attention_single_head_spatial(q, k, v):
     r1 = torch.zeros_like(k, device=q.device)
@@ -427,7 +539,13 @@ def pytorch_attention_single_head_spatial(q, k, v):
     return out
 
 
-if memory_management.xformers_enabled():
+if memory_management.sage_attention_enabled():
+    print("Using sage attention")
+    attention_function = attention_sage
+elif memory_management.flash_attention_enabled():
+    print("Using Flash Attention")
+    attention_function = attention_flash
+elif memory_management.xformers_enabled():
     print("Using xformers cross attention")
     attention_function = attention_xformers
 elif memory_management.pytorch_attention_enabled():

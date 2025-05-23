@@ -1,9 +1,10 @@
 @echo off
 
-set PYTHON=
-set GIT=
-set VENV_DIR=
-set COMMANDLINE_ARGS=
+set PYTHON=C:/Users/mimic/AppData/Local/Programs/Python/Python310/python.exe
+set GIT=C:/Users/mimic/AppData/Local/Programs/Python/Python310/python.exe
+set A1111_HOME=D:/webui_forge_cu121_torch21/webui
+set VENV_DIR=%A1111_HOME%/venv
+set COMMANDLINE_ARGS= --forge-ref-a1111-home A1111_HOME
 
 @REM Uncomment following code to reference an existing A1111 checkout.
 @REM set A1111_HOME=Your A1111 checkout dir

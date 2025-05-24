@@ -268,6 +268,9 @@ class BF16(__Quant, qtype=GGMLQuantizationType.BF16):
     def dequantize_blocks(cls, blocks: np.ndarray) -> np.ndarray:
         return (blocks.view(np.int16).astype(np.int32) << 16).view(np.float32)
 
+    @classmethod
+    def dequantize_blocks_pytorch(cls, blocks, block_size, type_size, parameter) -> torch.Tensor:
+        return (blocks.view(torch.int16).to(torch.int32) << 16).view(torch.float32)
 
 class Q4_0(__Quant, qtype=GGMLQuantizationType.Q4_0):
     @classmethod

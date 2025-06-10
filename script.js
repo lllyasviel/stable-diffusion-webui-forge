@@ -135,6 +135,17 @@ document.addEventListener("DOMContentLoaded", function() {
     mutationObserver.observe(gradioApp(), {childList: true, subtree: true});
 });
 
+/*
+ * Add a confirmation dialog when leaving the page
+ * Useful to avoid data loss
+*/
+window.addEventListener("beforeunload", function (event) {
+  // Cancel the event
+  event.preventDefault();
+  // Chrome requires returnValue to be set
+  event.returnValue = "";
+});
+
 /**
  * Add keyboard shortcuts:
  * Ctrl+Enter to start/restart a generation

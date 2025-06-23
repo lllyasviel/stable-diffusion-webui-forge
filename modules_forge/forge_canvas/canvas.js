@@ -168,6 +168,7 @@ class ForgeCanvas {
         this.toolbarDragging = false;
         this.toolbarOffset = { x: 0, y: 0 };
         this.undoManager = new UndoManager(20); // Limit to 20 states
+        this.lastMousePos = { x: 0, y: 0 };
 
         // *** CHANGES ***
         // For performance: keep track of drawing context
@@ -800,17 +801,26 @@ class ForgeCanvas {
     }
 
     onPointerMoveImageContainer(e) {
+        const rect = this.elems.imageContainer.getBoundingClientRect();
+        this.lastMousePos.x = e.clientX - rect.left;
+        this.lastMousePos.y = e.clientY - rect.top;
+
         if (this.dragging) {
             const { imageContainer } = this.elems;
             if (!imageContainer) return;
-            const rect = imageContainer.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
+            const { x: mouseX, y: mouseY } = this.lastMousePos;
 
             this.imgX = mouseX - this.offsetX;
             this.imgY = mouseY - this.offsetY;
             this.drawImage();
             this.draggedJustNow = true;
+        } else if (this.elems.scribbleIndicator && this.img && !this.noScribbles && !this.drawing) {
+            const { scribbleIndicator } = this.elems;
+            const { x, y } = this.lastMousePos;
+
+            scribbleIndicator.style.display = 'block';
+            scribbleIndicator.style.left = `${x - scribbleIndicator.offsetWidth / 2}px`;
+            scribbleIndicator.style.top = `${y - scribbleIndicator.offsetHeight / 2}px`;
         }
     }
 
@@ -829,13 +839,23 @@ class ForgeCanvas {
     onWheelImageContainer(e) {
         if (e.ctrlKey) {
             // Adjust brush size with Ctrl+wheel
+            e.preventDefault();
             const brushChange = e.deltaY * -0.01;
             this.scribbleWidth = Math.max(1, this.scribbleWidth + brushChange);
             if (this.elems.scribbleWidth) this.elems.scribbleWidth.value = this.scribbleWidth;
             if (this.elems.scribbleIndicator) {
+                const { imageContainer, scribbleIndicator } = this.elems;
                 const newSize = this.scribbleWidth * 20;
-                this.elems.scribbleIndicator.style.width = `${newSize}px`;
-                this.elems.scribbleIndicator.style.height = `${newSize}px`;
+                scribbleIndicator.style.width = `${newSize}px`;
+                scribbleIndicator.style.height = `${newSize}px`;
+
+                if (imageContainer) {
+                    const rect = imageContainer.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    scribbleIndicator.style.left = `${x - newSize / 2}px`;
+                    scribbleIndicator.style.top = `${y - newSize / 2}px`;
+                }
             }
             return;
         }
@@ -1250,6 +1270,11 @@ class ForgeCanvas {
             const size = newWidth * 20;
             indicator.style.width = `${size}px`;
             indicator.style.height = `${size}px`;
+
+            // Update position based on last known mouse coordinates
+            const { x, y } = this.lastMousePos;
+            indicator.style.left = `${x - size / 2}px`;
+            indicator.style.top = `${y - size / 2}px`;
         }
     }
 }

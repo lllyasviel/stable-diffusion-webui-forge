@@ -150,7 +150,16 @@ def run_pip(command, desc=None, live=default_command_live):
         return
 
     index_url_line = f' --index-url {index_url}' if index_url != '' else ''
-    return run(f'"{python}" -m pip {command} --prefer-binary{index_url_line}', desc=f"Installing {desc}", errdesc=f"Couldn't install {desc}", live=live)
+    uv_available = shutil.which('uv') is not None
+    pip_cmd = f'"{python}" -m pip {command} --prefer-binary{index_url_line}'
+    uv_cmd = f'uv pip {command}{index_url_line}'  # Removed --prefer-binary for uv
+
+    if uv_available:
+        try:
+            return run(uv_cmd, desc=f"Installing {desc} (uv)", errdesc=f"Couldn't install {desc} with uv", live=live)
+        except Exception as e:
+            print(f"uv failed, falling back to pip: {e}")
+    return run(pip_cmd, desc=f"Installing {desc}", errdesc=f"Couldn't install {desc}", live=live)
 
 
 def check_run_python(code: str) -> bool:

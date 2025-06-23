@@ -52,7 +52,7 @@ DEBUG_MODE = False
 canvas_html = open(os.path.join(canvas_js_root_path, 'canvas.html'), encoding='utf-8').read()
 canvas_head = ''
 canvas_head += web_css('canvas.css')
-canvas_head += web_js('canvas.min.js')
+canvas_head += web_js('canvas.js')
 
 
 def image_to_base64(image_array, numpy=True):

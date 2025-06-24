@@ -1348,3 +1348,95 @@ def has_flash_attention_2():
             return False
     except:
         return False
+
+
+def report_memory_management_details():
+    """Report detailed memory management initialization for profiling purposes"""
+    details = {}
+    
+    # Device information
+    details['device_type'] = cpu_state.name
+    details['vram_state'] = vram_state.name
+    details['total_vram_mb'] = total_vram
+    details['total_ram_mb'] = total_ram
+    
+    # Capabilities
+    details['directml_enabled'] = directml_enabled
+    details['xpu_available'] = xpu_available
+    details['is_nvidia'] = is_nvidia()
+    details['is_intel_xpu'] = is_intel_xpu()
+    
+    # Attention mechanisms
+    details['xformers_available'] = XFORMERS_IS_AVAILABLE
+    details['xformers_version'] = XFORMERS_VERSION
+    details['pytorch_attention_enabled'] = ENABLE_PYTORCH_ATTENTION
+    
+    # Precision support
+    details['force_fp32'] = FORCE_FP32
+    details['force_fp16'] = FORCE_FP16
+    
+    # Memory settings
+    details['always_vram_offload'] = ALWAYS_VRAM_OFFLOAD
+    details['pin_shared_memory'] = PIN_SHARED_MEMORY
+    details['vae_dtypes'] = [str(dt) for dt in VAE_DTYPES]
+    
+    try:
+        device = get_torch_device()
+        details['torch_device'] = str(device)
+        details['torch_device_name'] = get_torch_device_name(device)
+        
+        if device.type == 'cuda' and torch.cuda.is_available():
+            props = torch.cuda.get_device_properties(device)
+            details['cuda_capability'] = f"{props.major}.{props.minor}"
+            details['cuda_multiprocessors'] = props.multi_processor_count
+            details['cuda_memory_gb'] = props.total_memory / (1024**3)
+            
+            # Check for specific capabilities
+            details['bf16_supported'] = torch.cuda.is_bf16_supported()
+            try:
+                details['flash_attention_supported'] = torch.backends.cuda.flash_sdp_enabled()
+                details['memory_efficient_attention'] = torch.backends.cuda.mem_efficient_sdp_enabled()
+                details['math_sdp_enabled'] = torch.backends.cuda.math_sdp_enabled()
+            except:
+                pass
+                
+    except Exception as e:
+        details['device_error'] = str(e)
+    
+    return details
+
+
+def print_memory_management_summary():
+    """Print a formatted summary of memory management initialization"""
+    details = report_memory_management_details()
+    
+    print("=== Memory Management Summary ===")
+    print(f"Device: {details.get('torch_device_name', 'Unknown')}")
+    print(f"VRAM State: {details['vram_state']} ({details['total_vram_mb']:.0f} MB)")
+    print(f"System RAM: {details['total_ram_mb']:.0f} MB")
+    
+    if details.get('cuda_capability'):
+        print(f"CUDA Capability: {details['cuda_capability']}")
+        print(f"Multiprocessors: {details['cuda_multiprocessors']}")
+    
+    # Attention mechanisms
+    attention_info = []
+    if details['pytorch_attention_enabled']:
+        attention_info.append("PyTorch")
+    if details['xformers_available']:
+        attention_info.append(f"xFormers {details['xformers_version']}")
+    print(f"Attention: {', '.join(attention_info) if attention_info else 'Default'}")
+    
+    # Precision support
+    precision_info = []
+    if details['force_fp32']:
+        precision_info.append("Force FP32")
+    elif details['force_fp16']:
+        precision_info.append("Force FP16")
+    else:
+        if details.get('bf16_supported'):
+            precision_info.append("BF16")
+        precision_info.append("FP16")
+    print(f"Precision: {', '.join(precision_info)}")
+    
+    print("=================================")

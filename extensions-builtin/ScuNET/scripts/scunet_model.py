@@ -1,9 +1,7 @@
 import sys
 
-import PIL.Image
-
 import modules.upscaler
-from modules import devices, errors, modelloader, script_callbacks, shared, upscaler_utils
+from modules import devices, errors, script_callbacks, shared, upscaler_utils
 
 
 class UpscalerScuNET(modules.upscaler.Upscaler):
@@ -15,6 +13,14 @@ class UpscalerScuNET(modules.upscaler.Upscaler):
         self.model_url2 = "https://github.com/cszn/KAIR/releases/download/v1.0/scunet_color_real_psnr.pth"
         self.user_path = dirname
         super().__init__()
+        self._scalers_initialized = False
+        self.scalers = []
+
+    def _init_scalers(self):
+        if self._scalers_initialized:
+            return
+        # Defer modelloader import in case it's heavy
+        from modules import modelloader
         model_paths = self.find_models(ext_filter=[".pth"])
         scalers = []
         add_model2 = True
@@ -34,31 +40,45 @@ class UpscalerScuNET(modules.upscaler.Upscaler):
             scaler_data2 = modules.upscaler.UpscalerData(self.model_name2, self.model_url2, self)
             scalers.append(scaler_data2)
         self.scalers = scalers
+        self._scalers_initialized = True
 
-    def do_upscale(self, img: PIL.Image.Image, selected_file):
+    def get_scalers(self):
+        self._init_scalers()
+        return self.scalers
+
+    def do_upscale(self, img, selected_file):
+        import PIL.Image
+        self._init_scalers()
         devices.torch_gc()
         try:
-            model = self.load_model(selected_file)
+            model = self._load_scunet_model(selected_file)
         except Exception as e:
             print(f"ScuNET: Unable to load model from {selected_file}: {e}", file=sys.stderr)
             return img
 
+        tile_size = shared.opts.SCUNET_tile if shared.opts.SCUNET_tile is not None else 256
+        tile_overlap = shared.opts.SCUNET_tile_overlap if shared.opts.SCUNET_tile_overlap is not None else 8
+
         img = upscaler_utils.upscale_2(
             img,
             model,
-            tile_size=shared.opts.SCUNET_tile,
-            tile_overlap=shared.opts.SCUNET_tile_overlap,
+            tile_size=tile_size,
+            tile_overlap=tile_overlap,
             scale=1,  # ScuNET is a denoising model, not an upscaler
             desc='ScuNET',
         )
         devices.torch_gc()
         return img
 
-    def load_model(self, path: str):
+    def _load_scunet_model(self, path: str):
+        from modules import modelloader
         device = devices.get_device_for('scunet')
+        # Always use a valid string for model_dir
+        model_dir = getattr(self, 'model_download_path', None)
+        if not isinstance(model_dir, str) or not model_dir:
+            model_dir = self.user_path if isinstance(self.user_path, str) else "."
         if path.startswith("http"):
-            # TODO: this doesn't use `path` at all?
-            filename = modelloader.load_file_from_url(self.model_url, model_dir=self.model_download_path, file_name=f"{self.name}.pth")
+            filename = modelloader.load_file_from_url(self.model_url, model_dir=model_dir, file_name=f"{self.name}.pth")
         else:
             filename = path
         return modelloader.load_spandrel_model(filename, device=device, expected_architecture='SCUNet')

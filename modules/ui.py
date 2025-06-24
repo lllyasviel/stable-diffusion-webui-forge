@@ -269,18 +269,27 @@ def create_override_settings_dropdown(tabname, row):
 
 
 def create_ui():
-    import modules.img2img
-    import modules.txt2img
+    from modules import timer
+    startup_timer = timer.startup_timer
 
-    reload_javascript()
+    with startup_timer.subcategory("create ui"):
+        import modules.img2img
+        import modules.txt2img
+        startup_timer.record("import ui modules")
 
-    parameters_copypaste.reset()
+        reload_javascript()
+        startup_timer.record("reload javascript")
 
-    settings = ui_settings.UiSettings()
-    settings.register_settings()
+        parameters_copypaste.reset()
+        startup_timer.record("reset parameters copypaste")
 
-    scripts.scripts_current = scripts.scripts_txt2img
-    scripts.scripts_txt2img.initialize_scripts(is_img2img=False)
+        settings = ui_settings.UiSettings()
+        settings.register_settings()
+        startup_timer.record("register settings")
+
+        scripts.scripts_current = scripts.scripts_txt2img
+        scripts.scripts_txt2img.initialize_scripts(is_img2img=False)
+        startup_timer.record("initialize txt2img scripts")
 
     with gr.Blocks(analytics_enabled=False, head=canvas_head) as txt2img_interface:
         toprow = ui_toprow.Toprow(is_img2img=False, is_compact=shared.opts.compact_prompt_box)
@@ -1007,20 +1016,24 @@ def create_ui():
         footer = shared.html("footer.html")
         footer = footer.format(versions=versions_html(), api_docs="/docs" if shared.cmd_opts.api else "https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API")
         gr.HTML(footer, elem_id="footer")
-
         settings.add_functionality(demo)
+        startup_timer.record("add settings functionality")
 
         update_image_cfg_scale_visibility = lambda: gr.update(visible=False)
         settings.text_settings.change(fn=update_image_cfg_scale_visibility, inputs=[], outputs=[image_cfg_scale])
         demo.load(fn=update_image_cfg_scale_visibility, inputs=[], outputs=[image_cfg_scale])
+        startup_timer.record("configure image cfg scale")
 
         modelmerger_ui.setup_ui(dummy_component=dummy_component, sd_model_checkpoint_component=main_entry.ui_checkpoint)
+        startup_timer.record("setup modelmerger ui")
 
         main_entry.forge_main_entry()
+        startup_timer.record("forge main entry")
 
     if ui_settings_from_file != loadsave.ui_settings:
         loadsave.dump_defaults()
     demo.ui_loadsave = loadsave
+    startup_timer.record("finalize ui setup")
 
     return demo
 

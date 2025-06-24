@@ -15,6 +15,8 @@ from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from secrets import compare_digest
+from typing import Any
+import threading
 
 import modules.shared as shared
 from modules import sd_samplers, deepbooru, images, scripts, ui, postprocessing, errors, restart, shared_items, script_callbacks, infotext_utils, sd_models, sd_schedulers
@@ -197,7 +199,7 @@ def api_middleware(app: FastAPI):
 
 
 class Api:
-    def __init__(self, app: FastAPI, queue_lock: Lock):
+    def __init__(self, app: FastAPI, queue_lock: Any):
         if shared.cmd_opts.api_auth:
             self.credentials = {}
             for auth in shared.cmd_opts.api_auth.split(","):

@@ -77,29 +77,36 @@ def friendly_name(file: str):
 
 
 def load_upscalers():
-    # We can only do this 'magic' method to dynamically load upscalers if they are referenced,
-    # so we'll try to import any _model.py files before looking in __subclasses__
-    modules_dir = os.path.join(shared.script_path, "modules")
-    for file in os.listdir(modules_dir):
-        if "_model.py" in file:
-            model_name = file.replace("_model.py", "")
-            full_model = f"modules.{model_name}_model"
-            try:
-                importlib.import_module(full_model)
-            except Exception:
-                pass
+    # Import timer for profiling
+    from modules import timer
+    startup_timer = timer.startup_timer
+    
+    with startup_timer.subcategory("upscaler loading"):
+        # We can only do this 'magic' method to dynamically load upscalers if they are referenced,
+        # so we'll try to import any _model.py files before looking in __subclasses__
+        modules_dir = os.path.join(shared.script_path, "modules")
+        for file in os.listdir(modules_dir):
+            if "_model.py" in file:
+                model_name = file.replace("_model.py", "")
+                full_model = f"modules.{model_name}_model"
+                try:
+                    importlib.import_module(full_model)
+                except Exception:
+                    pass
+        startup_timer.record("import upscaler modules")
 
-    data = []
-    commandline_options = vars(shared.cmd_opts)
+        data = []
+        commandline_options = vars(shared.cmd_opts)
 
-    # some of upscaler classes will not go away after reloading their modules, and we'll end
-    # up with two copies of those classes. The newest copy will always be the last in the list,
-    # so we go from end to beginning and ignore duplicates
-    used_classes = {}
-    for cls in reversed(Upscaler.__subclasses__()):
-        classname = str(cls)
-        if classname not in used_classes:
-            used_classes[classname] = cls
+        # some of upscaler classes will not go away after reloading their modules, and we'll end
+        # up with two copies of those classes. The newest copy will always be the last in the list,
+        # so we go from end to beginning and ignore duplicates
+        used_classes = {}
+        for cls in reversed(Upscaler.__subclasses__()):
+            classname = str(cls)
+            if classname not in used_classes:
+                used_classes[classname] = cls
+        startup_timer.record("collect upscaler classes")
 
     for cls in reversed(used_classes.values()):
         name = cls.__name__

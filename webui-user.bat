@@ -3,7 +3,7 @@
 set PYTHON=
 set GIT=
 set VENV_DIR=-
-set COMMANDLINE_ARGS=
+set COMMANDLINE_ARGS=--cuda-stream --cuda-malloc
 
 REM Detect CUDA version using nvcc and set UV_TORCH_BACKEND accordingly
 where nvcc >nul 2>nul

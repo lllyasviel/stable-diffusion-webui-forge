@@ -71,40 +71,50 @@ def get_filename(filepath):
 
 
 def refresh_vae_list():
-    vae_dict.clear()
+    # Import timer for profiling
+    from modules import timer
+    startup_timer = timer.startup_timer
+    
+    with startup_timer.subcategory("VAE scanning"):
+        vae_dict.clear()
+        startup_timer.record("clear VAE list")
 
-    paths = [
-        os.path.join(sd_models.model_path, '**/*.vae.ckpt'),
-        os.path.join(sd_models.model_path, '**/*.vae.pt'),
-        os.path.join(sd_models.model_path, '**/*.vae.safetensors'),
-        os.path.join(vae_path, '**/*.ckpt'),
-        os.path.join(vae_path, '**/*.pt'),
-        os.path.join(vae_path, '**/*.safetensors'),
-    ]
-
-    if shared.cmd_opts.ckpt_dir is not None and os.path.isdir(shared.cmd_opts.ckpt_dir):
-        paths += [
-            os.path.join(shared.cmd_opts.ckpt_dir, '**/*.vae.ckpt'),
-            os.path.join(shared.cmd_opts.ckpt_dir, '**/*.vae.pt'),
-            os.path.join(shared.cmd_opts.ckpt_dir, '**/*.vae.safetensors'),
+        paths = [
+            os.path.join(sd_models.model_path, '**/*.vae.ckpt'),
+            os.path.join(sd_models.model_path, '**/*.vae.pt'),
+            os.path.join(sd_models.model_path, '**/*.vae.safetensors'),
+            os.path.join(vae_path, '**/*.ckpt'),
+            os.path.join(vae_path, '**/*.pt'),
+            os.path.join(vae_path, '**/*.safetensors'),
         ]
+        startup_timer.record("build VAE search paths")
 
-    if shared.cmd_opts.vae_dir is not None and os.path.isdir(shared.cmd_opts.vae_dir):
-        paths += [
-            os.path.join(shared.cmd_opts.vae_dir, '**/*.ckpt'),
+        if shared.cmd_opts.ckpt_dir is not None and os.path.isdir(shared.cmd_opts.ckpt_dir):
+            paths += [
+                os.path.join(shared.cmd_opts.ckpt_dir, '**/*.vae.ckpt'),
+                os.path.join(shared.cmd_opts.ckpt_dir, '**/*.vae.pt'),
+                os.path.join(shared.cmd_opts.ckpt_dir, '**/*.vae.safetensors'),
+            ]
+
+        if shared.cmd_opts.vae_dir is not None and os.path.isdir(shared.cmd_opts.vae_dir):
+            paths += [            os.path.join(shared.cmd_opts.vae_dir, '**/*.ckpt'),
             os.path.join(shared.cmd_opts.vae_dir, '**/*.pt'),
             os.path.join(shared.cmd_opts.vae_dir, '**/*.safetensors'),
         ]
+        startup_timer.record("add custom VAE directories")
 
-    candidates = []
-    for path in paths:
-        candidates += glob.iglob(path, recursive=True)
+        candidates = []
+        for path in paths:
+            candidates += glob.iglob(path, recursive=True)
+        startup_timer.record("scan VAE files")
 
-    for filepath in candidates:
-        name = get_filename(filepath)
-        vae_dict[name] = filepath
+        for filepath in candidates:
+            name = get_filename(filepath)
+            vae_dict[name] = filepath
+        startup_timer.record("process VAE files")
 
-    vae_dict.update(dict(sorted(vae_dict.items(), key=lambda item: shared.natural_sort_key(item[0]))))
+        vae_dict.update(dict(sorted(vae_dict.items(), key=lambda item: shared.natural_sort_key(item[0]))))
+        startup_timer.record("sort VAE list")
 
 
 def find_vae_near_checkpoint(checkpoint_file):

@@ -163,24 +163,35 @@ def checkpoint_tiles(use_short=False):
 
 
 def list_models():
-    checkpoints_list.clear()
-    checkpoint_aliases.clear()
+    # Import timer for profiling
+    from modules import timer
+    startup_timer = timer.startup_timer
+    
+    with startup_timer.subcategory("model scanning"):
+        checkpoints_list.clear()
+        checkpoint_aliases.clear()
+        startup_timer.record("clear model lists")
 
-    cmd_ckpt = shared.cmd_opts.ckpt
+        cmd_ckpt = shared.cmd_opts.ckpt
 
-    model_list = modelloader.load_models(model_path=model_path, model_url=None, command_path=shared.cmd_opts.ckpt_dir, ext_filter=[".ckpt", ".safetensors", ".gguf"], download_name=None, ext_blacklist=[".vae.ckpt", ".vae.safetensors"])
+        model_list = modelloader.load_models(model_path=model_path, model_url=None, command_path=shared.cmd_opts.ckpt_dir, ext_filter=[".ckpt", ".safetensors", ".gguf"], download_name=None, ext_blacklist=[".vae.ckpt", ".vae.safetensors"])
+        startup_timer.record("scan model directories")
 
-    if os.path.exists(cmd_ckpt):
-        checkpoint_info = CheckpointInfo(cmd_ckpt)
-        checkpoint_info.register()
+        if os.path.exists(cmd_ckpt):
+            checkpoint_info = CheckpointInfo(cmd_ckpt)
+            checkpoint_info.register()
 
-        shared.opts.data['sd_model_checkpoint'] = checkpoint_info.title
-    elif cmd_ckpt is not None and cmd_ckpt != shared.default_sd_model_file:
-        print(f"Checkpoint in --ckpt argument not found (Possible it was moved to {model_path}: {cmd_ckpt}", file=sys.stderr)
+            shared.opts.data['sd_model_checkpoint'] = checkpoint_info.title
+        elif cmd_ckpt is not None and cmd_ckpt != shared.default_sd_model_file:
+            print(f"Checkpoint in --ckpt argument not found (Possible it was moved to {model_path}: {cmd_ckpt}", file=sys.stderr)
+        
+        startup_timer.record("process command line checkpoint")
 
-    for filename in model_list:
-        checkpoint_info = CheckpointInfo(filename)
-        checkpoint_info.register()
+        for filename in model_list:
+            checkpoint_info = CheckpointInfo(filename)
+            checkpoint_info.register()
+        
+        startup_timer.record("register model checkpoints")
 
 
 re_strip_checksum = re.compile(r"\s*\[[^]]+]\s*$")

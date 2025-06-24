@@ -1,4 +1,3 @@
-
 function createRow(table, cellName, items) {
     var tr = document.createElement('tr');
     var res = [];
@@ -88,7 +87,9 @@ function createVisualizationTable(data, cutoff = 0, sort = "") {
             for (var i = 0; i < maxLength; i++) {
                 cells.push(x.parts[i]);
             }
-            cells.push(cutoff === 0 ? x.value : x.value.toFixed(3));
+            // Show value in seconds and ms in tooltip
+            var valueCell = cutoff === 0 ? x.value : x.value.toFixed(3);
+            cells.push(valueCell);
             var cols = createRow(table, 'td', cells);
             for (i = 0; i < level; i++) {
                 cols[i].className = 'muted';
@@ -98,6 +99,11 @@ function createVisualizationTable(data, cutoff = 0, sort = "") {
             if (!visible) {
                 tr.classList.add("hidden");
             }
+
+            // Tooltip: show exact ms and key path
+            var tooltip = x.key + "\n" + x.value.toFixed(6) + " seconds (" + (x.value * 1000).toFixed(2) + " ms)";
+            cols[maxLength].title = tooltip;
+            tr.title = tooltip;
 
             if (cutoff === 0 || x.value >= cutoff) {
                 childrenRows.push(tr);

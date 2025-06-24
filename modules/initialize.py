@@ -8,26 +8,28 @@ from modules.timer import startup_timer
 
 
 def imports():
-    logging.getLogger("torch.distributed.nn").setLevel(logging.ERROR)  # sshh...
-    logging.getLogger("xformers").addFilter(lambda record: 'A matching Triton is not available' not in record.getMessage())
+    with startup_timer.subcategory("import torch"):
+        logging.getLogger("torch.distributed.nn").setLevel(logging.ERROR)  # sshh...
+        logging.getLogger("xformers").addFilter(lambda record: 'A matching Triton is not available' not in record.getMessage())
 
-    import torch  # noqa: F401
-    startup_timer.record("import torch")
-    import pytorch_lightning  # noqa: F401
-    startup_timer.record("import torch")
-    warnings.filterwarnings(action="ignore", category=DeprecationWarning, module="pytorch_lightning")
-    warnings.filterwarnings(action="ignore", category=UserWarning, module="torchvision")
+        import torch  # noqa: F401
+        startup_timer.record("torch core import")
+        import pytorch_lightning  # noqa: F401
+        startup_timer.record("pytorch_lightning import")
+        warnings.filterwarnings(action="ignore", category=DeprecationWarning, module="pytorch_lightning")
+        warnings.filterwarnings(action="ignore", category=UserWarning, module="torchvision")
+    
+    with startup_timer.subcategory("other imports"):
+        os.environ.setdefault('GRADIO_ANALYTICS_ENABLED', 'False')
+        import gradio  # noqa: F401
+        startup_timer.record("gradio import")
 
-    os.environ.setdefault('GRADIO_ANALYTICS_ENABLED', 'False')
-    import gradio  # noqa: F401
-    startup_timer.record("import gradio")
+        from modules import paths, timer, import_hook, errors  # noqa: F401
+        startup_timer.record("modules core imports")
 
-    from modules import paths, timer, import_hook, errors  # noqa: F401
-    startup_timer.record("setup paths")
-
-    from modules import shared_init
-    shared_init.initialize()
-    startup_timer.record("initialize shared")
+        from modules import shared_init
+        shared_init.initialize()
+        startup_timer.record("shared initialization")
 
     from modules import processing, gradio_extensions, ui  # noqa: F401
     startup_timer.record("other imports")
@@ -125,12 +127,16 @@ def initialize_rest(*, reload_script_modules=False):
     startup_timer.record("reload hypernetworks")
 
     from modules import ui_extra_networks
-    ui_extra_networks.initialize()
-    ui_extra_networks.register_default_pages()
+    with startup_timer.subcategory("initialize extra networks"):
+        ui_extra_networks.initialize()
+        startup_timer.record("ui extra networks initialize")
+        ui_extra_networks.register_default_pages()
+        startup_timer.record("register default pages")
 
-    from modules import extra_networks
-    extra_networks.initialize()
-    extra_networks.register_default_extra_networks()
-    startup_timer.record("initialize extra networks")
+        from modules import extra_networks
+        extra_networks.initialize()
+        startup_timer.record("extra networks initialize")
+        extra_networks.register_default_extra_networks()
+        startup_timer.record("register default extra networks")
 
     return

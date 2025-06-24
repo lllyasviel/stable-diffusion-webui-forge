@@ -1,7 +1,50 @@
 import torch
+
+# LAZY IMPORT HELPERS
+
+def lazy_import_torch():
+    global torch
+    import torch
+    return torch
+
+def lazy_import_backend_misc():
+    global image_resize
+    from backend.misc import image_resize
+    return image_resize
+
+def lazy_import_backend_memory_management():
+    global memory_management
+    from backend import memory_management
+    return memory_management
+
+def lazy_import_backend_state_dict():
+    global state_dict
+    from backend import state_dict
+    return state_dict
+
+def lazy_import_backend_utils():
+    global utils
+    from backend import utils
+    return utils
+
+def lazy_import_backend_nn_cnets():
+    global cldm, t2i_adapter
+    from backend.nn.cnets import cldm, t2i_adapter
+    return cldm, t2i_adapter
+
+def lazy_import_backend_patcher_base():
+    global ModelPatcher
+    from backend.patcher.base import ModelPatcher
+    return ModelPatcher
+
+def lazy_import_backend_operations():
+    global using_forge_operations, ForgeOperations, main_stream_worker, weights_manual_cast
+    from backend.operations import using_forge_operations, ForgeOperations, main_stream_worker, weights_manual_cast
+    return using_forge_operations, ForgeOperations, main_stream_worker, weights_manual_cast
+
+
 import math
 
-from backend.misc import image_resize
 from backend import memory_management, state_dict, utils
 from backend.nn.cnets import cldm, t2i_adapter
 from backend.patcher.base import ModelPatcher
@@ -21,6 +64,8 @@ def apply_controlnet_advanced(
         advanced_sigma_weighting=None,
         advanced_mask_weighting=None
 ):
+    torch = lazy_import_torch()
+
     """
 
     # positive_advanced_weighting or negative_advanced_weighting
@@ -84,6 +129,8 @@ def apply_controlnet_advanced(
 
 
 def compute_controlnet_weighting(control, cnet):
+    torch = lazy_import_torch()
+
     positive_advanced_weighting = getattr(cnet, 'positive_advanced_weighting', None)
     negative_advanced_weighting = getattr(cnet, 'negative_advanced_weighting', None)
     advanced_frame_weighting = getattr(cnet, 'advanced_frame_weighting', None)
@@ -151,6 +198,8 @@ def compute_controlnet_weighting(control, cnet):
 
 
 def broadcast_image_to(tensor, target_batch_size, batched_number):
+    torch = lazy_import_torch()
+
     current_batch_size = tensor.shape[0]
     if current_batch_size == 1:
         return tensor
@@ -188,6 +237,8 @@ class ControlBase:
         self.previous_controlnet = None
 
     def set_cond_hint(self, cond_hint, strength=1.0, timestep_percent_range=(0.0, 1.0)):
+        torch = lazy_import_torch()
+
         self.cond_hint_original = cond_hint
         self.strength = strength
         self.timestep_percent_range = timestep_percent_range
@@ -223,11 +274,15 @@ class ControlBase:
         c.global_average_pooling = self.global_average_pooling
 
     def inference_memory_requirements(self, dtype):
+        memory_management = lazy_import_backend_memory_management()
+
         if self.previous_controlnet is not None:
             return self.previous_controlnet.inference_memory_requirements(dtype)
         return 0
 
     def control_merge(self, control_input, control_output, control_prev, output_dtype):
+        torch = lazy_import_torch()
+
         out = {'input': [], 'middle': [], 'output': []}
 
         if control_input is not None:
@@ -281,6 +336,9 @@ class ControlBase:
 
 class ControlNet(ControlBase):
     def __init__(self, control_model, global_average_pooling=False, device=None, load_device=None, manual_cast_dtype=None):
+        ModelPatcher = lazy_import_backend_patcher_base()
+        memory_management = lazy_import_backend_memory_management()
+
         super().__init__(device)
         self.control_model = control_model
         self.load_device = load_device
@@ -290,6 +348,8 @@ class ControlNet(ControlBase):
         self.manual_cast_dtype = manual_cast_dtype
 
     def get_control(self, x_noisy, t, cond, batched_number):
+        torch = lazy_import_torch()
+
         to = self.transformer_options
 
         for conditioning_modifier in to.get('controlnet_conditioning_modifiers', []):
@@ -360,6 +420,8 @@ class ControlNet(ControlBase):
 class ControlLoraOps(ForgeOperations):
     class Linear(torch.nn.Module):
         def __init__(self, in_features: int, out_features: int, bias: bool = True, device=None, dtype=None) -> None:
+            torch = lazy_import_torch()
+
             super().__init__()
             self.in_features = in_features
             self.out_features = out_features
@@ -391,6 +453,8 @@ class ControlLoraOps(ForgeOperations):
                 device=None,
                 dtype=None
         ):
+            torch = lazy_import_torch()
+
             super().__init__()
             self.in_channels = in_channels
             self.out_channels = out_channels
@@ -419,6 +483,8 @@ class ControlLoraOps(ForgeOperations):
 
 class ControlLora(ControlNet):
     def __init__(self, control_weights, global_average_pooling=False, device=None):
+        ControlBase = lazy_import_backend_patcher_base()
+
         ControlBase.__init__(self, device)
         self.control_weights = control_weights
         self.global_average_pooling = global_average_pooling
@@ -476,6 +542,8 @@ class ControlLora(ControlNet):
 
 class T2IAdapter(ControlBase):
     def __init__(self, t2i_model, channels_in, device=None):
+        torch = lazy_import_torch()
+
         super().__init__(device)
         self.t2i_model = t2i_model
         self.channels_in = channels_in
@@ -488,6 +556,8 @@ class T2IAdapter(ControlBase):
         return width, height
 
     def get_control(self, x_noisy, t, cond, batched_number):
+        torch = lazy_import_torch()
+
         to = self.transformer_options
 
         for conditioning_modifier in to.get('controlnet_conditioning_modifiers', []):

@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+# Import the global Pydantic configuration first
+import pydantic_global_config
+
 import os
 import time
 
 from fastapi import Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, ConfigDict, Field
 
 from modules import timer
 from modules import initialize_util
@@ -27,15 +31,27 @@ initialize.check_versions()
 initialize.initialize()
 
 
+class ErrorResponse(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    
+    error: str = Field(description="Error type name")
+    detail: str | None = Field(default=None, description="Error details")
+    body: str | None = Field(default=None, description="Error body")
+    message: str = Field(description="Error message")
+
+
 def _handle_exception(request: Request, e: Exception):
     error_information = vars(e)
-    content = {
-        "error": type(e).__name__,
-        "detail": error_information.get("detail", ""),
-        "body": error_information.get("body", ""),
-        "message": str(e),
-    }
-    return JSONResponse(status_code=int(error_information.get("status_code", 500)), content=jsonable_encoder(content))
+    content = ErrorResponse(
+        error=type(e).__name__,
+        detail=error_information.get("detail", ""),
+        body=error_information.get("body", ""),
+        message=str(e),
+    )
+    return JSONResponse(
+        status_code=int(error_information.get("status_code", 500)), 
+        content=jsonable_encoder(content.model_dump())
+    )
 
 
 def create_api(app):
@@ -49,8 +65,10 @@ def create_api(app):
 def api_only_worker():
     from fastapi import FastAPI
     from modules.shared_cmd_options import cmd_opts
+    from spaces import SessionMiddleware
 
-    app = FastAPI(exception_handlers={Exception: _handle_exception})
+    app = FastAPI()
+    app.add_middleware(SessionMiddleware)
     initialize_util.setup_middleware(app)
     api = create_api(app)
 

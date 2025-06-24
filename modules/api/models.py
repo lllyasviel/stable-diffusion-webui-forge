@@ -13,8 +13,6 @@ API_NOT_ALLOWED = [
     "outpath_samples",
     "outpath_grids",
     "sampler_index",
-    # "do_not_save_samples",
-    # "do_not_save_grid",
     "extra_generation_params",
     "overlay_images",
     "do_not_reload_embeddings",
@@ -26,12 +24,23 @@ API_NOT_ALLOWED = [
 
 class ModelDef(BaseModel):
     """Assistance Class for Pydantic Dynamic Model Generation"""
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     field: str
     field_alias: str
     field_type: Any
     field_value: Any
     field_exclude: bool = False
+
+
+def make_pydantic_base_model():
+    class BaseModelWithConfig(BaseModel):
+        model_config = ConfigDict(
+            populate_by_name=True,
+            frozen=False,
+            arbitrary_types_allowed=True,
+        )
+    return BaseModelWithConfig
 
 
 class PydanticModelGenerator:
@@ -92,7 +101,11 @@ class PydanticModelGenerator:
         fields = {
             d.field: (d.field_type, Field(default=d.field_value, alias=d.field_alias, exclude=d.field_exclude)) for d in self._model_def
         }
-        DynamicModel = create_model(self._model_name, __config__=ConfigDict(populate_by_name=True, frozen=False), **fields)
+        DynamicModel = create_model(
+            self._model_name,
+            __base__=make_pydantic_base_model(),
+            **fields
+        )
         return DynamicModel
 
 StableDiffusionTxt2ImgProcessingAPI = PydanticModelGenerator(

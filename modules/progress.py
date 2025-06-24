@@ -4,7 +4,8 @@ import io
 import time
 
 import gradio as gr
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
+from typing import List
 
 from modules.shared import opts
 
@@ -12,7 +13,6 @@ import modules.shared as shared
 from collections import OrderedDict
 import string
 import random
-from typing import List
 
 current_task = None
 pending_tasks = OrderedDict()
@@ -54,16 +54,21 @@ def add_task_to_queue(id_job):
     pending_tasks[id_job] = time.time()
 
 class PendingTasksResponse(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    
     size: int = Field(title="Pending task size")
     tasks: List[str] = Field(title="Pending task ids")
 
 class ProgressRequest(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    
     id_task: str = Field(default=None, title="Task ID", description="id of the task to get progress for")
-    id_live_preview: int = Field(default=-1, title="Live preview image ID", description="id of last received last preview image")
+    id_live_preview: int = Field(default=-1, title="Live preview image ID", description="id of last received last preview image") 
     live_preview: bool = Field(default=True, title="Include live preview", description="boolean flag indicating whether to include the live preview image")
 
-
 class ProgressResponse(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    
     active: bool = Field(title="Whether the task is being worked on right now")
     queued: bool = Field(title="Whether the task is in queue")
     completed: bool = Field(title="Whether the task has already finished")
@@ -95,7 +100,7 @@ def progressapi(req: ProgressRequest):
         if queued:
             sorted_queued = sorted(pending_tasks.keys(), key=lambda x: pending_tasks[x])
             queue_index = sorted_queued.index(req.id_task)
-            textinfo = "In queue: {}/{}".format(queue_index + 1, len(sorted_queued))
+            textinfo = f"In queue: {queue_index + 1}/{len(sorted_queued)}"
         return ProgressResponse(active=active, queued=queued, completed=completed, id_live_preview=-1, textinfo=textinfo)
 
     progress = 0
@@ -110,7 +115,8 @@ def progressapi(req: ProgressRequest):
 
     progress = min(progress, 1)
 
-    elapsed_since_start = time.time() - shared.state.time_start
+    time_start = shared.state.time_start or time.time()  # Use current time if time_start is None
+    elapsed_since_start = time.time() - time_start
     predicted_duration = elapsed_since_start / progress if progress > 0 else None
     eta = predicted_duration - elapsed_since_start if predicted_duration is not None else None
 

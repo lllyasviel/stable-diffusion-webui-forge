@@ -1,6 +1,7 @@
 import torch
 
-from backend import memory_management, attention
+from backend import memory_management
+from backend.attention import attention_pytorch, attention_xformers, get_attn_precision, attention_function
 from backend.modules.k_prediction import k_prediction_from_diffusers_scheduler
 
 
@@ -48,12 +49,12 @@ class KModel(torch.nn.Module):
     def memory_required(self, input_shape):
         area = input_shape[0] * input_shape[2] * input_shape[3]
         dtype_size = memory_management.dtype_size(self.computation_dtype)
-
-        if attention.attention_function in [attention.attention_pytorch, attention.attention_xformers]:
+        
+        if attention_function in [attention_pytorch, attention_xformers]:
             scaler = 1.28
         else:
             scaler = 1.65
-            if attention.get_attn_precision() == torch.float32:
+            if get_attn_precision() == torch.float32:
                 dtype_size = 4
 
         return scaler * area * dtype_size * 16384

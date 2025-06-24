@@ -1055,9 +1055,11 @@ checkpoint: <a id="sd_checkpoint_hash">N/A</a>
 
 
 def setup_ui_api(app):
-    from pydantic import BaseModel, Field
+    from pydantic import BaseModel, Field, ConfigDict
 
     class QuicksettingsHint(BaseModel):
+        model_config = ConfigDict(arbitrary_types_allowed=True)
+        
         name: str = Field(title="Name of the quicksettings field")
         label: str = Field(title="Label of the quicksettings field")
 

@@ -2,6 +2,9 @@ from modules_forge.initialization import initialize_forge
 
 initialize_forge()
 
+# Import the global Pydantic configuration early
+import pydantic_global_config
+
 import sys
 import types
 import os
@@ -17,20 +20,22 @@ from backend.operations import DynamicSwapInstaller
 from diffusers.models import modeling_utils as diffusers_modeling_utils
 from transformers import modeling_utils as transformers_modeling_utils
 from backend.attention import AttentionProcessorForge
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
+from starlette.responses import Response
 
 
-_original_init = Request.__init__
+class SessionMiddleware(BaseHTTPMiddleware):
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
+        if 'session' not in request.scope:
+            request.scope['session'] = dict()
+        response = await call_next(request)
+        return response
 
 
-def patched_init(self, scope, receive=None, send=None):
-    if 'session' not in scope:
-        scope['session'] = dict()
-    _original_init(self, scope, receive, send)
-    return
-
-
-Request.__init__ = patched_init
+# Disable OAuth
 gradio.oauth.attach_oauth = lambda x: None
 gradio.routes.attach_oauth = lambda x: None
 

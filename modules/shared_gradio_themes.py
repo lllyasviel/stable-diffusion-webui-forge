@@ -40,6 +40,23 @@ gradio_hf_hub_themes = [
     "NoCrypt/miku"
 ]
 
+# automaticly add local themes
+theme_dir = "tmp/gradio_themes"
+json_files = []
+
+try:
+    if os.path.exists(theme_dir):
+        json_files = [f for f in os.listdir(theme_dir) if f.endswith('.json')]
+    else:
+        print(f"Directory {theme_dir} does not exist. No new themes will be added.")
+except OSError as e:
+    print(f"Error accessing directory {theme_dir}: {e}. No new themes will be added.")
+
+for json_file in json_files:
+    theme_name = json_file.replace('.json', '')
+    theme_name = theme_name.replace('_', '/')
+    if theme_name not in gradio_hf_hub_themes:
+        gradio_hf_hub_themes.append(theme_name)
 
 def reload_gradio_theme(theme_name=None):
     if not theme_name:

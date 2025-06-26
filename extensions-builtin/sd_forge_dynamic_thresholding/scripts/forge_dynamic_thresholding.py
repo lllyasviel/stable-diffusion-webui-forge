@@ -2,6 +2,7 @@ import gradio as gr
 
 from modules import scripts
 from lib_dynamic_thresholding.dynthres import DynamicThresholdingNode
+from modules.ui_components import InputAccordion
 
 opDynamicThresholdingNode = DynamicThresholdingNode().patch
 
@@ -17,27 +18,27 @@ class DynamicThresholdingForForge(scripts.Script):
         return scripts.AlwaysVisible
 
     def ui(self, *args, **kwargs):
-        with gr.Accordion(open=False, label=self.title()):
-            enabled = gr.Checkbox(label='Enabled', value=False)
-            mimic_scale = gr.Slider(label='Mimic Scale', minimum=0.0, maximum=100.0, step=0.5, value=7.0)
+        elem = 'dynthres_'
+        with InputAccordion(False, label=self.title(),elem_id=elem+'enabled') as enabled:
+            mimic_scale = gr.Slider(label='Mimic Scale', minimum=0.0, maximum=100.0, step=0.5, value=7.0,elem_id=elem+'mimic_scale')
             threshold_percentile = gr.Slider(label='Threshold Percentile', minimum=0.0, maximum=1.0, step=0.01,
-                                             value=1.0)
+                                             value=1.0,elem_id=elem+'threshold_percentile')
             mimic_mode = gr.Radio(label='Mimic Mode',
                                   choices=['Constant', 'Linear Down', 'Cosine Down', 'Half Cosine Down', 'Linear Up',
                                            'Cosine Up', 'Half Cosine Up', 'Power Up', 'Power Down', 'Linear Repeating',
-                                           'Cosine Repeating', 'Sawtooth'], value='Constant')
-            mimic_scale_min = gr.Slider(label='Mimic Scale Min', minimum=0.0, maximum=100.0, step=0.5, value=0.0)
+                                           'Cosine Repeating', 'Sawtooth'], value='Constant',elem_id=elem+'mimic_mode')
+            mimic_scale_min = gr.Slider(label='Mimic Scale Min', minimum=0.0, maximum=100.0, step=0.5, value=0.0,elem_id=elem+'mimic_scale_min')
             cfg_mode = gr.Radio(label='Cfg Mode',
                                 choices=['Constant', 'Linear Down', 'Cosine Down', 'Half Cosine Down', 'Linear Up',
                                          'Cosine Up', 'Half Cosine Up', 'Power Up', 'Power Down', 'Linear Repeating',
-                                         'Cosine Repeating', 'Sawtooth'], value='Constant')
-            cfg_scale_min = gr.Slider(label='Cfg Scale Min', minimum=0.0, maximum=100.0, step=0.5, value=0.0)
-            sched_val = gr.Slider(label='Sched Val', minimum=0.0, maximum=100.0, step=0.01, value=1.0)
+                                         'Cosine Repeating', 'Sawtooth'], value='Constant',elem_id=elem+'cfg_mode')
+            cfg_scale_min = gr.Slider(label='Cfg Scale Min', minimum=0.0, maximum=100.0, step=0.5, value=0.0,elem_id=elem+'cfg_scale_min')
+            sched_val = gr.Slider(label='Sched Val', minimum=0.0, maximum=100.0, step=0.01, value=1.0,elem_id=elem+'sched_val')
             separate_feature_channels = gr.Radio(label='Separate Feature Channels', choices=['enable', 'disable'],
-                                                 value='enable')
-            scaling_startpoint = gr.Radio(label='Scaling Startpoint', choices=['MEAN', 'ZERO'], value='MEAN')
-            variability_measure = gr.Radio(label='Variability Measure', choices=['AD', 'STD'], value='AD')
-            interpolate_phi = gr.Slider(label='Interpolate Phi', minimum=0.0, maximum=1.0, step=0.01, value=1.0)
+                                                 value='enable',elem_id=elem+'separate_feature_channels')
+            scaling_startpoint = gr.Radio(label='Scaling Startpoint', choices=['MEAN', 'ZERO'], value='MEAN',elem_id=elem+'scaling_startpoint')
+            variability_measure = gr.Radio(label='Variability Measure', choices=['AD', 'STD'], value='AD',elem_id=elem+'variability_measure')
+            interpolate_phi = gr.Slider(label='Interpolate Phi', minimum=0.0, maximum=1.0, step=0.01, value=1.0,elem_id=elem+'interpolate_phi')
 
         return enabled, mimic_scale, threshold_percentile, mimic_mode, mimic_scale_min, cfg_mode, cfg_scale_min, \
             sched_val, separate_feature_channels, scaling_startpoint, variability_measure, interpolate_phi

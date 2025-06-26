@@ -3,7 +3,7 @@ import gradio as gr
 
 from modules import scripts
 from backend import attention
-
+from modules.ui_components import InputAccordion
 
 def sdp(q, k, v, transformer_options):
     return attention.attention_function(q, k, v, heads=transformer_options["n_heads"], mask=None)
@@ -20,9 +20,9 @@ class StyleAlignForForge(scripts.Script):
         return scripts.AlwaysVisible
 
     def ui(self, *args, **kwargs):
-        with gr.Accordion(open=False, label=self.title()):
-            shared_attention = gr.Checkbox(label='Share attention in batch', value=False)
-            strength = gr.Slider(label='Strength', minimum=0.0, maximum=1.0, value=1.0)
+        elem = 'stylealign_'
+        with InputAccordion(False, label=self.title()+' - Share attention in batch',elem_id=elem+'enabled') as shared_attention:
+            strength = gr.Slider(label='Strength', minimum=0.0, maximum=1.0, value=1.0,elem_id=elem+'strength')
 
         return [shared_attention, strength]
 

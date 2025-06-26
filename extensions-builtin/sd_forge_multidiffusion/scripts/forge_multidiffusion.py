@@ -2,7 +2,7 @@ import gradio as gr
 from modules import scripts
 
 from lib_multidiffusion.tiled_diffusion import TiledDiffusion
-
+from modules.ui_components import InputAccordion
 
 opTiledDiffusion = TiledDiffusion().apply
 
@@ -18,14 +18,14 @@ class MultiDiffusionForForge(scripts.Script):
         return scripts.AlwaysVisible
 
     def ui(self, *args, **kwargs):
-        with gr.Accordion(open=False, label=self.title()):
-            enabled = gr.Checkbox(label='Enabled', value=False)
+        elem = 'multidiffusion_'
+        with InputAccordion(False, label=self.title(),elem_id=elem+'enabled') as enabled:
             method = gr.Radio(label='Method', choices=['MultiDiffusion', 'Mixture of Diffusers'],
-                              value='MultiDiffusion')
-            tile_width = gr.Slider(label='Tile Width', minimum=16, maximum=8192, step=16, value=768)
-            tile_height = gr.Slider(label='Tile Height', minimum=16, maximum=8192, step=16, value=768)
-            tile_overlap = gr.Slider(label='Tile Overlap', minimum=0, maximum=2048, step=32, value=64)
-            tile_batch_size = gr.Slider(label='Tile Batch Size', minimum=1, maximum=8192, step=1, value=4)
+                              value='MultiDiffusion',elem_id=elem+'method')
+            tile_width = gr.Slider(label='Tile Width', minimum=16, maximum=8192, step=16, value=768,elem_id=elem+'tile_width')
+            tile_height = gr.Slider(label='Tile Height', minimum=16, maximum=8192, step=16, value=768,elem_id=elem+'tile_height')
+            tile_overlap = gr.Slider(label='Tile Overlap', minimum=0, maximum=2048, step=32, value=64,elem_id=elem+'tile_overlap')
+            tile_batch_size = gr.Slider(label='Tile Batch Size', minimum=1, maximum=8192, step=1, value=4,elem_id=elem+'tile_batch_size')
 
         return enabled, method, tile_width, tile_height, tile_overlap, tile_batch_size
 

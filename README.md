@@ -54,6 +54,36 @@ Note that running `update.bat` is important, otherwise you may be using a previo
 
 ![image](https://github.com/lllyasviel/stable-diffusion-webui-forge/assets/19834515/c49bd60d-82bd-4086-9859-88d472582b94)
 
+### Linux Installation
+
+** Step 1: **
+
+Install System Dependencies:
+`sudo apt update && sudo apt install -y git python3 python3-venv python3-pip build-essential`
+
+** Step 2: **
+
+Clone the Repository:
+`git clone https://github.com/lllyasviel/stable-diffusion-webui-forge.git`
+`cd stable-diffusion-webui-forge`
+
+** Step 3: **
+
+Set Up Python Environment:
+`python3 -m venv venv`
+`source venv/bin/activate`
+
+** Step 4: **
+
+Install Python Dependencies:
+`pip install --upgrade pip`
+`pip install -r requirements.txt`
+
+** Step 5: **
+
+Run the WebUI:
+`python launch.py`
+
 ### Advanced Install
 
 If you are proficient in Git and you want to install Forge as another branch of SD-WebUI, please see [here](https://github.com/continue-revolution/sd-webui-animatediff/blob/forge/master/docs/how-to-use.md#you-have-a1111-and-you-know-git). In this way, you can reuse all SD checkpoints and all extensions you installed previously in your OG SD-WebUI, but you should know what you are doing.

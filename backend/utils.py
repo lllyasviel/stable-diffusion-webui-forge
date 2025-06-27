@@ -22,7 +22,7 @@ def read_arbitrary_config(directory):
 def load_torch_file(ckpt, safe_load=False, device=None):
     if device is None:
         device = torch.device("cpu")
-    if ckpt.lower().endswith(".safetensors"):
+    if ckpt.lower().endswith(".safetensors") or ckpt.lower().endswith(".sft"):
         sd = safetensors.torch.load_file(ckpt, device=device.type)
     elif ckpt.lower().endswith(".gguf"):
         reader = gguf.GGUFReader(ckpt)

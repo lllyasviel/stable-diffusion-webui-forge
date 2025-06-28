@@ -389,10 +389,11 @@ def weighted_histogram_filter(img, kernel, kernel_center, percentile_min=0.0, pe
         return np.sum(values * overlap) / np.sum(overlap) if np.sum(overlap) > 0 else 0
 
     # Split pixel_coords into equal chunks based on n_jobs
-    n_jobs = -1
+    n_jobs = 1
     if cpu_count() > 6:
         n_jobs = 6 # More than 6 isn't worth unless it's more than 3000x3000px
-
+    else:
+        n_jobs = cpu_count() # Assign all cores if there are less than 7
     chunk_size = len(pixel_coords) // n_jobs
     pixel_chunks = [pixel_coords[i:i + chunk_size] for i in range(0, len(pixel_coords), chunk_size)]
 

@@ -437,6 +437,42 @@ class ForgeOperationsGGUF(ForgeOperations):
             with main_stream_worker(weight, bias, signal):
                 return torch.nn.functional.linear(x, weight, bias)
 
+    class Embedding(torch.nn.Embedding):
+        def __init__(self, *args, **kwargs):
+            kwargs['device'] = current_device
+            super().__init__(*args, **kwargs)
+            self.parameters_manual_cast = current_manual_cast_enabled
+            self.dummy = torch.nn.Parameter(torch.empty(1, device=current_device, dtype=current_dtype))
+            self.bias = None
+    
+        def reset_parameters(self):
+            self.bias = None
+            return None
+    
+        def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs):
+            if hasattr(self, 'dummy'):
+                computation_dtype = self.dummy.dtype
+                if computation_dtype not in [torch.float16, torch.bfloat16]:
+                    # GGUF cast only supports 16bits otherwise super slow
+                    computation_dtype = torch.float16
+                if prefix + 'weight' in state_dict:
+                    self.weight = state_dict[prefix + 'weight'].to(device=self.dummy.device)
+                    self.weight.computation_dtype = computation_dtype
+                del self.dummy
+            else:
+                if prefix + 'weight' in state_dict:
+                    self.weight = state_dict[prefix + 'weight']
+            return
+    
+        def _apply(self, fn, recurse=True):
+            for k, p in self.named_parameters(recurse=False, remove_duplicate=True):
+                setattr(self, k, utils.tensor2parameter(fn(p)))
+            return self
+    
+        def forward(self, x):
+            weight, bias, signal = weights_manual_cast(self, x, weight_fn=dequantize_tensor, skip_weight_dtype=True, skip_bias_dtype=True)
+            with main_stream_worker(weight, bias, signal):
+                return torch.nn.functional.embedding(x, weight, self.padding_idx, self.max_norm, self.norm_type, self.scale_grad_by_freq, self.sparse)
 
 @contextlib.contextmanager
 def using_forge_operations(operations=None, device=None, dtype=None, manual_cast_enabled=False, bnb_dtype=None):

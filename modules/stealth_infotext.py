@@ -12,7 +12,12 @@ def add_stealth_pnginfo(params: ImageSaveParams):
         return
     if 'parameters' not in params.pnginfo:
         return
+    original_alpha = None
+    if params.image.mode == 'RGBA':
+        original_alpha = params.image.split()[-1].copy()
     add_data(params, str(stealth_pnginfo_option), True)
+    if original_alpha is not None:
+        params.image.putalpha(original_alpha)
 
 def prepare_data(params, mode='Alpha', compressed=True):
     signature = f"stealth_{'png' if mode == 'Alpha' else 'rgb'}{'info' if not compressed else 'comp'}"

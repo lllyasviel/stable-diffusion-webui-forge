@@ -1,0 +1,24 @@
+# docker-compose.yml example
+
+services:
+  sd-forge:
+    #build: .
+    image: sd-webui-forge-docker:development
+    command: sleep infinity
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=1
+      - CUDA_DEVICE_ORDER=PCI_BUS_ID
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./models:/app/webui/models
+      - ./outputs:/app/webui/outputs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["1"]
+              capabilities: [gpu]
+    shm_size: '8gb'

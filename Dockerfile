@@ -13,7 +13,7 @@ RUN git clone https://github.com/lllyasviel/stable-diffusion-webui-forge webui
 WORKDIR /app/webui
 
 # Install PyTorch with CUDA 12.1
-RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+RUN pip3 install torch torchvision torchaudio joblib --index-url https://download.pytorch.org/whl/cu121
 
 # Install requirements
 RUN pip3 install -r requirements_versions.txt

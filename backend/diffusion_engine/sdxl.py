@@ -89,6 +89,19 @@ class StableDiffusionXL(ForgeDiffusionEngine):
         cond_l = self.text_processing_engine_l(prompt)
         cond_g, clip_pooled = self.text_processing_engine_g(prompt)
 
+        if cond_l.shape[1] < cond_g.shape[1]:
+            pad = cond_g.shape[1] - cond_l.shape[1]
+            cond_l = torch.cat([
+                cond_l,
+                cond_l.new_zeros(cond_l.size(0), pad, cond_l.size(2))
+            ], dim=1)
+        elif cond_g.shape[1] < cond_l.shape[1]:
+            pad = cond_l.shape[1] - cond_g.shape[1]
+            cond_g = torch.cat([
+                cond_g,
+                cond_g.new_zeros(cond_g.size(0), pad, cond_g.size(2))
+            ], dim=1)
+        
         width = getattr(prompt, 'width', 1024) or 1024
         height = getattr(prompt, 'height', 1024) or 1024
         is_negative_prompt = getattr(prompt, 'is_negative_prompt', False)

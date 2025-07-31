@@ -1,8 +1,8 @@
 setuptools==69.5.1  # temp fix for compatibility with some old packages
 GitPython==3.1.32
-Pillow==9.5.0
+Pillow==10.4.0
 accelerate==0.31.0
-blendmodes==2022
+blendmodes==2024.1.1
 clean-fid==0.1.35
 diskcache==5.6.3
 einops==0.4.1
@@ -14,7 +14,7 @@ inflection==0.5.1
 jsonmerge==1.8.0
 kornia==0.6.7
 lark==1.1.2
-numpy==1.26.2
+numpy==1.26.4
 omegaconf==2.2.3
 open-clip-torch==2.20.0
 piexif==1.1.3

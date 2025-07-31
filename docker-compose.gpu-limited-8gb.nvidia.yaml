@@ -5,27 +5,30 @@ services:
     extends:
       file: docker-compose.yaml
       service: sd-forge
-    image: catspeedcc/sd-webui-forge-docker:development
     command:
+      # do not touch, this starts the startup script inside container
       - /app/start-webui.sh
+      # do not touch, commenting this makes webui unavailable to host
       - --server-name=0.0.0.0
-      - --always-low-vram
+      ## ONLY enable if having issues generating images
+      #- --always-low-vram
+      # COMMENT BELOW if you uncomment above
       - --vae-in-fp32
+      # do not touch below 3 lines, they help :)
       - --cuda-malloc
       - --force-upcast-attention
       - --pin-shared-memory
     runtime: nvidia
     environment:
-      #- NVIDIA_VISIBLE_DEVICES=1
+      # DO NOT TOUCH THIS ENSURES SAME ORDER EVERY TIME
       CUDA_DEVICE_ORDER: PCI_BUS_ID
+      # SET THIS TO THE GPU YOU WANT (index from host system nvidia-smi)
       CUDA_VISIBLE_DEVICES: 1
+      # SET THIS TO THE GPU YOU WANT (index from host system nvidia-smi)
       NVIDIA_VISIBLE_DEVICES: 1
+      # KEEP THIS UNCOMMENTED AND 0 IF YOU JUST SPECIFIED GPU INDEX ABOVE
+      # IF SINGLE GPU SYSTEM BOTTOM 3 of 4 COULD POSSIBLY BE COMMENTED
       SD_GPU_DEVICE: 0
-    ports:
-      - "7860:7860"
-    volumes:
-      - ./models:/app/webui/models
-      - ./outputs:/app/webui/outputs
     deploy:
       resources:
         reservations:

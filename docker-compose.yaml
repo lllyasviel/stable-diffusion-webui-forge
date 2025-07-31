@@ -1,8 +1,10 @@
-# docker-compose.yml example
-
+# docker-compose.yml CPU-only example
 services:
+
   sd-forge:
+    # kept in for development, do not uncomment!
     #build: .
+    # use the image below :)
     image: catspeedcc/sd-webui-forge-docker:development
     command:
       - /app/start-webui.sh

@@ -7,8 +7,6 @@ services:
     command:
       - /app/start-webui.sh
       - --server-name=0.0.0.0
-      - --always-cpu
-      - --disable-gpu-warning
     ports:
       - "7860:7860"
     volumes:

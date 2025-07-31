@@ -98,4 +98,6 @@ class Script(scripts.Script):
 
         processed = Processed(p, result_images, seed, initial_info)
 
+        p.n_iter = upscale_count
+
         return processed

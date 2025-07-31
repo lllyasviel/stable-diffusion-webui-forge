@@ -1,0 +1,33 @@
+# docker-compose.yml example
+
+services:
+  sd-forge:
+    extends:
+      file: docker-compose.yaml
+      service: sd-forge
+    image: catspeedcc/sd-webui-forge-docker:development
+    command:
+      - /app/start-webui.sh
+      - --server-name=0.0.0.0
+      - --gpu-device-id=0
+      - --vae-in-fp32
+      - --force-upcast-attention
+      - --cuda-malloc
+      - --pin-shared-memory
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=1
+      - CUDA_DEVICE_ORDER=PCI_BUS_ID
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./models:/app/webui/models
+      - ./outputs:/app/webui/outputs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["1"]
+              capabilities: [gpu]
+    shm_size: '8gb'

@@ -1,0 +1,41 @@
+# docker-compose.yml example
+
+services:
+  sd-forge:
+    extends:
+      file: docker-compose.yaml
+      service: sd-forge
+    image: catspeedcc/sd-webui-forge-docker:development
+    command:
+      - /app/start-webui.sh
+      - --server-name=0.0.0.0
+      ## ONLY enable if having issues generating images
+      #- --always-low-vram
+      - --vae-in-fp32
+      - --cuda-malloc
+      - --force-upcast-attention
+      - --pin-shared-memory
+    runtime: nvidia
+    environment:
+      #- NVIDIA_VISIBLE_DEVICES=1
+      CUDA_DEVICE_ORDER: PCI_BUS_ID
+      # SET THIS TO THE GPU YOU WANT (index from host system)
+      CUDA_VISIBLE_DEVICES: 1
+      # SET THIS TO THE GPU YOU WANT (index from host system)
+      NVIDIA_VISIBLE_DEVICES: 1
+      # KEEP THIS UNCOMMENTED AND 0 IF YOU JUST SPECIFIED GPU INDEX ABOVE
+      # IF SINGLE GPU SYSTEM ALL 4 COULD POSSIBLY BE COMMENTED
+      SD_GPU_DEVICE: 0
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./models:/app/webui/models
+      - ./outputs:/app/webui/outputs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["1"]
+              capabilities: [gpu]
+    shm_size: '8gb'

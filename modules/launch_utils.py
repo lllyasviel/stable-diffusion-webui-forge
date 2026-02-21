@@ -440,7 +440,12 @@ def prepare_environment():
     startup_timer.record("torch GPU test")
 
     if not is_installed("clip"):
-        run_pip(f"install {clip_package}", "clip")
+        try:
+            run_pip(f"install {clip_package}", "clip")
+        except RuntimeError:
+            print("[setuptools compat] CLIP install failed (likely due to setuptools >= 81 removing pkg_resources). Retrying with setuptools<81...")
+            run_pip('install "setuptools<81"', "setuptools<81 (pkg_resources compat)")
+            run_pip(f"install {clip_package}", "clip")
         startup_timer.record("install clip")
 
     if not is_installed("open_clip"):

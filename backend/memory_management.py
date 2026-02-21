@@ -44,7 +44,9 @@ if args.pytorch_deterministic:
     torch.use_deterministic_algorithms(True, warn_only=True)
 
 directml_enabled = False
-if args.directml is not None:
+if args.directml is not None or getattr(args, 'use_directml', False):
+    if args.directml is None:
+        args.directml = -1
     import torch_directml
 
     directml_enabled = True
@@ -96,8 +98,10 @@ def get_torch_device():
     else:
         if is_intel_xpu():
             return torch.device("xpu", torch.xpu.current_device())
-        else:
+        elif torch.cuda.is_available():
             return torch.device(torch.cuda.current_device())
+        else:
+            return torch.device("cpu")
 
 
 def get_total_memory(dev=None, torch_total_too=False):

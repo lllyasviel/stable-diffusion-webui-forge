@@ -499,6 +499,19 @@ def prepare_environment():
     except Exception:
         pass
 
+    # Guard: old librosa (<0.10) uses np.complex which was removed in numpy 1.24+.
+    # It's pulled in transitively by torchmetrics/pytorch_lightning.
+    try:
+        from importlib.metadata import version as pkg_version
+        from packaging.version import Version
+        librosa_ver = pkg_version("librosa")
+        if Version(librosa_ver) < Version("0.10.0"):
+            print(f"[librosa compat] librosa {librosa_ver} uses removed np.complex — upgrading to >=0.10.0...")
+            run_pip('install "librosa>=0.10.0"', "librosa>=0.10.0 (numpy compat)")
+            startup_timer.record("upgrade librosa")
+    except Exception:
+        pass
+
     if args.update_check:
         version_check(commit)
         startup_timer.record("check version")

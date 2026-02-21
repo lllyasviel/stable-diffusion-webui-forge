@@ -29,7 +29,7 @@ model_path = os.path.abspath(os.path.join(paths.models_path, model_dir))
 
 checkpoints_list = {}
 checkpoint_aliases = {}
-checkpoint_alisases = checkpoint_aliases  # for compatibility with old name
+checkpoint_aliases_compat = checkpoint_aliases  # backward compat alias (was misspelled as checkpoint_alisases)
 checkpoints_loaded = collections.OrderedDict()
 
 
@@ -42,26 +42,15 @@ class ModelType(enum.Enum):
 
 
 def replace_key(d, key, new_key, value):
-    keys = list(d.keys())
-
+    d.pop(key, None)
     d[new_key] = value
-
-    if key not in keys:
-        return d
-
-    index = keys.index(key)
-    keys[index] = new_key
-
-    new_d = {k: d[k] for k in keys}
-
-    d.clear()
-    d.update(new_d)
     return d
 
 
 class CheckpointInfo:
-    def __init__(self, filename):
+    def __init__(self, filename, is_corrupt=False):
         self.filename = filename
+        self.is_corrupt = is_corrupt
         abspath = os.path.abspath(filename)
         abs_ckpt_dir = os.path.abspath(shared.cmd_opts.ckpt_dir) if shared.cmd_opts.ckpt_dir is not None else None
 
@@ -84,7 +73,7 @@ class CheckpointInfo:
             return metadata
 
         self.metadata = {}
-        if self.is_safetensors:
+        if self.is_safetensors and not self.is_corrupt:
             try:
                 self.metadata = cache.cached_data_for_file('safetensors-metadata', "checkpoint/" + name, filename, read_metadata)
             except Exception as e:
@@ -93,13 +82,19 @@ class CheckpointInfo:
         self.name = name
         self.name_for_extra = os.path.splitext(os.path.basename(filename))[0]
         self.model_name = os.path.splitext(name.replace("/", "_").replace("\\", "_"))[0]
-        self.hash = model_hash(filename)
 
-        self.sha256 = hashes.sha256_from_cache(self.filename, f"checkpoint/{name}")
-        self.shorthash = self.sha256[0:10] if self.sha256 else None
-
-        self.title = name if self.shorthash is None else f'{name} [{self.shorthash}]'
-        self.short_title = self.name_for_extra if self.shorthash is None else f'{self.name_for_extra} [{self.shorthash}]'
+        if self.is_corrupt:
+            self.hash = 'CORRUPT'
+            self.sha256 = None
+            self.shorthash = None
+            self.title = f'{name} [CORRUPT]'
+            self.short_title = f'{self.name_for_extra} [CORRUPT]'
+        else:
+            self.hash = model_hash(filename)
+            self.sha256 = hashes.sha256_from_cache(self.filename, f"checkpoint/{name}")
+            self.shorthash = self.sha256[0:10] if self.sha256 else None
+            self.title = name if self.shorthash is None else f'{name} [{self.shorthash}]'
+            self.short_title = self.name_for_extra if self.shorthash is None else f'{self.name_for_extra} [{self.shorthash}]'
 
         self.ids = [self.hash, self.model_name, self.title, name, self.name_for_extra, f'{name} [{self.hash}]']
         if self.shorthash:
@@ -140,15 +135,6 @@ class CheckpointInfo:
         return str(dict(filename=self.filename, hash=self.hash))
 
 
-# try:
-#     # this silences the annoying "Some weights of the model checkpoint were not used when initializing..." message at start.
-#     from transformers import logging, CLIPModel  # noqa: F401
-#
-#     logging.set_verbosity_error()
-# except Exception:
-#     pass
-
-
 def setup_model():
     """called once at startup to do various one-time tasks related to SD models"""
 
@@ -159,7 +145,36 @@ def setup_model():
 
 
 def checkpoint_tiles(use_short=False):
-    return [x.short_title if use_short else x.name for x in checkpoints_list.values()]
+    result = []
+    for x in checkpoints_list.values():
+        if x.is_corrupt:
+            # Always show corrupt indicator regardless of short/long mode
+            result.append(x.short_title if use_short else x.title)
+        else:
+            result.append(x.short_title if use_short else x.name)
+    return result
+
+
+def _scan_corrupt_models(search_path):
+    """Scan for incomplete/corrupt model files (.part files) and return their paths."""
+    corrupt_files = []
+    if search_path is None or not os.path.exists(search_path):
+        return corrupt_files
+
+    corrupt_extensions = {".part"}
+    valid_base_extensions = {".ckpt", ".safetensors", ".gguf"}
+
+    for root, _, files in os.walk(search_path, followlinks=True):
+        for filename in files:
+            _, ext = os.path.splitext(filename)
+            if ext.lower() in corrupt_extensions:
+                # Check that the base name (before .part) has a valid model extension
+                base_name = filename[:-len(ext)]
+                _, base_ext = os.path.splitext(base_name)
+                if base_ext.lower() in valid_base_extensions:
+                    full_path = os.path.join(root, filename)
+                    corrupt_files.append(full_path)
+    return corrupt_files
 
 
 def list_models():
@@ -181,6 +196,18 @@ def list_models():
     for filename in model_list:
         checkpoint_info = CheckpointInfo(filename)
         checkpoint_info.register()
+
+    # Scan for corrupt/incomplete downloads (.part files) and display them as [CORRUPT]
+    corrupt_paths = _scan_corrupt_models(model_path)
+    if shared.cmd_opts.ckpt_dir is not None:
+        corrupt_paths += _scan_corrupt_models(shared.cmd_opts.ckpt_dir)
+    for filepath in corrupt_paths:
+        try:
+            corrupt_info = CheckpointInfo(filepath, is_corrupt=True)
+            corrupt_info.register()
+            print(f"[CORRUPT] Incomplete model detected: {filepath}")
+        except Exception:
+            pass
 
 
 re_strip_checksum = re.compile(r"\s*\[[^]]+]\s*$")
@@ -235,16 +262,26 @@ def select_checkpoint():
     model_checkpoint = shared.opts.sd_model_checkpoint
 
     checkpoint_info = checkpoint_aliases.get(model_checkpoint, None)
-    if checkpoint_info is not None:
+    if checkpoint_info is not None and not checkpoint_info.is_corrupt:
         return checkpoint_info
 
-    if len(checkpoints_list) == 0:
-        print('You do not have any model!')
+    if checkpoint_info is not None and checkpoint_info.is_corrupt:
+        print(f"[CORRUPT] Selected checkpoint '{model_checkpoint}' is an incomplete download and cannot be loaded.", file=sys.stderr)
+
+    # Filter to only valid (non-corrupt) checkpoints for fallback
+    valid_checkpoints = {k: v for k, v in checkpoints_list.items() if not v.is_corrupt}
+
+    if len(valid_checkpoints) == 0:
+        corrupt_count = sum(1 for v in checkpoints_list.values() if v.is_corrupt)
+        if corrupt_count > 0:
+            print(f'No valid models found! {corrupt_count} corrupt/incomplete model(s) detected - please re-download them.')
+        else:
+            print('You do not have any model!')
         return None
 
-    checkpoint_info = next(iter(checkpoints_list.values()))
+    checkpoint_info = next(iter(valid_checkpoints.values()))
     if model_checkpoint is not None:
-        print(f"Checkpoint {model_checkpoint} not found; loading fallback {checkpoint_info.title}", file=sys.stderr)
+        print(f"Checkpoint {model_checkpoint} not found or corrupt; loading fallback {checkpoint_info.title}", file=sys.stderr)
 
     return checkpoint_info
 
@@ -492,6 +529,12 @@ def forge_model_reload():
 
     if checkpoint_info is None:
         raise ValueError('You do not have any model! Please download at least one model in [models/Stable-diffusion].')
+
+    if checkpoint_info.is_corrupt:
+        raise ValueError(
+            f'Cannot load "{checkpoint_info.filename}" - this is a corrupt or incomplete download (.part file). '
+            'Please re-download this model and place the completed file in [models/Stable-diffusion].'
+        )
 
     state_dict = checkpoint_info.filename
     additional_state_dicts = model_data.forge_loading_parameters.get('additional_modules', [])

@@ -59,8 +59,13 @@ def make_checkpoint_manager_ui():
     if shared.opts.sd_model_checkpoint in [None, 'None', 'none', '']:
         if len(sd_models.checkpoints_list) == 0:
             sd_models.list_models()
-        if len(sd_models.checkpoints_list) > 0:
-            shared.opts.set('sd_model_checkpoint', next(iter(sd_models.checkpoints_list.values())).name)
+        # Filter to only valid (non-corrupt) checkpoints for initial selection
+        valid_checkpoints = {k: v for k, v in sd_models.checkpoints_list.items() if not v.is_corrupt}
+        if len(valid_checkpoints) > 0:
+            shared.opts.set('sd_model_checkpoint', next(iter(valid_checkpoints.values())).name)
+        elif len(sd_models.checkpoints_list) > 0:
+            corrupt_count = len(sd_models.checkpoints_list)
+            print(f'[Warning] Found {corrupt_count} model(s) but all are corrupt/incomplete downloads. Please re-download your models.')
 
     ui_forge_preset = gr.Radio(label="UI", value=lambda: shared.opts.forge_preset, choices=['sd', 'xl', 'flux', 'all'], elem_id="forge_ui_preset")
 
@@ -90,8 +95,7 @@ def make_checkpoint_manager_ui():
         fn=gr_refresh_models,
         inputs=[],
         outputs=[ui_checkpoint, ui_vae],
-        show_progress=False,
-        queue=False
+        show_progress='minimal',
     )
     Context.root_block.load(
         fn=gr_refresh_models,
@@ -242,6 +246,12 @@ def refresh_model_loading_parameters():
 def checkpoint_change(ckpt_name:str, save=True, refresh=True):
     """ checkpoint name can be a number of valid aliases. Returns True if checkpoint changed. """
     new_ckpt_info = sd_models.get_closet_checkpoint_match(ckpt_name)
+
+    # Block selection of corrupt/incomplete models
+    if new_ckpt_info is not None and new_ckpt_info.is_corrupt:
+        print(f'[CORRUPT] Cannot load "{ckpt_name}" - this is an incomplete download (.part file). Please re-download this model.')
+        return False
+
     current_ckpt_info = sd_models.get_closet_checkpoint_match(shared.opts.data.get('sd_model_checkpoint', ''))
     if new_ckpt_info == current_ckpt_info:
         return False

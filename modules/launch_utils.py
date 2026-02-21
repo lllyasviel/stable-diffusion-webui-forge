@@ -488,6 +488,17 @@ def prepare_environment():
     if not args.skip_install:
         run_extensions_installers(settings_file=args.ui_settings_file)
 
+    # Guard: some packages (e.g. opencv-contrib-python>=4.13) pull in numpy 2.x
+    # which is binary-incompatible with torch/scikit-image built against numpy 1.x.
+    try:
+        import numpy as np
+        if np.lib.NumpyVersion(np.__version__) >= '2.0.0':
+            print(f"[numpy compat] numpy {np.__version__} detected — downgrading to <2 for binary compatibility...")
+            run_pip('install "numpy<2"', "numpy<2 (binary compat)")
+            startup_timer.record("downgrade numpy")
+    except Exception:
+        pass
+
     if args.update_check:
         version_check(commit)
         startup_timer.record("check version")

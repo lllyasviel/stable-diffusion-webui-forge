@@ -3,7 +3,7 @@
 set PYTHON=
 set GIT=
 set VENV_DIR=
-set COMMANDLINE_ARGS=--xformers --opt-sdp-attention --no-half-vae --api
+set COMMANDLINE_ARGS=--xformers --opt-sdp-attention --cuda-malloc --pin-shared-memory --no-half-vae --opt-channelslast --disable-nan-check --api --medvram --listen --autolaunch
 
 @REM Uncomment following code to reference an existing A1111 checkout.
 @REM set A1111_HOME=Your A1111 checkout dir

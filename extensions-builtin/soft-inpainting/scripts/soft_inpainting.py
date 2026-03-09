@@ -389,11 +389,11 @@ def weighted_histogram_filter(img, kernel, kernel_center, percentile_min=0.0, pe
         return np.sum(values * overlap) / np.sum(overlap) if np.sum(overlap) > 0 else 0
 
     # Split pixel_coords into equal chunks based on n_jobs
-    n_jobs = -1
-    if cpu_count() > 6:
-        n_jobs = 6 # More than 6 isn't worth unless it's more than 3000x3000px
+    n_jobs = min(cpu_count(), 6)
+    if n_jobs < 1:
+        n_jobs = 1
 
-    chunk_size = len(pixel_coords) // n_jobs
+    chunk_size = max(1, len(pixel_coords) // n_jobs)
     pixel_chunks = [pixel_coords[i:i + chunk_size] for i in range(0, len(pixel_coords), chunk_size)]
 
     # joblib to process chunks in parallel
@@ -403,7 +403,7 @@ def weighted_histogram_filter(img, kernel, kernel_center, percentile_min=0.0, pe
             chunk_result[idx] = weighted_histogram_filter_single(idx)
         return chunk_result
 
-    results = Parallel(n_jobs=n_jobs, backend="loky")( # loky is fastest in my configuration
+    results = Parallel(n_jobs=n_jobs, backend="threading")(
         delayed(process_chunk)(chunk) for chunk in pixel_chunks
     )
 

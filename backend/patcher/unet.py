@@ -166,6 +166,9 @@ class UnetPatcher(ModelPatcher):
         self.set_transformer_option('group_norm_wrapper', wrapper)
         return
 
+    # Alias for old Forge extensions (e.g. AnimateDiff)
+    set_groupnorm_wrapper = set_group_norm_wrapper
+
     def set_controlnet_model_function_wrapper(self, wrapper):
         self.set_transformer_option('controlnet_model_function_wrapper', wrapper)
         return

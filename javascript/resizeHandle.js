@@ -25,15 +25,10 @@
         if (!parent.needHideOnMoblie) {
             return true;
         }
-        if (window.innerWidth < GRADIO_MIN_WIDTH * 2 + PAD * 4) {
-            parent.style.display = 'flex';
-            parent.resizeHandle.style.display = "none";
-            return false;
-        } else {
-            parent.style.display = 'grid';
-            parent.resizeHandle.style.display = "block";
-            return true;
-        }
+
+        parent.style.display = 'grid';
+        parent.resizeHandle.style.display = "block";
+        return true;
     }
 
     function afterResize(parent) {

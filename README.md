@@ -58,7 +58,7 @@ Note that running `update.bat` is important, otherwise you may be using a previo
 
 If you are proficient in Git and you want to install Forge as another branch of SD-WebUI, please see [here](https://github.com/continue-revolution/sd-webui-animatediff/blob/forge/master/docs/how-to-use.md#you-have-a1111-and-you-know-git). In this way, you can reuse all SD checkpoints and all extensions you installed previously in your OG SD-WebUI, but you should know what you are doing.
 
-If you know what you are doing, you can also install Forge using same method as SD-WebUI. (Install Git, Python, Git Clone the forge repo `https://github.com/lllyasviel/stable-diffusion-webui-forge.git` and then run webui-user.bat).
+If you know what you are doing, you can also install Forge using same method as SD-WebUI. Install Git and Python 3.10, 3.11, or 3.12, clone the Forge repo `https://github.com/lllyasviel/stable-diffusion-webui-forge.git`, and then run `webui-user.bat`.
 
 ### Previous Versions
 

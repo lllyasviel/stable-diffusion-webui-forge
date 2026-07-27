@@ -35,6 +35,17 @@ default_command_live = (os.environ.get('WEBUI_LAUNCH_LIVE_OUTPUT') == "1")
 
 os.environ.setdefault('GRADIO_ANALYTICS_ENABLED', 'False')
 
+WINDOWS_SUPPORTED_PYTHON_MINORS = (10, 11, 12)
+OTHER_SUPPORTED_PYTHON_MINORS = (7, 8, 9, 10, 11, 12)
+
+
+def is_python_version_supported(version_info=None, system=None):
+    version_info = version_info or sys.version_info
+    system = system or platform.system()
+    supported_minors = WINDOWS_SUPPORTED_PYTHON_MINORS if system == "Windows" else OTHER_SUPPORTED_PYTHON_MINORS
+
+    return version_info.major == 3 and version_info.minor in supported_minors
+
 
 def check_python_version():
     is_windows = platform.system() == "Windows"
@@ -42,24 +53,19 @@ def check_python_version():
     minor = sys.version_info.minor
     micro = sys.version_info.micro
 
-    if is_windows:
-        supported_minors = [10]
-    else:
-        supported_minors = [7, 8, 9, 10, 11]
-
-    if not (major == 3 and minor in supported_minors):
+    if not is_python_version_supported():
         import modules.errors
 
         modules.errors.print_error_explanation(f"""
 INCOMPATIBLE PYTHON VERSION
 
-This program is tested with 3.10.6 Python, but you have {major}.{minor}.{micro}.
+This program is tested with Python 3.10 through 3.12, but you have {major}.{minor}.{micro}.
 If you encounter an error with "RuntimeError: Couldn't install torch." message,
 or any other error regarding unsuccessful package (library) installation,
-please downgrade (or upgrade) to the latest version of 3.10 Python
+please install the latest patch release of Python 3.10, 3.11, or 3.12
 and delete current Python and "venv" folder in WebUI's directory.
 
-You can download 3.10 Python from here: https://www.python.org/downloads/release/python-3106/
+You can download Python from here: https://www.python.org/downloads/
 
 {"Alternatively, use a binary release of WebUI: https://github.com/AUTOMATIC1111/stable-diffusion-webui/releases/tag/v1.0.0-pre" if is_windows else ""}
 
@@ -360,6 +366,41 @@ def requirements_met(requirements_file):
     return True
 
 
+def pinned_requirement_version(requirements_file, package_name):
+    if not os.path.isfile(requirements_file):
+        requirements_file = os.path.join(script_path, requirements_file)
+
+    with open(requirements_file, "r", encoding="utf8") as file:
+        for line in file:
+            match = re.match(re_requirement, line)
+            if match is None:
+                continue
+
+            name = match.group(1).strip()
+            version = (match.group(2) or "").strip()
+            if name.casefold() == package_name.casefold() and version:
+                return version
+
+    return None
+
+
+def ensure_setuptools(requirements_file):
+    if args.skip_install:
+        return
+
+    target = pinned_requirement_version(requirements_file, "setuptools")
+    if target is None:
+        raise RuntimeError(f"Couldn't determine the setuptools version from {requirements_file}")
+
+    try:
+        current = importlib.metadata.version("setuptools")
+    except importlib.metadata.PackageNotFoundError:
+        current = None
+
+    if current != target:
+        run_pip(f"install setuptools=={target}", f"setuptools=={target}")
+
+
 def prepare_environment():
     torch_index_url = os.environ.get('TORCH_INDEX_URL', "https://download.pytorch.org/whl/cu121")
     torch_command = os.environ.get('TORCH_COMMAND', f"pip install torch==2.3.1 torchvision==0.18.1 --extra-index-url {torch_index_url}")
@@ -439,12 +480,17 @@ def prepare_environment():
         )
     startup_timer.record("torch GPU test")
 
+    # Python 3.12 venvs do not include setuptools by default. Install the
+    # project-pinned version before building legacy packages such as CLIP.
+    ensure_setuptools(requirements_file)
+    startup_timer.record("ensure setuptools")
+
     if not is_installed("clip"):
-        run_pip(f"install {clip_package}", "clip")
+        run_pip(f"install --no-build-isolation {clip_package}", "clip")
         startup_timer.record("install clip")
 
     if not is_installed("open_clip"):
-        run_pip(f"install {openclip_package}", "open_clip")
+        run_pip(f"install --no-build-isolation {openclip_package}", "open_clip")
         startup_timer.record("install open_clip")
 
     if (not is_installed("xformers") or args.reinstall_xformers) and args.xformers:

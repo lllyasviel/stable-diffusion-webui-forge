@@ -179,10 +179,11 @@ class SAGForForge(scripts.Script):
         return scripts.AlwaysVisible
 
     def ui(self, *args, **kwargs):
-        with InputAccordion(False, label=self.title()) as enabled:
-            scale = gr.Slider(label='Scale', minimum=-2.0, maximum=5.0, step=0.01, value=0.5)
-            blur_sigma = gr.Slider(label='Blur Sigma', minimum=0.0, maximum=10.0, step=0.01, value=2.0)
-            threshold = gr.Slider(label='Blur mask threshold', minimum=0.0, maximum=4.0, step=0.01, value=1.0)
+        elem = 'sag_'
+        with InputAccordion(False, label=self.title(),elem_id=elem+'enabled') as enabled:
+            scale = gr.Slider(label='Scale', minimum=-2.0, maximum=5.0, step=0.01, value=0.5,elem_id=elem+'scale')
+            blur_sigma = gr.Slider(label='Blur Sigma', minimum=0.0, maximum=10.0, step=0.01, value=2.0,elem_id=elem+'blur_sigma')
+            threshold = gr.Slider(label='Blur mask threshold', minimum=0.0, maximum=4.0, step=0.01, value=1.0,elem_id=elem+'threshold')
 
         self.infotext_fields = [
             (enabled, lambda d: d.get("sag_enabled", False)),

@@ -89,19 +89,17 @@ class FreeUForForge(scripts.Script):
         return scripts.AlwaysVisible
 
     def ui(self, *args, **kwargs):
-        
-        with InputAccordion(False, label=self.title(),
-                          elem_id="extensions-freeu",
-                          elem_classes=["extensions-freeu"]) as freeu_enabled:
+        elem = 'freeu_'
+        with InputAccordion(False, label=self.title(),elem_id=elem+'enabled') as freeu_enabled:
             with gr.Row():
-                freeu_b1 = gr.Slider(label='B1', minimum=0, maximum=2, step=0.01, value=1.01)
-                freeu_b2 = gr.Slider(label='B2', minimum=0, maximum=2, step=0.01, value=1.02)
+                freeu_b1 = gr.Slider(label='B1', minimum=0, maximum=2, step=0.01, value=1.01,elem_id=elem+'b1')
+                freeu_b2 = gr.Slider(label='B2', minimum=0, maximum=2, step=0.01, value=1.02,elem_id=elem+'b2')
             with gr.Row():
-                freeu_s1 = gr.Slider(label='S1', minimum=0, maximum=4, step=0.01, value=0.99)
-                freeu_s2 = gr.Slider(label='S2', minimum=0, maximum=4, step=0.01, value=0.95)
+                freeu_s1 = gr.Slider(label='S1', minimum=0, maximum=4, step=0.01, value=0.99,elem_id=elem+'s1')
+                freeu_s2 = gr.Slider(label='S2', minimum=0, maximum=4, step=0.01, value=0.95,elem_id=elem+'s2')
             with gr.Row():
-                freeu_start = gr.Slider(label='Start step', minimum=0.0, maximum=1.0, step=0.01, value=0.0)
-                freeu_end   = gr.Slider(label='End step', minimum=0.0, maximum=1.0, step=0.01, value=1.0)
+                freeu_start = gr.Slider(label='Start step', minimum=0.0, maximum=1.0, step=0.01, value=0.0,elem_id=elem+'start')
+                freeu_end   = gr.Slider(label='End step', minimum=0.0, maximum=1.0, step=0.01, value=1.0,elem_id=elem+'end')
             with gr.Row():
                 freeu_preset = gr.Dropdown(label='', choices=[x[0] for x in FreeUForForge.presets], value='(presets)', type='index', scale=0, allow_custom_value=True)
 

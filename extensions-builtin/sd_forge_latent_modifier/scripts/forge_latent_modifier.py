@@ -1,6 +1,7 @@
 import gradio as gr
 from modules import scripts
 from modules.infotext_utils import PasteField
+from modules.ui_components import InputAccordion
 
 from lib_latent_modifier.sampler_mega_modifier import ModelSamplerLatentMegaModifier
 
@@ -18,48 +19,48 @@ class LatentModifierForForge(scripts.Script):
         return scripts.AlwaysVisible
 
     def ui(self, *args, **kwargs):
-        with gr.Accordion(open=False, label=self.title()):
-            enabled = gr.Checkbox(label='Enabled', value=False)
+        elem = 'latent_modifier_'
+        with InputAccordion(False, label=self.title(),elem_id=elem+'enabled') as enabled:
             sharpness_multiplier = gr.Slider(label='Sharpness Multiplier', minimum=-100.0, maximum=100.0, step=0.1,
-                                             value=0.0)
+                                             value=0.0,elem_id=elem+'sharpness_multiplier')
             sharpness_method = gr.Radio(label='Sharpness Method',
                                         choices=['anisotropic', 'joint-anisotropic', 'gaussian', 'cas'],
-                                        value='anisotropic')
-            tonemap_multiplier = gr.Slider(label='Tonemap Multiplier', minimum=0.0, maximum=100.0, step=0.01, value=0.0)
+                                        value='anisotropic',elem_id=elem+'sharpness_method')
+            tonemap_multiplier = gr.Slider(label='Tonemap Multiplier', minimum=0.0, maximum=100.0, step=0.01, value=0.0,elem_id=elem+'tonemap_multiplier')
             tonemap_method = gr.Radio(label='Tonemap Method',
                                       choices=['reinhard', 'reinhard_perchannel', 'arctan', 'quantile', 'gated',
-                                               'cfg-mimic', 'spatial-norm'], value='reinhard')
+                                               'cfg-mimic', 'spatial-norm'], value='reinhard',elem_id=elem+'tonemap_method')
             tonemap_percentile = gr.Slider(label='Tonemap Percentile', minimum=0.0, maximum=100.0, step=0.005,
-                                           value=100.0)
+                                           value=100.0,elem_id=elem+'tonemap_percentile')
             contrast_multiplier = gr.Slider(label='Contrast Multiplier', minimum=-100.0, maximum=100.0, step=0.1,
-                                            value=0.0)
+                                            value=0.0,elem_id=elem+'contrast_multiplier')
             combat_method = gr.Radio(label='Combat Method',
                                      choices=['subtract', 'subtract_channels', 'subtract_median', 'sharpen'],
-                                     value='subtract')
-            combat_cfg_drift = gr.Slider(label='Combat Cfg Drift', minimum=-10.0, maximum=10.0, step=0.01, value=0.0)
-            rescale_cfg_phi = gr.Slider(label='Rescale Cfg Phi', minimum=-10.0, maximum=10.0, step=0.01, value=0.0)
+                                     value='subtract',elem_id=elem+'combat_method')
+            combat_cfg_drift = gr.Slider(label='Combat Cfg Drift', minimum=-10.0, maximum=10.0, step=0.01, value=0.0,elem_id=elem+'combat_cfg_drift')
+            rescale_cfg_phi = gr.Slider(label='Rescale Cfg Phi', minimum=-10.0, maximum=10.0, step=0.01, value=0.0,elem_id=elem+'rescale_cfg_phi')
             extra_noise_type = gr.Radio(label='Extra Noise Type',
                                         choices=['gaussian', 'uniform', 'perlin', 'pink', 'green', 'pyramid'],
-                                        value='gaussian')
+                                        value='gaussian',elem_id=elem+'extra_noise_type')
             extra_noise_method = gr.Radio(label='Extra Noise Method',
                                           choices=['add', 'add_scaled', 'speckle', 'cads', 'cads_rescaled',
-                                                   'cads_speckle', 'cads_speckle_rescaled'], value='add')
+                                                   'cads_speckle', 'cads_speckle_rescaled'], value='add',elem_id=elem+'extra_noise_method')
             extra_noise_multiplier = gr.Slider(label='Extra Noise Multiplier', minimum=0.0, maximum=100.0, step=0.1,
-                                               value=0.0)
-            extra_noise_lowpass = gr.Slider(label='Extra Noise Lowpass', minimum=0, maximum=1000, step=1, value=100)
-            divisive_norm_size = gr.Slider(label='Divisive Norm Size', minimum=1, maximum=255, step=1, value=127)
+                                               value=0.0,elem_id=elem+'extra_noise_multiplier')
+            extra_noise_lowpass = gr.Slider(label='Extra Noise Lowpass', minimum=0, maximum=1000, step=1, value=100,elem_id=elem+'extra_noise_lowpass')
+            divisive_norm_size = gr.Slider(label='Divisive Norm Size', minimum=1, maximum=255, step=1, value=127,elem_id=elem+'divisive_norm_size')
             divisive_norm_multiplier = gr.Slider(label='Divisive Norm Multiplier', minimum=0.0, maximum=1.0, step=0.01,
-                                                 value=0.0)
+                                                 value=0.0,elem_id=elem+'divisive_norm_multiplier')
             spectral_mod_mode = gr.Radio(label='Spectral Mod Mode', choices=['hard_clamp', 'soft_clamp'],
-                                         value='hard_clamp')
+                                         value='hard_clamp',elem_id=elem+'spectral_mod_mode')
             spectral_mod_percentile = gr.Slider(label='Spectral Mod Percentile', minimum=0.0, maximum=50.0, step=0.01,
-                                                value=5.0)
+                                                value=5.0,elem_id=elem+'spectral_mod_percentile')
             spectral_mod_multiplier = gr.Slider(label='Spectral Mod Multiplier', minimum=-15.0, maximum=15.0, step=0.01,
-                                                value=0.0)
-            affect_uncond = gr.Radio(label='Affect Uncond', choices=['None', 'Sharpness'], value='None')
+                                                value=0.0,elem_id=elem+'spectral_mod_multiplier')
+            affect_uncond = gr.Radio(label='Affect Uncond', choices=['None', 'Sharpness'], value='None',elem_id=elem+'affect_uncond')
             dyn_cfg_augmentation = gr.Radio(label='Dyn Cfg Augmentation',
                                             choices=['None', 'dyncfg-halfcosine', 'dyncfg-halfcosine-mimic'],
-                                            value='None')
+                                            value='None',elem_id=elem+'dyn_cfg_augmentation')
         
         self.infotext_fields = [
             PasteField(enabled, "latent_modifier_enabled", api="latent_modifier_enabled"),

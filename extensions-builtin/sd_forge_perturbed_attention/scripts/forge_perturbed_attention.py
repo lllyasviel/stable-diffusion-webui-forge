@@ -20,13 +20,14 @@ class PerturbedAttentionGuidanceForForge(scripts.Script):
         return scripts.AlwaysVisible
 
     def ui(self, *args, **kwargs):
-        with InputAccordion(False, label=self.title()) as enabled:
+        elem = 'pagi_'
+        with InputAccordion(False, label=self.title(),elem_id=elem+'enabled') as enabled:
             with gr.Row():
-                scale = gr.Slider(label='Scale', minimum=0.0, maximum=100.0, step=0.1, value=3.0)
-                attenuation = gr.Slider(label='Attenuation (linear, % of scale)', minimum=0.0, maximum=100.0, step=0.1, value=0.0)
+                scale = gr.Slider(label='Scale', minimum=0.0, maximum=100.0, step=0.1, value=3.0,elem_id=elem+'scale')
+                attenuation = gr.Slider(label='Attenuation (linear, % of scale)', minimum=0.0, maximum=100.0, step=0.1, value=0.0,elem_id=elem+'attenuation')
             with gr.Row():
-                start_step = gr.Slider(label='Start step', minimum=0.0, maximum=1.0, step=0.01, value=0.0)
-                end_step = gr.Slider(label='End step', minimum=0.0, maximum=1.0, step=0.01, value=1.0)
+                start_step = gr.Slider(label='Start step', minimum=0.0, maximum=1.0, step=0.01, value=0.0,elem_id=elem+'start_step')
+                end_step = gr.Slider(label='End step', minimum=0.0, maximum=1.0, step=0.01, value=1.0,elem_id=elem+'end_step')
 
         self.infotext_fields = [
             (enabled, lambda d: d.get("pagi_enabled", False)),

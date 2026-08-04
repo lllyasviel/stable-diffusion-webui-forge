@@ -49,18 +49,19 @@ class KohyaHRFixForForge(scripts.Script):
         return scripts.AlwaysVisible
 
     def ui(self, *args, **kwargs):
+        elem = 'kohya_hrfix_'
         upscale_methods = ["bicubic", "nearest-exact", "bilinear", "area", "bislerp"]
-        with InputAccordion(False, label=self.title()) as enabled:
+        with InputAccordion(False, label=self.title(),elem_id=elem+'enabled') as enabled:
             with gr.Row():
-                block_number = gr.Slider(label='Block Number', value=3, minimum=1, maximum=32, step=1)
-                downscale_factor = gr.Slider(label='Downscale Factor', value=2.0, minimum=0.1, maximum=9.0, step=0.001)
+                block_number = gr.Slider(label='Block Number', value=3, minimum=1, maximum=32, step=1,elem_id=elem+'block_number')
+                downscale_factor = gr.Slider(label='Downscale Factor', value=2.0, minimum=0.1, maximum=9.0, step=0.001,elem_id=elem+'downscale_factor')
             with gr.Row():
-                start_percent = gr.Slider(label='Start Percent', value=0.0, minimum=0.0, maximum=1.0, step=0.001)
-                end_percent = gr.Slider(label='End Percent', value=0.35, minimum=0.0, maximum=1.0, step=0.001)
-            downscale_after_skip = gr.Checkbox(label='Downscale After Skip', value=True)
+                start_percent = gr.Slider(label='Start Percent', value=0.0, minimum=0.0, maximum=1.0, step=0.001,elem_id=elem+'start_percent')
+                end_percent = gr.Slider(label='End Percent', value=0.35, minimum=0.0, maximum=1.0, step=0.001,elem_id=elem+'end_percent')
+            downscale_after_skip = gr.Checkbox(label='Downscale After Skip', value=True,elem_id=elem+'downscale_after_skip')
             with gr.Row():
-                downscale_method = gr.Dropdown(label='Downscale Method', choices=upscale_methods, value=upscale_methods[0])
-                upscale_method = gr.Dropdown(label='Upscale Method', choices=upscale_methods, value=upscale_methods[0])
+                downscale_method = gr.Dropdown(label='Downscale Method', choices=upscale_methods, value=upscale_methods[0],elem_id=elem+'downscale_method')
+                upscale_method = gr.Dropdown(label='Upscale Method', choices=upscale_methods, value=upscale_methods[0],elem_id=elem+'upscale_method')
 
         self.infotext_fields = [
             (enabled, lambda d: d.get("kohya_hrfix_enabled", False)),

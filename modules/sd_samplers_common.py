@@ -265,7 +265,7 @@ class Sampler:
     def callback_state(self, d):
         step = d['i']
 
-        if self.stop_at is not None and step > self.stop_at:
+        if self.stop_at is not None and step >= self.stop_at:
             raise InterruptedException
 
         state.sampling_step = step
@@ -294,6 +294,8 @@ class Sampler:
 
     def initialize(self, p) -> dict:
         self.p = p
+        stop = getattr(p, "stop_after_step", None)
+        self.stop_at = int(stop) if stop is not None else None
         self.model_wrap_cfg.p = p
         self.model_wrap_cfg.mask = p.mask if hasattr(p, 'mask') else None
         self.model_wrap_cfg.nmask = p.nmask if hasattr(p, 'nmask') else None

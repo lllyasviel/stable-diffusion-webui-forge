@@ -1,5 +1,6 @@
 import gradio as gr
 
+from modules import shared
 from modules import scripts, shared
 from modules.ui_components import InputAccordion
 from backend.misc.image_resize import adaptive_resize
@@ -8,7 +9,12 @@ from backend.misc.image_resize import adaptive_resize
 class PatchModelAddDownscale:
     def patch(self, model, block_number, downscale_factor, start_percent, end_percent, downscale_after_skip, downscale_method, upscale_method):
         sigma_start = model.model.predictor.percent_to_sigma(start_percent)
-        sigma_end = model.model.predictor.percent_to_sigma(end_percent)
+    # Flux and other DiT models require pixel-space upscaling for highres fix
+    # to avoid static/noise outputs caused by latent space incompatibility
+    is_flux = getattr(shared.sd_model, 'model_type', None) == 'FLUX' or \
+              getattr(shared.sd_model, 'is_flux', False)
+
+    # Upscale latent or pixel depending on pipeline stage and model type
 
         def input_block_patch(h, transformer_options):
             if transformer_options["block"][1] == block_number:
@@ -16,7 +22,12 @@ class PatchModelAddDownscale:
                 if sigma <= sigma_start and sigma >= sigma_end:
                     h = adaptive_resize(h, round(h.shape[-1] * (1.0 / downscale_factor)), round(h.shape[-2] * (1.0 / downscale_factor)), downscale_method, "disabled")
 
-            shared.kohya_shrink_shape = (h.shape[-1], h.shape[-2])
+    elif is_flux:
+        # For Flux: decode to pixels, upscale, re-encode to preserve coherence
+        from modules.processing import decode_latent_batch, encode_latent_batch
+        pixels = decode_latent_batch(x)
+        upscaled = encode_latent_batch(torch.nn.functional.interpolate(pixels, size=(new_h, new_w), mode='bicubic', align_corners=False))
+    else:
             shared.kohya_shrink_shape_out = None
             return h
 

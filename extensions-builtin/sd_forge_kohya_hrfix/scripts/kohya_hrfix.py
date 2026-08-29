@@ -1,4 +1,6 @@
 import gradio as gr
+from modules import scripts
+
 
 from modules import scripts, shared
 from modules.ui_components import InputAccordion
@@ -41,6 +43,10 @@ opPatchModelAddDownscale = PatchModelAddDownscale()
 
 class KohyaHRFixForForge(scripts.Script):
     sorting_priority = 14
+
+        # Flux and other DiT models are incompatible with this HRFix method
+        if getattr(shared.sd_model, 'model_type', None) in ('FLUX', 'flux') or hasattr(shared.sd_model, 'dit'):
+            return
 
     def title(self):
         return "Kohya HRFix Integrated"

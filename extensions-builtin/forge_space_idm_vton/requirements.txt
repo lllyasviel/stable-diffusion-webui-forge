@@ -1,0 +1,7 @@
+basicsr
+fvcore
+cloudpickle
+omegaconf
+pycocotools
+config==0.5.1
+av

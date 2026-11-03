@@ -1,0 +1,22 @@
+{
+  "_class_name": "EulerDiscreteScheduler",
+  "_diffusers_version": "0.18.0.dev0",
+  "beta_schedule": "scaled_linear",
+  "beta_start": 0.00085,
+  "beta_end": 0.014,
+  "clip_sample": false,
+  "clip_sample_range": 1.0,
+  "dynamic_thresholding_ratio": 0.995,
+  "interpolation_type": "linear",
+  "num_train_timesteps": 1100,
+  "prediction_type": "epsilon",
+  "rescale_betas_zero_snr": false,
+  "sample_max_value": 1.0,
+  "set_alpha_to_one": false,
+  "skip_prk_steps": true,
+  "steps_offset": 1,
+  "thresholding": false,
+  "timestep_spacing": "leading",
+  "trained_betas": null,
+  "use_karras_sigmas": false
+}

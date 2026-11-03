@@ -1,0 +1,35 @@
+{
+  "_class_name": "StableDiffusionXLInpaintPipeline",
+  "_diffusers_version": "0.21.0.dev0",
+  "_name_or_path": "stabilityai/stable-diffusion-xl-base-1.0",
+  "force_zeros_for_empty_prompt": true,
+  "requires_aesthetics_score": false,
+  "scheduler": [
+    "diffusers",
+    "EulerDiscreteScheduler"
+  ],
+  "text_encoder": [
+    "transformers",
+    "CLIPTextModel"
+  ],
+  "text_encoder_2": [
+    "transformers",
+    "CLIPTextModelWithProjection"
+  ],
+  "tokenizer": [
+    "transformers",
+    "CLIPTokenizer"
+  ],
+  "tokenizer_2": [
+    "transformers",
+    "CLIPTokenizer"
+  ],
+  "unet": [
+    "diffusers",
+    "UNet2DConditionModel"
+  ],
+  "vae": [
+    "diffusers",
+    "AutoencoderKL"
+  ]
+}

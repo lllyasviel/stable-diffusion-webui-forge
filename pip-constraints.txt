@@ -1,0 +1,6 @@
+setuptools<81
+numpy==1.26.2
+opencv-python==4.11.0.86
+opencv-contrib-python==4.11.0.86
+opencv-python-headless==4.11.0.86
+ml-dtypes==0.5.4

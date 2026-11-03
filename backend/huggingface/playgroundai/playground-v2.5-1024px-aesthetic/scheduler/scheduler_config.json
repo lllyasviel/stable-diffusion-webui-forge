@@ -1,0 +1,19 @@
+{
+  "_class_name": "EDMDPMSolverMultistepScheduler",
+  "_diffusers_version": "0.27.0.dev0",
+  "algorithm_type": "dpmsolver++",
+  "dynamic_thresholding_ratio": 0.995,
+  "euler_at_final": false,
+  "final_sigmas_type": "zero",
+  "lower_order_final": true,
+  "num_train_timesteps": 1000,
+  "prediction_type": "epsilon",
+  "rho": 7.0,
+  "sample_max_value": 1.0,
+  "sigma_data": 0.5,
+  "sigma_max": 80.0,
+  "sigma_min": 0.002,
+  "solver_order": 2,
+  "solver_type": "midpoint",
+  "thresholding": false
+}

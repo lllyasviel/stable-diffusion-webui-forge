@@ -1,0 +1,20 @@
+{
+  "_class_name": "HunyuanDiT2DModel",
+  "_diffusers_version": "0.29.0.dev0",
+  "activation_fn": "gelu-approximate",
+  "attention_head_dim": 88,
+  "cross_attention_dim": 1024,
+  "cross_attention_dim_t5": 2048,
+  "hidden_size": 1408,
+  "in_channels": 4,
+  "learn_sigma": true,
+  "mlp_ratio": 4.3637,
+  "norm_type": "layer_norm",
+  "num_attention_heads": 16,
+  "num_layers": 40,
+  "patch_size": 2,
+  "pooled_projection_dim": 1024,
+  "sample_size": 128,
+  "text_len": 77,
+  "text_len_t5": 256
+}

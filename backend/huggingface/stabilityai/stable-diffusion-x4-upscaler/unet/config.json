@@ -1,0 +1,46 @@
+{
+  "_class_name": "UNet2DConditionModel",
+  "_diffusers_version": "0.9.0.dev0",
+  "_name_or_path": "hf-models/stable-diffusion-x4-upscaler/unet",
+  "act_fn": "silu",
+  "attention_head_dim": 8,
+  "block_out_channels": [
+    256,
+    512,
+    512,
+    1024
+  ],
+  "center_input_sample": false,
+  "cross_attention_dim": 1024,
+  "down_block_types": [
+    "DownBlock2D",
+    "CrossAttnDownBlock2D",
+    "CrossAttnDownBlock2D",
+    "CrossAttnDownBlock2D"
+  ],
+  "downsample_padding": 1,
+  "dual_cross_attention": false,
+  "flip_sin_to_cos": true,
+  "freq_shift": 0,
+  "in_channels": 7,
+  "layers_per_block": 2,
+  "mid_block_scale_factor": 1,
+  "norm_eps": 1e-05,
+  "norm_num_groups": 32,
+  "num_class_embeds": 1000,
+  "only_cross_attention": [
+    true,
+    true,
+    true,
+    false
+  ],
+  "out_channels": 4,
+  "sample_size": 128,
+  "up_block_types": [
+    "CrossAttnUpBlock2D",
+    "CrossAttnUpBlock2D",
+    "CrossAttnUpBlock2D",
+    "UpBlock2D"
+  ],
+  "use_linear_projection": true
+}

@@ -1,0 +1,6 @@
+{
+  "_class_name": "DDPMWuerstchenScheduler",
+  "_diffusers_version": "0.27.0.dev0",
+  "s": 0.008,
+  "scaler": 1.0
+}

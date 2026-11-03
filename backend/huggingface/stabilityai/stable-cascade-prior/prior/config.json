@@ -1,0 +1,64 @@
+{
+  "_class_name": "StableCascadeUNet",
+  "_diffusers_version": "0.27.0.dev0",
+  "block_out_channels": [
+    2048,
+    2048
+  ],
+  "block_types_per_layer": [
+    [
+      "SDCascadeResBlock",
+      "SDCascadeTimestepBlock",
+      "SDCascadeAttnBlock"
+    ],
+    [
+      "SDCascadeResBlock",
+      "SDCascadeTimestepBlock",
+      "SDCascadeAttnBlock"
+    ]
+  ],
+  "clip_image_in_channels": 768,
+  "clip_seq": 4,
+  "clip_text_in_channels": 1280,
+  "clip_text_pooled_in_channels": 1280,
+  "conditioning_dim": 2048,
+  "down_blocks_repeat_mappers": [
+    1,
+    1
+  ],
+  "down_num_layers_per_block": [
+    8,
+    24
+  ],
+  "dropout": [
+    0.1,
+    0.1
+  ],
+  "effnet_in_channels": null,
+  "in_channels": 16,
+  "kernel_size": 3,
+  "num_attention_heads": [
+    32,
+    32
+  ],
+  "out_channels": 16,
+  "patch_size": 1,
+  "pixel_mapper_in_channels": null,
+  "self_attn": true,
+  "switch_level": [
+    false
+  ],
+  "timestep_conditioning_type": [
+    "sca",
+    "crp"
+  ],
+  "timestep_ratio_embedding_dim": 64,
+  "up_blocks_repeat_mappers": [
+    1,
+    1
+  ],
+  "up_num_layers_per_block": [
+    24,
+    8
+  ]
+}

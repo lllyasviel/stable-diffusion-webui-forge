@@ -1,0 +1,28 @@
+{
+  "_class_name": "AutoencoderKL",
+  "_diffusers_version": "0.9.0.dev0",
+  "_name_or_path": "hf-models/stable-diffusion-x4-upscaler/vae",
+  "act_fn": "silu",
+  "block_out_channels": [
+    128,
+    256,
+    512
+  ],
+  "down_block_types": [
+    "DownEncoderBlock2D",
+    "DownEncoderBlock2D",
+    "DownEncoderBlock2D"
+  ],
+  "in_channels": 3,
+  "latent_channels": 4,
+  "layers_per_block": 2,
+  "norm_num_groups": 32,
+  "out_channels": 3,
+  "sample_size": 256,
+  "up_block_types": [
+    "UpDecoderBlock2D",
+    "UpDecoderBlock2D",
+    "UpDecoderBlock2D"
+  ],
+  "scaling_factor": 0.08333
+}

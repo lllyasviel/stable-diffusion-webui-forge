@@ -66,7 +66,7 @@ options_templates.update(options_section(('saving-images', "Saving images/grids"
     "use_original_name_batch": OptionInfo(True, "Use original name for output filename during batch process in extras tab"),
     "use_upscaler_name_as_suffix": OptionInfo(False, "Use upscaler name as filename suffix in the extras tab"),
     "save_selected_only": OptionInfo(True, "When using 'Save' button, only save a single selected image"),
-    "save_write_log_csv": OptionInfo(True, "Write log.csv when saving images using 'Save' button"),
+    "save_write_log_csv": OptionInfo(False, "Write log.csv when saving images using 'Save' button (always off: Secure Presets)"),
     "save_init_img": OptionInfo(False, "Save init images when using img2img"),
 
     "temp_dir":  OptionInfo("", "Directory for temporary images; leave empty for default"),
@@ -357,9 +357,9 @@ options_templates.update(options_section(('infotext', "Infotext", "ui"), {
 Infotext is what this software calls the text that contains generation parameters and can be used to generate the same picture again.
 It is displayed in UI below the image. To use infotext, paste it into the prompt and click the ↙️ paste button.
 """),
-    "enable_pnginfo": OptionInfo(True, "Write infotext to metadata of the generated image"),
+    "enable_pnginfo": OptionInfo(False, "Write infotext to metadata of the generated image (always off: Secure Presets)"),
     "stealth_pnginfo_option": OptionInfo("Alpha", "Stealth infotext mode", gr.Radio, {"choices": ["Alpha", "RGB", "None"]}).info("Ignored if infotext is disabled"),
-    "save_txt": OptionInfo(False, "Create a text file with infotext next to every generated image"),
+    "save_txt": OptionInfo(False, "Create a text file with infotext next to every generated image (always off: Secure Presets)"),
 
     "add_model_name_to_info": OptionInfo(True, "Add model name to infotext"),
     "add_model_hash_to_info": OptionInfo(True, "Add model hash to infotext"),

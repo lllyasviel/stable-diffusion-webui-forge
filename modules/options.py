@@ -128,9 +128,20 @@ class Options:
 
         return super(Options, self).__setattr__(key, value)
 
+    # Secure Presets: these are always off, whatever settings/config.json/the API say, so prompts
+    # are never embedded in image metadata, written next to images, or logged in plaintext.
+    forced_values = {
+        "enable_pnginfo": False,       # infotext in PNG/JPG/WebP/AVIF metadata and stealth (alpha/RGB) infotext
+        "save_txt": False,             # .txt infotext files next to images
+        "save_write_log_csv": False,   # log.csv (contains prompts) written by the 'Save' button
+    }
+
     def __getattr__(self, item):
         if item in options_builtin_fields:
             return super(Options, self).__getattribute__(item)
+
+        if item in Options.forced_values:
+            return Options.forced_values[item]
 
         if self.data is not None:
             if item in self.data:

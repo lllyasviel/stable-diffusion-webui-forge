@@ -55,3 +55,7 @@ trace.json
 /test/results.xml
 coverage.xml
 **/tests/**/expectations
+/secure_presets/
+
+# Local machine diagnostics (contains machine name/ID)
+/DxDiag.txt

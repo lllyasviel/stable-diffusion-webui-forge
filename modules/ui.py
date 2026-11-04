@@ -529,9 +529,6 @@ def create_ui():
                 *scripts.scripts_txt2img.infotext_fields
             ]
             parameters_copypaste.add_paste_fields("txt2img", None, txt2img_paste_fields, override_settings)
-            parameters_copypaste.register_paste_params_button(parameters_copypaste.ParamBinding(
-                paste_button=toprow.paste, tabname="txt2img", source_text_component=toprow.prompt, source_image_component=None,
-            ))
 
             steps = scripts.scripts_txt2img.script('Sampler').steps
 
@@ -907,9 +904,6 @@ def create_ui():
             ]
             parameters_copypaste.add_paste_fields("img2img", init_img.background, img2img_paste_fields, override_settings)
             parameters_copypaste.add_paste_fields("inpaint", init_img_with_mask.background, img2img_paste_fields, override_settings)
-            parameters_copypaste.register_paste_params_button(parameters_copypaste.ParamBinding(
-                paste_button=toprow.paste, tabname="img2img", source_text_component=toprow.prompt, source_image_component=None,
-            ))
 
         extra_networks_ui_img2img = ui_extra_networks.create_ui(img2img_interface, [img2img_generation_tab], 'img2img')
         ui_extra_networks.setup_ui(extra_networks_ui_img2img, output_panel.gallery)

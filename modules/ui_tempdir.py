@@ -59,6 +59,8 @@ def save_pil_to_file(pil_image, cache_dir=None, format="png"):
     use_metadata = False
     metadata = PngImagePlugin.PngInfo()
     for key, value in pil_image.info.items():
+        if key == "parameters":  # Secure Presets: never put prompt text into image metadata
+            continue
         if isinstance(key, str) and isinstance(value, str):
             metadata.add_text(key, value)
             use_metadata = True

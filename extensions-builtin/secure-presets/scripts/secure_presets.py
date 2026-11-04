@@ -31,7 +31,7 @@ TAB_FIELDS = {
     "txt2img": [
         ("hires_prompt", "hires_prompt"),
         ("hires_negative_prompt", "hires_neg_prompt"),
-        ("hires_enable", "txt2img_hr"),
+        ("hires_enable", "txt2img_hr-checkbox"),
         ("hires_upscaler", "txt2img_hr_upscaler"),
         ("hires_steps", "txt2img_hires_steps"),
         ("hires_denoise", "txt2img_denoising_strength"),
@@ -64,17 +64,21 @@ _WANTED = {UI_RADIO_ELEM_ID} | {e for tab in TAB_FIELDS for _, e in fields_for(t
 
 def _capture(component, **kwargs):
     elem_id = kwargs.get("elem_id")
-    if elem_id in _WANTED:
+    # Only real input components: layouts such as an InputAccordion's Accordion share the same elem_id.
+    if elem_id in _WANTED and isinstance(component, gr.components.Component):
         _components[elem_id] = component
 
 
 script_callbacks.on_after_component(_capture)
 
-# Remove any leftover plaintext params.txt from before Secure Presets (never read, just overwritten and deleted).
+# The "read last generation" feature (and its params.txt / params.enc files) was removed.
+# Clean up leftovers: overwrite with zeros and delete, never read.
 try:
     from modules import paths
-    if secure_store.wipe_plaintext(os.path.join(paths.data_path, "params.txt")):
-        print("Secure Presets: removed legacy plaintext params.txt")
+    for _legacy in (os.path.join(paths.data_path, "params.txt"),
+                    os.path.join(paths.data_path, "secure_presets", "params.enc")):
+        if secure_store.wipe_plaintext(_legacy):
+            print(f"Secure Presets: removed leftover {os.path.basename(_legacy)}")
 except Exception:
     pass
 

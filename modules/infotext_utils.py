@@ -572,14 +572,6 @@ def get_override_settings(params, *, skip_fields=None):
 
 def connect_paste(button, paste_fields, input_comp, override_settings_component, tabname):
     def paste_func(prompt):
-        if not prompt and not shared.cmd_opts.hide_ui_dir_config and not shared.cmd_opts.no_prompt_history:
-            # Secure Presets: last-generation parameters live in the encrypted store (available while unlocked)
-            try:
-                from modules import secure_store
-                prompt = secure_store.read_last_params() or prompt
-            except Exception:
-                pass
-
         params = parse_generation_parameters(prompt)
         script_callbacks.infotext_pasted_callback(prompt, params)
         res = []

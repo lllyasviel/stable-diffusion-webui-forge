@@ -6,7 +6,6 @@ written to disk; the derived key lives in memory only while the vault is unlocke
 
 Files (in <data_path>/secure_presets/):
     vault.json   scrypt parameters + salt + encrypted preset library
-    params.enc   encrypted copy of the "last generation" parameters
 """
 import base64
 import json
@@ -18,7 +17,6 @@ import time
 MIN_PASSPHRASE_LEN = 12
 _SCRYPT = {"n": 2 ** 17, "r": 8, "p": 1}
 _NONCE_LEN = 12
-_PARAMS_MAGIC = b"FFP1"
 
 _lock = threading.RLock()
 _key = None            # bytearray while unlocked
@@ -48,10 +46,6 @@ def _dir():
 
 def _vault_path():
     return os.path.join(_dir(), "vault.json")
-
-
-def _params_path():
-    return os.path.join(_dir(), "params.enc")
 
 
 def _crypto():
@@ -232,38 +226,11 @@ def change_passphrase(old, new):
         header, blob = _read_vault()
         old_key = _derive(old, _b64d(header["salt"]), header["n"], header["r"], header["p"])
         presets = json.loads(_decrypt(old_key, blob, _header_bytes(header)).decode("utf-8"))["presets"]
-        last = read_last_params()
         new_header = _new_header()
         new_key = _derive(new, _b64d(new_header["salt"]), new_header["n"], new_header["r"], new_header["p"])
         _write_vault(new_header, new_key, presets)
         lock()
         _key = new_key
-        if last is not None:
-            write_last_params(last)
-
-
-def write_last_params(text):
-    """Store the last-generation parameters encrypted. Silently does nothing while locked,
-    so nothing readable is ever written."""
-    with _lock:
-        if _key is None:
-            return False
-        _atomic_write(_params_path(), _PARAMS_MAGIC + _encrypt(_key, text.encode("utf-8"), b"params-v1"))
-        return True
-
-
-def read_last_params():
-    with _lock:
-        if _key is None or not os.path.isfile(_params_path()):
-            return None
-        try:
-            with open(_params_path(), "rb") as f:
-                data = f.read()
-            if not data.startswith(_PARAMS_MAGIC):
-                return None
-            return _decrypt(_key, data[len(_PARAMS_MAGIC):], b"params-v1").decode("utf-8")
-        except VaultError:
-            return None
 
 
 def wipe_plaintext(path):

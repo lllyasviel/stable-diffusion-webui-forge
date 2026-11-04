@@ -963,19 +963,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
             p.extra_generation_params.update(p.sd_model.extra_generation_params)
 
-            # params.txt should be saved after scripts.process_batch, since the
-            # infotext could be modified by that callback
-            # Example: a wildcard processed by process_batch sets an extra model
-            # strength, which is saved as "Model Strength: 1.0" in the infotext
-            if n == 0 and not cmd_opts.no_prompt_history:
-                # Secure Presets: the last-generation parameters are only ever stored encrypted
-                # (modules/secure_store.py); no plaintext params.txt is written.
-                try:
-                    from modules import secure_store
-                    secure_store.write_last_params(Processed(p, []).infotext(p, 0))
-                except Exception as e:
-                    print(f"Secure Presets: could not store last-generation parameters: {e}")
-
             for comment in p.sd_model.comments:
                 p.comment(comment)
 
